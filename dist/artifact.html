@@ -1,0 +1,2332 @@
+<title>Шкатулка Мракса</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Caveat:wght@400;600&display=swap">
+<style>
+/* ============================================================
+   ШКАТУЛКА МРАКСА — оформление
+   Единая тёмная сцена: свеча, латунь, дуб, пергамент.
+   ============================================================ */
+
+:root{
+  /* материалы */
+  --void:#0a0806;
+  --soot:#100b08;
+  --oak:#241a12;
+  --oak-hi:#33241789;
+  --brass:#b8892f;
+  --brass-hi:#f0d68a;
+  --brass-lo:#5c421a;
+  --brass-deep:#2e2110;
+  --parchment:#e3d5b4;
+  --parchment-dim:#bfae8a;
+  --ink:#241a10;
+  --verdigris:#2f6b5e;
+  --ember:#d4622a;
+  --blood:#8e2b1c;
+
+  /* текст */
+  --text:#d8c9a8;
+  --text-dim:#9b8a6d;
+  --text-faint:#6d6049;
+
+  /* акцент факультета (меняется скриптом) */
+  --sigil:#b8892f;
+  --sigil-soft:#b8892f33;
+
+  /* геометрия */
+  --r-sm:3px;
+  --r-md:6px;
+  --step:clamp(14px,1.6vw,20px);
+  --frame:clamp(10px,2vw,26px);
+
+  --font-display:"Prata","Playfair Display",Georgia,"Times New Roman",serif;
+  --font-body:"Spectral",Georgia,"Times New Roman",serif;
+  --font-hand:"Caveat","Segoe Script",cursive;
+
+  --ease:cubic-bezier(.22,.61,.36,1);
+  --ease-mech:cubic-bezier(.7,0,.2,1);
+}
+
+*,*::before,*::after{ box-sizing:border-box; }
+
+html{ -webkit-text-size-adjust:100%; }
+
+body{
+  margin:0;
+  min-height:100vh;
+  padding:calc(var(--step) * 1.4) var(--step) 84px;
+  background:
+    radial-gradient(120% 80% at 50% -10%, #1d140d 0%, #0d0906 45%, var(--void) 100%),
+    var(--void);
+  color:var(--text);
+  font-family:var(--font-body);
+  font-size:clamp(15px,.62vw + 13.4px,17px);
+  line-height:1.62;
+  overflow-x:hidden;
+  cursor:default;
+}
+
+/* «плёнка» зернистости поверх всей сцены */
+body::after{
+  content:"";
+  position:fixed; inset:0;
+  pointer-events:none;
+  z-index:6;
+  opacity:.05;
+  mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.sr{
+  position:absolute!important; width:1px; height:1px;
+  padding:0; margin:-1px; overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+.svg-defs{ position:absolute; width:0; height:0; overflow:hidden; }
+
+:where(button,input,[tabindex]):focus-visible{
+  outline:2px solid var(--brass-hi);
+  outline-offset:3px;
+}
+
+/* ---------- фоновые слои ---------- */
+#ambient{ position:fixed; inset:0; z-index:0; pointer-events:none; }
+#fx{ position:fixed; inset:0; z-index:7; pointer-events:none; }
+
+#lumos{
+  position:fixed; z-index:4; pointer-events:none; mix-blend-mode:screen;
+  width:520px; height:520px; left:0; top:0; margin:-260px 0 0 -260px;
+  opacity:0; transition:opacity .5s var(--ease);
+  background:radial-gradient(circle closest-side,
+    rgba(255,214,140,.16) 0%, rgba(255,190,110,.08) 32%, rgba(255,170,90,0) 72%);
+}
+body.has-pointer #lumos{ opacity:1; }
+body.lumos-max #lumos{ width:1100px; height:1100px; margin:-550px 0 0 -550px; }
+
+#vignette{
+  position:fixed; inset:0; z-index:5; pointer-events:none;
+  background:radial-gradient(115% 90% at 50% 42%, transparent 42%, rgba(6,4,3,.72) 100%);
+  transition:opacity .6s var(--ease);
+}
+body.nox #vignette{ background:radial-gradient(115% 90% at 50% 42%, transparent 4%, rgba(3,2,1,.97) 62%); }
+
+/* ============================================================
+   ШКАТУЛКА
+   ============================================================ */
+.box{
+  position:relative; z-index:2;
+  width:min(1080px,100%);
+  margin:0 auto;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:clamp(12px,2vw,26px);
+  padding:var(--frame);
+  border-radius:var(--r-md);
+  background:
+    linear-gradient(180deg,#2a1d13 0%,#1a120c 55%,#140d09 100%);
+  box-shadow:
+    inset 0 1px 0 #6a4e2440,
+    inset 0 0 0 1px #00000080,
+    inset 0 0 90px #00000090,
+    0 30px 70px -30px #000,
+    0 0 0 1px #3a2a16;
+}
+/* фактура дуба */
+.box::before{
+  content:""; position:absolute; inset:0; border-radius:inherit; pointer-events:none;
+  opacity:.22; mix-blend-mode:soft-light;
+  background:
+    repeating-linear-gradient(93deg, #000 0 2px, transparent 2px 7px),
+    repeating-linear-gradient(88deg, #d8b070 0 1px, transparent 1px 13px);
+}
+
+/* латунная окантовка с уголками */
+.box__plate{ position:absolute; inset:0; pointer-events:none; border-radius:inherit; }
+.box__plate::before{
+  content:""; position:absolute; inset:6px; border-radius:2px;
+  border:1px solid #7c5c2a66;
+  box-shadow:inset 0 0 0 1px #00000066, inset 0 0 26px #00000055;
+}
+.orn{
+  position:absolute; width:clamp(30px,4.4vw,52px); aspect-ratio:1;
+  color:var(--brass); opacity:.62;
+  filter:drop-shadow(0 1px 0 #00000090);
+}
+.orn--tl{ left:2px; top:2px; }
+.orn--tr{ right:2px; top:2px; transform:scaleX(-1); }
+.orn--bl{ left:2px; bottom:2px; transform:scaleY(-1); }
+.orn--br{ right:2px; bottom:2px; transform:scale(-1); }
+
+/* ---------- рельс печатей ---------- */
+.rail{
+  display:flex; flex-direction:column; gap:clamp(6px,1vw,12px);
+  align-items:center; padding:6px 0;
+}
+.seal{
+  --s:clamp(30px,3.6vw,40px);
+  position:relative; width:var(--s); height:var(--s);
+  display:grid; place-items:center;
+  border:0; padding:0; background:none;
+  color:var(--brass-lo);
+  cursor:not-allowed;
+  transition:color .35s var(--ease), transform .35s var(--ease);
+}
+.seal svg{ position:absolute; inset:0; width:100%; height:100%; }
+.seal__num{
+  font-family:var(--font-display); font-size:calc(var(--s)*.38);
+  color:currentColor; opacity:.75; letter-spacing:.02em;
+  position:relative; top:.02em;
+}
+.seal--done{ color:var(--sigil); cursor:help; }
+.seal--done .seal__num,.seal--now .seal__num{ opacity:1; }
+.seal--now{ color:var(--brass-hi); cursor:pointer; }
+.seal--now::after{
+  content:""; position:absolute; inset:-6px; border-radius:50%;
+  box-shadow:0 0 18px 2px #f0d68a30;
+  animation:pulse 3.4s var(--ease) infinite;
+}
+.seal--done:hover,.seal--now:hover{ transform:scale(1.08); }
+.rail__line{ width:1px; flex:1; min-height:8px; background:linear-gradient(#0000,#7c5c2a55,#0000); }
+
+@keyframes pulse{ 0%,100%{ opacity:.35 } 50%{ opacity:1 } }
+
+/* ============================================================
+   СЦЕНА
+   ============================================================ */
+.stage{
+  position:relative;
+  min-height:clamp(460px,64vh,660px);
+  padding:clamp(18px,3vw,40px) clamp(16px,3.4vw,46px);
+  border-radius:var(--r-sm);
+  background:
+    linear-gradient(180deg,#0f0a07 0%,#0b0705 100%);
+  box-shadow:inset 0 0 0 1px #00000090, inset 0 2px 20px #000, inset 0 0 0 2px #4a35197a;
+  overflow:hidden;
+}
+.stage::before{  /* тёплое пятно свечи на дне сцены */
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:radial-gradient(90% 60% at 50% 8%, #ffcf8f14, transparent 70%);
+}
+.stage.turning .chamber{ opacity:0; transform:translateY(10px) scale(.985); }
+.stage.turning::after{
+  content:""; position:absolute; left:0; right:0; top:0; height:100%;
+  background:linear-gradient(180deg,transparent,#f0d68a22 45%,#f0d68a44 50%,#f0d68a22 55%,transparent);
+  animation:sweep .5s var(--ease-mech);
+}
+@keyframes sweep{ from{ transform:translateY(-100%) } to{ transform:translateY(100%) } }
+
+.chamber{
+  position:relative;
+  display:flex; flex-direction:column; gap:clamp(14px,2vw,22px);
+  transition:opacity .35s var(--ease), transform .35s var(--ease);
+  animation:enter .5s var(--ease) both;
+}
+@keyframes enter{ from{ opacity:0; transform:translateY(14px) } to{ opacity:1; transform:none } }
+
+/* ---------- типографика ---------- */
+.eyebrow{
+  margin:0; font-size:.72rem; letter-spacing:.34em; text-transform:uppercase;
+  color:var(--text-faint); font-weight:600;
+}
+.eyebrow b{ color:var(--sigil); font-weight:600; }
+
+.title{
+  margin:0; font-family:var(--font-display); font-weight:400;
+  font-size:clamp(1.7rem,4.2vw,2.9rem); line-height:1.08; text-wrap:balance;
+  color:var(--parchment);
+  text-shadow:0 1px 0 #000, 0 0 34px #ffcf8f18;
+}
+.title em{ font-style:normal; color:var(--brass-hi); }
+
+.lede{
+  margin:0; max-width:64ch; color:var(--text-dim);
+  font-size:1.02rem;
+}
+.lede strong{ color:var(--text); font-weight:600; }
+
+.rule{
+  height:1px; border:0; margin:0;
+  background:linear-gradient(90deg,transparent,#7c5c2a66 18%,#7c5c2a66 82%,transparent);
+}
+
+/* «гравированная табличка» — цитаты и загадки */
+.plaque{
+  position:relative;
+  padding:clamp(16px,2.4vw,26px) clamp(18px,3vw,32px);
+  border-radius:2px;
+  background:linear-gradient(160deg,#1b130d,#120c08);
+  box-shadow:inset 0 0 0 1px #7c5c2a3d, inset 0 1px 0 #f0d68a10, 0 8px 24px -14px #000;
+  font-size:1.06rem;
+}
+.plaque p{ margin:0 0 .6em; }
+.plaque p:last-child{ margin-bottom:0; }
+.plaque--riddle{ font-style:italic; color:var(--parchment); }
+.plaque__mark{
+  position:absolute; right:14px; top:10px; font-family:var(--font-display);
+  font-size:1.5rem; color:var(--brass-lo); opacity:.5;
+}
+
+/* ---------- кнопки ---------- */
+.btn{
+  appearance:none; cursor:pointer;
+  font-family:var(--font-body); font-size:.86rem; font-weight:600;
+  letter-spacing:.14em; text-transform:uppercase;
+  padding:.78em 1.5em; border-radius:2px;
+  color:#2a1d0d;
+  border:1px solid #8a6526;
+  background:linear-gradient(180deg,#e2c274 0%,#c39a3e 42%,#9a7429 100%);
+  box-shadow:0 1px 0 #ffe6ac80 inset, 0 -1px 0 #00000060 inset, 0 6px 16px -10px #000;
+  transition:transform .12s var(--ease), filter .2s var(--ease), box-shadow .2s var(--ease);
+}
+.btn:hover{ filter:brightness(1.12); }
+.btn:active{ transform:translateY(1px); box-shadow:0 1px 0 #ffe6ac40 inset, 0 2px 6px -4px #000 inset; }
+.btn[disabled]{ opacity:.4; cursor:not-allowed; filter:grayscale(.5); }
+
+.btn--ghost{
+  color:var(--text-dim); background:none; border:1px solid #7c5c2a55;
+  box-shadow:none; font-weight:400; letter-spacing:.12em;
+}
+.btn--ghost:hover{ color:var(--brass-hi); border-color:#7c5c2a; filter:none; background:#f0d68a08; }
+
+.actions{ display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin-top:auto; padding-top:6px; }
+.actions__spacer{ flex:1 1 auto; }
+
+/* ---------- уведомления ---------- */
+.verdict{
+  display:flex; gap:12px; align-items:flex-start;
+  padding:14px 18px; border-radius:2px;
+  font-size:.96rem;
+  background:#0000004d;
+  box-shadow:inset 0 0 0 1px #7c5c2a33;
+  animation:enter .35s var(--ease) both;
+}
+.verdict::before{
+  content:"✦"; font-size:1rem; line-height:1.5; color:var(--brass);
+}
+.verdict--ok{ box-shadow:inset 0 0 0 1px #2f6b5e77; }
+.verdict--ok::before{ content:"✔"; color:#5fae95; }
+.verdict--no{ box-shadow:inset 0 0 0 1px #8e2b1c88; }
+.verdict--no::before{ content:"✕"; color:#c8563f; }
+.verdict b{ color:var(--parchment); font-weight:600; }
+
+.toast{
+  position:fixed; left:50%; bottom:96px; transform:translate(-50%,14px);
+  z-index:9; pointer-events:none; opacity:0;
+  padding:.7em 1.4em; border-radius:2px; max-width:min(88vw,520px);
+  background:#140d08f2; color:var(--parchment);
+  box-shadow:inset 0 0 0 1px #7c5c2a80, 0 12px 30px -16px #000;
+  font-size:.92rem; text-align:center;
+  transition:opacity .3s var(--ease), transform .3s var(--ease);
+}
+.toast.show{ opacity:1; transform:translate(-50%,0); }
+
+/* ============================================================
+   НИЖНЯЯ ПАНЕЛЬ
+   ============================================================ */
+.hud{
+  position:fixed; left:0; right:0; bottom:0; z-index:8;
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+  padding:10px clamp(12px,3vw,28px);
+  background:linear-gradient(180deg,#150e09e6,#0a0705f2);
+  backdrop-filter:blur(6px);
+  box-shadow:0 -1px 0 #7c5c2a4d, 0 -12px 30px -24px #000;
+}
+.hud__group{ display:flex; align-items:center; gap:10px; min-width:0; }
+.hud__group--mid{ gap:16px; }
+.hud__sigil{
+  width:22px; height:22px; border-radius:50%; flex:none;
+  background:radial-gradient(circle at 34% 30%, #ffffff35, transparent 60%), var(--sigil);
+  box-shadow:0 0 12px -2px var(--sigil), inset 0 0 0 1px #00000060;
+}
+.hud__house{
+  font-size:.78rem; letter-spacing:.16em; text-transform:uppercase; color:var(--text-dim);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.hud__stat{ display:flex; align-items:baseline; gap:.5em; }
+.hud__stat b{
+  font-family:var(--font-display); font-size:1.05rem; color:var(--brass-hi);
+  font-variant-numeric:tabular-nums; font-weight:400;
+}
+.hud__stat i{ font-style:normal; font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:var(--text-faint); }
+.hud__sep{ width:1px; height:20px; background:#7c5c2a4d; }
+.hud__btn{
+  display:grid; place-items:center; width:34px; height:34px; padding:0;
+  border:1px solid #7c5c2a44; border-radius:2px; background:#0000;
+  color:var(--text-dim); cursor:pointer;
+  transition:color .2s var(--ease), border-color .2s var(--ease), background .2s var(--ease);
+}
+.hud__btn svg{ width:18px; height:18px; }
+.hud__btn:hover{ color:var(--brass-hi); border-color:#7c5c2a; background:#f0d68a0d; }
+.hud__btn--word{
+  width:auto; padding:0 .9em; height:34px;
+  font-family:var(--font-body); font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
+}
+.hud__btn[aria-pressed="false"] .wave{ opacity:.18; }
+
+/* ---------- строка заклинаний ---------- */
+.spellbar{
+  position:fixed; left:50%; bottom:64px; transform:translateX(-50%);
+  z-index:9; width:min(94vw,520px);
+  padding:16px 18px 14px; border-radius:2px;
+  background:linear-gradient(180deg,#1a120bf7,#0d0806f7);
+  box-shadow:inset 0 0 0 1px #7c5c2a80, 0 24px 60px -28px #000;
+  animation:enter .3s var(--ease) both;
+}
+.spellbar[hidden]{ display:none; }
+.spellbar__label{
+  display:block; font-size:.68rem; letter-spacing:.3em; text-transform:uppercase; color:var(--text-faint);
+  margin-bottom:8px;
+}
+.spellbar__input{
+  width:100%; padding:.5em .2em; border:0; border-bottom:1px solid #7c5c2a66;
+  background:none; color:var(--brass-hi);
+  font-family:var(--font-display); font-size:1.5rem; letter-spacing:.06em;
+}
+.spellbar__input:focus{ outline:none; border-bottom-color:var(--brass-hi); }
+.spellbar__input::placeholder{ color:#6d604966; }
+.spellbar__hint{ margin:10px 0 0; font-size:.8rem; color:var(--text-faint); font-style:italic; }
+
+/* ============================================================
+   ОБЩИЕ ЭЛЕМЕНТЫ ИСПЫТАНИЙ
+   ============================================================ */
+.meter{
+  display:flex; align-items:center; gap:10px;
+  font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-faint);
+}
+.meter__track{ flex:1; height:2px; background:#7c5c2a2e; overflow:hidden; }
+.meter__fill{ display:block; height:100%; background:linear-gradient(90deg,var(--sigil),var(--brass-hi)); transition:width .6s var(--ease); }
+.meter b{ color:var(--brass-hi); font-family:var(--font-display); font-weight:400; font-variant-numeric:tabular-nums; }
+
+.hint{
+  margin:0; font-size:.9rem; color:var(--text-faint); font-style:italic;
+  display:flex; gap:.6em; align-items:baseline;
+}
+.hint::before{ content:"⌖"; font-style:normal; color:var(--brass-lo); }
+
+/* ---------- I. Замок Гринготтса ---------- */
+.lock{ display:flex; flex-wrap:wrap; gap:clamp(16px,3vw,40px); align-items:center; justify-content:center; padding:clamp(6px,2vw,18px) 0; }
+.dials{ display:flex; gap:clamp(8px,1.6vw,16px); padding:14px 16px; border-radius:4px;
+  background:linear-gradient(180deg,#221810,#120c08);
+  box-shadow:inset 0 0 0 1px #7c5c2a55, inset 0 2px 12px #000, 0 10px 26px -18px #000; }
+.dial{ display:flex; flex-direction:column; align-items:center; gap:6px; }
+.dial__btn{
+  width:38px; height:24px; border:0; padding:0; cursor:pointer; border-radius:2px;
+  background:none; color:var(--brass-lo);
+  transition:color .2s var(--ease), transform .12s var(--ease);
+  font-size:.9rem; line-height:1;
+}
+.dial__btn:hover{ color:var(--brass-hi); }
+.dial__btn:active{ transform:scale(.9); }
+.dial__window{
+  position:relative; width:clamp(52px,7vw,64px); height:clamp(64px,9vw,80px);
+  overflow:hidden; border-radius:2px;
+  background:linear-gradient(180deg,#0b0705,#1a120c 50%,#0b0705);
+  box-shadow:inset 0 0 0 1px #7c5c2a66, inset 0 0 18px #000;
+}
+.dial__strip{
+  position:absolute; left:0; right:0; top:0;
+  display:flex; flex-direction:column; align-items:center;
+  transition:transform .45s var(--ease-mech);
+  will-change:transform;
+}
+.dial__digit{
+  height:clamp(64px,9vw,80px); display:grid; place-items:center;
+  font-family:var(--font-display); font-size:clamp(2rem,3.6vw,2.6rem);
+  color:var(--brass-hi); text-shadow:0 0 18px #f0d68a55;
+}
+.dial__window::after{  /* блик стекла */
+  content:""; position:absolute; inset:0; pointer-events:none;
+  background:linear-gradient(180deg,#00000099 0%, transparent 26%, transparent 74%, #000000b3 100%),
+             linear-gradient(100deg,transparent 40%,#ffffff12 46%,transparent 54%);
+}
+.lock__aside{ flex:1 1 260px; min-width:min(100%,240px); display:flex; flex-direction:column; gap:14px; }
+.lock.shake{ animation:shake .42s var(--ease); }
+.shake{ animation:shake .42s var(--ease); }
+@keyframes shake{ 10%,90%{transform:translateX(-3px)} 30%,70%{transform:translateX(6px)} 50%{transform:translateX(-6px)} }
+.lock.opened .dial__digit{ color:#8fe0c0; text-shadow:0 0 24px #5fae9599; }
+
+/* ---------- II. Экзамен ---------- */
+.quiz{ display:flex; flex-direction:column; gap:16px; }
+.quiz__q{ font-family:var(--font-display); font-size:clamp(1.15rem,2.4vw,1.5rem); line-height:1.3; color:var(--parchment); margin:0; text-wrap:balance; }
+.options{ display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); }
+.option{
+  position:relative; text-align:left; cursor:pointer;
+  padding:.92em 1em .92em 3em; border-radius:2px;
+  font-family:var(--font-body); font-size:1rem; color:var(--text);
+  background:linear-gradient(180deg,#181009,#100b07);
+  border:1px solid #7c5c2a33;
+  transition:border-color .2s var(--ease), color .2s var(--ease), background .2s var(--ease), transform .12s var(--ease);
+}
+.option__key{
+  position:absolute; left:.9em; top:50%; transform:translateY(-50%);
+  width:1.6em; height:1.6em; display:grid; place-items:center; border-radius:50%;
+  font-family:var(--font-display); font-size:.8rem;
+  color:var(--brass-lo); box-shadow:inset 0 0 0 1px #7c5c2a55;
+}
+.option:hover:not([disabled]){ border-color:#a8802f; color:var(--parchment); transform:translateX(3px); }
+.option:hover:not([disabled]) .option__key{ color:var(--brass-hi); }
+.option[disabled]{ cursor:default; }
+.option--right{ border-color:#2f6b5e; background:linear-gradient(180deg,#0f1b17,#0b1310); color:#bfe6d6; }
+.option--right .option__key{ color:#5fae95; box-shadow:inset 0 0 0 1px #2f6b5e; }
+.option--wrong{ border-color:#8e2b1c; background:linear-gradient(180deg,#1c0f0c,#120909); color:#e0a798; }
+.option--wrong .option__key{ color:#c8563f; box-shadow:inset 0 0 0 1px #8e2b1c; }
+.option--faded{ opacity:.4; }
+
+.timer{ display:flex; align-items:center; gap:10px; font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-faint); }
+.timer__track{ flex:1; height:2px; background:#7c5c2a2e; }
+.timer__fill{ display:block; height:100%; background:linear-gradient(90deg,var(--ember),var(--brass-hi)); transform-origin:left; }
+.timer--urgent .timer__fill{ background:var(--blood); }
+
+.tally{ display:flex; gap:6px; flex-wrap:wrap; }
+.tally i{
+  width:8px; height:8px; border-radius:50%; background:#7c5c2a33; display:block;
+  box-shadow:inset 0 0 0 1px #7c5c2a55;
+}
+.tally i.ok{ background:#5fae95; box-shadow:0 0 8px #5fae9566; }
+.tally i.no{ background:#8e2b1c; }
+
+/* ---------- III. Семь склянок ---------- */
+.shelf{
+  display:flex; align-items:flex-end; justify-content:center; gap:clamp(4px,1.4vw,16px);
+  padding:clamp(10px,2vw,20px) clamp(6px,2vw,18px) 0;
+  position:relative; flex-wrap:nowrap; overflow-x:auto;
+}
+.shelf::after{
+  content:""; position:absolute; left:2%; right:2%; bottom:42px; height:7px;
+  background:linear-gradient(180deg,#3a2a16,#1a120c);
+  box-shadow:0 1px 0 #f0d68a1a inset, 0 6px 14px -8px #000;
+}
+.vial{
+  position:relative; z-index:1; flex:0 0 auto;
+  display:flex; flex-direction:column; align-items:center; gap:8px;
+  border:0; background:none; padding:0 2px 0; cursor:pointer;
+  color:var(--text-faint);
+}
+.vial svg{ display:block; overflow:visible; filter:drop-shadow(0 6px 10px #00000080); transition:transform .25s var(--ease); }
+.vial:hover svg{ transform:translateY(-5px); }
+.vial__body{ transition:fill .3s var(--ease); }
+.vial__tag{
+  font-size:.62rem; letter-spacing:.14em; text-transform:uppercase;
+  min-height:2.2em; display:grid; place-items:center; width:100%;
+  padding-top:2px;
+  transition:color .2s var(--ease);
+}
+.vial-wrap{ display:flex; flex-direction:column; align-items:center; gap:6px; flex:0 0 auto; }
+.vial__tag{
+  border:0; background:none; cursor:pointer; font-family:var(--font-body);
+  color:var(--text-faint); border-top:1px solid transparent;
+}
+.vial__tag:hover{ color:var(--brass); }
+.vial__tag.on{ color:var(--brass-hi); border-top-color:#7c5c2a66; }
+.vial--dead .vial__tag{ text-decoration:line-through; }
+.vial[aria-pressed="true"]{ color:var(--brass-hi); }
+.vial[aria-pressed="true"] svg{ transform:translateY(-8px); filter:drop-shadow(0 0 16px #f0d68a55); }
+.vial--dead .vial{ opacity:.3; cursor:not-allowed; }
+.vial--dead{ opacity:.55; }
+.vial--dead .vial:hover svg{ transform:none; }
+.clues{ margin:0; padding:0; list-style:none; display:grid; gap:.55em; }
+.clues li{ position:relative; padding-left:1.8em; font-size:.97rem; color:var(--text); }
+.clues li::before{
+  content:counter(list-item,upper-roman) ".";
+  position:absolute; left:0; color:var(--brass-lo); font-family:var(--font-display); font-size:.85em;
+}
+.clues li.struck{ color:var(--text-faint); text-decoration:line-through; text-decoration-color:#7c5c2a66; }
+
+/* ---------- IV. Карта Мародёров ---------- */
+.map{
+  position:relative; height:clamp(300px,44vh,420px); border-radius:2px; overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 50% 50%, #c2ab82 0%, #a8906a 55%, #7d6749 100%);
+  box-shadow:inset 0 0 0 1px #7c5c2a66, inset 0 0 60px #00000090;
+  cursor:crosshair; touch-action:none;
+}
+.map__paper{ position:absolute; inset:0; opacity:.32; mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='p'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.02 .05' numOctaves='4'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23p)' opacity='.55'/%3E%3C/svg%3E"); }
+.map__ink{ position:absolute; inset:0; color:#3b2a17; opacity:.9; }
+.map__ink svg{ width:100%; height:100%; }
+.map__names{ position:absolute; inset:0; }
+.mark{
+  position:absolute; transform:translate(-50%,-50%);
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  border:0; background:none; padding:4px 6px; cursor:pointer;
+  font-family:var(--font-hand); font-size:clamp(1rem,1.9vw,1.28rem); color:#241a10;
+  white-space:nowrap; line-height:1;
+  text-shadow:0 1px 0 #ffffff22;
+}
+.mark__feet{ font-size:.7em; letter-spacing:.1em; opacity:.8; }
+.mark:hover{ color:#0d0906; }
+.mark--found{ color:var(--blood); }
+.mark--wrong{ opacity:.4; text-decoration:line-through; }
+.map__veil{ position:absolute; inset:0; background:#0a0806; pointer-events:none; transition:opacity .4s var(--ease); }
+.map__legend{ display:flex; justify-content:space-between; gap:14px; flex-wrap:wrap; font-size:.8rem; color:var(--text-faint); font-style:italic; }
+.map__oath{ font-family:var(--font-hand); font-size:1.3rem; color:var(--brass-hi); font-style:normal; }
+
+/* ---------- V. Анаграмма ---------- */
+.anagram{ display:flex; flex-direction:column; gap:clamp(14px,2.4vw,22px); align-items:center; }
+.source{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; max-width:640px; }
+.slots{ display:flex; flex-wrap:wrap; gap:6px; justify-content:center; align-items:center; }
+.slots__gap{ width:14px; }
+.tile{
+  width:clamp(30px,4.4vw,42px); height:clamp(38px,5.6vw,52px);
+  display:grid; place-items:center; cursor:pointer;
+  border:1px solid #7c5c2a55; border-radius:2px;
+  font-family:var(--font-display); font-size:clamp(1.05rem,2.2vw,1.4rem);
+  color:var(--parchment);
+  background:linear-gradient(180deg,#241a12,#150e09);
+  box-shadow:0 1px 0 #f0d68a12 inset, 0 4px 10px -8px #000;
+  transition:transform .18s var(--ease), color .2s var(--ease), border-color .2s var(--ease), opacity .2s var(--ease);
+}
+.tile:hover:not([disabled]){ transform:translateY(-3px); border-color:#a8802f; color:var(--brass-hi); }
+.tile--used{ opacity:.18; pointer-events:none; }
+.tile--slot{ cursor:default; border-style:dashed; border-color:#7c5c2a33; background:#0000004d; color:var(--text-faint); }
+.tile--slot.filled{ cursor:pointer; border-style:solid; border-color:#7c5c2a66; background:linear-gradient(180deg,#2b1e12,#170f0a); color:var(--parchment); }
+.tile--fixed{ border-color:transparent; background:none; box-shadow:none; color:var(--brass-lo); width:auto; padding:0 2px; }
+.anagram.solved .tile--slot.filled{ border-color:#8e2b1c; color:#f2d3c4; background:linear-gradient(180deg,#3a1410,#1c0a08);
+  box-shadow:0 0 22px -6px #d4622a; animation:emberpop .5s var(--ease) both; }
+@keyframes emberpop{ 0%{ transform:translateY(0) } 40%{ transform:translateY(-9px) } 100%{ transform:none } }
+
+/* ---------- VI. Крестражи ---------- */
+.pairs{ display:grid; gap:clamp(10px,2vw,18px); grid-template-columns:1fr 1fr; align-items:start; }
+.pairs__col{ display:grid; gap:8px; align-content:start; }
+.pairs__head{ margin:0 0 2px; font-size:.7rem; letter-spacing:.24em; text-transform:uppercase; color:var(--text-faint); }
+.chip{
+  text-align:left; cursor:pointer; padding:.72em .9em; border-radius:2px;
+  border:1px solid #7c5c2a33; color:var(--text);
+  background:linear-gradient(180deg,#181009,#100b07);
+  font-family:var(--font-body); font-size:.94rem; line-height:1.28;
+  transition:border-color .2s var(--ease), transform .12s var(--ease), color .2s var(--ease), opacity .3s var(--ease);
+}
+.chip small{ display:block; font-size:.74rem; color:var(--text-faint); letter-spacing:.04em; margin-top:.15em; }
+.chip:hover:not([disabled]){ border-color:#a8802f; transform:translateX(2px); }
+.chip[aria-pressed="true"]{ border-color:var(--brass-hi); color:var(--brass-hi); box-shadow:0 0 20px -8px #f0d68a; }
+.chip--linked{ opacity:.32; pointer-events:none; border-color:#2f6b5e55; }
+.chip--linked::after{ content:" ✓"; color:#5fae95; }
+.chip.wrong{ animation:shake .4s var(--ease); border-color:#8e2b1c; }
+
+/* ---------- VII. Зеркало Еиналеж ---------- */
+.mirror{
+  position:relative; padding:clamp(22px,4vw,44px) clamp(18px,4vw,40px); border-radius:2px; text-align:center;
+  background:radial-gradient(80% 70% at 50% 30%, #1d2530 0%, #0c0f14 70%);
+  box-shadow:inset 0 0 0 2px #6a5a3a55, inset 0 0 80px #000;
+  overflow:hidden;
+}
+.mirror::before{
+  content:""; position:absolute; inset:0;
+  background:linear-gradient(112deg,transparent 34%,#cfe4ff14 46%,transparent 58%);
+  animation:glide 9s linear infinite;
+}
+@keyframes glide{ from{ transform:translateX(-40%) } to{ transform:translateX(40%) } }
+.mirror__inscription{
+  font-family:var(--font-display); font-size:clamp(.7rem,1.5vw,.95rem); letter-spacing:.22em;
+  color:#9fb4c9; transform:scaleX(-1); display:inline-block; margin:0 0 1.4em;
+}
+.rank{ position:relative; font-family:var(--font-display); font-size:clamp(2rem,6vw,3.4rem); margin:0; color:var(--parchment); line-height:1.05; }
+.rank + .lede{ margin-inline:auto; text-align:center; }
+.scores{ display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:2px; margin-top:clamp(18px,3vw,28px); position:relative; }
+.scores div{ padding:14px 10px; background:#00000059; box-shadow:inset 0 0 0 1px #7c5c2a26; }
+.scores b{ display:block; font-family:var(--font-display); font-size:1.7rem; color:var(--brass-hi); font-weight:400; font-variant-numeric:tabular-nums; }
+.scores span{ font-size:.68rem; letter-spacing:.2em; text-transform:uppercase; color:var(--text-faint); }
+.ledger{ margin:0; padding:0; list-style:none; display:grid; gap:6px; }
+.ledger li{ display:flex; gap:12px; align-items:baseline; font-size:.92rem; color:var(--text-dim); }
+.ledger b{ margin-left:auto; color:var(--brass-hi); font-family:var(--font-display); font-weight:400; font-variant-numeric:tabular-nums; }
+.ledger span{ flex:1; border-bottom:1px dotted #7c5c2a3d; }
+
+/* ---------- Распределяющая шляпа ---------- */
+.sorting{ display:grid; gap:14px; }
+.houses{ display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr)); gap:10px; }
+.house{
+  cursor:pointer; padding:1em .9em; border-radius:2px; text-align:center;
+  border:1px solid #7c5c2a33; background:linear-gradient(180deg,#181009,#100b07);
+  color:var(--text); font-family:var(--font-body);
+  transition:border-color .25s var(--ease), transform .15s var(--ease), box-shadow .25s var(--ease);
+}
+.house:hover{ transform:translateY(-3px); border-color:var(--hc,#a8802f); box-shadow:0 0 26px -12px var(--hc,#a8802f); }
+.house b{ display:block; font-family:var(--font-display); font-size:1.1rem; color:var(--hc,var(--brass-hi)); font-weight:400; margin-bottom:.2em; }
+.house small{ font-size:.78rem; color:var(--text-faint); font-style:italic; }
+
+/* ============================================================
+   АДАПТИВНОСТЬ И ДОСТУПНОСТЬ
+   ============================================================ */
+@media (max-width:760px){
+  body{ padding-bottom:120px; }
+  .box{ grid-template-columns:1fr; }
+  .rail{ flex-direction:row; justify-content:center; flex-wrap:wrap; }
+  .rail__line{ display:none; }
+  .pairs{ grid-template-columns:1fr; }
+  .hud{ flex-wrap:wrap; justify-content:center; row-gap:8px; }
+  .hud__house{ max-width:38vw; }
+}
+@media (max-width:420px){
+  .hud__group--mid{ order:3; width:100%; justify-content:center; }
+}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation-duration:.001ms!important; animation-iteration-count:1!important; transition-duration:.001ms!important; }
+  .stage.turning::after{ display:none; }
+}
+
+@media print{
+  .hud,.rail,#ambient,#fx,#lumos,#vignette,.spellbar{ display:none!important; }
+  body{ background:#fff; color:#000; }
+}
+
+</style>
+
+<canvas id="ambient" aria-hidden="true"></canvas>
+<div id="lumos" aria-hidden="true"></div>
+<div id="vignette" aria-hidden="true"></div>
+
+<svg class="svg-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="orn-corner" viewBox="0 0 100 100">
+      <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <path d="M4 4h34M4 4v34"/>
+        <path d="M4 26C18 26 26 18 26 4"/>
+        <path d="M26 12c9 0 14 5 14 12s-6 12-12 9"/>
+        <path d="M12 26c0 9 5 14 12 14"/>
+        <path d="M44 4c0 6 3 9 8 9M4 44c6 0 9 3 9 8"/>
+      </g>
+      <circle cx="30" cy="30" r="3.2" fill="currentColor"/>
+      <circle cx="56" cy="4.5" r="2" fill="currentColor"/>
+      <circle cx="4.5" cy="56" r="2" fill="currentColor"/>
+    </symbol>
+    <symbol id="sig-seal" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"/>
+    </symbol>
+    <symbol id="ico-sound" viewBox="0 0 24 24">
+      <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
+      <path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="ico-rune" viewBox="0 0 24 24">
+      <path d="M12 2v20M12 8l6-5M12 8L6 3M12 16l6 5M12 16l-6 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="box" id="box">
+  <div class="box__plate" aria-hidden="true">
+    <svg class="orn orn--tl"><use href="#orn-corner"/></svg>
+    <svg class="orn orn--tr"><use href="#orn-corner"/></svg>
+    <svg class="orn orn--bl"><use href="#orn-corner"/></svg>
+    <svg class="orn orn--br"><use href="#orn-corner"/></svg>
+  </div>
+
+  <nav class="rail" id="rail" aria-label="Ход испытания"></nav>
+
+  <section class="stage" id="stage" aria-live="polite"></section>
+</main>
+
+<footer class="hud" id="hud">
+  <div class="hud__group">
+    <span class="hud__sigil" id="hudSigil" aria-hidden="true"></span>
+    <span class="hud__house" id="hudHouse">Факультет не определён</span>
+  </div>
+  <div class="hud__group hud__group--mid">
+    <span class="hud__stat" title="Заработано баллов"><b id="hudScore">0</b><i>баллов</i></span>
+    <span class="hud__sep" aria-hidden="true"></span>
+    <span class="hud__stat" title="Время в шкатулке"><b id="hudTime">00:00</b><i>в шкатулке</i></span>
+  </div>
+  <div class="hud__group">
+    <button class="hud__btn" id="btnSound" aria-pressed="true" title="Звук механизмов">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-sound"/></svg><span class="sr">Звук</span>
+    </button>
+    <button class="hud__btn" id="btnSpell" title="Произнести заклинание (клавиша ~)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-rune"/></svg><span class="sr">Заклинание</span>
+    </button>
+    <button class="hud__btn hud__btn--word" id="btnReset" title="Обливиэйт: стереть прогресс">Обливиэйт</button>
+  </div>
+</footer>
+
+<div class="spellbar" id="spellbar" hidden>
+  <label class="spellbar__label" for="spellInput">Произнесите заклинание</label>
+  <input id="spellInput" class="spellbar__input" type="text" autocomplete="off" spellcheck="false" placeholder="Люмос…">
+  <p class="spellbar__hint">Шкатулка отзывается на семь слов. Люмос и Нокс — самые безобидные из них.</p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<script>
+/* ============================================================
+   ДАННЫЕ КВЕСТА
+   Всё содержание испытаний вынесено сюда: тексты, ответы,
+   разборы и стоимость каждой ошибки.
+   ============================================================ */
+window.QUEST = (function () {
+  'use strict';
+
+  const HOUSES = {
+    g: { name: 'Гриффиндор', color: '#a3301d', motto: 'Отвага, дерзость и полное отсутствие терпения.' },
+    s: { name: 'Слизерин',   color: '#1e7a56', motto: 'Цель, средство и умение не перепутать одно с другим.' },
+    r: { name: 'Когтевран',  color: '#3a68b8', motto: 'Ум без любопытства — просто хорошая память.' },
+    h: { name: 'Пуффендуй',  color: '#d9a520', motto: 'Терпение, честность и способность дойти до конца.' }
+  };
+
+  /* --- Распределяющая шляпа: 4 вопроса, по одному голосу за факультет --- */
+  const SORTING = [
+    {
+      q: 'Перед вами четыре двери. Какую вы толкнёте первой?',
+      a: [
+        { t: 'Ту, из-за которой доносится рычание', h: 'g' },
+        { t: 'Ту, что заперта надёжнее прочих', h: 's' },
+        { t: 'Ту, на которой больше всего надписей', h: 'r' },
+        { t: 'Ту, у которой уже ждут остальные', h: 'h' }
+      ]
+    },
+    {
+      q: 'На столе перед испытанием — четыре предмета. Что вы возьмёте?',
+      a: [
+        { t: 'Клинок', h: 'g' },
+        { t: 'Ключ, снятый с чужого пояса', h: 's' },
+        { t: 'Чертёж механизма', h: 'r' },
+        { t: 'Фонарь — такой, чтобы света хватило на двоих', h: 'h' }
+      ]
+    },
+    {
+      q: 'Ваша ошибка стоила команде победы. Первый шаг?',
+      a: [
+        { t: 'Признать вслух и потребовать переигровки', h: 'g' },
+        { t: 'Выяснить, кто ещё знал и промолчал', h: 's' },
+        { t: 'Разобрать всё по ходам и найти причину', h: 'r' },
+        { t: 'Извиниться перед каждым отдельно', h: 'h' }
+      ]
+    },
+    {
+      q: 'Худший исход сегодняшней ночи — это…',
+      a: [
+        { t: 'Испугаться и не войти', h: 'g' },
+        { t: 'Выйти отсюда ни с чем', h: 's' },
+        { t: 'Так и не понять, как это было устроено', h: 'r' },
+        { t: 'Пройти всё в одиночку', h: 'h' }
+      ]
+    }
+  ];
+
+  /* --- I. Замок Гринготтса --- */
+  const LOCK = {
+    code: [7, 1, 3],
+    riddle: 'В один и тот же летний день одна и та же рука отперла два хранилища банка. ' +
+            'Из первого мальчик забрал наследство, о котором не знал одиннадцать лет. ' +
+            'Из второго вынесли только маленький свёрток в грубой бумаге — и уже к вечеру Хогвартс-экспресс увозил его хозяина на север.',
+    ask: 'Наберите номер второго хранилища.',
+    hint: 'Хранилище опустело за считаные часы до того, как в него влезли. «Ежедневный пророк» назвал это «дерзким взломом, при котором ничего не пропало».',
+    solved: 'Замок расходится тремя лепестками. За дверцей — пустой бархатный лоток и вмятина размером с грецкий орех.',
+    award: 100, hintCost: 20, missCost: 15
+  };
+
+  /* --- II. Экзамен ЖАБА --- */
+  const QUIZ = {
+    perQuestion: 30, speedBonus: 15, seconds: 25,
+    items: [
+      {
+        q: 'Кто занимал кресло директора Хогвартса, когда Тайную комнату открыли впервые?',
+        a: ['Финеас Найджелус Блэк', 'Армандо Диппет', 'Диллис Дервент', 'Эверард'],
+        c: 1,
+        why: '1943 год. Диппет поверил в виновность Хагрида — и был единственным, кому Реддл предъявил «доказательства». Дамблдор преподавал тогда трансфигурацию и не поверил ни единому слову.'
+      },
+      {
+        q: 'Сколько способов применения драконьей крови открыл Альбус Дамблдор?',
+        a: ['Восемь', 'Двенадцать', 'Тринадцать', 'Семь'],
+        c: 1,
+        why: 'Двенадцать — строка с карточки от шоколадной лягушки, первой, что попалась Гарри в Хогвартс-экспрессе.'
+      },
+      {
+        q: 'Какой облик принимает патронус Северуса Снегга?',
+        a: ['Ворон', 'Серебряная лань', 'Чёрный пёс', 'Сокол'],
+        c: 1,
+        why: 'Тот же, что у Лили Эванс. «После стольких лет?» — «Всегда».'
+      },
+      {
+        q: 'Кто написал «Историю магии» — учебник первого курса?',
+        a: ['Батильда Бэгшот', 'Адальберт Уоффлинг', 'Кассандра Ваблатски', 'Миранда Гуссокл'],
+        c: 0,
+        why: 'Батильда Бэгшот — соседка Дамблдоров по Годриковой Впадине и двоюродная бабка Геллерта Грин-де-Вальда.'
+      },
+      {
+        q: 'Как звали жену Николаса Фламеля?',
+        a: ['Пернелла', 'Гризельда', 'Артемизия', 'Мюриэль'],
+        c: 0,
+        why: 'Пернелле было 658 лет, самому Фламелю — 665. После уничтожения камня им хватило запаса эликсира, чтобы уладить дела.'
+      },
+      {
+        q: 'Что, по собственным словам, Дамблдор увидел в зеркале Еиналеж?',
+        a: ['Свою сестру Ариану', 'Себя с парой толстых шерстяных носков', 'Победу над Грин-де-Вальдом', 'Пустую раму'],
+        c: 1,
+        why: 'Носки. Гарри поверил сразу — и только годы спустя понял, что это была ложь.'
+      },
+      {
+        q: 'Какое из заклинаний НЕ принадлежит перу Принца-полукровки?',
+        a: ['Левикорпус', 'Муффлиато', 'Сектумсемпра', 'Протего Тоталум'],
+        c: 3,
+        why: 'Первые три — пометки на полях «Расширенного курса зельеварения». Протего Тоталум Гермиона накладывала на палатку в год скитаний.'
+      },
+      {
+        q: 'Как звали домовую эльфийку, служившую семье Крауч?',
+        a: ['Хоки', 'Винки', 'Кикимер', 'Лапушка'],
+        c: 1,
+        why: 'Винки держала под Империусом собственного хозяина — точнее, держала его палочку и его сына, спрятанного под мантией-невидимкой.'
+      },
+      {
+        q: 'Как переводится девиз Хогвартса «Draco dormiens nunquam titillandus»?',
+        a: ['Знание — щит и меч', 'Не буди то, что спит под школой', 'Никогда не щекочи спящего дракона', 'Дракон стережёт достойных'],
+        c: 2,
+        why: 'Единственный школьный девиз в мировой литературе, который является инструкцией по технике безопасности.'
+      },
+      {
+        q: 'Какая палочка была в руке Гарри во время последней дуэли с Волан-де-Мортом?',
+        a: ['Остролист и перо феникса', 'Бузинная палочка', 'Боярышник с волосом единорога', 'Тис и перо феникса'],
+        c: 2,
+        why: 'Палочка Драко Малфоя, отнятая в поместье. Бузинная в тот момент подчинялась Гарри — но лежала в чужой руке.'
+      }
+    ]
+  };
+
+  /* --- III. Семь склянок --- */
+  /* Единственное решение проверено перебором: Я · В · Вперёд · Я · Я · В · Назад */
+  const BOTTLES = {
+    verse: [
+      'Семь склянок, и лишь одна отворит проход вперёд.',
+      'Две — вино из крапивы: безвредно, но бесполезно.',
+      'Три — яд, и второго глотка вам уже не сделать.',
+      'Одна вернёт вас туда, откуда вы пришли.'
+    ],
+    clues: [
+      'Слева от каждой склянки с вином непосредственно стоит яд.',
+      'Крайние склянки различны по содержимому.',
+      'Ни одна из крайних не ведёт вперёд.',
+      'Ни в самой большой, ни в самой маленькой склянке нет яда.',
+      'Вторая слева и вторая справа скрывают одно и то же.'
+    ],
+    /* size — визуальный масштаб, kind — истинное содержимое */
+    shelf: [
+      { size: 0.86, shape: 'flask',  kind: 'poison',  label: 'первая'   },
+      { size: 1.15, shape: 'carboy', kind: 'wine',    label: 'вторая'   },
+      { size: 0.52, shape: 'vial',   kind: 'forward', label: 'третья'   },
+      { size: 0.92, shape: 'flask',  kind: 'poison',  label: 'четвёртая'},
+      { size: 0.78, shape: 'phial',  kind: 'poison',  label: 'пятая'    },
+      { size: 0.95, shape: 'carboy', kind: 'wine',    label: 'шестая'   },
+      { size: 0.88, shape: 'round',  kind: 'back',    label: 'седьмая'  }
+    ],
+    hint: 'Начните с четвёртой подсказки: она называет содержимое сразу двух склянок — самой большой и самой маленькой. Дальше первая подсказка достроит всё остальное.',
+    award: 150, hintCost: 25, missCost: 40
+  };
+
+  /* --- IV. Карта Мародёров --- */
+  const MAP = {
+    task: 'Найдите на карте того, кто двенадцать лет числился мёртвым — и все эти годы спал в спальне мальчиков Гриффиндора.',
+    hint: 'Ищите не там, где преподают, и не там, где наказывают. Ищите в башне — на четвёртом этаже жилых комнат.',
+    answer: 'peter',
+    marks: [
+      { id:'peter',  name:'Питер Петтигрю',      x:74, y:26 },
+      { id:'barty',  name:'Бартемиус Крауч-мл.', x:23, y:33 },
+      { id:'remus',  name:'Ремус Дж. Люпин',     x:41, y:19 },
+      { id:'snape',  name:'Северус Снегг',       x:31, y:79 },
+      { id:'filch',  name:'Аргус Филч',          x:57, y:63 },
+      { id:'sybill', name:'Сивилла Трелони',     x:86, y:12 },
+      { id:'minerva',name:'Минерва Макгонагалл', x:63, y:44 },
+      { id:'draco',  name:'Драко Малфой',        x:15, y:58 },
+      { id:'neville',name:'Невилл Долгопупс',    x:79, y:52 },
+      { id:'irma',   name:'Ирма Пинс',           x:46, y:47 }
+    ],
+    misses: {
+      barty:  'Тоже считался мёртвым — и тоже дольше десяти лет. Но спал он не в спальне мальчиков, а под отцовской мантией-невидимкой в собственном доме.',
+      remus:  'Люпин исчезал из школы регулярно, но в списках погибших не значился ни дня.',
+      snape:  'Снегг за эти годы не покидал подземелий и был возмутительно жив.',
+      draco:  'Малфой моложе искомого лет на тридцать.',
+      other:  'Не тот. Ищите того, о ком «Пророк» писал как о герое, погибшем от рук Сириуса Блэка.'
+    },
+    solved: 'Точка с подписью «Питер Петтигрю» ползёт по спальне мальчиков и замирает у кровати Рона Уизли. Двенадцать лет, три с половиной пальца и одна ручная крыса.',
+    award: 120, hintCost: 20, missCost: 20
+  };
+
+  /* --- V. Анаграмма --- */
+  const ANAGRAM = {
+    source: 'ТОМНАРВОЛОРЕДДЛ',
+    sourceView: 'ТОМ НАРВОЛО РЕДДЛ',
+    target: 'ЛОРДВОЛАНДЕМОРТ',
+    layout: ['Л','О','Р','Д',' ','В','О','Л','А','Н','-','Д','Е','-','М','О','Р','Т'],
+    intro: 'Имя, вырезанное на крышке, начинает шевелиться. Пятнадцать букв поднимаются в воздух и ждут нового порядка.',
+    ask: 'Соберите из этих букв имя, которое он придумал себе сам.',
+    hint: 'Три слова. Первое — титул из четырёх букв. Дальше — то, что он произносил через два дефиса.',
+    solved: 'Буквы вспыхивают и оседают пеплом. «Я давно перестал быть Томом Реддлом. Это имя мне больше не принадлежит».',
+    award: 130, hintCost: 25
+  };
+
+  /* --- VI. Крестражи --- */
+  const HORCRUXES = {
+    task: 'Соедините каждый крестраж с тем, чья рука его уничтожила, и тем, чем это было сделано.',
+    perPair: 25, missCost: 10,
+    items: [
+      { id:'diary',   t:'Дневник Тома Реддла',        s:'Тайная комната, 1993' },
+      { id:'ring',    t:'Кольцо Марволо Мракса',      s:'Лачуга Мраксов, 1996' },
+      { id:'locket',  t:'Медальон Салазара Слизерина',s:'Лес Дин, 1997' },
+      { id:'cup',     t:'Чаша Пенелопы Пуффендуй',    s:'Тайная комната, 1998' },
+      { id:'diadem',  t:'Диадема Кандиды Когтевран',  s:'Выручай-комната, 1998' },
+      { id:'nagini',  t:'Нагайна',                    s:'Двор Хогвартса, 1998' },
+      { id:'harry',   t:'Гарри Поттер',               s:'Запретный лес, 1998' }
+    ],
+    hands: [
+      { id:'diary',   t:'Гарри Поттер',        s:'клык василиска' },
+      { id:'ring',    t:'Альбус Дамблдор',     s:'меч Гриффиндора' },
+      { id:'locket',  t:'Рон Уизли',           s:'меч Гриффиндора' },
+      { id:'cup',     t:'Гермиона Грейнджер',  s:'клык василиска' },
+      { id:'diadem',  t:'Винсент Крэбб',       s:'Адское пламя' },
+      { id:'nagini',  t:'Невилл Долгопупс',    s:'меч Гриффиндора' },
+      { id:'harry',   t:'Волан-де-Морт',       s:'Авада Кедавра' }
+    ],
+    notes: {
+      diary:  'Клык, вырванный из пасти убитого василиска, — первое оружие, которым Гарри уничтожил крестраж, не зная, что это крестраж.',
+      ring:   'Дамблдор надел кольцо, поддавшись видению. Меч добил камень, проклятие добило Дамблдора — ему оставался год.',
+      locket: 'Рон вернулся, вытащил Гарри из-подо льда и ударил по медальону, пока тот показывал ему худшее из возможного.',
+      cup:    'Гермиона спустилась в Тайную комнату по слову, которое воспроизвела с одного раза, — и ударила чашей о пол.',
+      diadem: 'Крэбб поджёг Выручай-комнату Адским пламенем, не сумев его остановить, и погиб вместе с диадемой.',
+      nagini: 'Меч выпал из Распределяющей шляпы — второй раз в истории и в самый нужный момент.',
+      harry:  'Волан-де-Морт уничтожил собственный крестраж своей рукой, второй раз убив мальчика, который не умер.'
+    },
+    hint: 'Меч Гриффиндора сработал трижды, клык василиска — дважды. Оставшиеся два случая обошлись без стали.'
+  };
+
+  /* --- Финал --- */
+  const RANKS = [
+    { min: 1000, t: 'Повелитель Смерти', d: 'Три Дара, ни одной лишней смерти и полное понимание того, зачем всё это было.' },
+    { min: 850,  t: 'Невыразимец',       d: 'Отдел тайн подписал бы с вами контракт, не задавая вопросов.' },
+    { min: 680,  t: 'Мракоборец',        d: 'Кингсли взял бы вас в отряд без испытательного срока.' },
+    { min: 500,  t: 'Староста школы',    d: 'Значок, уважение и раздражающая привычка быть правым.' },
+    { min: 320,  t: 'Прилежный студент', d: '«Выше ожидаемого». До «превосходно» — одна бессонная ночь в библиотеке.' },
+    { min: 0,    t: 'Первокурсник у котла', d: 'Шляпа думала долго. Возможно, слишком долго.' }
+  ];
+
+  const SPELLS = {
+    'люмос':            'lumos',
+    'lumos':            'lumos',
+    'нокс':             'nox',
+    'nox':              'nox',
+    'алохомора':        'alohomora',
+    'alohomora':        'alohomora',
+    'акцио':            'accio',
+    'accio':            'accio',
+    'экспекто патронум':'patronus',
+    'expecto patronum': 'patronus',
+    'сектумсемпра':     'sectumsempra',
+    'sectumsempra':     'sectumsempra',
+    'обливиэйт':        'obliviate',
+    'obliviate':        'obliviate'
+  };
+
+  const CHAMBERS = [
+    { id:'gate',      num:'—',   name:'Порог' },
+    { id:'lock',      num:'I',   name:'Замок Гринготтса' },
+    { id:'quiz',      num:'II',  name:'Экзамен ЖАБА' },
+    { id:'bottles',   num:'III', name:'Семь склянок' },
+    { id:'map',       num:'IV',  name:'Карта Мародёров' },
+    { id:'anagram',   num:'V',   name:'Имя на крышке' },
+    { id:'horcruxes', num:'VI',  name:'Семь осколков' },
+    { id:'mirror',    num:'VII', name:'Зеркало Еиналеж' }
+  ];
+
+  return { HOUSES, SORTING, LOCK, QUIZ, BOTTLES, MAP, ANAGRAM, HORCRUXES, RANKS, SPELLS, CHAMBERS };
+})();
+
+</script>
+<script>
+/* ============================================================
+   ЗВУК МЕХАНИЗМОВ
+   Ни одного внешнего файла: все щелчки, удары и переливы
+   синтезируются на месте через WebAudio.
+   ============================================================ */
+window.Sfx = (function () {
+  'use strict';
+
+  let ctx = null, master = null, noiseBuf = null;
+  let enabled = true;
+
+  function boot() {
+    if (ctx) return ctx;
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    ctx = new AC();
+    master = ctx.createGain();
+    master.gain.value = 0.5;
+    master.connect(ctx.destination);
+
+    const len = ctx.sampleRate * 1.2;
+    noiseBuf = ctx.createBuffer(1, len, ctx.sampleRate);
+    const d = noiseBuf.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    return ctx;
+  }
+
+  function ready() {
+    if (!enabled) return null;
+    const c = boot();
+    if (!c) return null;
+    if (c.state === 'suspended') c.resume();
+    return c;
+  }
+
+  /* Одиночный тон с огибающей */
+  function tone(freq, dur, opts) {
+    const c = ready(); if (!c) return;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = (opts && opts.type) || 'triangle';
+    const t = c.currentTime;
+    o.frequency.setValueAtTime(freq, t);
+    if (opts && opts.to) o.frequency.exponentialRampToValueAtTime(opts.to, t + dur);
+    const peak = (opts && opts.gain) || 0.18;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + 0.006);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(master);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+
+  /* Шумовой импульс — дерево, металл, засовы */
+  function burst(dur, freq, q, gain, type) {
+    const c = ready(); if (!c) return;
+    const src = c.createBufferSource(); src.buffer = noiseBuf;
+    const f = c.createBiquadFilter();
+    f.type = type || 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1;
+    const g = c.createGain();
+    const t = c.currentTime;
+    g.gain.setValueAtTime(gain || 0.2, t);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    src.connect(f); f.connect(g); g.connect(master);
+    src.start(t); src.stop(t + dur + 0.02);
+  }
+
+  const api = {
+    /* латунный щелчок диска */
+    click()  { burst(0.05, 2400, 6, 0.16); tone(1180, 0.05, { gain: 0.05, type: 'square' }); },
+    /* мягкое нажатие */
+    tap()    { burst(0.035, 1500, 4, 0.09); },
+    /* глухой удар дерева */
+    thunk()  { burst(0.16, 190, 1.2, 0.32, 'lowpass'); tone(84, 0.22, { gain: 0.12, to: 52 }); },
+    /* засов уходит в паз */
+    unlock() { burst(0.09, 900, 3, 0.22); setTimeout(() => burst(0.22, 260, 1.5, 0.3, 'lowpass'), 90); },
+    /* верный ответ */
+    right()  { tone(659.25, 0.5, { gain: 0.12, type: 'sine' }); setTimeout(() => tone(987.77, 0.7, { gain: 0.1, type: 'sine' }), 90); },
+    /* ошибка */
+    wrong()  { tone(146.83, 0.42, { gain: 0.14, to: 92, type: 'sawtooth' }); burst(0.2, 320, 1, 0.14, 'lowpass'); },
+    /* испытание пройдено */
+    seal()   { [523.25, 783.99, 1046.5].forEach((f, i) => setTimeout(() => tone(f, 0.9, { gain: 0.1, type: 'sine' }), i * 130)); },
+    /* заклинание */
+    spell()  { tone(300, 0.7, { gain: 0.1, to: 1900, type: 'sine' }); burst(0.6, 3000, 0.7, 0.07, 'highpass'); },
+    /* тиканье времени на исходе */
+    tick()   { tone(2000, 0.03, { gain: 0.045, type: 'square' }); },
+    /* открытие шкатулки */
+    open()   { tone(110, 1.4, { gain: 0.16, to: 330, type: 'sawtooth' }); setTimeout(api.unlock, 700); },
+
+    set(on) {
+      enabled = !!on;
+      if (enabled) ready();
+      try { localStorage.setItem('mrx.sound', enabled ? '1' : '0'); } catch (e) {}
+      return enabled;
+    },
+    get() { return enabled; },
+    init() {
+      try { const s = localStorage.getItem('mrx.sound'); if (s !== null) enabled = s === '1'; } catch (e) {}
+      return enabled;
+    }
+  };
+  return api;
+})();
+
+</script>
+<script>
+/* ============================================================
+   АТМОСФЕРА
+   Пепел в воздухе, свет палочки за курсором, вспышки заклинаний.
+   ============================================================ */
+window.Fx = (function () {
+  'use strict';
+
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- фоновая взвесь: пепел и пылинки ---------- */
+  const amb = document.getElementById('ambient');
+  const actx = amb ? amb.getContext('2d') : null;
+  let motes = [], W = 0, H = 0, dpr = 1;
+
+  function sizeCanvas(cv, cx) {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * dpr; cv.height = H * dpr;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    cx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+
+  function seed() {
+    const count = Math.round(Math.min(90, (W * H) / 16000));
+    motes = [];
+    for (let i = 0; i < count; i++) {
+      motes.push({
+        x: Math.random() * W,
+        y: Math.random() * H,
+        r: Math.random() * 1.6 + 0.4,
+        vy: -(Math.random() * 0.22 + 0.05),
+        vx: (Math.random() - 0.5) * 0.16,
+        a: Math.random() * 0.5 + 0.12,
+        ph: Math.random() * Math.PI * 2,
+        ember: Math.random() < 0.16
+      });
+    }
+  }
+
+  function drawAmbient(t) {
+    if (!actx) return;
+    actx.clearRect(0, 0, W, H);
+    for (const m of motes) {
+      m.x += m.vx + Math.sin(t / 2600 + m.ph) * 0.14;
+      m.y += m.vy;
+      if (m.y < -8) { m.y = H + 8; m.x = Math.random() * W; }
+      if (m.x < -8) m.x = W + 8; else if (m.x > W + 8) m.x = -8;
+      const glow = m.a * (0.6 + 0.4 * Math.sin(t / 900 + m.ph));
+      actx.beginPath();
+      actx.arc(m.x, m.y, m.r, 0, Math.PI * 2);
+      actx.fillStyle = m.ember
+        ? 'rgba(212,98,42,' + (glow * 0.9).toFixed(3) + ')'
+        : 'rgba(240,214,138,' + (glow * 0.55).toFixed(3) + ')';
+      actx.fill();
+    }
+  }
+
+  /* ---------- слой заклинаний ---------- */
+  const fxc = document.getElementById('fx');
+  const fctx = fxc ? fxc.getContext('2d') : null;
+  let sparks = [], patronusUntil = 0, pStage = null;
+
+  function drawSparks(t, dt) {
+    if (!fctx) return;
+    fctx.clearRect(0, 0, W, H);
+
+    if (t < patronusUntil && pStage) {
+      pStage.a += dt * 0.0012;
+      for (let i = 0; i < 3; i++) {
+        const ang = pStage.a * 2 + i * 2.1;
+        sparks.push({
+          x: W / 2 + Math.cos(ang) * (120 + Math.sin(pStage.a * 3) * 70),
+          y: H / 2 + Math.sin(ang * 1.3) * 90 - pStage.a * 24,
+          vx: (Math.random() - 0.5) * 0.6, vy: -(Math.random() * 0.5 + 0.1),
+          life: 1, r: Math.random() * 2.4 + 0.8, c: '190,225,255'
+        });
+      }
+    }
+
+    for (let i = sparks.length - 1; i >= 0; i--) {
+      const s = sparks[i];
+      s.x += s.vx * dt * 0.06; s.y += s.vy * dt * 0.06;
+      s.life -= dt * 0.0009;
+      if (s.life <= 0) { sparks.splice(i, 1); continue; }
+      fctx.beginPath();
+      fctx.arc(s.x, s.y, s.r * s.life, 0, Math.PI * 2);
+      fctx.fillStyle = 'rgba(' + s.c + ',' + (s.life * 0.8).toFixed(3) + ')';
+      fctx.fill();
+    }
+  }
+
+  let last = 0;
+  function loop(t) {
+    const dt = Math.min(50, t - last); last = t;
+    drawAmbient(t);
+    drawSparks(t, dt);
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- свет палочки ---------- */
+  const glow = document.getElementById('lumos');
+  function bindPointer() {
+    if (!glow || !window.matchMedia('(pointer:fine)').matches) return;
+    document.body.classList.add('has-pointer');
+    let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+    window.addEventListener('pointermove', function (e) {
+      tx = e.clientX; ty = e.clientY;
+      if (!raf) raf = requestAnimationFrame(function follow() {
+        cx += (tx - cx) * 0.18; cy += (ty - cy) * 0.18;
+        glow.style.transform = 'translate3d(' + cx.toFixed(1) + 'px,' + cy.toFixed(1) + 'px,0)';
+        raf = (Math.abs(tx - cx) > 0.5 || Math.abs(ty - cy) > 0.5) ? requestAnimationFrame(follow) : 0;
+      });
+    }, { passive: true });
+  }
+
+  /* ---------- публичные эффекты ---------- */
+  const api = {
+    burst(x, y, color, n) {
+      if (reduced) return;
+      const c = color || '240,214,138';
+      for (let i = 0; i < (n || 40); i++) {
+        const a = Math.random() * Math.PI * 2, sp = Math.random() * 2.4 + 0.4;
+        sparks.push({ x: x, y: y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 0.4,
+                      life: 1, r: Math.random() * 2.6 + 0.8, c: c });
+      }
+    },
+    burstOn(el, color, n) {
+      if (!el) return;
+      const r = el.getBoundingClientRect();
+      api.burst(r.left + r.width / 2, r.top + r.height / 2, color, n);
+    },
+    patronus(ms) {
+      if (reduced) return;
+      pStage = { a: 0 };
+      patronusUntil = performance.now() + (ms || 4200);
+    },
+    lumos(on) { document.body.classList.toggle('lumos-max', !!on); document.body.classList.remove('nox'); },
+    nox(on)   { document.body.classList.toggle('nox', !!on); document.body.classList.remove('lumos-max'); },
+    shake(el) {
+      if (!el || reduced) return;
+      el.classList.remove('shake');
+      void el.offsetWidth;
+      el.classList.add('shake');
+      setTimeout(() => el.classList.remove('shake'), 460);
+    },
+    reduced: reduced,
+
+    init() {
+      if (!actx || !fctx) return;
+      const resize = () => { sizeCanvas(amb, actx); sizeCanvas(fxc, fctx); seed(); };
+      resize();
+      let rt;
+      window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(resize, 150); });
+      bindPointer();
+      if (!reduced) requestAnimationFrame(loop);
+      else drawAmbient(0);
+    }
+  };
+  return api;
+})();
+
+</script>
+<script>
+/* ============================================================
+   ИСПЫТАНИЯ
+   Каждая камера — функция, которая рисует себя внутри сцены
+   и сообщает приложению о своём исходе.
+   ============================================================ */
+window.Chambers = (function () {
+  'use strict';
+  const Q = window.QUEST;
+
+  /* --- крошечный конструктор разметки --- */
+  function el(tag, attrs, kids) {
+    const n = document.createElement(tag);
+    if (attrs) for (const k in attrs) {
+      const v = attrs[k];
+      if (v === null || v === false || v === undefined) continue;
+      if (k === 'class') n.className = v;
+      else if (k === 'html') n.innerHTML = v;
+      else if (k === 'text') n.textContent = v;
+      else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), v);
+      else if (k === 'dataset') for (const d in v) n.dataset[d] = v[d];
+      else n.setAttribute(k, v === true ? '' : v);
+    }
+    (kids || []).forEach(k => { if (k) n.appendChild(typeof k === 'string' ? document.createTextNode(k) : k); });
+    return n;
+  }
+  function head(num, name, title, lede) {
+    const out = [
+      el('p', { class: 'eyebrow', html: 'Испытание <b>' + num + '</b> · ' + name }),
+      el('h1', { class: 'title', html: title })
+    ];
+    if (lede) out.push(el('p', { class: 'lede', html: lede }));
+    return out;
+  }
+  function shuffle(a) {
+    const r = a.slice();
+    for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]]; }
+    return r;
+  }
+
+  /* ============================================================
+     ПОРОГ — распределение
+     ============================================================ */
+  function gate(host, App) {
+    const votes = { g: 0, s: 0, r: 0, h: 0 };
+    let step = 0;
+
+    const wrap = el('div', { class: 'chamber' });
+    const intro = el('div', { class: 'sorting' });
+    wrap.append(
+      el('p', { class: 'eyebrow', text: 'Механическая шкатулка · семь испытаний' }),
+      el('h1', { class: 'title', html: 'Шкатулка <em>Мракса</em>' }),
+      el('p', { class: 'lede', html: 'Латунный ящик, найденный под половицей в лачуге у Литтл-Хэнглтона. Семь замков, ни одной подписи. ' +
+        'Открывается он только тому, кто знает эту вселенную не по фильмам. <strong>Прежде чем коснуться крышки — представьтесь.</strong>' }),
+      el('hr', { class: 'rule' }),
+      intro
+    );
+
+    function draw() {
+      intro.textContent = '';
+      if (step < Q.SORTING.length) {
+        const item = Q.SORTING[step];
+        intro.append(
+          el('div', { class: 'meter' }, [
+            el('span', { text: 'Шляпа думает' }),
+            el('span', { class: 'meter__track' }, [ el('b', { class: 'meter__fill', style: 'width:' + (step / Q.SORTING.length * 100) + '%' }) ]),
+            el('b', { text: (step + 1) + '/' + Q.SORTING.length })
+          ]),
+          el('p', { class: 'quiz__q', text: item.q }),
+          el('div', { class: 'options' }, item.a.map((o, i) =>
+            el('button', { class: 'option', type: 'button', onclick: () => { votes[o.h]++; step++; window.Sfx.tap(); draw(); } }, [
+              el('span', { class: 'option__key', text: 'АБВГ'[i] }), document.createTextNode(o.t)
+            ])
+          ))
+        );
+        if (step === 0) intro.append(el('p', { class: 'hint', text: 'Четыре вопроса. Шляпа не ошибается — она просто иногда прислушивается.' }));
+      } else {
+        const best = Object.keys(votes).sort((a, b) => votes[b] - votes[a] || Math.random() - .5)[0];
+        const H = Q.HOUSES[best];
+        App.setHouse(best);
+        window.Sfx.seal();
+        intro.append(
+          el('div', { class: 'plaque' }, [
+            el('p', { html: '«Так-так… <em>' + H.name.toUpperCase() + '</em>!»' }),
+            el('p', { class: 'lede', text: H.motto })
+          ]),
+          el('div', { class: 'actions' }, [
+            el('button', { class: 'btn', type: 'button', onclick: () => { window.Sfx.open(); App.complete('gate', 0); } }, ['Коснуться крышки']),
+            el('button', { class: 'btn btn--ghost', type: 'button', onclick: () => { step = 0; votes.g = votes.s = votes.r = votes.h = 0; draw(); } }, ['Переспросить шляпу'])
+          ])
+        );
+      }
+    }
+    draw();
+    host.appendChild(wrap);
+  }
+
+  /* ============================================================
+     I. ЗАМОК ГРИНГОТТСА
+     ============================================================ */
+  function lock(host, App) {
+    const D = Q.LOCK;
+    const cur = [0, 0, 0];
+    const strips = [];
+    let opened = false;
+
+    const lockEl = el('div', { class: 'lock' });
+    const dials = el('div', { class: 'dials' });
+
+    for (let i = 0; i < 3; i++) {
+      const strip = el('div', { class: 'dial__strip' },
+        [0,1,2,3,4,5,6,7,8,9].map(d => el('span', { class: 'dial__digit', text: String(d) })));
+      strips.push(strip);
+      const win = el('div', {
+        class: 'dial__window', tabindex: '0', role: 'spinbutton',
+        'aria-label': 'Разряд ' + (i + 1), 'aria-valuemin': '0', 'aria-valuemax': '9', 'aria-valuenow': '0',
+        onwheel: (e) => { e.preventDefault(); turn(i, e.deltaY > 0 ? 1 : -1); },
+        onkeydown: (e) => {
+          if (e.key === 'ArrowUp')   { e.preventDefault(); turn(i, -1); }
+          if (e.key === 'ArrowDown') { e.preventDefault(); turn(i, 1); }
+          if (/^[0-9]$/.test(e.key)) { set(i, +e.key); }
+        }
+      }, [strip]);
+      dials.appendChild(el('div', { class: 'dial' }, [
+        el('button', { class: 'dial__btn', type: 'button', 'aria-label': 'Больше', onclick: () => turn(i, -1) }, ['▲']),
+        win,
+        el('button', { class: 'dial__btn', type: 'button', 'aria-label': 'Меньше', onclick: () => turn(i, 1) }, ['▼'])
+      ]));
+    }
+
+    function place(i) {
+      const h = strips[i].firstChild.getBoundingClientRect().height || 72;
+      strips[i].style.transform = 'translateY(' + (-cur[i] * h) + 'px)';
+      strips[i].parentNode.setAttribute('aria-valuenow', String(cur[i]));
+    }
+    function set(i, v) { if (opened) return; cur[i] = (v + 10) % 10; place(i); window.Sfx.click(); }
+    function turn(i, d) { set(i, cur[i] + d); }
+
+    const verdict = el('div');
+    const btn = el('button', { class: 'btn', type: 'button', onclick: check }, ['Повернуть засов']);
+
+    function check() {
+      if (opened) return;
+      if (cur.join('') === D.code.join('')) {
+        opened = true;
+        lockEl.classList.add('opened');
+        window.Sfx.unlock();
+        window.Fx.burstOn(dials, '240,214,138', 60);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--ok', html: '<span><b>713.</b> ' + D.solved + '</span>' }));
+        btn.remove();
+        App.finishLater('lock', () => App.complete('lock', D.award));
+      } else {
+        window.Sfx.wrong();
+        window.Fx.shake(lockEl);
+        App.miss('lock', D.missCost);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html: '<span>Засов не поддался. Гоблин за спиной делает пометку в книге. <b>−' + D.missCost + '</b></span>' }));
+      }
+    }
+
+    lockEl.append(dials, el('div', { class: 'lock__aside' }, [
+      el('div', { class: 'plaque plaque--riddle' }, [
+        el('span', { class: 'plaque__mark', text: '❦' }),
+        el('p', { text: D.riddle })
+      ]),
+      el('p', { class: 'hint', text: D.ask })
+    ]));
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(...head('I', 'Замок Гринготтса', 'Три цифры, <em>одно</em> хранилище'), el('hr', { class: 'rule' }), lockEl, verdict,
+      el('div', { class: 'actions' }, [btn, el('div', { class: 'actions__spacer' })]));
+    host.appendChild(wrap);
+    strips.forEach((_, i) => place(i));
+    App.onResize = () => strips.forEach((_, i) => place(i));
+    App.currentHint = () => { App.spendHint('lock', D.hintCost); verdict.textContent = ''; verdict.appendChild(el('div', { class: 'verdict', text: D.hint })); };
+    App.currentSolve = () => { cur[0] = 7; cur[1] = 1; cur[2] = 3; strips.forEach((_, i) => place(i)); check(); };
+  }
+
+  /* ============================================================
+     II. ЭКЗАМЕН ЖАБА
+     ============================================================ */
+  function quiz(host, App) {
+    const D = Q.QUIZ;
+    let idx = 0, points = 0, answered = false, left = D.seconds, timer = null;
+
+    const tally = el('div', { class: 'tally' }, D.items.map(() => el('i')));
+    const bar = el('b', { class: 'timer__fill', style: 'width:100%' });
+    const clock = el('span', { text: D.seconds + ' с' });
+    const timerEl = el('div', { class: 'timer' }, [
+      el('span', { text: 'Перо пишет' }),
+      el('span', { class: 'timer__track' }, [bar]), clock
+    ]);
+    const qEl = el('p', { class: 'quiz__q' });
+    const opts = el('div', { class: 'options' });
+    const why = el('div');
+    const next = el('button', { class: 'btn', type: 'button', onclick: advance }, ['Следующий вопрос']);
+    next.style.visibility = 'hidden';
+
+    function stop() { if (timer) { clearInterval(timer); timer = null; } }
+    App.cleanup = stop;
+
+    function run() {
+      stop(); left = D.seconds; bar.style.width = '100%'; timerEl.classList.remove('timer--urgent');
+      let lastWhole = D.seconds;
+      timer = setInterval(() => {
+        left = Math.max(0, left - 0.1);
+        bar.style.width = (left / D.seconds * 100) + '%';
+        const whole = Math.ceil(left);
+        if (whole !== lastWhole) {
+          lastWhole = whole;
+          clock.textContent = whole + ' с';
+          if (whole <= 5 && whole > 0) window.Sfx.tick();
+        }
+        if (left <= 5) timerEl.classList.add('timer--urgent');
+        if (left <= 0) { stop(); pick(-1); }
+      }, 100);
+    }
+
+    function draw() {
+      answered = false;
+      const it = D.items[idx];
+      qEl.textContent = it.q;
+      why.textContent = '';
+      next.style.visibility = 'hidden';
+      opts.textContent = '';
+      it.a.forEach((t, i) => opts.appendChild(
+        el('button', { class: 'option', type: 'button', onclick: () => pick(i) }, [
+          el('span', { class: 'option__key', text: 'АБВГ'[i] }), document.createTextNode(t)
+        ])
+      ));
+      run();
+    }
+
+    function pick(i) {
+      if (answered) return;
+      answered = true; stop();
+      const it = D.items[idx];
+      const right = i === it.c;
+      const bonus = right ? Math.round(D.speedBonus * (left / D.seconds)) : 0;
+      if (right) { points += D.perQuestion + bonus; window.Sfx.right(); }
+      else { window.Sfx.wrong(); }
+      tally.children[idx].className = right ? 'ok' : 'no';
+
+      Array.prototype.forEach.call(opts.children, (b, j) => {
+        b.disabled = true;
+        if (j === it.c) b.classList.add('option--right');
+        else if (j === i) b.classList.add('option--wrong');
+        else b.classList.add('option--faded');
+      });
+      why.textContent = '';
+      why.appendChild(el('div', { class: 'verdict ' + (right ? 'verdict--ok' : 'verdict--no'), html:
+        '<span>' + (right
+          ? '<b>Верно.</b> ' + (bonus ? '+' + (D.perQuestion + bonus) + ' баллов, из них ' + bonus + ' за скорость. ' : '+' + D.perQuestion + ' баллов. ')
+          : (i === -1 ? '<b>Перо остановилось.</b> ' : '<b>Мимо.</b> ')) + it.why + '</span>' }));
+      next.style.visibility = 'visible';
+      next.textContent = idx === D.items.length - 1 ? 'Закрыть пергамент' : 'Следующий вопрос';
+      App.save();
+    }
+
+    function advance() {
+      idx++;
+      if (idx >= D.items.length) {
+        stop();
+        window.Sfx.seal();
+        App.complete('quiz', points);
+      } else draw();
+    }
+
+    App.currentHint = () => {
+      if (answered) return;
+      App.spendHint('quiz', 10);
+      const it = D.items[idx];
+      const wrongs = it.a.map((_, i) => i).filter(i => i !== it.c);
+      const drop = shuffle(wrongs).slice(0, 2);
+      drop.forEach(i => { opts.children[i].disabled = true; opts.children[i].classList.add('option--faded'); });
+      App.toast('Акцио убрало два неверных варианта. −10');
+    };
+    App.currentSolve = () => { if (!answered) pick(D.items[idx].c); };
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(
+      ...head('II', 'Экзамен ЖАБА', 'Десять вопросов <em>без</em> права на паузу',
+        'На каждый вопрос — 25 секунд. Кто отвечает быстрее, получает больше: перо ценит уверенность.'),
+      el('hr', { class: 'rule' }), timerEl, qEl, opts, why,
+      el('div', { class: 'actions' }, [next, el('div', { class: 'actions__spacer' }), tally])
+    );
+    host.appendChild(wrap);
+    draw();
+  }
+
+  /* ============================================================
+     III. СЕМЬ СКЛЯНОК
+     ============================================================ */
+  const MARKS = ['—', 'ЯД', 'ВИНО', 'ВПЕРЁД', 'НАЗАД'];
+
+  function vialSvg(shape, size) {
+    const w = Math.round(62 * size), h = Math.round(130 * size);
+    const body = {
+      flask:  'M16 6h14v22l12 46a10 10 0 0 1-9 14H13a10 10 0 0 1-9-14l12-46z',
+      carboy: 'M17 6h12v16c14 6 18 18 18 32 0 20-10 30-24 30S-1 74-1 54c0-14 4-26 18-32z',
+      vial:   'M17 6h12v20l7 30c2 9-4 16-13 16s-15-7-13-16l7-30z',
+      phial:  'M15 6h16v18l9 34c2 10-5 18-17 18S4 68 6 58l9-34z',
+      round:  'M18 6h10v14c15 5 21 17 21 30 0 18-12 30-26 30S-3 68-3 50c0-13 6-25 21-30z'
+    }[shape] || 'M16 6h14v22l12 46a10 10 0 0 1-9 14H13a10 10 0 0 1-9-14l12-46z';
+    const ns = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(ns, 'svg');
+    svg.setAttribute('viewBox', '-6 0 58 108');
+    svg.setAttribute('width', w); svg.setAttribute('height', h);
+    svg.setAttribute('aria-hidden', 'true');
+    const g = document.createElementNS(ns, 'g');
+    const p = document.createElementNS(ns, 'path');
+    p.setAttribute('d', body);
+    p.setAttribute('class', 'vial__body');
+    p.setAttribute('fill', 'rgba(30,60,52,.55)');
+    p.setAttribute('stroke', '#b8892f88');
+    p.setAttribute('stroke-width', '1.6');
+    const cork = document.createElementNS(ns, 'rect');
+    cork.setAttribute('x', '13'); cork.setAttribute('y', '0');
+    cork.setAttribute('width', '20'); cork.setAttribute('height', '9');
+    cork.setAttribute('rx', '2'); cork.setAttribute('fill', '#6b4a24');
+    const shine = document.createElementNS(ns, 'path');
+    shine.setAttribute('d', 'M12 34c-3 10-4 22-2 32');
+    shine.setAttribute('stroke', '#f0d68a55'); shine.setAttribute('stroke-width', '3');
+    shine.setAttribute('fill', 'none'); shine.setAttribute('stroke-linecap', 'round');
+    g.append(p, cork, shine);
+    svg.appendChild(g);
+    return svg;
+  }
+
+  function bottles(host, App) {
+    const D = Q.BOTTLES;
+    let chosen = -1;
+    const marks = D.shelf.map(() => 0);
+    const dead = D.shelf.map(() => false);
+
+    const shelf = el('div', { class: 'shelf' });
+    const glasses = [];
+    D.shelf.forEach((b, i) => {
+      const glass = el('button', {
+        class: 'vial', type: 'button', 'aria-pressed': 'false',
+        'aria-label': 'Склянка ' + b.label,
+        onclick: () => {
+          if (dead[i]) return;
+          chosen = chosen === i ? -1 : i;
+          glasses.forEach((g, j) => g.setAttribute('aria-pressed', String(j === chosen)));
+          sip.disabled = chosen < 0;
+          window.Sfx.tap();
+        }
+      }, [vialSvg(b.shape, b.size)]);
+      glasses.push(glass);
+      const tag = el('button', {
+        class: 'vial__tag', type: 'button', 'aria-label': 'Пометить склянку ' + b.label,
+        text: MARKS[0],
+        onclick: () => { marks[i] = (marks[i] + 1) % MARKS.length; tag.textContent = MARKS[marks[i]]; tag.classList.toggle('on', marks[i] > 0); window.Sfx.click(); }
+      });
+      shelf.appendChild(el('div', { class: 'vial-wrap' }, [glass, tag]));
+    });
+
+    const clues = el('ol', { class: 'clues' }, D.clues.map(c => el('li', { text: c })));
+    const verdict = el('div');
+    const sip = el('button', { class: 'btn', type: 'button', disabled: true, onclick: drink }, ['Испить из выбранной']);
+
+    function drink() {
+      if (chosen < 0) return;
+      const b = D.shelf[chosen];
+      verdict.textContent = '';
+      if (b.kind === 'forward') {
+        window.Sfx.unlock();
+        window.Fx.burstOn(glasses[chosen], '143,224,192', 50);
+        verdict.appendChild(el('div', { class: 'verdict verdict--ok', html:
+          '<span><b>Пламя расступается.</b> Самая маленькая склянка — единственная, где не могло быть ни яда, ни вина: подсказка о размерах отсекает яд, а первая подсказка не оставляет ей места среди вина. Проход открыт.</span>' }));
+        sip.remove();
+        App.finishLater('bottles', () => App.complete('bottles', D.award));
+      } else if (b.kind === 'back') {
+        window.Sfx.wrong();
+        App.miss('bottles', Math.round(D.missCost / 2));
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html:
+          '<span><b>Вас выбрасывает назад.</b> Эта склянка ведёт в обратную сторону — сквозь чёрное пламя, туда, откуда вы пришли. Возвращайтесь. <b>−' + Math.round(D.missCost / 2) + '</b></span>' }));
+      } else if (b.kind === 'wine') {
+        window.Sfx.wrong();
+        App.miss('bottles', Math.round(D.missCost / 2));
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html:
+          '<span><b>Крапивное вино.</b> Безвредно и совершенно бесполезно — кроме одного: теперь вы знаете, что слева от него стоит яд. <b>−' + Math.round(D.missCost / 2) + '</b></span>' }));
+      } else {
+        window.Sfx.wrong();
+        window.Fx.shake(shelf);
+        dead[chosen] = true;
+        glasses[chosen].parentNode.classList.add('vial--dead');
+        App.miss('bottles', D.missCost);
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html:
+          '<span><b>Яд.</b> В настоящем испытании Снегга второго глотка не бывает. Здесь склянка просто исчезает с полки. <b>−' + D.missCost + '</b></span>' }));
+      }
+      chosen = -1;
+      glasses.forEach(g => g.setAttribute('aria-pressed', 'false'));
+      sip.disabled = true;
+      App.save();
+    }
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(
+      ...head('III', 'Семь склянок', 'Логика <em>сильнее</em> магии',
+        'На столе семь склянок и свиток. Магии в этой комнате нет вовсе — только пять утверждений, из которых следует ровно один ответ.'),
+      el('hr', { class: 'rule' }),
+      el('div', { class: 'plaque plaque--riddle' }, [
+        el('span', { class: 'plaque__mark', text: '☙' }),
+        ...D.verse.map(v => el('p', { text: v }))
+      ]),
+      shelf,
+      el('p', { class: 'hint', text: 'Щёлкните по стеклу, чтобы выбрать склянку. Щёлкните по подписи под ней, чтобы оставить пометку мелом.' }),
+      clues, verdict,
+      el('div', { class: 'actions' }, [sip, el('div', { class: 'actions__spacer' })])
+    );
+    host.appendChild(wrap);
+
+    App.currentHint = () => {
+      App.spendHint('bottles', D.hintCost);
+      clues.children[3].classList.add('struck');
+      verdict.textContent = '';
+      verdict.appendChild(el('div', { class: 'verdict', text: D.hint }));
+    };
+    App.currentSolve = () => { chosen = 2; drink(); };
+  }
+
+  /* ============================================================
+     IV. КАРТА МАРОДЁРОВ
+     ============================================================ */
+  function mapInk() {
+    return '<svg viewBox="0 0 400 240" preserveAspectRatio="none" aria-hidden="true">' +
+      '<g fill="none" stroke="currentColor" stroke-width="1.4" opacity=".55">' +
+      '<path d="M30 200V70l40-28 40 28v130"/><path d="M110 130h70V60h60v70h70V200"/>' +
+      '<path d="M310 130l30-22 30 22v70"/><path d="M70 42V16M340 108V70M240 60V22"/>' +
+      '<path d="M30 200h340" stroke-width="2.2"/>' +
+      '<path d="M150 200v-40h30v40M250 200v-30h34v30"/>' +
+      '<path d="M96 96h-52M96 130h-52M96 164h-52" stroke-dasharray="4 6"/>' +
+      '<path d="M304 96h52M304 164h52" stroke-dasharray="4 6"/>' +
+      '<circle cx="70" cy="16" r="7"/><circle cx="240" cy="22" r="7"/><circle cx="340" cy="70" r="7"/>' +
+      '<path d="M180 96l30 34-30 34" stroke-dasharray="3 5"/>' +
+      '</g>' +
+      '<g fill="currentColor" opacity=".45" font-size="9" font-family="Caveat, cursive" letter-spacing="1">' +
+      '<text x="36" y="64">Западная башня</text><text x="150" y="52">Северная башня</text>' +
+      '<text x="300" y="62">Совятня</text><text x="120" y="152">Большой зал</text>' +
+      '<text x="238" y="122">Библиотека</text><text x="40" y="192">Подземелья</text>' +
+      '<text x="250" y="192">Двор</text><text x="300" y="150">Гриффиндорская башня</text>' +
+      '</g></svg>';
+  }
+
+  function map(host, App) {
+    const D = Q.MAP;
+    let solved = false;
+
+    const board = el('div', { class: 'map' });
+    const veil = el('div', { class: 'map__veil' });
+    const names = el('div', { class: 'map__names' });
+    const verdict = el('div');
+
+    D.marks.forEach(m => {
+      const b = el('button', {
+        class: 'mark', type: 'button', style: 'left:' + m.x + '%;top:' + m.y + '%',
+        onclick: () => choose(m, b)
+      }, [
+        el('span', { class: 'mark__feet', text: '· ·' }),
+        document.createTextNode(m.name)
+      ]);
+      names.appendChild(b);
+    });
+
+    function lightAt(x, y) {
+      veil.style.background =
+        'radial-gradient(circle 128px at ' + x + 'px ' + y + 'px, rgba(10,8,6,0) 0%, rgba(10,8,6,0) 42%, rgba(10,8,6,.86) 76%, #0a0806 100%)';
+    }
+
+    board.addEventListener('pointermove', (e) => {
+      const r = board.getBoundingClientRect();
+      lightAt(e.clientX - r.left, e.clientY - r.top);
+    });
+    board.addEventListener('pointerleave', () => {
+      const r = board.getBoundingClientRect();
+      lightAt(r.width / 2, r.height / 2);
+    });
+
+    function choose(m, btn) {
+      if (solved) return;
+      if (m.id === D.answer) {
+        solved = true;
+        btn.classList.add('mark--found');
+        veil.style.opacity = '0';
+        window.Sfx.unlock();
+        window.Fx.burstOn(btn, '212,98,42', 50);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--ok', html: '<span>' + D.solved + '</span>' }));
+        App.finishLater('map', () => App.complete('map', D.award));
+      } else {
+        btn.classList.add('mark--wrong');
+        window.Sfx.wrong();
+        App.miss('map', D.missCost);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html:
+          '<span>' + (D.misses[m.id] || D.misses.other) + ' <b>−' + D.missCost + '</b></span>' }));
+      }
+    }
+
+    board.append(el('div', { class: 'map__paper' }), el('div', { class: 'map__ink', html: mapInk() }), names, veil);
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(
+      ...head('IV', 'Карта Мародёров', 'Торжественно клянусь, что <em>замышляю</em> шалость', D.task),
+      el('hr', { class: 'rule' }), board,
+      el('div', { class: 'map__legend' }, [
+        el('span', { text: 'Ведите палочкой по пергаменту — свет проявляет имена. На касании работает так же.' }),
+        el('span', { class: 'map__oath', text: 'Шалость удалась.' })
+      ]),
+      verdict, el('div', { class: 'actions' })
+    );
+    host.appendChild(wrap);
+    requestAnimationFrame(() => { const r = board.getBoundingClientRect(); lightAt(r.width / 2, r.height / 2); });
+
+    App.currentHint = () => {
+      App.spendHint('map', D.hintCost);
+      verdict.textContent = '';
+      verdict.appendChild(el('div', { class: 'verdict', text: D.hint }));
+    };
+    App.currentSolve = () => {
+      const t = D.marks.find(m => m.id === D.answer);
+      choose(t, names.children[D.marks.indexOf(t)]);
+    };
+  }
+
+  /* ============================================================
+     V. ИМЯ НА КРЫШКЕ
+     ============================================================ */
+  function anagram(host, App) {
+    const D = Q.ANAGRAM;
+    const letters = shuffle(D.source.split(''));
+    const placed = [];          /* индексы исходных плиток по слотам */
+    let solved = false;
+
+    const src = el('div', { class: 'source' });
+    const slots = el('div', { class: 'slots' });
+    const board = el('div', { class: 'anagram' });
+    const verdict = el('div');
+
+    const tiles = letters.map((ch, i) => el('button', {
+      class: 'tile', type: 'button', text: ch, dataset: { i: i },
+      onclick: () => put(i)
+    }));
+    tiles.forEach(t => src.appendChild(t));
+
+    const slotEls = [];
+    D.layout.forEach((ch) => {
+      if (ch === ' ') { slots.appendChild(el('span', { class: 'slots__gap' })); return; }
+      if (ch === '-') { slots.appendChild(el('span', { class: 'tile tile--fixed', text: '–' })); return; }
+      const s = el('button', { class: 'tile tile--slot', type: 'button', text: '', onclick: () => pull(slotEls.indexOf(s)) });
+      slotEls.push(s); slots.appendChild(s);
+      placed.push(-1);
+    });
+
+    function put(i) {
+      if (solved || tiles[i].classList.contains('tile--used')) return;
+      const free = placed.indexOf(-1);
+      if (free < 0) return;
+      placed[free] = i;
+      slotEls[free].textContent = letters[i];
+      slotEls[free].classList.add('filled');
+      tiles[i].classList.add('tile--used');
+      window.Sfx.click();
+      if (placed.indexOf(-1) < 0) check();
+    }
+    function pull(s) {
+      if (solved || s < 0 || placed[s] < 0) return;
+      tiles[placed[s]].classList.remove('tile--used');
+      placed[s] = -1;
+      slotEls[s].textContent = '';
+      slotEls[s].classList.remove('filled');
+      window.Sfx.tap();
+    }
+    function clear() { for (let s = placed.length - 1; s >= 0; s--) pull(s); verdict.textContent = ''; }
+
+    function check() {
+      const word = placed.map(i => letters[i]).join('');
+      if (word === D.target) {
+        solved = true;
+        board.classList.add('solved');
+        window.Sfx.seal();
+        window.Fx.burstOn(slots, '212,98,42', 70);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--ok', html: '<span>' + D.solved + '</span>' }));
+        App.finishLater('anagram', () => App.complete('anagram', D.award));
+      } else {
+        window.Sfx.wrong();
+        window.Fx.shake(slots);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html:
+          '<span>Буквы те же, порядок не тот. Штрафа нет — но и крышка не двинулась.</span>' }));
+      }
+    }
+
+    board.append(
+      el('p', { class: 'eyebrow', text: D.sourceView }),
+      src,
+      el('p', { class: 'hint', text: 'Щёлкните по букве, чтобы поставить её в следующую свободную ячейку. Щёлкните по ячейке, чтобы вернуть букву.' }),
+      slots
+    );
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(
+      ...head('V', 'Имя на крышке', 'Пятнадцать букв, <em>два</em> имени', D.intro + ' ' + D.ask),
+      el('hr', { class: 'rule' }), board, verdict,
+      el('div', { class: 'actions' }, [
+        el('button', { class: 'btn btn--ghost', type: 'button', onclick: clear }, ['Стереть'])
+      ])
+    );
+    host.appendChild(wrap);
+
+    App.currentHint = () => {
+      App.spendHint('anagram', D.hintCost);
+      verdict.textContent = '';
+      verdict.appendChild(el('div', { class: 'verdict', text: D.hint }));
+    };
+    App.currentSolve = () => {
+      clear();
+      D.target.split('').forEach(ch => {
+        const i = tiles.findIndex(t => t.textContent === ch && !t.classList.contains('tile--used'));
+        if (i >= 0) put(i);
+      });
+    };
+  }
+
+  /* ============================================================
+     VI. СЕМЬ ОСКОЛКОВ
+     ============================================================ */
+  function horcruxes(host, App) {
+    const D = Q.HORCRUXES;
+    let pickLeft = null, pickLeftBtn = null, linked = 0, points = 0;
+
+    const left = el('div', { class: 'pairs__col' });
+    const right = el('div', { class: 'pairs__col' });
+    const ledger = el('ul', { class: 'ledger' });
+    const verdict = el('div');
+
+    const rights = {};
+    shuffle(D.items).forEach(it => {
+      const b = el('button', { class: 'chip', type: 'button', 'aria-pressed': 'false', onclick: () => {
+        if (b.classList.contains('chip--linked')) return;
+        if (pickLeftBtn) pickLeftBtn.setAttribute('aria-pressed', 'false');
+        if (pickLeft === it.id) { pickLeft = null; pickLeftBtn = null; return; }
+        pickLeft = it.id; pickLeftBtn = b; b.setAttribute('aria-pressed', 'true'); window.Sfx.tap();
+      } }, [document.createTextNode(it.t), el('small', { text: it.s })]);
+      left.appendChild(b);
+    });
+    shuffle(D.hands).forEach(hn => {
+      const b = el('button', { class: 'chip', type: 'button', onclick: () => tryLink(hn, b) }, [
+        document.createTextNode(hn.t), el('small', { text: hn.s })
+      ]);
+      rights[hn.id] = b;
+      right.appendChild(b);
+    });
+
+    function tryLink(hn, btn) {
+      if (!pickLeft) { App.toast('Сначала выберите крестраж в левом столбце.'); return; }
+      if (hn.id === pickLeft) {
+        btn.classList.add('chip--linked');
+        pickLeftBtn.classList.add('chip--linked');
+        pickLeftBtn.setAttribute('aria-pressed', 'false');
+        linked++; points += D.perPair;
+        window.Sfx.right();
+        window.Fx.burstOn(btn, '95,174,149', 26);
+        ledger.appendChild(el('li', { html: '<span>' + D.notes[hn.id] + '</span>' }));
+        pickLeft = null; pickLeftBtn = null;
+        prog.style.width = (linked / D.items.length * 100) + '%';
+        count.textContent = linked + '/' + D.items.length;
+        if (linked === D.items.length) {
+          window.Sfx.seal();
+          verdict.textContent = '';
+          verdict.appendChild(el('div', { class: 'verdict verdict--ok', html:
+            '<span><b>Семь из семи.</b> Осталась только змея в клетке из воздуха — и мальчик, который сам об этом не знал.</span>' }));
+          App.finishLater('horcruxes', () => App.complete('horcruxes', points));
+        }
+      } else {
+        window.Sfx.wrong();
+        btn.classList.add('wrong');
+        setTimeout(() => btn.classList.remove('wrong'), 420);
+        App.miss('horcruxes', D.missCost);
+        verdict.textContent = '';
+        verdict.appendChild(el('div', { class: 'verdict verdict--no', html:
+          '<span>Не та рука. <b>−' + D.missCost + '</b></span>' }));
+      }
+      App.save();
+    }
+
+    const prog = el('b', { class: 'meter__fill', style: 'width:0%' });
+    const count = el('b', { text: '0/' + D.items.length });
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(
+      ...head('VI', 'Семь осколков', 'Кто, чем и <em>в каком</em> порядке', D.task),
+      el('hr', { class: 'rule' }),
+      el('div', { class: 'meter' }, [el('span', { text: 'Уничтожено' }), el('span', { class: 'meter__track' }, [prog]), count]),
+      el('div', { class: 'pairs' }, [
+        el('div', {}, [el('p', { class: 'pairs__head', text: 'Крестраж' }), left]),
+        el('div', {}, [el('p', { class: 'pairs__head', text: 'Рука и оружие' }), right])
+      ]),
+      verdict, ledger, el('div', { class: 'actions' })
+    );
+    host.appendChild(wrap);
+
+    App.currentHint = () => {
+      App.spendHint('horcruxes', 20);
+      verdict.textContent = '';
+      verdict.appendChild(el('div', { class: 'verdict', text: D.hint }));
+    };
+    App.currentSolve = () => {
+      D.items.forEach(it => {
+        if (rights[it.id].classList.contains('chip--linked')) return;
+        pickLeft = it.id;
+        pickLeftBtn = Array.prototype.find.call(left.children, b => b.firstChild.textContent === it.t);
+        tryLink(D.hands.find(h => h.id === it.id), rights[it.id]);
+      });
+    };
+  }
+
+  /* ============================================================
+     VII. ЗЕРКАЛО ЕИНАЛЕЖ — финал
+     ============================================================ */
+  function mirror(host, App) {
+    const s = App.state;
+    const total = s.score;
+    const rank = Q.RANKS.find(r => total >= r.min) || Q.RANKS[Q.RANKS.length - 1];
+    const H = Q.HOUSES[s.house] || { name: 'без факультета' };
+    const mins = Math.floor(s.elapsed / 60000), secs = Math.floor(s.elapsed / 1000) % 60;
+    const timeStr = mins + ' мин ' + String(secs).padStart(2, '0') + ' с';
+    const misses = Object.keys(s.log).reduce((n, k) => n + (s.log[k].misses || 0), 0);
+    const hints = Object.keys(s.log).reduce((n, k) => n + (s.log[k].hints || 0), 0);
+
+    const rows = Q.CHAMBERS.filter(c => c.id !== 'gate' && c.id !== 'mirror').map(c => {
+      const l = s.log[c.id] || {};
+      return el('li', {}, [
+        document.createTextNode(c.num + '. ' + c.name),
+        el('span'),
+        el('b', { text: (l.points != null ? l.points : 0) + ' б.' })
+      ]);
+    });
+
+    function summary() {
+      return 'Шкатулка Мракса — ' + rank.t + '\n' +
+        H.name + ' · ' + total + ' баллов · ' + timeStr + '\n' +
+        'Ошибок: ' + misses + ', подсказок: ' + hints;
+    }
+
+    const wrap = el('div', { class: 'chamber' });
+    wrap.append(
+      ...head('VII', 'Зеркало Еиналеж', 'Оно показывает не будущее, а <em>вас</em>',
+        'Счастливейший человек на свете увидел бы в нём себя таким, какой он есть. Вам оно показывает итог семи испытаний — это, конечно, не одно и то же.'),
+      el('div', { class: 'mirror' }, [
+        el('p', { class: 'mirror__inscription', text: 'ЕИНАЛЕЖ ЕОНТЕЗДЕС ЕИНЕЛВОРТСОП ЕН АЦИЛ ОГЕШАВ ОН ЕЦДРЕС' }),
+        el('h2', { class: 'rank', text: rank.t }),
+        el('p', { class: 'lede', text: rank.d }),
+        el('div', { class: 'scores' }, [
+          el('div', {}, [el('b', { text: String(total) }), el('span', { text: 'баллов' })]),
+          el('div', {}, [el('b', { text: timeStr }), el('span', { text: 'в шкатулке' })]),
+          el('div', {}, [el('b', { text: String(misses) }), el('span', { text: 'ошибок' })]),
+          el('div', {}, [el('b', { text: String(hints) }), el('span', { text: 'подсказок' })])
+        ])
+      ]),
+      el('p', { class: 'lede', html: 'Факультет: <strong>' + H.name + '</strong>. ' +
+        'Крышка закрывается сама — и щёлкает всеми семью замками разом. Внутри снова пусто.' }),
+      el('hr', { class: 'rule' }),
+      el('ul', { class: 'ledger' }, rows),
+      el('div', { class: 'actions' }, [
+        el('button', { class: 'btn', type: 'button', onclick: () => {
+          navigator.clipboard && navigator.clipboard.writeText(summary())
+            .then(() => App.toast('Результат скопирован в буфер обмена.'))
+            .catch(() => App.toast(summary()));
+        } }, ['Скопировать результат']),
+        el('button', { class: 'btn btn--ghost', type: 'button', onclick: () => App.reset(true) }, ['Пройти заново'])
+      ])
+    );
+    host.appendChild(wrap);
+    window.Fx.patronus(5000);
+    App.currentHint = () => App.toast('Здесь подсказки уже не нужны.');
+    App.currentSolve = null;
+  }
+
+  return { gate, lock, quiz, bottles, map, anagram, horcruxes, mirror, el };
+})();
+
+</script>
+<script>
+/* ============================================================
+   ШКАТУЛКА: СБОРКА
+   Состояние, переходы между камерами, счёт, заклинания.
+   ============================================================ */
+(function () {
+  'use strict';
+  const Q = window.QUEST, C = window.Chambers, el = C.el;
+  const KEY = 'mrx.save.v1';
+
+  const stage   = document.getElementById('stage');
+  const rail    = document.getElementById('rail');
+  const toastEl = document.getElementById('toast');
+  const hudScore= document.getElementById('hudScore');
+  const hudTime = document.getElementById('hudTime');
+  const hudHouse= document.getElementById('hudHouse');
+  const hudSigil= document.getElementById('hudSigil');
+  const spellbar= document.getElementById('spellbar');
+  const spellIn = document.getElementById('spellInput');
+
+  const blank = () => ({ house: null, chamber: 'gate', score: 0, elapsed: 0, done: {}, log: {} });
+
+  const App = {
+    state: blank(),
+    currentHint: null,
+    currentSolve: null,
+    cleanup: null,
+    onResize: null
+  };
+  window.App = App;
+
+  /* ---------- сохранение ---------- */
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (raw) {
+        const s = JSON.parse(raw);
+        if (s && s.chamber) App.state = Object.assign(blank(), s);
+      }
+    } catch (e) { /* приватный режим — играем без сохранения */ }
+  }
+  App.save = function () {
+    App.state.elapsed = elapsed();
+    try { localStorage.setItem(KEY, JSON.stringify(App.state)); } catch (e) {}
+    paintHud();
+  };
+
+  /* ---------- время ---------- */
+  let sessionStart = performance.now();
+  function elapsed() { return App.state.elapsed + (performance.now() - sessionStart); }
+  function commitTime() { App.state.elapsed = elapsed(); sessionStart = performance.now(); }
+
+  /* ---------- вспомогательное ---------- */
+  function logOf(id) {
+    if (!App.state.log[id]) App.state.log[id] = { points: null, misses: 0, hints: 0, penalty: 0 };
+    return App.state.log[id];
+  }
+  App.toast = function (msg) {
+    toastEl.textContent = msg;
+    toastEl.classList.add('show');
+    clearTimeout(App.toast._t);
+    App.toast._t = setTimeout(() => toastEl.classList.remove('show'), 4200);
+  };
+  App.miss = function (id, cost) {
+    const l = logOf(id); l.misses++; l.penalty += cost; App.save();
+  };
+  App.spendHint = function (id, cost) {
+    const l = logOf(id); l.hints++; l.penalty += cost; App.save();
+  };
+
+  App.setHouse = function (key) {
+    App.state.house = key;
+    const H = Q.HOUSES[key];
+    if (!H) return;
+    document.documentElement.style.setProperty('--sigil', H.color);
+    document.documentElement.style.setProperty('--sigil-soft', H.color + '33');
+    hudHouse.textContent = H.name;
+    App.save();
+  };
+
+  /* ---------- завершение камеры ---------- */
+  App.complete = function (id, points) {
+    const l = logOf(id);
+    const net = Math.max(0, Math.round(points - l.penalty));
+    l.points = net;
+    App.state.score += net;
+    App.state.done[id] = true;
+    if (points > 0) App.toast('Печать поставлена: +' + net + ' баллов');
+    const i = Q.CHAMBERS.findIndex(c => c.id === id);
+    const nxt = Q.CHAMBERS[i + 1];
+    App.save();
+    go(nxt ? nxt.id : 'mirror');
+  };
+
+  /* Кнопка «дальше», когда камера решена, но игрок ещё читает разбор */
+  App.finishLater = function (id, fn) {
+    const actions = stage.querySelector('.chamber .actions');
+    const b = el('button', { class: 'btn', type: 'button', onclick: fn }, ['Следующее испытание →']);
+    if (actions) actions.insertBefore(b, actions.firstChild);
+    else stage.querySelector('.chamber').appendChild(el('div', { class: 'actions' }, [b]));
+    b.focus();
+    paintRail();
+  };
+
+  /* ---------- панель ---------- */
+  function paintHud() {
+    hudScore.textContent = String(App.state.score);
+    const ms = elapsed(), m = Math.floor(ms / 60000), s = Math.floor(ms / 1000) % 60;
+    hudTime.textContent = String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+  }
+  setInterval(paintHud, 1000);
+
+  /* ---------- рельс печатей ---------- */
+  function paintRail() {
+    rail.textContent = '';
+    Q.CHAMBERS.filter(c => c.id !== 'gate').forEach((c, i, arr) => {
+      const done = !!App.state.done[c.id];
+      const now = App.state.chamber === c.id;
+      const l = App.state.log[c.id];
+      const b = el('button', {
+        class: 'seal' + (done ? ' seal--done' : '') + (now ? ' seal--now' : ''),
+        type: 'button',
+        title: c.num + '. ' + c.name + (done && l ? ' — ' + l.points + ' баллов' : (now ? ' — сейчас здесь' : ' — ещё заперто')),
+        disabled: !now && !done,
+        onclick: () => { if (now) go(c.id); else if (done) App.toast(c.num + '. ' + c.name + ' — печать поставлена, ' + (l ? l.points : 0) + ' баллов.'); }
+      }, [
+        (function () { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+          const u = document.createElementNS('http://www.w3.org/2000/svg', 'use');
+          u.setAttribute('href', '#sig-seal'); s.appendChild(u); return s; })(),
+        el('span', { class: 'seal__num', text: c.num })
+      ]);
+      rail.appendChild(b);
+      if (i < arr.length - 1) rail.appendChild(el('span', { class: 'rail__line' }));
+    });
+  }
+
+  /* ---------- переход ---------- */
+  function go(id) {
+    if (App.cleanup) { try { App.cleanup(); } catch (e) {} }
+    App.cleanup = null; App.currentHint = null; App.currentSolve = null; App.onResize = null;
+    commitTime();
+    App.state.chamber = id;
+    App.save();
+    paintRail();
+
+    stage.classList.add('turning');
+    window.Sfx.thunk();
+    setTimeout(() => {
+      stage.textContent = '';
+      stage.classList.remove('turning');
+      const fn = C[id] || C.gate;
+      fn(stage, App);
+      stage.scrollIntoView({ block: 'nearest', behavior: window.Fx.reduced ? 'auto' : 'smooth' });
+    }, window.Fx.reduced ? 0 : 340);
+  }
+  App.go = go;
+
+  App.reset = function (confirmed) {
+    if (!confirmed && !window.confirm('Обливиэйт сотрёт весь прогресс: баллы, печати и факультет. Продолжить?')) return;
+    try { localStorage.removeItem(KEY); } catch (e) {}
+    App.state = blank();
+    sessionStart = performance.now();
+    document.documentElement.style.setProperty('--sigil', '#b8892f');
+    hudHouse.textContent = 'Факультет не определён';
+    App.save();
+    go('gate');
+  };
+
+  /* ============================================================
+     ЗАКЛИНАНИЯ
+     ============================================================ */
+  const CASTS = {
+    lumos() { window.Fx.lumos(true); App.toast('Люмос. Света стало больше — но не понимания.'); },
+    nox()   { window.Fx.nox(true);   App.toast('Нокс. Темнота вам к лицу.'); },
+    accio() {
+      if (App.currentHint) App.currentHint();
+      else App.toast('Здесь нечего призывать.');
+    },
+    alohomora() {
+      if (!App.currentSolve) { App.toast('Этот замок не поддаётся Алохоморе.'); return; }
+      const id = App.state.chamber;
+      App.miss(id, 60);
+      App.toast('Алохомора. Замок открыт нечестно: −60 баллов.');
+      App.currentSolve();
+    },
+    patronus() {
+      window.Fx.patronus(5000); window.Sfx.spell();
+      App.toast('Экспекто Патронум! Серебряный силуэт делает круг по комнате и тает.');
+    },
+    sectumsempra() {
+      window.Sfx.wrong();
+      const r = { x: innerWidth / 2, y: innerHeight / 2 };
+      window.Fx.burst(r.x, r.y, '142,43,28', 90);
+      App.toast('Для врагов. Снегг был бы недоволен, что вы это знаете.');
+    },
+    obliviate() { App.reset(); }
+  };
+
+  function cast(raw) {
+    const key = (raw || '').trim().toLowerCase().replace(/[!.,]+$/, '').replace(/\s+/g, ' ');
+    const name = Q.SPELLS[key];
+    if (!name) { App.toast('Шкатулка не знает такого слова.'); return; }
+    window.Sfx.spell();
+    CASTS[name]();
+  }
+
+  function toggleSpellbar(force) {
+    const show = force !== undefined ? force : spellbar.hidden;
+    spellbar.hidden = !show;
+    if (show) { spellIn.value = ''; spellIn.focus(); }
+  }
+
+  spellIn.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') { cast(spellIn.value); toggleSpellbar(false); }
+    if (e.key === 'Escape') toggleSpellbar(false);
+  });
+  document.getElementById('btnSpell').addEventListener('click', () => toggleSpellbar());
+  document.addEventListener('keydown', (e) => {
+    const typing = /^(INPUT|TEXTAREA)$/.test(document.activeElement.tagName);
+    if (!typing && (e.key === '`' || e.key === '~' || e.key === 'ё' || e.key === 'Ё')) {
+      e.preventDefault(); toggleSpellbar();
+    }
+    if (e.key === 'Escape' && !spellbar.hidden) toggleSpellbar(false);
+  });
+
+  /* ---------- звук и сброс ---------- */
+  const btnSound = document.getElementById('btnSound');
+  btnSound.addEventListener('click', () => {
+    const on = window.Sfx.set(!window.Sfx.get());
+    btnSound.setAttribute('aria-pressed', String(on));
+    if (on) window.Sfx.click();
+  });
+  document.getElementById('btnReset').addEventListener('click', () => App.reset());
+
+  window.addEventListener('resize', () => { if (App.onResize) App.onResize(); });
+  window.addEventListener('beforeunload', () => App.save());
+
+  /* ---------- запуск ---------- */
+  load();
+  window.Fx.init();
+  btnSound.setAttribute('aria-pressed', String(window.Sfx.init()));
+  if (App.state.house) App.setHouse(App.state.house);
+  paintHud();
+  paintRail();
+  (C[App.state.chamber] || C.gate)(stage, App);
+  if (App.state.chamber !== 'gate') App.toast('Шкатулка помнит вас. Продолжаем с того же места.');
+})();
+
+</script>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Шкатулка Мракса</title>
+<meta name="description" content="Интерактивный квест по вселенной Гарри Поттера для знатоков: семь механических испытаний в латунной шкатулке.">
+<meta name="theme-color" content="#0a0806">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Prata&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Caveat:wght@400;600&display=swap">
+<link rel="stylesheet" href="assets/css/main.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0806'/%3E%3Cg fill='none' stroke='%23c39a3e' stroke-width='1.6'%3E%3Ccircle cx='16' cy='17' r='7'/%3E%3Cpath d='M16 5l8 15H8z'/%3E%3Cpath d='M16 5v22'/%3E%3C/g%3E%3C/svg%3E">
+</head>
+<body>
+
+<canvas id="ambient" aria-hidden="true"></canvas>
+<div id="lumos" aria-hidden="true"></div>
+<div id="vignette" aria-hidden="true"></div>
+
+<svg class="svg-defs" aria-hidden="true" focusable="false">
+  <defs>
+    <symbol id="orn-corner" viewBox="0 0 100 100">
+      <g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round">
+        <path d="M4 4h34M4 4v34"/>
+        <path d="M4 26C18 26 26 18 26 4"/>
+        <path d="M26 12c9 0 14 5 14 12s-6 12-12 9"/>
+        <path d="M12 26c0 9 5 14 12 14"/>
+        <path d="M44 4c0 6 3 9 8 9M4 44c6 0 9 3 9 8"/>
+      </g>
+      <circle cx="30" cy="30" r="3.2" fill="currentColor"/>
+      <circle cx="56" cy="4.5" r="2" fill="currentColor"/>
+      <circle cx="4.5" cy="56" r="2" fill="currentColor"/>
+    </symbol>
+    <symbol id="sig-seal" viewBox="0 0 64 64">
+      <circle cx="32" cy="32" r="26" fill="none" stroke="currentColor" stroke-width="2"/>
+      <circle cx="32" cy="32" r="21" fill="none" stroke="currentColor" stroke-width="1" stroke-dasharray="3 4"/>
+    </symbol>
+    <symbol id="ico-sound" viewBox="0 0 24 24">
+      <path d="M4 9v6h4l5 4V5L8 9H4z" fill="currentColor"/>
+      <path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+    <symbol id="ico-rune" viewBox="0 0 24 24">
+      <path d="M12 2v20M12 8l6-5M12 8L6 3M12 16l6 5M12 16l-6 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+    </symbol>
+  </defs>
+</svg>
+
+<main class="box" id="box">
+  <div class="box__plate" aria-hidden="true">
+    <svg class="orn orn--tl"><use href="#orn-corner"/></svg>
+    <svg class="orn orn--tr"><use href="#orn-corner"/></svg>
+    <svg class="orn orn--bl"><use href="#orn-corner"/></svg>
+    <svg class="orn orn--br"><use href="#orn-corner"/></svg>
+  </div>
+
+  <nav class="rail" id="rail" aria-label="Ход испытания"></nav>
+
+  <section class="stage" id="stage" aria-live="polite"></section>
+</main>
+
+<footer class="hud" id="hud">
+  <div class="hud__group">
+    <span class="hud__sigil" id="hudSigil" aria-hidden="true"></span>
+    <span class="hud__house" id="hudHouse">Факультет не определён</span>
+  </div>
+  <div class="hud__group hud__group--mid">
+    <span class="hud__stat" title="Заработано баллов"><b id="hudScore">0</b><i>баллов</i></span>
+    <span class="hud__sep" aria-hidden="true"></span>
+    <span class="hud__stat" title="Время в шкатулке"><b id="hudTime">00:00</b><i>в шкатулке</i></span>
+  </div>
+  <div class="hud__group">
+    <button class="hud__btn" id="btnSound" aria-pressed="true" title="Звук механизмов">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-sound"/></svg><span class="sr">Звук</span>
+    </button>
+    <button class="hud__btn" id="btnSpell" title="Произнести заклинание (клавиша ~)">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><use href="#ico-rune"/></svg><span class="sr">Заклинание</span>
+    </button>
+    <button class="hud__btn hud__btn--word" id="btnReset" title="Обливиэйт: стереть прогресс">Обливиэйт</button>
+  </div>
+</footer>
+
+<div class="spellbar" id="spellbar" hidden>
+  <label class="spellbar__label" for="spellInput">Произнесите заклинание</label>
+  <input id="spellInput" class="spellbar__input" type="text" autocomplete="off" spellcheck="false" placeholder="Люмос…">
+  <p class="spellbar__hint">Шкатулка отзывается на семь слов. Люмос и Нокс — самые безобидные из них.</p>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/audio.js"></script>
+<script src="assets/js/fx.js"></script>
+<script src="assets/js/chambers.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
