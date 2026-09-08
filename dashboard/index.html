@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Терминал · рынки онлайн</title>
+<style>
+/* ---------- токены ---------- */
+:root{
+  color-scheme: light;
+  --bg:#f7f7f5; --surface-1:#fcfcfb; --surface-2:#f0efec; --line:#e2e1dc;
+  --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#84837d;
+  --series-1:#2a78d6; --series-1-soft:rgba(42,120,214,.12);
+  --good:#0ca30c; --critical:#d03b3b; --warning:#fab219;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:where(:not([data-theme="light"])){
+    color-scheme: dark;
+    --bg:#111110; --surface-1:#1a1a19; --surface-2:#232321; --line:#33332f;
+    --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8a897f;
+    --series-1:#3987e5; --series-1-soft:rgba(57,135,229,.16);
+    --good:#0ca30c; --critical:#d03b3b; --warning:#fab219;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme: dark;
+  --bg:#111110; --surface-1:#1a1a19; --surface-2:#232321; --line:#33332f;
+  --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8a897f;
+  --series-1:#3987e5; --series-1-soft:rgba(57,135,229,.16);
+  --good:#0ca30c; --critical:#d03b3b; --warning:#fab219;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--bg); color:var(--text-primary);
+  font:14px/1.5 ui-sans-serif,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:20px 18px 56px}
+
+/* ---------- шапка ---------- */
+header.top{display:flex;flex-wrap:wrap;gap:14px;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+h1{font-size:20px;letter-spacing:-.01em;margin:0;font-weight:650}
+.sub{color:var(--text-muted);font-size:12.5px;margin:2px 0 20px}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:12.5px;color:var(--text-secondary)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--good);display:inline-block;margin-right:6px;vertical-align:1px}
+.dot.stale{background:var(--warning)} .dot.err{background:var(--critical)}
+button.ghost{
+  font:inherit;font-size:12.5px;color:var(--text-secondary);background:var(--surface-1);
+  border:1px solid var(--line);border-radius:7px;padding:5px 11px;cursor:pointer;
+}
+button.ghost:hover{color:var(--text-primary);border-color:var(--text-muted)}
+button.ghost[aria-pressed="true"]{background:var(--series-1);border-color:var(--series-1);color:#fff}
+
+/* ---------- плитки ---------- */
+h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);
+   font-weight:600;margin:30px 0 12px}
+.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(176px,1fr))}
+.tile{background:var(--surface-1);border:1px solid var(--line);border-radius:12px;
+      padding:14px 15px 10px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+.tile .name{font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between;gap:8px}
+.tile .name .tick{color:var(--text-muted);font-size:11px;font-variant-numeric:tabular-nums}
+.tile .val{font-size:26px;font-weight:600;letter-spacing:-.02em;margin-top:7px;
+           font-variant-numeric:tabular-nums;line-height:1.15}
+.tile .val .unit{font-size:14px;font-weight:500;color:var(--text-secondary);margin-left:3px}
+.tile .chg{font-size:12.5px;font-variant-numeric:tabular-nums;margin-top:3px;color:var(--text-muted)}
+.up{color:var(--good)} .down{color:var(--critical)}
+.spark{display:block;width:100%;height:34px;margin-top:8px}
+.tile.pending .val{color:var(--text-muted)}
+
+/* ---------- график ---------- */
+.card{background:var(--surface-1);border:1px solid var(--line);border-radius:12px;
+      padding:16px 18px 12px;box-shadow:var(--shadow)}
+.card-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:4px}
+.card-head .title{font-size:15px;font-weight:600}
+.card-head .title small{display:block;font-weight:400;font-size:12px;color:var(--text-muted);margin-top:2px}
+.controls{display:flex;gap:6px;flex-wrap:wrap}
+#chart{width:100%;height:300px;display:block;touch-action:none}
+.axis{fill:var(--text-muted);font-size:11px;font-variant-numeric:tabular-nums}
+.grid-line{stroke:var(--line);stroke-width:1}
+.zero-line{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
+.series{fill:none;stroke:var(--series-1);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.area{fill:var(--series-1-soft)}
+.cross{stroke:var(--text-muted);stroke-width:1;stroke-dasharray:3 3}
+.hpoint{fill:var(--series-1);stroke:var(--surface-1);stroke-width:2}
+.tip{position:absolute;pointer-events:none;background:var(--surface-1);border:1px solid var(--line);
+     border-radius:8px;padding:7px 10px;font-size:12px;box-shadow:var(--shadow);white-space:nowrap;
+     transform:translate(-50%,-115%);opacity:0;transition:opacity .1s}
+.tip b{font-variant-numeric:tabular-nums;font-size:13.5px}
+.tip i{font-style:normal;color:var(--text-muted);display:block;font-size:11px}
+.chart-wrap{position:relative}
+
+/* ---------- таблицы ---------- */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);
+      font-variant-numeric:tabular-nums;white-space:nowrap}
+th{color:var(--text-muted);font-weight:500;font-size:11.5px;text-transform:uppercase;letter-spacing:.05em}
+th:first-child,td:first-child{text-align:left;font-variant-numeric:normal}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--surface-2)}
+.tickers td:first-child{font-weight:600}
+.tickers td:first-child span{font-weight:400;color:var(--text-muted);margin-left:7px;font-size:12px}
+
+/* ---------- служебное ---------- */
+.notes{margin-top:34px;font-size:12px;color:var(--text-muted);line-height:1.65}
+.notes a{color:var(--text-secondary)}
+.errbox{margin-top:14px;font-size:12px;color:var(--critical);display:none}
+.errbox.on{display:block}
+details.tableview{margin-top:10px}
+details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;padding:4px 0}
+.skel{display:inline-block;height:.85em;width:3.6em;border-radius:4px;background:var(--surface-2)}
+@media (max-width:560px){ .tile .val{font-size:22px} #chart{height:240px} }
+@media print{ body{background:#fff} .controls,button.ghost{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header class="top">
+  <div>
+    <h1>Терминал · рынки онлайн</h1>
+    <div class="sub">Мосбиржа, ЦБ РФ и крипта. Данные тянутся прямо в браузер, без сервера.</div>
+  </div>
+  <div class="bar">
+    <span id="status"><span class="dot"></span>загрузка…</span>
+    <button class="ghost" id="refresh" type="button">Обновить</button>
+    <button class="ghost" id="theme" type="button">Светлая тема</button>
+  </div>
+</header>
+
+<h2>Сырьё и валюта</h2>
+<div class="grid" id="grid-macro"></div>
+
+<h2>Индексы и ставки</h2>
+<div class="grid" id="grid-index"></div>
+
+<h2 id="chart-h">Динамика</h2>
+<div class="card">
+  <div class="card-head">
+    <div class="title" id="chart-title">Индекс МосБиржи
+      <small id="chart-sub">дневные закрытия</small></div>
+    <div class="controls" id="chart-pick"></div>
+  </div>
+  <div class="chart-wrap">
+    <svg id="chart" role="img" aria-labelledby="chart-title"></svg>
+    <div class="tip" id="tip"></div>
+  </div>
+  <div class="controls" id="range-pick" style="margin-top:6px"></div>
+  <details class="tableview">
+    <summary>Показать данные графика таблицей</summary>
+    <div class="tbl-scroll"><table id="chart-table"></table></div>
+  </details>
+</div>
+
+<h2>Голубые фишки</h2>
+<div class="card" style="padding:6px 8px">
+  <div class="tbl-scroll">
+    <table class="tickers">
+      <thead><tr><th>Бумага</th><th>Цена, ₽</th><th>Изм., %</th><th>Оборот, млн ₽</th></tr></thead>
+      <tbody id="tbody-shares"><tr><td colspan="4" style="color:var(--text-muted)">загрузка…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<h2>Официальный курс ЦБ РФ</h2>
+<div class="card" style="padding:6px 8px">
+  <div class="tbl-scroll">
+    <table>
+      <thead><tr><th>Валюта</th><th>Курс, ₽</th><th>Изм. ко вчера</th></tr></thead>
+      <tbody id="tbody-cbr"><tr><td colspan="3" style="color:var(--text-muted)">загрузка…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<div class="errbox" id="errbox"></div>
+
+<div class="notes">
+  <p><b>Источники.</b> Котировки — <a href="https://iss.moex.com/iss/reference/" target="_blank" rel="noopener">MOEX ISS</a>
+  (задержка данных до 15 минут, торговые часы 09:50–23:50 мск). Официальные курсы — ЦБ РФ через
+  <a href="https://www.cbr-xml-daily.ru/" target="_blank" rel="noopener">cbr-xml-daily.ru</a>. Крипта —
+  <a href="https://www.coingecko.com/api" target="_blank" rel="noopener">CoinGecko</a>.
+  Ни одного API-ключа, ни строчки серверного кода: страница ходит за данными сама.</p>
+  <p><b>Как читать.</b> Крупная цифра — последняя сделка, под ней изменение к закрытию прошлого дня. Мини-график в плитке — 45 дней, его цвет показывает направление за весь этот период, а не за сегодня. Время везде московское; обновление раз в минуту, пока вкладка открыта. У фьючерсов (Brent, золото, газ) история на графике начинается с первого дня торгов конкретным контрактом, а не с начала выбранного периода.</p>
+  <p><b>Не для торговли.</b> Цифры справочные — для эфира сверяйте с первоисточником.</p>
+</div>
+
+</div>
+<script>
+"use strict";
+/* =========================================================================
+   Терминал · рынки онлайн
+   Всё живёт в браузере: ни сборки, ни бэкенда, ни ключей.
+   Источники: MOEX ISS, ЦБ РФ (cbr-xml-daily), CoinGecko.
+   ========================================================================= */
+
+const ISS   = "https://iss.moex.com/iss";
+const $     = (s, r = document) => r.querySelector(s);
+const SVGNS = "http://www.w3.org/2000/svg";
+
+/* ---------- форматирование ---------- */
+const nf = (v, d = 2) => v == null || !isFinite(v) ? "—"
+  : v.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d });
+const pct = (v, unit) => v == null || !isFinite(v) ? "—"
+  : (v > 0 ? "▲ +" : v < 0 ? "▼ " : "= ") + v.toLocaleString("ru-RU",
+      { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + (unit || " %");
+const cls = v => v > 0 ? "up" : v < 0 ? "down" : "";
+const MSK = "Europe/Moscow";
+const hhmm = d => d.toLocaleTimeString("ru-RU",
+  { hour: "2-digit", minute: "2-digit", timeZone: MSK });
+const dmy  = s => { const [y, m, d] = s.slice(0, 10).split("-"); return d + "." + m + "." + y; };
+const iso  = d => d.toISOString().slice(0, 10);
+const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
+
+/* ---------- сеть ---------- */
+const errors = new Map();
+async function getJSON(url, tag) {
+  const ctl = new AbortController();
+  const stop = setTimeout(() => ctl.abort(), 15000);
+  try {
+    const r = await fetch(url, { signal: ctl.signal, cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    const j = await r.json();
+    errors.delete(tag);
+    return j;
+  } catch (e) {
+    errors.set(tag, e.name === "AbortError" ? "таймаут" : e.message);
+    return null;
+  } finally { clearTimeout(stop); }
+}
+/* ISS отдаёт блоки как {columns:[...], data:[[...]]} — разворачиваем в объекты */
+const rows = (j, block) => {
+  const b = j && j[block];
+  if (!b || !b.data) return [];
+  return b.data.map(r => Object.fromEntries(b.columns.map((c, i) => [c, r[i]])));
+};
+const byId = (list, key = "SECID") =>
+  Object.fromEntries(list.map(o => [o[key], o]));
+/* два блока ISS (securities + marketdata) по одному инструменту — в одну запись */
+function merge(j) {
+  const s = byId(rows(j, "securities")), m = byId(rows(j, "marketdata"));
+  const out = {};
+  for (const id of new Set([...Object.keys(s), ...Object.keys(m)])) out[id] = { ...s[id], ...m[id] };
+  return out;
+}
+
+/* ---------- фьючерсы: код ближней серии живёт две недели, поэтому считаем его ----------
+   BR + буква месяца (F G H J K M N Q U V X Z) + последняя цифра года → BRV6 = Brent-10.26 */
+const MONTH_LETTER = "FGHJKMNQUVXZ";
+function futureCandidates(prefix, months = 5) {
+  const now = new Date(), out = [];
+  for (let i = 0; i < months; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    out.push(prefix + MONTH_LETTER[d.getMonth()] + String(d.getFullYear() % 10));
+  }
+  return out;
+}
+/* из всех кандидатов берём ближайший неистёкший контракт по каждому активу */
+function frontMonths(map) {
+  const today = iso(new Date()), best = {};
+  for (const row of Object.values(map)) {
+    if (!row.ASSETCODE || !row.LASTTRADEDATE || row.LASTTRADEDATE < today) continue;
+    const cur = best[row.ASSETCODE];
+    if (!cur || row.LASTTRADEDATE < cur.LASTTRADEDATE) best[row.ASSETCODE] = row;
+  }
+  return best;
+}
+
+/* =========================================================================
+   Что показываем
+   ========================================================================= */
+const TILES = [
+  { grid: "macro", key: "BR",    name: "Нефть Brent",        unit: "$",  digits: 2, hint: "фьючерс Мосбиржи" },
+  { grid: "macro", key: "GOLD",  name: "Золото",             unit: "$",  digits: 1, hint: "за унцию, фьючерс" },
+  { grid: "macro", key: "NG",    name: "Газ Henry Hub",      unit: "$",  digits: 3, hint: "за MMBtu, фьючерс" },
+  { grid: "macro", key: "USD",   name: "Доллар",             unit: "₽",  digits: 2, hint: "биржевой, TOM" },
+  { grid: "macro", key: "CNY",   name: "Юань",               unit: "₽",  digits: 4, hint: "биржевой, TOM" },
+  { grid: "macro", key: "BTC",   name: "Биткойн",            unit: "$",  digits: 0, hint: "CoinGecko, 24 ч" },
+  { grid: "index", key: "IMOEX", name: "Индекс МосБиржи",    unit: "",   digits: 2, hint: "рублёвый" },
+  { grid: "index", key: "RTSI",  name: "Индекс РТС",         unit: "",   digits: 2, hint: "долларовый" },
+  { grid: "index", key: "RGBI",  name: "Индекс гособлигаций",unit: "",   digits: 2, hint: "ОФЗ, RGBI" },
+  { grid: "index", key: "RUSFAR",name: "Ставка RUSFAR",      unit: "%",  digits: 2, hint: "деньги овернайт" }
+];
+
+const SHARES = ["SBER","GAZP","LKOH","ROSN","GMKN","NVTK","PLZL","T","MTSS","MGNT","YDEX","VTBR"];
+
+const CHART_SET = [
+  { id: "IMOEX", label: "МосБиржа", title: "Индекс МосБиржи",
+    path: "/engines/stock/markets/index/securities/IMOEX", digits: 2, unit: "" },
+  { id: "RTSI",  label: "РТС",      title: "Индекс РТС",
+    path: "/engines/stock/markets/index/securities/RTSI",  digits: 2, unit: "" },
+  { id: "RGBI",  label: "ОФЗ",      title: "Индекс гособлигаций RGBI",
+    path: "/engines/stock/markets/index/securities/RGBI",  digits: 2, unit: "" },
+  { id: "BR",    label: "Brent",    title: "Нефть Brent, ближний фьючерс",
+    path: null, digits: 2, unit: " $" },
+  { id: "USD",   label: "Доллар",   title: "Доллар к рублю, биржевой курс",
+    path: "/engines/currency/markets/selt/securities/USD000UTSTOM", digits: 2, unit: " ₽" }
+];
+const RANGES = [
+  { id: "1m", label: "1 мес",  days: 31,   interval: 24 },
+  { id: "3m", label: "3 мес",  days: 92,   interval: 24 },
+  { id: "1y", label: "1 год",  days: 366,  interval: 24 },
+  { id: "5y", label: "5 лет",  days: 1830, interval: 31 }
+];
+
+/* =========================================================================
+   Состояние
+   ========================================================================= */
+const state = {
+  quotes: {},                     // key -> {value, change, time, ticker}
+  spark:  {},                     // key -> [числа]
+  futures: {},                    // ASSETCODE -> строка ISS ближней серии
+  chartId: localStorage.getItem("dash.chart") || "IMOEX",
+  rangeId: localStorage.getItem("dash.range") || "3m",
+  series: [],                     // [{t, v}]
+  lastOk: null,
+  sparkAt: 0,
+  seq: 0                          // счётчик запросов графика: гасим ответы устаревших кликов
+};
+
+/* =========================================================================
+   Загрузка
+   ========================================================================= */
+async function loadQuotes() {
+  const brent = futureCandidates("BR"), gold = futureCandidates("GD"), gas = futureCandidates("NG");
+
+  const [idx, cur, fut, shr, cbr, coin] = await Promise.all([
+    getJSON(ISS + "/engines/stock/markets/index/securities.json?iss.meta=off"
+      + "&securities=IMOEX,RTSI,RGBI,RUSFAR&iss.only=securities,marketdata"
+      + "&securities.columns=SECID,SHORTNAME"
+      + "&marketdata.columns=SECID,CURRENTVALUE,LASTVALUE,LASTCHANGEPRC,UPDATETIME", "MOEX индексы"),
+    getJSON(ISS + "/engines/currency/markets/selt/boards/CETS/securities.json?iss.meta=off"
+      + "&securities=USD000UTSTOM,CNYRUB_TOM,EUR_RUB__TOM&iss.only=marketdata"
+      + "&marketdata.columns=SECID,LAST,MARKETPRICE,LASTCHANGEPRCNT,UPDATETIME", "MOEX валюта"),
+    getJSON(ISS + "/engines/futures/markets/forts/securities.json?iss.meta=off"
+      + "&securities=" + [...brent, ...gold, ...gas].join(",") + "&iss.only=securities,marketdata"
+      + "&securities.columns=SECID,SHORTNAME,LASTTRADEDATE,ASSETCODE"
+      + "&marketdata.columns=SECID,LAST,LASTSETTLEPRICE,LASTTOPREVPRICE,UPDATETIME", "MOEX фьючерсы"),
+    getJSON(ISS + "/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off"
+      + "&securities=" + SHARES.join(",") + "&iss.only=securities,marketdata"
+      + "&securities.columns=SECID,SHORTNAME&marketdata.columns=SECID,LAST,LASTTOPREVPRICE,VALTODAY,UPDATETIME",
+      "MOEX акции"),
+    getJSON("https://www.cbr-xml-daily.ru/daily_json.js", "ЦБ РФ"),
+    getJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin"
+      + "&vs_currencies=usd&include_24hr_change=true", "CoinGecko")
+  ]);
+
+  const q = state.quotes;
+  const put = (key, value, change, time, ticker, chgUnit) => {
+    if (value == null || !isFinite(value)) return;             // нет сделки — держим прошлое значение
+    q[key] = { value, change: (change == null ? null : change), time, ticker, chgUnit };
+  };
+
+  if (idx) { const m = merge(idx);
+    for (const id of ["IMOEX", "RTSI", "RGBI"]) {
+      const r = m[id]; if (!r) continue;
+      put(id, r.CURRENTVALUE ?? r.LASTVALUE, r.LASTCHANGEPRC, r.UPDATETIME, id);
+    }
+    /* ставку сравниваем в процентных пунктах: «14,22 % против 13,99 %» — это +0,23 п.п. */
+    const rf = m.RUSFAR;
+    if (rf && rf.CURRENTVALUE != null)
+      put("RUSFAR", rf.CURRENTVALUE, rf.LASTVALUE != null ? rf.CURRENTVALUE - rf.LASTVALUE : null,
+          rf.UPDATETIME, "RUSFAR", " п.п.");
+  }
+  if (cur) { const m = byId(rows(cur, "marketdata"));
+    const pairs = { USD: "USD000UTSTOM", CNY: "CNYRUB_TOM", EUR: "EUR_RUB__TOM" };
+    for (const [key, id] of Object.entries(pairs)) {
+      const r = m[id]; if (!r) continue;
+      put(key, r.LAST ?? r.MARKETPRICE, r.LASTCHANGEPRCNT, r.UPDATETIME, id);
+    }
+  }
+  if (fut) {
+    state.futures = frontMonths(merge(fut));
+    for (const [asset, r] of Object.entries(state.futures))
+      put(asset, r.LAST ?? r.LASTSETTLEPRICE, r.LASTTOPREVPRICE, r.UPDATETIME, r.SHORTNAME || r.SECID);
+  }
+  if (coin && coin.bitcoin)
+    put("BTC", coin.bitcoin.usd, coin.bitcoin.usd_24h_change, hhmm(new Date()), "BTC/USD");
+
+  if (Object.keys(q).length) state.lastOk = new Date();
+  renderTiles();
+  renderShares(shr);
+  renderCbr(cbr);
+  renderStatus();
+}
+
+/* спарклайны — тяжелее котировок, поэтому обновляем раз в 10 минут */
+async function loadSparks() {
+  if (Date.now() - state.sparkAt < 600000 && Object.keys(state.spark).length) return;
+  const from = daysAgo(45);
+  const paths = {
+    IMOEX:  "/engines/stock/markets/index/securities/IMOEX",
+    RTSI:   "/engines/stock/markets/index/securities/RTSI",
+    RGBI:   "/engines/stock/markets/index/securities/RGBI",
+    RUSFAR: "/engines/stock/markets/index/securities/RUSFAR",
+    USD:    "/engines/currency/markets/selt/securities/USD000UTSTOM",
+    CNY:    "/engines/currency/markets/selt/securities/CNYRUB_TOM"
+  };
+  for (const [asset, r] of Object.entries(state.futures))
+    paths[asset] = "/engines/futures/markets/forts/securities/" + r.SECID;
+
+  await Promise.all(Object.entries(paths).map(async ([key, p]) => {
+    const j = await getJSON(ISS + p + "/candles.json?iss.meta=off&from=" + from
+      + "&interval=24&iss.only=candles&candles.columns=close,end", "история " + key);
+    const c = rows(j, "candles").map(r => r.close).filter(v => v != null);
+    if (c.length > 1) state.spark[key] = c;
+  }));
+  /* биткойн — отдельная витрина */
+  const j = await getJSON("https://api.coingecko.com/api/v3/coins/bitcoin/market_chart"
+    + "?vs_currency=usd&days=30&interval=daily", "история BTC");
+  if (j && j.prices) state.spark.BTC = j.prices.map(p => p[1]);
+  state.sparkAt = Date.now();
+  renderTiles();
+}
+
+async function loadSeries() {
+  const seq = ++state.seq;
+  const inst = CHART_SET.find(c => c.id === state.chartId) || CHART_SET[0];
+  const rng  = RANGES.find(r => r.id === state.rangeId) || RANGES[1];
+  let path = inst.path;
+  if (!path && inst.id === "BR") {
+    const f = state.futures.BR;
+    if (!f) { state.series = []; drawChart(); return; }   // серия ещё не загрузилась
+    path = "/engines/futures/markets/forts/securities/" + f.SECID;
+  }
+  const j = await getJSON(ISS + path + "/candles.json?iss.meta=off&from=" + daysAgo(rng.days)
+    + "&interval=" + rng.interval + "&iss.only=candles&candles.columns=close,end", "график");
+  if (seq !== state.seq) return;                            // пока ждали, кликнули другое
+  state.series = rows(j, "candles")
+    .filter(r => r.close != null)
+    .map(r => ({ t: r.end.slice(0, 10), v: r.close }));
+  drawChart();
+  renderStatus();
+}
+
+/* =========================================================================
+   Отрисовка
+   ========================================================================= */
+function renderTiles() {
+  for (const grid of ["macro", "index"]) {
+    const host = $("#grid-" + grid);
+    const html = TILES.filter(t => t.grid === grid).map(t => {
+      const q = state.quotes[t.key];
+      const v = q ? nf(q.value, t.digits) : "";
+      const unit = t.unit ? '<span class="unit">' + t.unit + "</span>" : "";
+      const chg = q && q.change != null
+        ? '<div class="chg ' + cls(q.change) + '">' + pct(q.change, q.chgUnit) + "</div>"
+        : '<div class="chg">—</div>';
+      return '<div class="tile' + (q ? "" : " pending") + '">'
+        + '<div class="name"><span>' + t.name + "</span>"
+        + '<span class="tick">' + (q && q.ticker ? q.ticker : t.hint) + "</span></div>"
+        + '<div class="val">' + (q ? v + unit : '<span class="skel"></span>') + "</div>"
+        + chg
+        + sparkSVG(state.spark[t.key])
+        + "</div>";
+    }).join("");
+    host.innerHTML = html;
+  }
+}
+
+/* спарклайн: линия без осей, цвет — от направления за период */
+function sparkSVG(data) {
+  if (!data || data.length < 2) return '<svg class="spark" aria-hidden="true"></svg>';
+  const w = 100, h = 34, pad = 3;
+  const min = Math.min(...data), max = Math.max(...data), span = (max - min) || 1;
+  const x = i => pad + i * (w - 2 * pad) / (data.length - 1);
+  const y = v => h - pad - (v - min) / span * (h - 2 * pad);
+  const d = data.map((v, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(v).toFixed(1)).join(" ");
+  const rising = data[data.length - 1] >= data[0];
+  const stroke = rising ? "var(--good)" : "var(--critical)";
+  return '<svg class="spark" viewBox="0 0 ' + w + " " + h + '" preserveAspectRatio="none" aria-hidden="true">'
+    + '<path d="' + d + '" fill="none" stroke="' + stroke + '" stroke-width="1.5" '
+    + 'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
+}
+
+function renderShares(j) {
+  const tb = $("#tbody-shares");
+  if (!j) { tb.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted)">нет данных</td></tr>'; return; }
+  const list = Object.values(merge(j))
+    .filter(r => r.LAST != null)
+    .sort((a, b) => (b.VALTODAY || 0) - (a.VALTODAY || 0));
+  if (!list.length) { tb.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted)">торги закрыты</td></tr>'; return; }
+  tb.innerHTML = list.map(r =>
+    "<tr><td>" + r.SECID + "<span>" + (r.SHORTNAME || "") + "</span></td>"
+    + "<td>" + nf(r.LAST, r.LAST < 10 ? 4 : 2) + "</td>"
+    + '<td class="' + cls(r.LASTTOPREVPRICE) + '">' + pct(r.LASTTOPREVPRICE) + "</td>"
+    + "<td>" + nf((r.VALTODAY || 0) / 1e6, 0) + "</td></tr>").join("");
+}
+
+function renderCbr(j) {
+  const tb = $("#tbody-cbr");
+  if (!j || !j.Valute) { tb.innerHTML = '<tr><td colspan="3" style="color:var(--text-muted)">нет данных</td></tr>'; return; }
+  const want = [["USD", "Доллар США"], ["EUR", "Евро"], ["CNY", "Юань"], ["GBP", "Фунт стерлингов"]];
+  tb.innerHTML = want.map(([code, name]) => {
+    const c = j.Valute[code]; if (!c) return "";
+    const unit = c.Nominal > 1 ? " (за " + c.Nominal + ")" : "";
+    const d = c.Value - c.Previous, p = c.Previous ? d / c.Previous * 100 : null;
+    return "<tr><td>" + name + unit + "</td><td>" + nf(c.Value, 4) + "</td>"
+      + '<td class="' + cls(d) + '">' + (d > 0 ? "+" : "") + nf(d, 4) + "  (" + pct(p) + ")</td></tr>";
+  }).join("")
+  + '<tr><td colspan="3" style="color:var(--text-muted);text-align:left">на ' + dmy(j.Date) + "</td></tr>";
+}
+
+function renderStatus() {
+  const el = $("#status"), errs = [...errors.keys()];
+  const age = state.lastOk ? (Date.now() - state.lastOk) / 1000 : Infinity;
+  const kind = !state.lastOk || errs.length > 3 ? "err" : age > 300 ? "stale" : "";
+  el.innerHTML = '<span class="dot ' + kind + '"></span>'
+    + (state.lastOk ? "обновлено в " + hhmm(state.lastOk) + " мск" : "нет связи с источниками");
+  const box = $("#errbox");
+  if (errs.length) {
+    box.classList.add("on");
+    box.textContent = "Не ответили: " + errs.map(k => k + " (" + errors.get(k) + ")").join("; ")
+      + ". Показаны последние удачные значения.";
+  } else box.classList.remove("on");
+}
+
+/* ---------- график: одна линия, кроссхэйр, тултип ---------- */
+const chart = { pts: [], box: null };
+function drawChart() {
+  const svg = $("#chart"), inst = CHART_SET.find(c => c.id === state.chartId) || CHART_SET[0];
+  $("#chart-title").firstChild.nodeValue = inst.title + " ";
+  const data = state.series;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+
+  const W = svg.clientWidth || 900, H = svg.clientHeight || 300;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  const pad = { t: 14, r: 58, b: 26, l: 10 };
+  const iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+
+  const mk = (n, a) => { const e = document.createElementNS(SVGNS, n);
+    for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  if (data.length < 2) {
+    const t = mk("text", { x: W / 2, y: H / 2, "text-anchor": "middle", class: "axis" });
+    t.textContent = errors.size ? "источник не ответил" : "нет данных за период";
+    svg.appendChild(t); chart.pts = []; renderChartTable(); return;
+  }
+
+  const vals = data.map(d => d.v);
+  let min = Math.min(...vals), max = Math.max(...vals);
+  const padV = (max - min) * 0.08 || Math.abs(max) * 0.01 || 1;
+  min -= padV; max += padV;
+  const X = i => pad.l + i * iw / (data.length - 1);
+  const Y = v => pad.t + ih - (v - min) / (max - min) * ih;
+
+  /* сетка и подписи по значению — справа, чтобы не резать линию */
+  const ticks = 4;
+  for (let i = 0; i <= ticks; i++) {
+    const v = min + (max - min) * i / ticks, y = Y(v);
+    svg.appendChild(mk("line", { x1: pad.l, x2: pad.l + iw, y1: y, y2: y, class: "grid-line" }));
+    const t = mk("text", { x: pad.l + iw + 8, y: y + 4, class: "axis" });
+    t.textContent = nf(v, inst.digits === 0 ? 0 : Math.min(inst.digits, 2));
+    svg.appendChild(t);
+  }
+  /* подписи по времени: первая, середина, последняя */
+  [0, Math.floor(data.length / 2), data.length - 1].forEach((i, k) => {
+    const t = mk("text", { x: X(i), y: H - 8, class: "axis",
+      "text-anchor": k === 0 ? "start" : k === 2 ? "end" : "middle" });
+    t.textContent = dmy(data[i].t);
+    svg.appendChild(t);
+  });
+
+  const line = data.map((d, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(d.v).toFixed(1)).join(" ");
+  svg.appendChild(mk("path", { d: line + " L" + X(data.length - 1).toFixed(1) + " " + (pad.t + ih)
+    + " L" + X(0).toFixed(1) + " " + (pad.t + ih) + " Z", class: "area" }));
+  svg.appendChild(mk("path", { d: line, class: "series" }));
+
+  chart.pts = data.map((d, i) => ({ x: X(i), y: Y(d.v), d }));
+  chart.inst = inst;
+  const first = data[0].v, last = data[data.length - 1].v;
+  $("#chart-sub").textContent = "с " + dmy(data[0].t) + ": "
+    + (last >= first ? "+" : "") + nf((last / first - 1) * 100, 2) + " %"
+    + " · " + nf(last, inst.digits) + inst.unit;
+  renderChartTable();
+}
+
+function renderChartTable() {
+  const t = $("#chart-table"), inst = chart.inst || CHART_SET[0];
+  if (!state.series.length) { t.innerHTML = ""; return; }
+  t.innerHTML = "<thead><tr><th>Дата</th><th>Закрытие" + inst.unit + "</th></tr></thead><tbody>"
+    + state.series.slice().reverse().map(d =>
+        "<tr><td>" + dmy(d.t) + "</td><td>" + nf(d.v, inst.digits) + "</td></tr>").join("")
+    + "</tbody>";
+}
+
+/* наведение — кроссхэйр и подпись значения */
+function hover(ev) {
+  const svg = $("#chart"), tip = $("#tip");
+  if (!chart.pts.length) return;
+  const r = svg.getBoundingClientRect();
+  const sx = (ev.clientX - r.left) * (svg.viewBox.baseVal.width || r.width) / r.width;
+  let best = chart.pts[0];
+  for (const p of chart.pts) if (Math.abs(p.x - sx) < Math.abs(best.x - sx)) best = p;
+
+  svg.querySelectorAll(".cross,.hpoint").forEach(n => n.remove());
+  const mk = (n, a) => { const e = document.createElementNS(SVGNS, n);
+    for (const k in a) e.setAttribute(k, a[k]); return e; };
+  svg.appendChild(mk("line", { x1: best.x, x2: best.x, y1: 10, y2: svg.viewBox.baseVal.height - 26, class: "cross" }));
+  svg.appendChild(mk("circle", { cx: best.x, cy: best.y, r: 4.5, class: "hpoint" }));
+
+  const inst = chart.inst || CHART_SET[0];
+  tip.innerHTML = "<b>" + nf(best.d.v, inst.digits) + inst.unit + "</b><i>" + dmy(best.d.t) + "</i>";
+  tip.style.left = (best.x / (svg.viewBox.baseVal.width || r.width) * r.width) + "px";
+  tip.style.top  = (best.y / (svg.viewBox.baseVal.height || r.height) * r.height) + "px";
+  tip.style.opacity = 1;
+}
+function unhover() {
+  $("#chart").querySelectorAll(".cross,.hpoint").forEach(n => n.remove());
+  $("#tip").style.opacity = 0;
+}
+
+/* =========================================================================
+   Управление
+   ========================================================================= */
+function buildControls() {
+  $("#chart-pick").innerHTML = CHART_SET.map(c =>
+    '<button class="ghost" type="button" data-chart="' + c.id + '" aria-pressed="'
+    + (c.id === state.chartId) + '">' + c.label + "</button>").join("");
+  $("#range-pick").innerHTML = RANGES.map(r =>
+    '<button class="ghost" type="button" data-range="' + r.id + '" aria-pressed="'
+    + (r.id === state.rangeId) + '">' + r.label + "</button>").join("");
+}
+document.addEventListener("click", e => {
+  const b = e.target.closest("button[data-chart],button[data-range]");
+  if (!b) return;
+  if (b.dataset.chart) { state.chartId = b.dataset.chart; localStorage.setItem("dash.chart", state.chartId); }
+  else { state.rangeId = b.dataset.range; localStorage.setItem("dash.range", state.rangeId); }
+  buildControls(); loadSeries();
+});
+
+$("#refresh").addEventListener("click", () => { loadQuotes(); loadSeries(); });
+$("#theme").addEventListener("click", () => {
+  const dark = document.documentElement.getAttribute("data-theme") !== "light";
+  document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
+  localStorage.setItem("dash.theme", dark ? "light" : "dark");
+  $("#theme").textContent = dark ? "Тёмная тема" : "Светлая тема";
+  drawChart();
+});
+(function initTheme() {
+  const saved = localStorage.getItem("dash.theme") || "dark";
+  document.documentElement.setAttribute("data-theme", saved);
+  $("#theme").textContent = saved === "dark" ? "Светлая тема" : "Тёмная тема";
+})();
+
+const svg = $("#chart");
+svg.addEventListener("pointermove", hover);
+svg.addEventListener("pointerleave", unhover);
+window.addEventListener("resize", () => { clearTimeout(window.__rz);
+  window.__rz = setTimeout(drawChart, 150); });
+
+/* автообновление: 60 секунд, и только когда вкладка открыта */
+let timer = null;
+function startTimer() {
+  clearInterval(timer);
+  timer = setInterval(() => { if (!document.hidden) { loadQuotes(); loadSparks(); } }, 60000);
+}
+document.addEventListener("visibilitychange", () => { if (!document.hidden) loadQuotes(); });
+
+/* поехали */
+buildControls();
+loadQuotes().then(loadSparks);
+loadSeries();
+startTimer();
+</script>
+</body>
+</html>
