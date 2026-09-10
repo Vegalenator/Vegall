@@ -18,7 +18,15 @@ HEAD = """<!DOCTYPE html>
 </head>
 <body>
 """
-FOOT = "\n</body>\n</html>\n"
+FOOT = """
+<div style="max-width:1900px;margin:0 auto;padding:0 clamp(14px,3vw,34px) 40px;
+ font:300 12.5px/1.6 Spectral,Georgia,serif;color:#6d6a60">
+  <a href="../" style="color:#c9a24e;text-decoration:none;border-bottom:1px solid rgba(201,162,78,.35)">Шкатулка Мракса</a>
+  — квест по тем же семи книгам: семь механических испытаний в латунной шкатулке.
+</div>
+</body>
+</html>
+"""
 
 OUT.write_text(HEAD + SRC.read_text(encoding="utf-8") + FOOT, encoding="utf-8")
 print(f"собрано: {OUT.relative_to(ROOT)} ({OUT.stat().st_size // 1024} КБ)")
