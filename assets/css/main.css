@@ -356,6 +356,7 @@ body.nox #vignette{ background:radial-gradient(115% 90% at 50% 42%, transparent 
   width:auto; padding:0 .9em; height:34px;
   font-family:var(--font-body); font-size:.7rem; letter-spacing:.2em; text-transform:uppercase;
 }
+a.hud__btn{ text-decoration:none; }
 .hud__btn[aria-pressed="false"] .wave{ opacity:.18; }
 
 /* ---------- строка заклинаний ---------- */

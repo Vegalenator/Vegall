@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Горизонтальная схема связей героев, событий и артефактов всех семи книг о Гарри Поттере.">
+<meta name="theme-color" content="#0a0c10">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a0c10'/%3E%3Cg fill='none' stroke='%23c9a24e' stroke-width='1.6'%3E%3Ccircle cx='16' cy='16' r='6'/%3E%3Ccircle cx='16' cy='16' r='2'/%3E%3Cpath d='M16 4v4M16 24v4M4 16h4M24 16h4M7.5 7.5l3 3M21.5 21.5l3 3M24.5 7.5l-3 3M10.5 21.5l-3 3'/%3E%3C/g%3E%3C/svg%3E">
+<style>*{box-sizing:border-box}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Механизм семи книг</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Old+Standard+TT:ital,wght@0,400;0,700;1,400&family=Spectral:ital,wght@0,300;0,400;0,600;1,400&family=Oswald:wght@300;400;500&family=Caveat:wght@400;600&display=swap">
+<style>
+:root{
+  --ink:#0a0c10; --ink2:#10141b; --plate:#161b24; --plate-hi:#1d2531; --plate-top:#232c3a;
+  --brass:#c9a24e; --brass-lo:#8a6c33; --brass-hi:#e8cd8c; --copper:#b5713f;
+  --patina:#55a898; --carmine:#a8474c; --lead:#7d88b4; --amethyst:#9b86c8;
+  --parchment:#ece2cc; --muted:#9a9281; --dim:#6d6a60;
+  --rule:rgba(201,162,78,.20); --rule-soft:rgba(201,162,78,.10);
+  --lane-hero:#d8b25a; --lane-dark:#a8474c; --lane-order:#55a898;
+  --lane-school:#c07a44; --lane-power:#7d88b4; --lane-relics:#9b86c8;
+  --shadow:0 18px 40px rgba(0,0,0,.55);
+  --disp:"Old Standard TT",Georgia,"Times New Roman",serif;
+  --body:"Spectral",Georgia,serif;
+  --label:"Oswald","Helvetica Neue",Arial,sans-serif;
+  --hand:"Caveat","Segoe Script",cursive;
+  --lane-h:168px; --card-w:252px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--ink); color:var(--parchment);
+  font-family:var(--body); font-weight:300; font-size:15px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+  background-image:
+    radial-gradient(1200px 500px at 18% -8%, rgba(201,162,78,.10), transparent 62%),
+    radial-gradient(900px 460px at 88% 4%, rgba(85,168,152,.07), transparent 60%),
+    radial-gradient(700px 700px at 50% 120%, rgba(155,134,200,.06), transparent 65%);
+  background-attachment:fixed;
+}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--brass-hi); outline-offset:2px}
+::selection{background:rgba(201,162,78,.3)}
+
+/* ─────────── шапка ─────────── */
+.shell{padding-inline:clamp(14px,3vw,34px); padding-block:0; max-width:1900px; margin:0 auto}
+.head{display:flex; flex-wrap:wrap; align-items:flex-end; gap:18px 30px; padding-block:26px 16px; border-bottom:1px solid var(--rule); position:relative}
+.head::after{content:""; position:absolute; left:0; right:0; bottom:-4px; height:3px;
+  background:linear-gradient(90deg,transparent,rgba(201,162,78,.35) 12%,rgba(201,162,78,.12) 50%,rgba(85,168,152,.28) 88%,transparent)}
+.brand{display:flex; align-items:center; gap:16px; min-width:0}
+.cog{width:56px; height:56px; flex:none; color:var(--brass); opacity:.85; animation:turn 46s linear infinite}
+@keyframes turn{to{transform:rotate(360deg)}}
+.brand h1{font-family:var(--disp); font-weight:700; font-size:clamp(26px,3.4vw,40px); line-height:1;
+  margin:0 0 6px; letter-spacing:.01em; text-wrap:balance;
+  background:linear-gradient(178deg,var(--brass-hi),var(--brass) 42%,var(--brass-lo));
+  -webkit-background-clip:text; background-clip:text; color:transparent}
+.brand p{margin:0; color:var(--muted); font-size:13.5px; max-width:62ch}
+.head-meta{margin-left:auto; text-align:right; font-family:var(--label); font-weight:300;
+  font-size:11px; letter-spacing:.16em; text-transform:uppercase; color:var(--dim); line-height:1.9}
+.head-meta b{display:block; font-weight:500; color:var(--brass); font-size:13px; letter-spacing:.1em}
+
+/* ─────────── пульт управления ─────────── */
+.console{display:flex; flex-wrap:wrap; align-items:center; gap:10px 18px; padding-block:14px}
+.switches{display:flex; flex-wrap:wrap; gap:8px}
+.sw{display:inline-flex; align-items:center; gap:8px; padding:6px 13px 6px 9px; border-radius:2px;
+  border:1px solid rgba(236,226,204,.14); background:linear-gradient(180deg,var(--plate-top),var(--plate));
+  font-family:var(--label); font-weight:400; font-size:11.5px; letter-spacing:.11em; text-transform:uppercase;
+  color:var(--muted); transition:color .18s,border-color .18s,background .18s; white-space:nowrap}
+.sw .bulb{width:9px; height:9px; border-radius:50%; flex:none; background:var(--c);
+  box-shadow:0 0 0 1px rgba(0,0,0,.5), 0 0 9px var(--c); transition:box-shadow .18s,opacity .18s}
+.sw:hover{color:var(--parchment); border-color:rgba(201,162,78,.4)}
+.sw[aria-pressed="false"]{color:var(--dim); border-color:rgba(236,226,204,.07); background:var(--ink2)}
+.sw[aria-pressed="false"] .bulb{opacity:.22; box-shadow:none}
+.seek{position:relative; margin-left:auto; display:flex; align-items:center}
+.seek svg{position:absolute; left:10px; width:15px; height:15px; color:var(--brass-lo); pointer-events:none}
+.seek input{width:min(300px,58vw); padding:9px 12px 9px 32px; border-radius:2px; color:var(--parchment);
+  border:1px solid rgba(236,226,204,.14); background:var(--ink2); font-family:var(--body); font-size:14px}
+.seek input::placeholder{color:var(--dim)}
+.seek input:focus{border-color:var(--brass); outline:none; box-shadow:0 0 0 3px rgba(201,162,78,.12)}
+.hint{font-family:var(--hand); font-size:16px; color:var(--brass-lo); white-space:nowrap}
+.hint b{color:var(--patina); font-weight:600}
+
+/* ─────────── смотровое окно ─────────── */
+.viewport{
+  position:relative; overflow:auto; overscroll-behavior-x:contain; cursor:grab;
+  height:clamp(520px, calc(100vh - 236px), 1180px);
+  border:1px solid var(--rule); border-radius:3px;
+  background:
+    linear-gradient(180deg,rgba(10,12,16,.4),rgba(10,12,16,.86)),
+    repeating-linear-gradient(90deg,rgba(236,226,204,.035) 0 1px,transparent 1px 46px),
+    repeating-linear-gradient(0deg,rgba(236,226,204,.028) 0 1px,transparent 1px 46px),
+    var(--ink2);
+  box-shadow:inset 0 0 90px rgba(0,0,0,.8), var(--shadow);
+  scrollbar-color:var(--brass-lo) var(--ink2);
+}
+.viewport.dragging{cursor:grabbing}
+.viewport::-webkit-scrollbar{height:12px; width:12px}
+.viewport::-webkit-scrollbar-track{background:var(--ink)}
+.viewport::-webkit-scrollbar-thumb{background:linear-gradient(180deg,var(--brass-lo),#5c4722); border-radius:2px}
+.canvas{position:relative; will-change:transform}
+.wires{position:absolute; inset:0; pointer-events:none; z-index:2; overflow:visible}
+.wires path{fill:none; stroke-linecap:round; transition:opacity .25s, stroke-width .25s}
+.w-flow{stroke:rgba(201,162,78,.5); stroke-width:1.6}
+.w-dark{stroke:rgba(168,71,76,.62); stroke-width:1.6; stroke-dasharray:1 5}
+.w-echo{stroke:rgba(85,168,152,.5); stroke-width:1.3; stroke-dasharray:7 6}
+.wires path.lit{stroke-width:2.6; opacity:1; filter:drop-shadow(0 0 6px currentColor)}
+.wires.focusing path{opacity:.1}
+.wires.focusing path.lit{opacity:1}
+
+/* приводной вал и барабаны книг */
+.shaft{position:absolute; left:0; top:46px; height:2px; z-index:1;
+  background:linear-gradient(90deg,transparent,rgba(201,162,78,.5) 3%,rgba(201,162,78,.5) 97%,transparent)}
+.book-plate{position:absolute; top:14px; z-index:4; padding:7px 16px 8px; border-radius:2px;
+  border:1px solid rgba(201,162,78,.34); background:linear-gradient(180deg,#2a3140,#151b24);
+  box-shadow:0 3px 14px rgba(0,0,0,.6), inset 0 1px 0 rgba(232,205,140,.22); text-align:center; min-width:200px}
+.book-plate .rn{font-family:var(--disp); font-weight:700; font-size:12px; letter-spacing:.34em; color:var(--brass)}
+.book-plate .tt{font-family:var(--disp); font-size:16.5px; color:var(--parchment); line-height:1.2; margin-top:2px}
+.book-plate .yr{font-family:var(--label); font-weight:300; font-size:10.5px; letter-spacing:.2em; color:var(--dim); margin-top:3px}
+.book-band{position:absolute; top:0; bottom:0; z-index:0; border-left:1px dashed rgba(201,162,78,.16)}
+.book-band:nth-of-type(even){background:rgba(236,226,204,.014)}
+
+/* дорожки */
+.lane-rail{position:absolute; left:0; height:1px; z-index:1;
+  background:repeating-linear-gradient(90deg,var(--lc) 0 26px,transparent 26px 34px); opacity:.28}
+.lane-tag{position:sticky; left:10px; z-index:6; display:inline-flex; align-items:center; gap:8px;
+  white-space:nowrap; padding:4px 12px 5px 9px; border-radius:2px; border:1px solid rgba(0,0,0,.6);
+  background:linear-gradient(180deg,#2b3342,#12171f); box-shadow:0 4px 16px rgba(0,0,0,.75), inset 0 1px 0 rgba(255,255,255,.07);
+  font-family:var(--label); font-weight:400; font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--lc)}
+.lane-tag svg{width:15px; height:15px; flex:none; color:var(--lc)}
+.lane-row{position:absolute; left:0; z-index:5; pointer-events:none}
+.lane-row .lane-tag{pointer-events:auto}
+
+/* ─────────── карточка события ─────────── */
+.node{position:absolute; z-index:3; width:var(--card-w); padding:11px 12px 10px; border-radius:2px;
+  border:1px solid rgba(236,226,204,.13); border-left:3px solid var(--lc);
+  background:linear-gradient(168deg,rgba(34,42,55,.97),rgba(17,21,29,.97));
+  box-shadow:0 8px 22px rgba(0,0,0,.55); cursor:pointer;
+  transition:transform .2s cubic-bezier(.2,.8,.3,1), box-shadow .2s, border-color .2s, opacity .25s}
+.node:hover,.node:focus-visible{transform:translateY(-3px); border-color:var(--lc);
+  box-shadow:0 14px 30px rgba(0,0,0,.7), 0 0 0 1px var(--lc), 0 0 26px -6px var(--lc)}
+.node .n-top{display:flex; align-items:center; gap:7px; margin-bottom:5px}
+.node .n-ico{width:22px; height:22px; flex:none; color:var(--lc)}
+.node .n-kind{font-family:var(--label); font-weight:300; font-size:9.5px; letter-spacing:.19em;
+  text-transform:uppercase; color:var(--dim)}
+.node h3{margin:0; font-family:var(--disp); font-weight:700; font-size:16.5px; line-height:1.2; color:var(--parchment);
+  text-wrap:balance; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.node p{margin:5px 0 0; font-size:12.5px; line-height:1.42; color:var(--muted);
+  display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden}
+.node .n-chips{display:flex; gap:5px; margin-top:9px; align-items:center}
+.ic{width:29px; height:29px; flex:none; border-radius:50%; display:grid; place-items:center;
+  border:1px solid rgba(236,226,204,.17); background:rgba(8,11,16,.8);
+  transition:transform .15s, border-color .15s, background .15s}
+.ic svg{width:17px; height:17px; color:var(--cc,var(--brass-lo)); transition:color .15s}
+.ic:hover{transform:translateY(-2px) scale(1.07); border-color:var(--cc,var(--brass)); background:rgba(201,162,78,.12)}
+.ic:hover svg{color:var(--brass-hi)}
+.ic.obj{border-style:dashed}
+.n-more{font-family:var(--label); font-weight:300; font-size:10.5px; letter-spacing:.08em; color:var(--dim); padding-left:2px}
+#tip{position:fixed; z-index:80; pointer-events:none; opacity:0; transform:translate(-50%,-140%);
+  padding:5px 10px 6px; border-radius:2px; border:1px solid rgba(201,162,78,.45);
+  background:linear-gradient(180deg,#232c3a,#10151d); box-shadow:0 10px 24px rgba(0,0,0,.7);
+  font-family:var(--label); font-weight:300; font-size:11.5px; letter-spacing:.06em; color:var(--parchment);
+  white-space:nowrap; transition:opacity .12s}
+#tip.on{opacity:1}
+#tip b{font-weight:500; color:var(--brass); font-family:var(--body)}
+.node.dim{opacity:.16; filter:saturate(.2)}
+.node.hit{border-color:var(--brass-hi); box-shadow:0 0 0 1px var(--brass-hi), 0 0 34px -4px var(--brass)}
+.node.pulse{animation:pulse 1.5s ease-out 2}
+@keyframes pulse{0%,100%{box-shadow:0 8px 22px rgba(0,0,0,.55)}
+  50%{box-shadow:0 0 0 2px var(--brass-hi), 0 0 40px -2px var(--brass)}}
+
+.chip{display:inline-flex; align-items:center; gap:4px; padding:2px 7px 2px 4px; border-radius:2px;
+  border:1px solid rgba(236,226,204,.15); background:rgba(9,12,17,.75);
+  font-family:var(--label); font-weight:300; font-size:10.5px; letter-spacing:.045em; color:var(--muted);
+  transition:color .16s, border-color .16s, background .16s; max-width:100%}
+.chip{flex:0 0 auto}
+.chip svg{width:14px; height:14px; flex:none; color:var(--cc,var(--brass-lo))}
+.chip span{white-space:nowrap}
+.chip:hover{color:var(--parchment); border-color:var(--cc,var(--brass)); background:rgba(201,162,78,.1)}
+.chip.obj{border-style:dashed}
+
+/* ─────────── латунная рейка-обзор ─────────── */
+.rail{position:relative; margin-top:14px; height:62px; border:1px solid var(--rule); border-radius:3px;
+  background:linear-gradient(180deg,#141920,#0a0d12); overflow:hidden; cursor:crosshair;
+  box-shadow:inset 0 0 40px rgba(0,0,0,.7)}
+.rail-seg{position:absolute; top:0; bottom:0; border-left:1px solid rgba(201,162,78,.16)}
+.rail-seg span{position:absolute; bottom:3px; left:6px; font-family:var(--label); font-weight:300;
+  font-size:9px; letter-spacing:.2em; color:rgba(154,146,129,.55)}
+.rail-dot{position:absolute; width:5px; height:5px; border-radius:50%; background:var(--lc); opacity:.75}
+.rail-win{position:absolute; top:0; bottom:0; border:1px solid var(--brass); border-radius:2px;
+  background:rgba(201,162,78,.11); box-shadow:0 0 18px rgba(201,162,78,.28); pointer-events:none}
+.legend{display:flex; flex-wrap:wrap; gap:8px 22px; padding:12px 2px 34px; color:var(--dim);
+  font-family:var(--label); font-weight:300; font-size:11px; letter-spacing:.09em; text-transform:uppercase}
+.legend i{display:inline-block; width:26px; height:0; vertical-align:middle; margin-right:7px}
+.legend .l1{border-top:2px solid rgba(201,162,78,.75)}
+.legend .l2{border-top:2px dotted rgba(168,71,76,.9)}
+.legend .l3{border-top:2px dashed rgba(85,168,152,.85)}
+.legend .l4{border-top:2px dashed rgba(236,226,204,.4)}
+
+/* ─────────── окно-медальон ─────────── */
+.veil{position:fixed; inset:0; z-index:90; display:none; align-items:center; justify-content:center;
+  padding:clamp(10px,3vw,34px); background:rgba(4,6,9,.82); backdrop-filter:blur(4px)}
+.veil.open{display:flex; animation:fade .22s ease}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+.win{position:relative; width:min(880px,100%); max-height:min(90vh,860px); overflow:auto; border-radius:3px;
+  border:1px solid rgba(201,162,78,.4); background:
+    radial-gradient(700px 260px at 12% -6%, rgba(201,162,78,.10), transparent 60%),
+    linear-gradient(172deg,#1b2230,#0c1015 62%);
+  box-shadow:0 40px 90px rgba(0,0,0,.8), inset 0 1px 0 rgba(232,205,140,.18);
+  animation:rise .28s cubic-bezier(.2,.9,.3,1)}
+@keyframes rise{from{opacity:0; transform:translateY(18px) scale(.985)}}
+.win-grid{display:grid; grid-template-columns:262px 1fr; gap:0}
+.win-art{position:relative; padding:26px 20px; border-right:1px solid var(--rule);
+  background:linear-gradient(180deg,rgba(201,162,78,.07),transparent 55%); display:flex; flex-direction:column; align-items:center; gap:14px}
+.medal{position:relative; width:214px; height:214px; flex:none}
+.medal svg{position:absolute; inset:0; width:100%; height:100%}
+.medal .art{padding:34px; color:var(--brass-hi)}
+.stamp{font-family:var(--label); font-weight:300; font-size:10px; letter-spacing:.24em;
+  text-transform:uppercase; color:var(--dim); text-align:center}
+.win-body{padding:26px 30px 30px; min-width:0}
+.win-kick{display:flex; flex-wrap:wrap; align-items:center; gap:8px 12px; margin-bottom:8px}
+.tag{font-family:var(--label); font-weight:400; font-size:10px; letter-spacing:.2em; text-transform:uppercase;
+  padding:3px 9px; border:1px solid var(--tc,var(--rule)); border-radius:2px; color:var(--tc,var(--brass))}
+.win h2{margin:0; font-family:var(--disp); font-weight:700; font-size:clamp(24px,3.2vw,32px); line-height:1.12; text-wrap:balance}
+.win .sub{margin:4px 0 0; font-style:italic; color:var(--brass); font-size:15px}
+.win .lead{margin:16px 0 0; font-size:15.5px; line-height:1.68; color:#ded4bf; max-width:62ch}
+.win .lead p{margin:0 0 12px}
+.note{margin-top:16px; padding:11px 14px 12px 15px; border-left:2px solid var(--patina);
+  background:rgba(85,168,152,.07); font-family:var(--hand); font-size:19px; line-height:1.35; color:#bfe0d8}
+.note b{display:block; font-family:var(--label); font-weight:300; font-size:9.5px; letter-spacing:.22em;
+  text-transform:uppercase; color:var(--patina); margin-bottom:3px}
+.win h4{margin:22px 0 9px; font-family:var(--label); font-weight:300; font-size:10.5px;
+  letter-spacing:.24em; text-transform:uppercase; color:var(--dim);
+  display:flex; align-items:center; gap:10px}
+.win h4::after{content:""; flex:1; height:1px; background:var(--rule)}
+.win-links{display:flex; flex-wrap:wrap; gap:6px}
+.win-links .chip{font-size:12px; padding:4px 10px 4px 6px}
+.win-links .chip svg{width:16px; height:16px}
+.close{position:absolute; top:10px; right:12px; z-index:3; width:34px; height:34px; border-radius:50%;
+  border:1px solid var(--rule); color:var(--muted); display:grid; place-items:center; background:rgba(10,13,18,.8)}
+.close:hover{color:var(--parchment); border-color:var(--brass)}
+.back{position:absolute; top:10px; left:12px; z-index:3; display:none; align-items:center; gap:6px;
+  padding:5px 11px; border-radius:2px; border:1px solid var(--rule); background:rgba(10,13,18,.8);
+  font-family:var(--label); font-weight:300; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; color:var(--muted)}
+.back.on{display:inline-flex}
+.back:hover{color:var(--brass); border-color:var(--brass)}
+
+footer{padding:0 2px 40px; color:var(--dim); font-size:12.5px; border-top:1px solid var(--rule-soft); padding-top:16px}
+footer b{color:var(--muted); font-weight:400}
+
+@media (max-width:820px){
+  .win-grid{grid-template-columns:1fr}
+  .win-art{border-right:0; border-bottom:1px solid var(--rule); padding:20px}
+  .medal{width:168px; height:168px}
+  .medal .art{padding:26px}
+  .win-body{padding:20px}
+  .head-meta{display:none}
+  .viewport{height:clamp(480px,calc(100vh - 300px),900px)}
+  .seek{margin-left:0; width:100%}
+  .seek input{width:100%}
+}
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important}
+  .cog{animation:none}
+}
+</style>
+
+<div class="shell">
+  <header class="head">
+    <div class="brand">
+      <svg class="cog" viewBox="0 0 64 64" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6">
+        <path d="M32 5.5l4.4 3.1 5.2-1.4 2.6 4.7 5.3 1.1.3 5.4 4.4 3.1-2.2 4.9 2.2 4.9-4.4 3.1-.3 5.4-5.3 1.1-2.6 4.7-5.2-1.4L32 47.3l-4.4-3.1-5.2 1.4-2.6-4.7-5.3-1.1-.3-5.4-4.4-3.1 2.2-4.9-2.2-4.9 4.4-3.1.3-5.4 5.3-1.1 2.6-4.7 5.2 1.4z"/>
+        <circle cx="32" cy="26.4" r="9.4"/><circle cx="32" cy="26.4" r="3.4"/>
+        <path d="M20 52h24M23 57h18" stroke-width="1.2" opacity=".5"/>
+      </svg>
+      <div>
+        <h1>Механизм семи книг</h1>
+        <p>Горизонтальная схема связей: шесть сюжетных тяг, семьдесят узлов, сто с лишним героев и предметов. Тяните вправо — и семь лет складываются в один чертёж.</p>
+      </div>
+    </div>
+    <div class="head-meta"><b>1991 — 1998</b>7 книг · 6 линий · 71 узел</div>
+  </header>
+
+  <div class="console">
+    <div class="switches" id="switches"></div>
+    <label class="seek">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M15.5 15.5L21 21"/></svg>
+      <input id="seek" type="search" placeholder="Найти героя, событие или предмет…" autocomplete="off">
+    </label>
+    <div class="hint">колесо мыши — <b>вправо</b> · перетаскивание — <b>панорама</b></div>
+  </div>
+
+  <div class="viewport" id="vp" tabindex="0" aria-label="Схема связей семи книг">
+    <div class="canvas" id="cv"><svg class="wires" id="wires" aria-hidden="true"></svg></div>
+  </div>
+
+  <div class="rail" id="rail" aria-hidden="true"></div>
+
+  <div class="legend">
+    <span><i class="l1"></i>ход сюжета</span>
+    <span><i class="l2"></i>тёмная нить</span>
+    <span><i class="l3"></i>отголосок, раскрытый позже</span>
+    <span><i class="l4"></i>пунктир карточки — предмет</span>
+  </div>
+
+  <footer>
+    <b>Как читать.</b> По горизонтали — время, от Годриковой Впадины до платформы 9¾ девятнадцать лет спустя. По вертикали — шесть линий, которые Роулинг ведёт параллельно и сводит в седьмой книге. Клик по карточке открывает разбор события; клик по имени или иконке под ней — досье героя или предмета со всеми его появлениями. Источник — книжный канон, семь романов; экранизации не учитывались.
+  </footer>
+</div>
+
+<div class="veil" id="veil" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+  <div class="win" id="win"></div>
+</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<g id="frame-medal">
+  <circle cx="107" cy="107" r="104" fill="none" stroke="rgba(201,162,78,.55)" stroke-width="1.2"/>
+  <circle cx="107" cy="107" r="98" fill="none" stroke="rgba(201,162,78,.9)" stroke-width="2"/>
+  <circle cx="107" cy="107" r="92" fill="none" stroke="rgba(201,162,78,.35)" stroke-width="1" stroke-dasharray="2 5"/>
+  <circle cx="107" cy="107" r="86" fill="rgba(10,13,18,.85)" stroke="rgba(232,205,140,.3)" stroke-width="1"/>
+  <g stroke="rgba(201,162,78,.5)" stroke-width="1">
+    <path d="M107 3v10M107 201v10M3 107h10M201 107h10"/>
+    <path d="M33 33l7 7M181 33l-7 7M33 181l7-7M181 181l-7-7"/>
+  </g>
+  <g fill="rgba(232,205,140,.75)">
+    <circle cx="107" cy="9" r="2.6"/><circle cx="107" cy="205" r="2.6"/>
+    <circle cx="9" cy="107" r="2.6"/><circle cx="205" cy="107" r="2.6"/>
+    <circle cx="37" cy="37" r="1.8"/><circle cx="177" cy="37" r="1.8"/>
+    <circle cx="37" cy="177" r="1.8"/><circle cx="177" cy="177" r="1.8"/>
+  </g>
+</g>
+
+<symbol id="g-harry" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="21" cy="34" r="9"/><circle cx="43" cy="34" r="9"/><path d="M30 33h4M12 31l-5-3M52 31l5-3"/><path d="M32 8l-6 11h7l-5 9"/></g></symbol>
+<symbol id="g-ron" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 52h24l-2-6H22z"/><path d="M24 46c0-6 2-9 2-14l-4 2-2-6 6-4c1-5 5-10 12-10s10 6 10 12c0 8-6 12-6 20"/><path d="M34 20c2 0 3 1 3 3"/><path d="M22 32l6-2"/></g></symbol>
+<symbol id="g-hermione" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 20v30M32 20c-4-4-11-6-22-6v30c11 0 18 2 22 6M32 20c4-4 11-6 22-6v30c-11 0-18 2-22 6"/><path d="M15 22h9M15 28h9M40 22h9M40 28h9" stroke-width="1.3" opacity=".7"/><path d="M40 8l4 4-4 4-4-4z"/></g></symbol>
+<symbol id="g-dumbledore" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 22c0-8 6-14 14-14s14 6 14 14"/><path d="M23 24h18"/><path d="M25 26c0 12-3 16-3 22 0 8 4 12 10 12s10-4 10-12c0-6-3-10-3-22"/><circle cx="26" cy="21" r="4" stroke-width="1.5"/><circle cx="38" cy="21" r="4" stroke-width="1.5"/><path d="M30 21h4" stroke-width="1.5"/><path d="M28 40h8M27 48h10" stroke-width="1.2" opacity=".65"/></g></symbol>
+<symbol id="g-voldemort" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6c11 0 18 8 18 19 0 8-3 11-3 17 0 7-6 16-15 16s-15-9-15-16c0-6-3-9-3-17C14 14 21 6 32 6z"/><path d="M24 28c1.5-2 5-2 6.5 0-1.5 2-5 2-6.5 0zM33.5 28c1.5-2 5-2 6.5 0-1.5 2-5 2-6.5 0z" fill="currentColor" stroke="none"/><path d="M32 34v6M29 42h6" stroke-width="1.6"/><path d="M26 50h12" stroke-width="1.4"/></g></symbol>
+<symbol id="g-snape" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M40 6c-9 0-18 7-18 20 0 6 2 9 2 14 0 6-4 8-10 10v6h34V8"/><path d="M22 26l-6 4 6 4"/><path d="M34 20c-3 0-5 2-5 5" stroke-width="1.5"/><path d="M44 34c0 8-3 12-3 12" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-sirius" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 44c0-10 6-18 14-20l-2-10 8 6h6l8-6-2 10c8 2 14 10 14 20"/><path d="M22 34c1 0 2 1 2 2M42 34c-1 0-2 1-2 2" stroke-width="2.4" stroke-linecap="round"/><path d="M28 42h8l-4 5z"/><path d="M10 44c4 6 12 10 22 10s18-4 22-10" opacity=".8"/><path d="M50 10l1.6 4.4L56 16l-4.4 1.6L50 22l-1.6-4.4L44 16l4.4-1.6z" stroke-width="1.4"/></g></symbol>
+<symbol id="g-lupin" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="44" cy="17" r="10"/><path d="M47 8a10 10 0 000 18" stroke-width="1.3" opacity=".7"/><path d="M8 52c0-9 5-14 8-16l-2-9 7 5 8-1 7 3-1 8c3 3 5 6 5 10"/><path d="M20 38c.5 0 1 .6 1 1.2M30 38c-.5 0-1 .6-1 1.2" stroke-width="2.4" stroke-linecap="round"/><path d="M22 46l4 3 4-3" /></g></symbol>
+<symbol id="g-pettigrew" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 40c0-8 7-13 15-13s14 5 14 12c0 6-4 10-9 11"/><circle cx="16" cy="27" r="5"/><path d="M27 39h.1" stroke-width="3" stroke-linecap="round"/><path d="M41 39c6-2 11 1 13 6" stroke-dasharray="3 3"/><path d="M20 50c-2 2-6 3-9 2" /><path d="M44 46l4 4 4-4 3 5" stroke-width="1.6" opacity=".9"/></g></symbol>
+<symbol id="g-hagrid" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M24 58V32c0-4-4-6-4-12 0-8 5-14 12-14s12 6 12 14c0 6-4 8-4 12v26"/><path d="M24 22h16M26 26c0 8-2 10-2 14M38 26c0 8 2 10 2 14" stroke-width="1.3" opacity=".7"/><path d="M12 30v14M8 44h8l-2 12H10z"/><path d="M12 30c-4 0-6-3-6-6h12c0 3-2 6-6 6"/></g></symbol>
+<symbol id="g-mcgonagall" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 30l4-14 8 7h12l8-7 4 14c0 12-8 22-18 22S14 42 14 30z"/><ellipse cx="24" cy="30" rx="6" ry="5"/><ellipse cx="40" cy="30" rx="6" ry="5"/><path d="M24 29v2M40 29v2" stroke-width="2.6" stroke-linecap="round"/><path d="M30 40h4l-2 3z"/><path d="M18 38l-8-2M18 42l-8 2M46 38l8-2M46 42l8 2" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-ginny" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 24c-2-4-6-6-10-6l2 5-6-2c-6 2-10 7-12 13 6-1 9 1 12 4 4-6 9-8 14-8"/><path d="M32 24c2-4 6-6 10-6l-2 5 6-2c6 2 10 7 12 13-6-1-9 1-12 4-4-6-9-8-14-8"/><path d="M32 24v16M28 34l4 8 4-8" stroke-width="1.6"/><path d="M29 20l3-4 3 4" stroke-width="1.5"/></g></symbol>
+<symbol id="g-neville" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M18 38h28l-3 18H21z"/><path d="M16 34h32v4H16z"/><circle cx="32" cy="20" r="7"/><path d="M28 18c0-1 1-2 2-2M25 26c-2 2-5 3-8 2M39 26c2 2 5 3 8 2M32 27v7"/><path d="M27 12l-3-5M37 12l3-5" stroke-width="1.4"/></g></symbol>
+<symbol id="g-luna" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="20" cy="32" r="11"/><circle cx="44" cy="32" r="11"/><path d="M31 32h2"/><circle cx="20" cy="32" r="5" stroke-width="1.2" opacity=".7"/><circle cx="44" cy="32" r="5" stroke-width="1.2" opacity=".7"/><path d="M9 28l-6-4M55 28l6-4"/><path d="M20 43v6M44 43v6" stroke-width="1.2"/><path d="M32 12l3 6h-6z" stroke-width="1.4"/></g></symbol>
+<symbol id="g-draco" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6l20 8v18c0 13-9 22-20 26-11-4-20-13-20-26V14z"/><path d="M40 24c-4-3-9-2-11 2s2 8 6 8-1 6-5 6-6-2-7-4" stroke-width="1.8"/><circle cx="42" cy="22" r="1.4" fill="currentColor" stroke="none"/></g></symbol>
+<symbol id="g-lucius" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M30 22v34M26 56h8"/><path d="M30 22c-8 0-12-5-12-10 0-4 3-7 7-7s6 3 6 6c0 4-4 5-6 3"/><path d="M30 22c8 0 12-5 12-10" stroke-dasharray="3 3" opacity=".7"/><circle cx="30" cy="26" r="4"/><path d="M28 34h4M28 40h4" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-narcissa" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="26" r="7"/><g stroke-width="1.8"><path d="M32 19c-2-6 0-11 0-11s2 5 0 11zM39 26c6-2 11 0 11 0s-5 2-11 0zM25 26c-6-2-11 0-11 0s5 2 11 0zM32 33c-2 6 0 11 0 11s2-5 0-11zM37 21c4-5 9-6 9-6s-3 4-9 6zM27 31c-4 5-9 6-9 6s3-4 9-6zM37 31c4 5 9 6 9 6s-3-4-9-6zM27 21c-4-5-9-6-9-6s3 4 9 6z"/></g><path d="M20 50c4 4 8 6 12 6s8-2 12-6" stroke-width="1.4" opacity=".7"/></g></symbol>
+<symbol id="g-bellatrix" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 4l5 30-5 10-5-10z"/><path d="M24 36h16l-4 5h-8z"/><path d="M32 46v10"/><path d="M27 56c2 3 8 3 10 0" stroke-width="1.4"/><path d="M32 20v14" stroke-width="1.2" opacity=".6"/><path d="M44 50c2 3 2 7 0 10M20 50c-2 3-2 7 0 10" stroke-width="1.3" opacity=".7"/></g></symbol>
+<symbol id="g-umbridge" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 30h30v14a6 6 0 01-6 6H20a6 6 0 01-6-6z"/><path d="M44 34h6a5 5 0 010 10h-6"/><path d="M12 54h34"/><path d="M22 20c0-3 2-5 4-5s3 2 3 4c0-2 1-4 3-4s4 2 4 5" /><path d="M24 26c2-3 8-3 10 0" stroke-width="1.3" opacity=".7"/><path d="M20 38h18" stroke-width="1.2" opacity=".5"/></g></symbol>
+<symbol id="g-fudge" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 40c0-4-2-6-2-12 0-8 6-14 14-14s14 6 14 14c0 6-2 8-2 12"/><path d="M8 42c0-3 5-4 12-4h24c7 0 12 1 12 4s-5 5-12 5H20c-7 0-12-2-12-5z"/><path d="M20 32h24" stroke-width="1.3" opacity=".6"/><path d="M26 52h12M28 56h8" stroke-width="1.3" opacity=".5"/></g></symbol>
+<symbol id="g-moody" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2"><path d="M4 32c8-11 17-17 28-17s20 6 28 17c-8 11-17 17-28 17S12 43 4 32z"/><circle cx="32" cy="32" r="11"/><circle cx="36" cy="29" r="5" fill="currentColor" stroke="none"/><path d="M32 15v-6M32 49v6" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-tonks" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 34c0-8 5-14 12-14s12 6 12 14c0 8-5 16-12 16s-12-8-12-16z"/><path d="M20 30c-3-4-2-10 2-12l2 5 4-7 4 5 5-6 3 7 4-3c3 3 3 8 0 11"/><path d="M27 34h.1M37 34h.1" stroke-width="3" stroke-linecap="round"/><path d="M28 42c2 2 6 2 8 0" stroke-width="1.5"/><path d="M14 22l-4-4M50 22l4-4" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-kingsley" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 44c4-2 6-6 8-10 3-6 8-10 14-10 4 0 6 2 10 2s6-3 10-3l-2 6 6 2-5 4c1 6-2 12-8 15"/><path d="M28 24l-3-6 6 3 4-4 2 6" /><path d="M24 34h.1" stroke-width="3" stroke-linecap="round"/><path d="M14 44l-4 8M30 42l2 10M40 40l4 8" stroke-width="1.5"/><circle cx="49" cy="17" r="4" stroke-width="1.4"/></g></symbol>
+<symbol id="g-weasleys" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2"><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="19" stroke-width="1" stroke-dasharray="1 4" opacity=".8"/><path d="M32 32l10-8M32 32l-9 5M32 32l4 12M32 32l-11-6M32 32l14 4" stroke-width="1.4"/><circle cx="32" cy="32" r="3" fill="currentColor" stroke="none"/><path d="M32 8v4M56 32h-4M32 56v-4M8 32h4" stroke-width="1.6"/></g></symbol>
+<symbol id="g-twins" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 32l-4 24 8-4 8 8 4-10 8 2-6-8 6-6-9-2 2-9-8 3-4-8-5 10z"/><path d="M32 32l-8-8M32 32l-14-4M32 32l-12 8M24 12l2 6M10 20l6 3M8 40l6-2" stroke-width="1.4"/></g></symbol>
+<symbol id="g-dobby" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 14c7 0 11 5 11 12 0 8-5 14-11 14s-11-6-11-14c0-7 4-12 11-12z"/><path d="M21 22c-6-4-13-6-17-4 3 5 9 10 17 12M43 22c6-4 13-6 17-4-3 5-9 10-17 12"/><path d="M27 28h.1M37 28h.1" stroke-width="3.4" stroke-linecap="round"/><path d="M22 44c0 8 2 12 10 12s10-4 10-12" stroke-dasharray="4 3"/><path d="M26 50h12" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-kreacher" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 10c6 0 10 5 10 11 0 7-4 13-10 13s-10-6-10-13c0-6 4-11 10-11z"/><path d="M22 20c-6-3-12-4-15-2 3 4 8 8 15 9M42 20c6-3 12-4 15-2-3 4-8 8-15 9"/><path d="M27 24l3 2M37 24l-3 2" stroke-width="1.6"/><path d="M32 34v6M24 40h16l-3 16H27z"/><circle cx="32" cy="47" r="4" stroke-width="1.5"/></g></symbol>
+<symbol id="g-griphook" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="20" cy="20" r="8"/><circle cx="20" cy="20" r="3"/><path d="M25 26l22 22M40 40l6 6M36 44l5 5M47 48l4 4-4 4-4-4z"/></g></symbol>
+<symbol id="g-slughorn" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><ellipse cx="32" cy="40" rx="13" ry="16"/><path d="M25 28c-3-6-7-9-11-10 3 5 4 9 4 12M32 24c0-8 2-13 4-16 1 5 1 11 0 16M39 28c3-6 7-9 11-10-3 5-4 9-4 12"/><path d="M22 34l6 6M28 30l8 8M34 30l6 6M20 42l6 6M26 46l6 6" stroke-width="1.2" opacity=".65"/></g></symbol>
+<symbol id="g-quirrell" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M18 26c0-8 6-14 14-14s14 6 14 14v6c0 10-6 18-14 18s-14-8-14-18z"/><path d="M18 26c-2-6 2-12 6-13 2 3 5 3 8 2s7-2 10 1 4 8 4 10c-6 2-22 2-28 0z"/><path d="M26 38c1.5-1.5 4-1.5 5 0M33 38c1.5-1.5 4-1.5 5 0" stroke-width="1.6"/><path d="M28 46h8" stroke-width="1.4"/><path d="M46 30c4 2 6 6 6 10" stroke-width="1.2" stroke-dasharray="3 3"/></g></symbol>
+<symbol id="g-lockhart" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="10" y="10" width="44" height="44" rx="2"/><path d="M16 44c4-8 10-10 16-10s12 2 16 10"/><circle cx="32" cy="26" r="8"/><path d="M28 28c2 2 6 2 8 0" stroke-width="1.4"/><path d="M22 48c6-4 8 2 14-2s8 4 10 2" stroke-width="1.5" opacity=".85"/></g></symbol>
+<symbol id="g-trelawney" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="27" r="17"/><path d="M22 20c2-4 6-6 10-6" stroke-width="1.4" opacity=".8"/><path d="M20 44h24l4 10H16z"/><path d="M26 32c4 4 10 4 14-2" stroke-width="1.3" opacity=".7"/><path d="M12 54h40" stroke-width="1.5"/></g></symbol>
+<symbol id="g-crouchjr" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M26 6h12v8l6 10v30a4 4 0 01-4 4H24a4 4 0 01-4-4V24l6-10z"/><path d="M20 30h24" /><path d="M25 38c3-3 5 3 8 0s5 2 6 1" stroke-width="1.4" opacity=".8"/><path d="M28 6v8M36 6v8" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-cedric" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 40c0-10 10-18 24-18s24 8 24 18c0 6-4 10-8 10-3 0-5-2-7-2s-4 2-9 2-7-2-9-2-4 2-7 2c-4 0-8-4-8-10z"/><path d="M20 26c-2-4-6-6-10-6 1 4 3 7 6 9M44 26c2-4 6-6 10-6-1 4-3 7-6 9"/><path d="M24 34h.1M40 34h.1" stroke-width="3" stroke-linecap="round"/><path d="M14 40h36" stroke-width="1.2" opacity=".55"/></g></symbol>
+<symbol id="g-skeeter" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><ellipse cx="32" cy="36" rx="13" ry="17"/><path d="M32 19v34"/><circle cx="32" cy="14" r="6"/><path d="M28 10l-4-6M36 10l4-6"/><path d="M19 28c-6-4-10-4-13-2M45 28c6-4 10-4 13-2M19 44c-6 2-9 5-10 8M45 44c6 2 9 5 10 8" stroke-width="1.4"/></g></symbol>
+<symbol id="g-potters" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 34c0-6 3-10 7-10s7 4 7 10-3 14-7 14-7-8-7-14z"/><path d="M27 24c-1-6-4-9-8-11 1 4 1 7 3 9M27 24c1-6 4-9 8-11-1 4-1 7-3 9" stroke-width="1.5"/><path d="M40 40c0-5 2-8 5-8s5 3 5 8-2 11-5 11-5-6-5-11z" stroke-width="1.7"/><path d="M24 48c-3 4-6 6-10 7M45 51c3 3 6 4 9 4" stroke-width="1.3" opacity=".7"/></g></symbol>
+<symbol id="g-gaunt" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 34L30 16l22 18"/><path d="M13 32v22h34V32"/><path d="M25 54V40h10v14"/><path d="M18 36h6v6h-6z" stroke-width="1.4"/><path d="M42 36h-6v6h6z" stroke-width="1.4"/><path d="M52 20c-4 0-6 2-6 4s3 4 6 3-2 4-5 3" stroke-width="1.6"/></g></symbol>
+
+<symbol id="g-basilisk" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M56 14c-8-4-16 0-18 8s4 14 0 20-14 6-20 2-6-14 0-18"/><path d="M18 26c-6 0-10 4-10 9M52 12c3 0 6 2 7 5-3 2-7 2-9 0"/><path d="M50 16l-2 6M56 17l1 6" stroke-width="1.5"/><circle cx="52" cy="14" r="1.4" fill="currentColor" stroke="none"/><path d="M12 40c-4 2-6 6-4 10 3 4 8 3 10 0" stroke-width="1.6"/></g></symbol>
+<symbol id="g-dementor" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6c10 0 16 8 16 18v34c-4-4-6-2-8 2-3-4-5-4-8 0-3-4-5-4-8 0-2-4-4-6-8-2V24C16 14 22 6 32 6z"/><path d="M24 22c0-6 4-10 8-10s8 4 8 10c0 8-4 12-8 12s-8-4-8-12z" stroke-dasharray="3 3" opacity=".8"/><path d="M40 34c4 0 8 2 10 6-3 1-6 0-8-2" stroke-width="1.5"/></g></symbol>
+<symbol id="g-nagini" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M40 12c-14-4-28 6-28 20s12 22 24 18 14-18 6-24-18 0-16 8 12 8 14 2"/><path d="M40 12c4 0 8 2 10 5-3 2-7 2-9 0" /><path d="M46 15l3 4" stroke-width="1.4"/><circle cx="42" cy="13" r="1.3" fill="currentColor" stroke="none"/></g></symbol>
+<symbol id="g-fawkes" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 8c-3 4-4 8-3 12-4-3-8-4-12-3 3 4 6 6 9 8-5 0-9 2-12 5 4 2 9 3 13 2-3 4-4 8-3 12 4-2 7-5 9-9 2 4 5 7 9 9 1-4 0-8-3-12 4 1 9 0 13-2-3-3-7-5-12-5 3-2 6-4 9-8-4-1-8 0-12 3 1-4 0-8-3-12z"/><path d="M32 34v18M28 52h8" stroke-width="1.4"/><path d="M26 56c2 3 10 3 12 0" stroke-width="1.2" opacity=".7"/></g></symbol>
+<symbol id="g-hedwig" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 12c8 0 13 6 13 14v12c0 8-5 14-13 14s-13-6-13-14V26c0-8 5-14 13-14z"/><circle cx="26" cy="26" r="4"/><circle cx="38" cy="26" r="4"/><path d="M30 32l2 3 2-3"/><path d="M19 30c-5 2-8 8-8 14M45 30c5 2 8 8 8 14" stroke-width="1.4"/><path d="M28 52v5M36 52v5" stroke-width="1.4"/><path d="M24 40c4 3 12 3 16 0" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-buckbeak" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M18 30c0-8 6-14 14-14 6 0 10 3 12 8l12 4-12 4c-1 8-7 12-14 12"/><circle cx="30" cy="24" r="1.6" fill="currentColor" stroke="none"/><path d="M18 34c-8 2-14 8-14 16 6 0 10-2 14-6"/><path d="M30 44c2 6 6 10 12 12M22 46c-1 5-3 8-6 10" stroke-width="1.4"/></g></symbol>
+<symbol id="g-fluffy" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 26c0-6 4-10 8-10s8 4 8 10-4 12-8 12-8-6-8-12zM34 26c0-6 4-10 8-10s8 4 8 10-4 12-8 12-8-6-8-12z"/><path d="M24 34c0-6 4-10 8-10s8 4 8 10-4 12-8 12-8-6-8-12z"/><path d="M20 24h.1M26 24h.1M38 24h.1M44 24h.1M30 32h.1M34 32h.1" stroke-width="2.6" stroke-linecap="round"/><path d="M12 48h40l-4 8H16z"/></g></symbol>
+<symbol id="g-dragon" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 44c6-2 10-6 12-12 2-8 8-12 16-12 4 0 6 1 9 4l9-4-3 8 6 4-8 3c-1 7-6 12-13 13"/><path d="M34 24h.1" stroke-width="2.6" stroke-linecap="round"/><path d="M24 36c-2 8-8 14-16 16M34 40c2 6 6 10 12 12" stroke-width="1.5"/><path d="M20 22l4-8 4 8" stroke-width="1.4"/></g></symbol>
+<symbol id="g-inferi" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 44c6-3 10 0 14 0s8-3 14-3 10 3 14 3 10-3 14 0"/><path d="M4 52c6-3 10 0 14 0s8-3 14-3 10 3 14 3 10-3 14 0" opacity=".7"/><path d="M16 44V24l-2-8M16 30l-4-6M16 32l5-7M24 44V28l3-8M24 34l5-5"/><path d="M42 44V22l4-6M42 30l-4-6M42 32l6-5" opacity=".9"/></g></symbol>
+
+<symbol id="g-stone" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 8l18 12-7 30H21l-7-30z"/><path d="M14 20h36M22 20l10 30M42 20L32 50M32 8l-10 12M32 8l10 12"/><path d="M40 12l2 4 4 2-4 2-2 4-2-4-4-2 4-2z" stroke-width="1.2" opacity=".8"/></g></symbol>
+<symbol id="g-diary" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 14h20c2 0 4 2 4 4v34c0-2-2-4-4-4H10z"/><path d="M54 14H34c-2 0-4 2-4 4v34c0-2 2-4 4-4h20z"/><path d="M32 18v34" stroke-width="1.4"/><ellipse cx="42" cy="32" rx="6" ry="5" fill="currentColor" stroke="none" opacity=".9"/><path d="M44 38c1 4 0 7-2 9" stroke-width="1.4"/><path d="M14 24h12M14 30h10" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-ring" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="40" r="16"/><circle cx="32" cy="40" r="11" stroke-width="1.3" opacity=".7"/><path d="M32 8l10 18H22z"/><circle cx="32" cy="20" r="6" stroke-width="1.5"/><path d="M32 8v18" stroke-width="1.5"/></g></symbol>
+<symbol id="g-locket" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 8c8 2 14 8 16 14M56 8c-8 2-14 8-16 14"/><ellipse cx="32" cy="38" rx="14" ry="18"/><ellipse cx="32" cy="38" rx="9" ry="13" stroke-width="1.2" opacity=".7"/><path d="M28 30c4-2 8 0 8 3s-6 3-6 6 4 5 8 3" stroke-width="1.7"/><path d="M24 22h16" stroke-width="1.4"/></g></symbol>
+<symbol id="g-cup" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M18 14h28l-2 16c0 7-5 12-12 12s-12-5-12-12z"/><path d="M18 18c-6 0-10 3-10 8s5 8 10 8M46 18c6 0 10 3 10 8s-5 8-10 8"/><path d="M32 42v8M22 54h20l-2-4H24z"/><path d="M26 22c3 2 5 6 6 10 1-4 3-8 6-10" stroke-width="1.3" opacity=".8"/></g></symbol>
+<symbol id="g-diadem" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 42c8-16 18-24 26-24s18 8 26 24"/><path d="M6 42c8-6 18-9 26-9s18 3 26 9" stroke-width="1.4"/><path d="M32 18l4 8-4 8-4-8z"/><path d="M18 28l2 5M46 28l-2 5" stroke-width="1.4"/><path d="M12 46c8-4 32-4 40 0" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-sword" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 4l6 8v28l-6 8-6-8V12z"/><path d="M32 4v44" stroke-width="1.2" opacity=".7"/><path d="M18 46h28"/><path d="M32 48v10M26 58h12"/><circle cx="24" cy="46" r="2.4"/><circle cx="40" cy="46" r="2.4"/><circle cx="32" cy="54" r="2.4"/></g></symbol>
+<symbol id="g-hat" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M34 8c-8 6-10 16-14 22-3 5-6 8-10 12 8 4 20 6 28 4s14-6 16-10c-4-2-8-6-10-12-2-8-4-14-10-16z"/><path d="M8 42c8 6 22 8 32 6s14-6 16-8" stroke-width="1.5"/><path d="M22 34c4 3 8 4 12 3" stroke-width="1.3" opacity=".7"/><path d="M26 26c3 2 6 2 9 1" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-map" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 14l16-4 20 6 16-4v38l-16 4-20-6-16 4z"/><path d="M22 10v38M42 16v38" stroke-width="1.2" opacity=".7"/><g stroke-width="1.5"><ellipse cx="14" cy="26" rx="2" ry="3"/><ellipse cx="18" cy="32" rx="2" ry="3"/><ellipse cx="30" cy="24" rx="2" ry="3"/><ellipse cx="34" cy="31" rx="2" ry="3"/><ellipse cx="49" cy="30" rx="2" ry="3"/><ellipse cx="52" cy="37" rx="2" ry="3"/></g></g></symbol>
+<symbol id="g-timeturner" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="32" r="24"/><circle cx="32" cy="32" r="19" stroke-width="1.2" opacity=".65"/><path d="M22 18h20l-10 14zM22 46h20L32 32z"/><path d="M32 32v0" /><path d="M20 18h24M20 46h24" stroke-width="1.6"/><path d="M32 8V4M32 60v-4" stroke-width="1.4"/></g></symbol>
+<symbol id="g-cloak" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6c8 0 12 6 12 12l10 8-6 6 4 22H12l4-22-6-6 10-8c0-6 4-12 12-12z"/><path d="M24 18c2 4 5 6 8 6s6-2 8-6" stroke-width="1.4" opacity=".8"/><path d="M20 34c8 3 16 3 24 0M18 44c9 3 19 3 28 0" stroke-width="1.2" stroke-dasharray="4 4" opacity=".7"/></g></symbol>
+<symbol id="g-elderwand" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 54c8-6 16-14 22-22 6-8 12-16 20-22"/><path d="M18 44c3 1 5 0 6-2M26 36c3 1 5 0 6-3M34 27c3 1 5-1 6-3M42 18c3 1 5-1 6-3" stroke-width="1.5"/><path d="M46 8l6 6M50 4l6 6" stroke-width="1.4" opacity=".8"/></g></symbol>
+<symbol id="g-resurrection" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="34" r="20"/><path d="M32 14v40" stroke-width="1.6"/><path d="M18 24c8 4 20 4 28 0M18 44c8-4 20-4 28 0" stroke-width="1.2" opacity=".6"/><path d="M24 8c2 4 4 6 8 6s6-2 8-6" stroke-width="1.4" opacity=".7"/></g></symbol>
+<symbol id="g-hallows" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6l26 46H6z"/><circle cx="32" cy="36" r="14"/><path d="M32 6v46"/></g></symbol>
+<symbol id="g-pensieve" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 26h48c0 14-11 24-24 24S8 40 8 26z"/><path d="M14 30c6 3 12 3 18 0s12-3 18 0" stroke-width="1.3" opacity=".8"/><path d="M20 38c5 3 9 3 12 0s7-3 12 0" stroke-width="1.2" opacity=".6"/><path d="M32 26c-2-8 2-14 8-18-2 6 0 10 2 12" stroke-width="1.5"/><path d="M26 26c-4-6-3-12 0-16" stroke-width="1.3" opacity=".7"/></g></symbol>
+<symbol id="g-mirror" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 8h36v40H14z"/><path d="M18 12h28v32H18z" stroke-width="1.2" opacity=".7"/><path d="M8 48h48l-4 8H12z"/><path d="M22 20c4-4 10-4 14 0M22 30c6 4 10 2 14-2" stroke-width="1.3" opacity=".65"/><path d="M14 8l6-4h24l6 4" stroke-width="1.4"/></g></symbol>
+<symbol id="g-goblet" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 26h24l-3 14c-1 4-4 6-9 6s-8-2-9-6z"/><path d="M32 46v8M22 58h20l-2-4H24z"/><path d="M24 26c-2-8 2-14 8-18-2 6 2 8 4 12M32 26c4-6 8-8 10-14 2 8-2 10-2 14" stroke-width="1.6"/><path d="M16 30c-4 0-6 2-6 6M48 30c4 0 6 2 6 6" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-prophecy" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="26" r="18"/><path d="M22 18c2-4 6-7 10-7" stroke-width="1.4" opacity=".85"/><path d="M20 44h24l4 8H16z"/><path d="M26 30c4 4 8 4 12 0" stroke-width="1.2" opacity=".6"/><path d="M12 52h40" stroke-width="1.5"/></g></symbol>
+<symbol id="g-deluminator" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M24 22h16v28c0 3-2 5-5 5h-6c-3 0-5-2-5-5z"/><path d="M28 22v-6h8v6"/><path d="M24 34h16" stroke-width="1.3" opacity=".7"/><path d="M32 10V2M18 16l-5-5M46 16l5-5M12 26H4M52 26h8" stroke-width="1.5"/></g></symbol>
+<symbol id="g-ror" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 56V20l26-14 26 14v36"/><path d="M22 56V34h20v22" /><path d="M22 34c0-6 4-10 10-10s10 4 10 10" stroke-dasharray="4 3"/><path d="M37 44h.1" stroke-width="3" stroke-linecap="round"/><path d="M10 24h8M46 24h8M10 32h4M50 32h4" stroke-width="1.2" opacity=".55"/></g></symbol>
+<symbol id="g-cabinet" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 6h36v50H14z"/><path d="M32 6v50" stroke-width="1.4"/><path d="M18 12h10v18H18zM36 12h10v18H36z" stroke-width="1.2" opacity=".7"/><path d="M28 34h.1M36 34h.1" stroke-width="3" stroke-linecap="round"/><path d="M10 56h44" stroke-width="1.6"/><path d="M18 40c6 4 22 4 28 0" stroke-width="1.2" stroke-dasharray="3 3" opacity=".6"/></g></symbol>
+<symbol id="g-wand" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 54c10-8 24-22 34-34"/><path d="M14 46l-4 8 8-4" stroke-width="1.5"/><path d="M44 20c4-6 8-10 12-12-2 6-4 10-8 14" /><path d="M46 6l2 6 6 2-6 2-2 6-2-6-6-2 6-2z" stroke-width="1.2" opacity=".85"/></g></symbol>
+<symbol id="g-polyjuice" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M26 6h12v14l10 24c2 6-2 14-8 14H24c-6 0-10-8-8-14l10-24z"/><path d="M22 8h20" stroke-width="1.6"/><path d="M18 40c6-3 10 3 16 0s10 2 12 1" stroke-width="1.5"/><path d="M28 46h.1M36 50h.1M32 42h.1" stroke-width="2.4" stroke-linecap="round" opacity=".8"/></g></symbol>
+<symbol id="g-patronus" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M16 44c0-8 4-14 10-14s10 6 10 14"/><path d="M26 30c-2-8-6-12-12-14 2 6 2 10 5 13M26 30c2-8 6-12 12-14-2 6-2 10-5 13"/><path d="M36 44c2 4 6 8 12 10M16 44c-3 4-7 7-12 8" stroke-width="1.4"/><circle cx="32" cy="22" r="1.6" fill="currentColor" stroke="none"/><path d="M44 20c6 0 10 4 12 10-6 2-10 0-12-4" stroke-width="1.2" opacity=".55"/></g></symbol>
+<symbol id="g-darkmark" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 6c9 0 15 7 15 15 0 6-3 9-3 13H20c0-4-3-7-3-13 0-8 6-15 15-15z"/><circle cx="25" cy="20" r="3.4" fill="currentColor" stroke="none"/><circle cx="39" cy="20" r="3.4" fill="currentColor" stroke="none"/><path d="M20 34h24l-2 6H22z"/><path d="M32 40c-6 4-12 4-16 8s-2 12 6 12 10-6 6-10" stroke-width="1.8"/><path d="M22 58c-2 0-4-1-5-3" stroke-width="1.3" opacity=".7"/></g></symbol>
+<symbol id="g-fang" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M22 6c8 0 14 4 14 10 0 10-6 22-10 36-4-14-10-26-10-36 0-6 2-10 6-10z"/><path d="M18 16c6 2 12 2 16 0" stroke-width="1.3" opacity=".7"/><path d="M46 30c4 4 8 8 8 12s-4 8-8 8-8-4-8-8 4-8 8-12z" stroke-width="1.6"/></g></symbol>
+<symbol id="g-snitch" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="34" r="12"/><path d="M20 34h24M32 22v24" stroke-width="1.2" opacity=".65"/><path d="M20 30c-6-8-14-12-18-10 2 8 8 14 14 16M44 30c6-8 14-12 18-10-2 8-8 14-14 16"/><path d="M8 24c4 2 8 6 10 10M56 24c-4 2-8 6-10 10" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-train" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 42V24h22l6-8h20v26z"/><path d="M14 28h10v8H14z" stroke-width="1.3"/><path d="M40 22h12v14H40z" stroke-width="1.3"/><circle cx="18" cy="48" r="5"/><circle cx="34" cy="48" r="5"/><circle cx="48" cy="48" r="5"/><path d="M4 54h56" stroke-width="1.6"/><path d="M18 16c0-4 4-4 4-8M26 12c0-3 3-3 3-6" stroke-width="1.4" opacity=".7"/></g></symbol>
+<symbol id="g-azkaban" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M18 56V18l14-12 14 12v38z"/><path d="M14 18h6M44 18h6M18 26h28" stroke-width="1.3"/><path d="M28 34h8v14h-8z"/><path d="M28 41h8M32 34v14" stroke-width="1.2"/><path d="M6 56c6-4 10-8 12-14M58 56c-6-4-10-8-12-14" stroke-width="1.3" opacity=".6"/></g></symbol>
+<symbol id="g-hogwarts" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 58V32l8-6 8 6v26M22 58V22l10-8 10 8v36M42 58V30l8-6 8 6v28"/><path d="M14 20v6M32 8v6M50 18v6" stroke-width="1.4"/><path d="M10 34h8M46 32h8" stroke-width="1.2"/><path d="M28 44h8v14h-8z"/><path d="M28 50c0-5 2-8 4-8s4 3 4 8" stroke-width="1.2" opacity=".7"/></g></symbol>
+<symbol id="g-ministry" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 20L32 6l26 14H6z"/><path d="M12 20v28M24 20v28M40 20v28M52 20v28"/><path d="M4 48h56M8 56h48" stroke-width="1.6"/><path d="M26 30h12v10H26z" stroke-width="1.2" opacity=".7"/></g></symbol>
+<symbol id="g-prophet" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 14h40v36a6 6 0 01-6 6H14a6 6 0 01-6-6z"/><path d="M48 22h6a4 4 0 014 4v22a6 6 0 01-6 6"/><path d="M14 20h28v8H14z" stroke-width="1.3"/><path d="M14 34h12M14 40h12M14 46h8M30 34h12M30 40h12" stroke-width="1.2" opacity=".7"/></g></symbol>
+<symbol id="g-broom" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 44c12-4 22-12 30-22"/><path d="M36 22l6-8c6 2 12 8 14 14l-8 6z"/><path d="M42 18l8 12M38 26l10 4" stroke-width="1.2" opacity=".65"/><path d="M6 44l-4 8 8-4" stroke-width="1.5"/></g></symbol>
+<symbol id="g-gringotts" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M10 54V26l22-16 22 16v28z"/><path d="M22 54V38c0-6 4-10 10-10s10 4 10 10v16"/><circle cx="32" cy="38" r="4"/><path d="M32 42v8" stroke-width="1.6"/><path d="M6 54h52" stroke-width="1.6"/><path d="M16 32h4M44 32h4" stroke-width="1.2" opacity=".6"/></g></symbol>
+<symbol id="g-letter" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M6 16h52v34H6z"/><path d="M6 16l26 20 26-20"/><circle cx="32" cy="44" r="7"/><path d="M28 44l3 3 5-6" stroke-width="1.4"/></g></symbol>
+<symbol id="g-veil" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 58V22c0-9 9-16 20-16s20 7 20 16v36"/><path d="M20 58V24c0-6 5-10 12-10s12 4 12 10v34" stroke-width="1.3" opacity=".7"/><path d="M24 26c3 6 2 12 0 18s-2 10 0 14M32 24c3 6 2 12 0 18s-2 10 0 14M40 26c3 6 2 12 0 18s-2 10 0 14" stroke-width="1.2" opacity=".8"/></g></symbol>
+<symbol id="g-quill" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 56c4-10 10-20 18-28C34 20 44 12 56 8c-2 14-8 26-16 34-6 6-14 10-22 12"/><path d="M20 44c8-4 14-10 18-18" stroke-width="1.2" opacity=".65"/><path d="M8 56l6-2" stroke-width="1.6"/><circle cx="14" cy="52" r="2.4" fill="currentColor" stroke="none" opacity=".9"/></g></symbol>
+<symbol id="g-scar" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linejoin="round"><path d="M36 6L22 30h12L26 58"/></g></symbol>
+<symbol id="g-forest" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M16 46l-8-12h5l-6-10h5l-6-10h20l-6 10h5l-6 10h5z"/><path d="M16 46v10M44 48v8"/><path d="M44 48l-10-14h6l-7-12h6l-7-12h24l-7 12h6l-7 12h6z" opacity=".85"/><path d="M6 58h52" stroke-width="1.4" opacity=".6"/></g></symbol>
+<symbol id="g-chess" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M20 54h24l-2-6H22z"/><path d="M24 48c0-6 2-9 2-14l-4 2-2-6 6-4c1-5 5-10 12-10s10 6 10 12c0 8-6 12-6 20"/><path d="M34 22c2 0 3 1 3 3" stroke-width="1.5"/><path d="M12 58h40" stroke-width="1.5"/></g></symbol>
+<symbol id="g-lion" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="32" r="14"/><path d="M32 10c4 2 6 4 7 8M32 10c-4 2-6 4-7 8M54 32c-2 4-4 6-8 7M54 32c-2-4-4-6-8-7M32 54c4-2 6-4 7-8M32 54c-4-2-6-4-7-8M10 32c2 4 4 6 8 7M10 32c2-4 4-6 8-7" stroke-width="1.5"/><path d="M27 30h.1M37 30h.1" stroke-width="3" stroke-linecap="round"/><path d="M29 38c2 2 4 2 6 0" stroke-width="1.5"/></g></symbol>
+<symbol id="g-serpent" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M48 12c-10-4-22 2-22 12s10 12 10 18-8 10-14 6"/><path d="M22 48c-4-2-8 0-8 4" stroke-width="1.5"/><path d="M48 12c4 0 7 2 8 5-3 2-7 2-9 0" /><circle cx="50" cy="13" r="1.3" fill="currentColor" stroke="none"/></g></symbol>
+<symbol id="g-heart" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 54C16 42 8 34 8 24 8 16 14 10 21 10c5 0 9 3 11 7 2-4 6-7 11-7 7 0 12 6 12 14 0 10-8 18-23 30z"/><path d="M20 22c0-4 3-7 6-7" stroke-width="1.3" opacity=".7"/></g></symbol>
+<symbol id="g-clock" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><circle cx="32" cy="34" r="22"/><circle cx="32" cy="34" r="17" stroke-width="1" stroke-dasharray="1 4" opacity=".7"/><path d="M32 34V22M32 34l9 6" stroke-width="1.8"/><path d="M32 12V6M24 8h16" stroke-width="1.6"/></g></symbol>
+<symbol id="g-scales" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M32 10v42M22 54h20"/><path d="M10 22h44M14 22l-8 14h16zM50 22l8 14H42z"/><circle cx="32" cy="14" r="3"/></g></symbol>
+<symbol id="g-mask" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M14 16h36v18c0 12-8 22-18 26-10-4-18-14-18-26z"/><path d="M20 26c3-2 7-2 9 1-3 3-7 3-9-1zM35 27c2-3 6-3 9-1-2 4-6 4-9 1z"/><path d="M26 44c3 2 9 2 12 0" stroke-width="1.4"/><path d="M14 16c6-4 30-4 36 0" stroke-width="1.4"/></g></symbol>
+</defs></svg>
+
+<script>
+/* ─────────────────────────────────────────────────────────────
+   ДОСЬЕ: герои, существа, предметы, места.
+   i — ключ, n — имя, s — подпись, k — род, g — гравюра,
+   b — книги, t — текст, q — пометка на полях, l — связи
+   ───────────────────────────────────────────────────────────── */
+const CARDS = [
+/* ── герои ── */
+{i:'harry',n:'Гарри Поттер',s:'Мальчик, который выжил',k:'char',g:'g-harry',b:[1,2,3,4,5,6,7],
+ t:'Сирота, выросший в чулане под лестницей, и единственный человек, переживший Убивающее проклятие. Его шрам — не украшение, а рабочий инструмент сюжета: канал связи с сознанием Волан-де-Морта и, как выяснится в седьмой книге, оболочка седьмого крестража, созданного случайно.<p>Роулинг ведёт его не как избранного, а как человека, которому раз за разом приходится выбирать: зеркало Еиналеж, кубок Турнира, воскрешающий камень в лесу. Победа в финале — не сила, а знание правил: палочка признаёт того, кто обезоружил её хозяина.</p>',
+ q:'«Это наш выбор, Гарри, показывает, кто мы есть на самом деле, гораздо больше, чем наши способности».',
+ l:['voldemort','dumbledore','ron','hermione','scar','potters','snape','elderwand']},
+{i:'ron',n:'Рон Уизли',s:'Друг, который вернулся',k:'char',g:'g-chess',b:[1,2,3,4,5,6,7],
+ t:'Шестой сын в семье, где всё донашивается за старшими, — и оттого самый уязвимый к шёпоту крестража. Его линия в семи книгах — история человека, которому нечем блеснуть рядом с знаменитым другом и блестящей подругой, и который в итоге оказывается нужнее обоих.<p>Две сцены держат его дугу: жертва на шахматной доске в первой книге и уход из палатки в седьмой. Второе делает первое настоящим — вернуться труднее, чем не уходить.</p>',
+ l:['hermione','harry','deluminator','locket','weasleys','twins']},
+{i:'hermione',n:'Гермиона Грейнджер',s:'Логика против магии',k:'char',g:'g-hermione',b:[1,2,3,4,5,6,7],
+ t:'Магглорождённая, которая знает волшебный мир лучше тех, кто в нём родился, — потому что прочла о нём всё. Её оружие не заклинания, а подготовка: чары незримого расширения на сумочке, палатка, список крестражей, украденная из кабинета Дамблдора книга сказок.<p>Она же — этическая совесть трио: Г.А.В.Н.Э., защита Кикимера, отказ бросать Добби. Роулинг раз за разом показывает, что именно эта «неудобная» щепетильность приносит союзников в последней битве.</p>',
+ l:['ron','harry','polyjuice','timeturner','beedle','kreacher']},
+{i:'dumbledore',n:'Альбус Дамблдор',s:'Стратег с изъяном',k:'char',g:'g-dumbledore',b:[1,2,3,4,5,6,7],
+ t:'Единственный, кого боялся Волан-де-Морт, — и человек, который сознательно растит Гарри как того, кому предстоит умереть. Седьмая книга переворачивает фигуру: юношеская дружба с Грин-де-Вальдом, гибель сестры, жажда Даров, из-за которой он надел проклятое кольцо.<p>Его смерть на башне спланирована им самим до последней детали: Непреложный обет Снегга, обречённая рука, палочка, которая должна была потерять силу вместе с ним. План сорвался в одной точке — Драко обезоружил его первым.</p>',
+ q:'«Меня не заботит смерть. Волан-де-Морт понимает это хуже всего».',
+ l:['harry','snape','voldemort','ring','elderwand','pensieve','fawkes']},
+{i:'voldemort',n:'Волан-де-Морт',s:'Том Марволо Реддл',k:'char',g:'g-voldemort',b:[1,2,3,4,5,6,7],
+ t:'Сын нищей волшебницы и маггла, которого она опоила приворотным зельем. Приютский ребёнок, коллекционировавший трофеи, вырос в мага, разорвавшего душу на семь частей ради бессмертия — и тем сделавшего себя уязвимым в семи местах.<p>Его системная ошибка одна и повторяется: он не видит ценности того, что презирает. Домовик, гоблин, эльфийская магия, материнская жертва, дружба — каждая из этих «мелочей» бьёт по нему в финале. Он умирает от собственного отскочившего проклятия, буквально сражённый своим непониманием.</p>',
+ q:'«Есть вещи гораздо хуже смерти».',
+ l:['harry','dumbledore','nagini','horcrux','gaunt','darkmark','bellatrix']},
+{i:'snape',n:'Северус Снегг',s:'Двойной агент',k:'char',g:'g-snape',b:[1,2,3,4,5,6,7],
+ t:'Полукровка из Паучьего тупика, влюблённый в Лили Эванс, донёсший Волан-де-Морту половину пророчества — и перешедший к Дамблдору, когда понял, кого этим приговорил. Шестнадцать лет он играет роль, за которую его ненавидят обе стороны.<p>Его патронус — серебряная лань, тот же, что у Лили: единственная улика, которую он не может подделать. Воспоминания, отданные Гарри в Визжащей хижине, задним числом перекраивают весь сюжет — от урока зельеварения до меча в лесном озере.</p>',
+ q:'«Всегда».',
+ l:['dumbledore','harry','potters','patronus','prince','doe','draco']},
+{i:'sirius',n:'Сириус Блэк',s:'Крёстный и Бродяга',k:'char',g:'g-sirius',b:[3,4,5],
+ t:'Наследник чистокровного дома, сбежавший из него подростком; двенадцать лет в Азкабане за преступление, совершённое другом. Единственный взрослый, который разговаривает с Гарри как с равным, — и потому единственная возможная семья.<p>Его гибель в Отделе тайн — цена ловушки, которую Волан-де-Морт построил на этой привязанности. Роулинг убивает Сириуса ровно тогда, когда Гарри впервые получает шанс уехать от Дурслей.</p>',
+ l:['harry','lupin','pettigrew','marauders','bellatrix','grimmauld','veil']},
+{i:'lupin',n:'Римус Люпин',s:'Лучший учитель ЗоТИ',k:'char',g:'g-lupin',b:[3,5,6,7],
+ t:'Оборотень, которого Дамблдор пустил в Хогвартс учеником и вернул преподавателем. Учит Гарри Патронусу — заклинанию, которое станет его подписью, — и первым обращается с ним как с человеком, способным справиться.<p>Линия Люпина — про стигму: работа, которую нельзя получить, брак, которого стыдятся, ребёнок, которого боятся проклясть. Гибнет в битве за Хогвартс рядом с Тонкс, оставив сына сиротой, — рифма, которую Роулинг проводит намеренно.</p>',
+ l:['sirius','pettigrew','patronus','marauders','tonks','harry']},
+{i:'pettigrew',n:'Питер Петтигрю',s:'Хвост',k:'char',g:'g-pettigrew',b:[3,4,6,7],
+ t:'Двенадцать лет прожил крысой в семье Уизли, изображая питомца Рона. Именно он выдал Поттеров, подставил Сириуса и в четвёртой книге вернул хозяину тело — отрезав себе руку и добыв кость, плоть и кровь.<p>Серебряная кисть, подаренная Волан-де-Мортом, убивает его же в подвале Малфой-мэнора, стоило Питеру на секунду заколебаться. Долг жизни, о котором предупреждал Дамблдор, сработал буквально.</p>',
+ l:['sirius','lupin','voldemort','rebirth','marauders']},
+{i:'hagrid',n:'Рубеус Хагрид',s:'Хранитель ключей',k:'char',g:'g-hagrid',b:[1,2,3,4,5,6,7],
+ t:'Полувеликан с обломком палочки в розовом зонте. Приносит Гарри письмо, выводит его в волшебный мир и первым говорит ему, кто он такой. Его наивная любовь к чудовищам дважды двигает сюжет: дракон Норберт, Арагог, Клювокрыл.<p>Он же выносит «мёртвого» Гарри из Запретного леса — тот, кто внёс его в этот мир, выносит его из него. Композиционное кольцо на все семь книг.</p>',
+ l:['harry','dumbledore','buckbeak','fluffy','forest','letter']},
+{i:'mcgonagall',n:'Минерва МакГонагалл',s:'Декан Гриффиндора',k:'char',g:'g-mcgonagall',b:[1,2,3,4,5,6,7],
+ t:'Анимаг-кошка, заместитель директора, человек несгибаемых правил — и потому её редкие нарушения этих правил весят вдвое: место ловца первокурснику, поддержка ОД, «Пивз, отвинти люстру».<p>В битве за Хогвартс поднимает каменных рыцарей и ведёт замок в бой. Её дуэль со Снеггом и слова о том, что она не позволит ему больше и шагу ступить, — момент, когда школа окончательно перестаёт быть школой.</p>',
+ l:['dumbledore','harry','umbridge','battle','hat']},
+{i:'ginny',n:'Джинни Уизли',s:'Голос из дневника',k:'char',g:'g-ginny',b:[1,2,3,4,5,6,7],
+ t:'Единственная дочь в седьмом поколении Уизли и первая жертва крестража: в одиннадцать лет её сознанием год пользовался Том Реддл. Опыт, который делает её единственным человеком, знающим изнутри, каково это.<p>Дальше Роулинг растит её в бойца: летучемышиный сглаз, состав квиддичной команды, руководство ОД в шестой и седьмой книгах, когда Гарри в бегах, а Хогвартс под Кэрроу.</p>',
+ l:['diary','harry','chamber','ron','da','weasleys']},
+{i:'neville',n:'Невилл Долгопупс',s:'Второй кандидат пророчества',k:'char',g:'g-neville',b:[1,2,3,4,5,6,7],
+ t:'Родился на день раньше Гарри, у родителей, трижды бросавших вызов Тёмному Лорду. Пророчество могло указывать на него — Волан-де-Морт выбрал сам, и этим выбором создал себе врага.<p>Дуга от мальчика, забывающего пароль, до человека, который вытаскивает меч Гриффиндора из шляпы и убивает Нагайну. Роулинг замыкает её тем, что Невилл делает то, чего не смог сделать Гарри: уничтожает крестраж, стоя один против всех.</p>',
+ l:['prophecy','sword','nagini','bellatrix','da','ror']},
+{i:'luna',n:'Полумна Лавгуд',s:'Та, кто верит',k:'char',g:'g-luna',b:[5,6,7],
+ t:'Дочь издателя «Придиры», видящая фестралов и не видящая причин стесняться. Её вера в невозможное оказывается функциональной: именно Ксенофилиус объясняет Гарри знак Даров Смерти, а сама Полумна подсказывает путь к диадеме через призрака Когтеврана.<p>Похищена Пожирателями ради давления на отца, сидит в подвале Малфой-мэнора и там — единственная, кто спокойно распоряжается.</p>',
+ l:['hallows','diadem','da','malfoymanor','dobby','harry']},
+{i:'draco',n:'Драко Малфой',s:'Мальчик с заданием',k:'char',g:'g-draco',b:[1,2,3,4,5,6,7],
+ t:'Из школьного антагониста Роулинг делает самую точную иллюстрацию того, как работает вербовка подростков: в шестнадцать лет он получает задание убить Дамблдора — фактически наказание для его отца.<p>Он опускает палочку на башне. Но за минуту до этого он обезоруживает Дамблдора — и потому Бузинная палочка признаёт хозяином его, а через Малфой-мэнор — Гарри. Мальчик, который не смог убить, решает исход войны.</p>',
+ l:['dumbledore','elderwand','cabinet','lucius','snape','ror','harry']},
+{i:'lucius',n:'Люциус Малфой',s:'Влияние и падение',k:'char',g:'g-lucius',b:[2,4,5,6,7],
+ t:'Пожиратель, откупившийся Империусом после первой войны, попечитель Хогвартса, спонсор Министерства. Подбрасывает дневник Реддла одиннадцатилетней девочке — расчёт против Артура Уизли, обернувшийся уничтожением крестража.<p>После провала в Отделе тайн теряет всё: свободу, палочку, дом, отданный Тёмному Лорду под штаб. К седьмой книге — сломленный человек, ищущий в толпе сына.</p>',
+ l:['diary','draco','narcissa','dobby','ministry','voldemort']},
+{i:'narcissa',n:'Нарцисса Малфой',s:'Ложь ради сына',k:'char',g:'g-narcissa',b:[6,7],
+ t:'Не носит метку, не сражается, не произносит громких слов — и решает исход войны одной фразой. В Запретном лесу, проверяя, жив ли Гарри, она спрашивает только про Драко и, услышав «жив», говорит Волан-де-Морту: «Мёртв».<p>Ради того же сына она вынуждает Снегга дать Непреложный обет. Обе её ключевые сцены — материнство против идеологии.</p>',
+ l:['draco','snape','forestdeath','bellatrix','lucius']},
+{i:'bellatrix',n:'Беллатриса Лестрейндж',s:'Верность как безумие',k:'char',g:'g-bellatrix',b:[4,5,6,7],
+ t:'Пытала Долгопупсов до безумия, четырнадцать лет в Азкабане, единственная, кто предан Тёмному Лорду бескорыстно. Убивает Сириуса в Отделе тайн и Добби — ножом в спину уходящему.<p>Её сейф в Гринготтсе хранит чашу Пуффендуй: Волан-де-Морт доверил крестраж ей, как самой преданной. Гибнет от руки Молли Уизли — Роулинг сводит фанатичку с матерью, и мать выигрывает.</p>',
+ l:['sirius','dobby','cup','voldemort','neville','malfoymanor']},
+{i:'umbridge',n:'Долорес Амбридж',s:'Зло в розовом кардигане',k:'char',g:'g-umbridge',b:[5,6,7],
+ t:'Самый достоверный злодей цикла: не тёмный маг, а чиновник с инструкцией. Декреты, инспекции, кровавое перо — насилие, оформленное как забота о порядке.<p>В седьмой книге возглавляет Комиссию по учёту магглорождённых и носит на шее украденный медальон Слизерина, принимая крестраж за доказательство чистоты крови. Роулинг редко бывает так язвительна.</p>',
+ l:['ministry','da','quill','locket','fudge','harry']},
+{i:'fudge',n:'Корнелиус Фадж',s:'Министр, который не поверил',k:'char',g:'g-fudge',b:[2,3,4,5,6],
+ t:'Не злодей, а человек, для которого признать возвращение Волан-де-Морта дороже, чем отрицать его. Год отрицания стоит Ордену темпа, репутации и жизней.<p>Его отставка в конце пятой книги — момент, когда официальная реальность наконец совпадает с фактической. К этому времени война уже идёт.</p>',
+ l:['ministry','dumbledore','prophet','scrimgeour','denial']},
+{i:'moody',n:'Аластор Грюм',s:'Постоянная бдительность',k:'char',g:'g-moody',b:[4,5,6,7],
+ t:'Легендарный мракоборец, посадивший половину Азкабана. Ирония четвёртой книги в том, что весь год мы видим не его: настоящий Грюм лежит в собственном сундуке, пока Барти Крауч-младший на Оборотном зелье ведёт Гарри к кубку.<p>Гибнет в первую же ночь седьмой книги, прикрывая отход «семи Поттеров». Его волшебный глаз потом висит на двери кабинета Амбридж.</p>',
+ l:['crouchjr','order','sevenpotters','polyjuice','tonks']},
+{i:'tonks',n:'Нимфадора Тонкс',s:'Метаморф из Ордена',k:'char',g:'g-tonks',b:[5,6,7],
+ t:'Мракоборец, меняющий внешность по настроению, — и по нему же читается её состояние: цвет волос гаснет вместе с надеждой. Племянница Беллатрисы и Нарциссы, вышедшая замуж за оборотня наперекор всему дому Блэков.<p>Гибнет в битве за Хогвартс вместе с Люпином, оставив Тедди на воспитание бабушке. Их сын — второй ребёнок цикла, осиротевший в этой же войне.</p>',
+ l:['lupin','order','moody','battle','bellatrix']},
+{i:'kingsley',n:'Кингсли Бруствер',s:'Орден внутри Министерства',k:'char',g:'g-kingsley',b:[5,6,7],
+ t:'Мракоборец, руководящий охотой на Сириуса Блэка и одновременно прячущий его. Прикрывает Орден изнутри Министерства, охраняет самого маггловского премьера, а после падения режима становится временным министром магии.<p>Его патронус-рысь врывается на свадьбу Билла и Флёр с тремя словами: «Министерство пало». Это точка, с которой начинается открытая война.</p>',
+ l:['order','ministry','patronus','wedding','battle']},
+{i:'weasleys',n:'Семья Уизли',s:'Дом, ставший домом',k:'char',g:'g-weasleys',b:[1,2,3,4,5,6,7],
+ t:'Нора, часы со стрелками-именами и вечная нехватка денег. Артур обожает магглов, Молли вяжет свитера и убивает Беллатрису, Билл и Чарли работают, Перси уходит в Министерство и возвращается ценой смерти брата.<p>Для Роулинг Уизли — противовес Малфоям: чистокровные без гроша и без спеси. Именно этот дом, а не Хогвартс, оказывается для Гарри настоящей семьёй.</p>',
+ l:['ron','ginny','twins','burrow','order','wedding']},
+{i:'twins',n:'Фред и Джордж',s:'Смех как сопротивление',k:'char',g:'g-twins',b:[1,2,3,4,5,6,7],
+ t:'Отдают Гарри Карту Мародёров, уходят из школы под фейерверк прямо в лицо Амбридж и открывают магазин, который в военный год выпускает щитовые шляпы и Перуанский порошок мгновенной тьмы.<p>Гибель Фреда в битве за Хогвартс — самая жестокая точка книги именно потому, что до неё эти двое были гарантией, что всё обойдётся.</p>',
+ l:['map','weasleys','umbridge','battle','ron']},
+{i:'dobby',n:'Добби',s:'Свободный эльф',k:'char',g:'g-dobby',b:[2,4,5,7],
+ t:'Домовик Малфоев, который калечит Гарри, пытаясь его спасти, — и получает свободу через носок в дневнике. Дальше — работа за зарплату, участие в ОД (это он находит Выручай-комнату) и трансгрессия в подвал Малфой-мэнора, куда, как считалось, попасть нельзя.<p>Он вытаскивает всех и умирает с ножом Беллатрисы в груди. Гарри копает ему могилу вручную, без магии, — и именно там, у могилы, принимает решение отказаться от Даров ради крестражей.</p>',
+ q:'«Здесь покоится Добби, свободный эльф».',
+ l:['lucius','malfoymanor','harry','ror','diary','luna']},
+{i:'kreacher',n:'Кикимер',s:'Медальон и месть',k:'char',g:'g-kreacher',b:[5,6,7],
+ t:'Ненавидящий всех эльф дома Блэков, чьё предательство приводит Гарри в ловушку Отдела тайн. И он же — единственный свидетель того, как Регулус Блэк подменил крестраж в пещере.<p>После того как Гарри отдаёт ему фальшивый медальон Регулуса, Кикимер меняется полностью и в финале ведёт эльфов Хогвартса в бой с ножами для мяса. Аргумент Роулинг: рабы становятся союзниками только тогда, когда с ними обращаются как с людьми.</p>',
+ l:['locket','sirius','hermione','grimmauld','battle','rab']},
+{i:'griphook',n:'Крюкохват',s:'Гоблинская цена',k:'char',g:'g-griphook',b:[1,7],
+ t:'Гоблин, который в первой книге ведёт Гарри к сейфу 713, а в седьмой — в сейф Лестрейнджей, взяв платой меч Гриффиндора. Забирает его в момент, когда чаша уже в руках, и оставляет троих под падающим золотом.<p>Роулинг использует его, чтобы показать: у гоблинов своя правда о собственности, и волшебники нарушали её веками. Союзник, но не друг.</p>',
+ l:['gringotts','sword','cup','hermione','dragon']},
+{i:'slughorn',n:'Гораций Слизнорт',s:'Коллекционер учеников',k:'char',g:'g-slughorn',b:[6,7],
+ t:'Декан Слизерина старой школы: тщеславный, добродушный, торгующий связями. Хранит подлинное воспоминание о том, как рассказал шестнадцатилетнему Реддлу про крестражи и услышал вопрос про семь частей души.<p>Отдать это воспоминание для него — признать себя виновником. Возвращается в замок с подкреплением на битву: единственный декан Слизерина, вставший на правильную сторону.</p>',
+ l:['horcrux','voldemort','pensieve','harry','prince','battle']},
+{i:'quirrell',n:'Квиринус Квиррелл',s:'Первое лицо',k:'char',g:'g-quirrell',b:[1],
+ t:'Заикающийся преподаватель защиты, под чьим тюрбаном — лицо Волан-де-Морта. Первый вариант вопроса, который цикл будет задавать семь книг: как выглядит зло, если оно рядом и вежливо здоровается.<p>Не может коснуться Гарри: кожа мальчика жжёт его — защита, оставленная жертвой Лили. Первая победа Гарри одержана не магией, а тем, что его когда-то любили.</p>',
+ l:['voldemort','stone','harry','potters','mirror']},
+{i:'lockhart',n:'Златопуст Локонс',s:'Слава без содержания',k:'char',g:'g-lockhart',b:[2],
+ t:'Автор бестселлеров, укравший чужие подвиги и стиравший авторам память. Единственный преподаватель ЗоТИ, от которого вреда больше, чем от Волан-де-Морта под тюрбаном: убирает Гарри кости из руки и выпускает корнуэльских пикси.<p>Стирает память сам себе палочкой Рона и остаётся в Мунго, вежливый и счастливый. Роулинг о медийной славе высказалась задолго до соцсетей.</p>',
+ l:['chamber','ron','harry','prophet']},
+{i:'trelawney',n:'Сивилла Трелони',s:'Два настоящих пророчества',k:'char',g:'g-trelawney',b:[3,4,5,6,7],
+ t:'Шарлатанка, предсказывающая смерть каждому классу, — и автор двух подлинных пророчеств, обоих в трансе, обоих не помня. Первое запустило всю историю, второе вернуло Волан-де-Морту тело.<p>Дамблдор держит её в замке не из жалости к дару, а потому что за ней охотятся. Уволенная Амбридж, она остаётся жить в башне и в финале сбрасывает на Пожирателей хрустальные шары.</p>',
+ l:['prophecy','dumbledore','pettigrew','umbridge','harry']},
+{i:'crouchjr',n:'Барти Крауч-младший',s:'Год под чужим лицом',k:'char',g:'g-crouchjr',b:[4],
+ t:'Сын главы Департамента магического правопорядка, вытащенный матерью из Азкабана и десять лет проживший под Империусом отца. Убивает отца, занимает место Грюма и весь учебный год ведёт Гарри через Турнир — помогает, подсказывает, спасает, чтобы доставить к порталу.<p>Лучший пример того, как Роулинг устраивает детектив: все подсказки на виду, включая флягу, из которой «Грюм» пьёт каждый час.</p>',
+ l:['moody','polyjuice','tournament','rebirth','voldemort','goblet']},
+{i:'cedric',n:'Седрик Диггори',s:'Первая смерть',k:'char',g:'g-cedric',b:[3,4],
+ t:'Чемпион Пуффендуя, честный до неудобства: предупреждает Гарри о драконах, спорит из-за кубка, кто заслужил. Его гибель на кладбище — два слова и зелёная вспышка, без дуэли и смысла.<p>С этого момента цикл меняет жанр: смерть перестаёт быть частью прошлого и становится текущим риском. «Помните Седрика Диггори» — фраза, которой Дамблдор объявляет войну.</p>',
+ l:['tournament','rebirth','goblet','harry','denial']},
+{i:'skeeter',n:'Рита Скитер',s:'Пресса как оружие',k:'char',g:'g-skeeter',b:[4,5,7],
+ t:'Незарегистрированный анимаг-жук с Прытко Пишущим Пером, изобретающая цитаты и превращающая подростка в сенсацию. Гермиона ловит её в банку и на год лишает голоса — единственная в цикле победа над медиа.<p>В седьмой книге выпускает «Жизнь и обманы Альбуса Дамблдора» — книгу, которая наполовину клевета, но именно она заставляет Гарри увидеть в учителе человека.</p>',
+ l:['prophet','tournament','hermione','dumbledore','umbridge']},
+{i:'potters',n:'Лили и Джеймс',s:'Жертва как защита',k:'char',g:'g-potters',b:[1,3,5,7],
+ t:'Погибли 31 октября 1981 года в Годриковой Впадине, преданные Хранителем тайны. Джеймс — без палочки, чтобы дать им время; Лили — отказавшись отойти, хотя ей предлагали жить.<p>Её добровольная смерть стала древней магией, отбросившей Убивающее проклятие. На этом механизме держатся все семь книг: защита крови у Дурслей, ожог Квиррелла, кровь врага в котле и то, почему Гарри может вернуться из-за грани.</p>',
+ l:['harry','voldemort','snape','pettigrew','resurrection','godric']},
+{i:'gaunt',n:'Мраксы',s:'Порода без разума',k:'char',g:'g-gaunt',b:[6],
+ t:'Последние потомки Слизерина: лачуга у Литтл-Хэнглтона, змея на двери, кольцо с камнем, гордость вместо еды. Марволо, Морфин и Меропа — три поколения вырождения на чистой крови.<p>Меропа опаивает соседа-магла приворотным зельем, рожает сына в приюте и умирает. Из этого брака выходит Волан-де-Морт — то есть чистокровный культ производит на свет полукровку, которая его же и возглавит.</p>',
+ l:['voldemort','ring','locket','pensieve','riddlehouse']},
+
+/* ── существа ── */
+{i:'basilisk',n:'Василиск',s:'Царь змей',k:'beast',g:'g-basilisk',b:[2,7],
+ t:'Тысячелетняя змея Слизерина в трубах под замком: взгляд убивает, отражённый — обездвиживает. Все жертвы второй книги выжили благодаря случайностям — камере, зеркальцу, призраку, лужице.<p>Клыки василиска и меч Гриффиндора, впитавший их яд, становятся главным инструментом всей саги: этим ядом уничтожены дневник, медальон, чаша и, руками Невилла, Нагайна.</p>',
+ l:['chamber','fang','sword','diary','ginny','harry']},
+{i:'dementor',n:'Дементоры',s:'Стражи, сменившие сторону',k:'beast',g:'g-dementor',b:[3,4,5,6,7],
+ t:'Слепые твари, питающиеся счастьем; поцелуй вытягивает душу. Министерство держало их в Азкабане, считая инструментом, — они ушли к Волан-де-Морту при первой возможности.<p>Роулинг признавалась, что писала их с депрессии. Отсюда и лекарство: Патронус — не сила, а способность удержать одно счастливое воспоминание.</p>',
+ l:['azkaban','patronus','sirius','lupin','harry','ministry']},
+{i:'nagini',n:'Нагайна',s:'Живой крестраж',k:'beast',g:'g-nagini',b:[4,5,6,7],
+ t:'Змея, которую Волан-де-Морт превратил в крестраж после убийства Берты Джоркинс, — и единственная часть его души, способная думать и защищаться. Он доит её яд, разговаривает с ней и в конце прячет в зачарованной клетке.<p>Её укус в Отделе тайн, показанный Гарри изнутри её тела, — первое доказательство связи через шрам. Убита Невиллом мечом Гриффиндора за минуту до финальной дуэли.</p>',
+ l:['voldemort','horcrux','neville','sword','arthur','godric']},
+{i:'fawkes',n:'Фоукс',s:'Феникс Дамблдора',k:'beast',g:'g-fawkes',b:[2,4,5,6],
+ t:'Сгорает и возрождается; слёзы исцеляют, песня даёт мужество, а перья из его хвоста стали сердцевинами двух палочек — Гарри и Волан-де-Морта. Одна птица связала обоих.<p>Приносит меч в Тайную комнату, выклёвывает глаза василиску, глотает Убивающее проклятие в Отделе тайн и улетает навсегда после похорон Дамблдора.</p>',
+ l:['dumbledore','chamber','sword','wandcore','harry']},
+{i:'hedwig',n:'Букля',s:'Связь с миром',k:'beast',g:'g-hedwig',b:[1,2,3,4,5,6,7],
+ t:'Подарок Хагрида на одиннадцатилетие и единственная собственность Гарри, которая принадлежит только ему. Семь лет она носит письма — то есть держит связь с волшебным миром из дома Дурслей.<p>Гибнет в клетке в первой главе седьмой книги. Роулинг называла это осознанным сигналом: детство кончилось.</p>',
+ l:['harry','hagrid','sevenpotters','letter']},
+{i:'buckbeak',n:'Клювокрыл',s:'Приговорённый и спасённый',k:'beast',g:'g-buckbeak',b:[3,6,7],
+ t:'Гиппогриф, оскорблённый Драко и приговорённый Комиссией по обезвреживанию опасных существ. Его спасение на маховике времени — первое действие Гарри против системы.<p>Позже под именем Махаон живёт у Сириуса, прикрывает отход Гарри в шестой книге и дерётся в битве за Хогвартс.</p>',
+ l:['timeturner','hagrid','draco','sirius','ministry']},
+{i:'fluffy',n:'Пушок',s:'Трёхголовая дверь',k:'beast',g:'g-fluffy',b:[1],
+ t:'Цербер Хагрида на люке третьего этажа: засыпает под музыку — деталь, которую Хагрид разболтал незнакомцу в трактире. Вся защита философского камня рушится из-за одной фразы за кружкой.<p>Первое звено полосы препятствий, которую трио проходит втроём: дьявольские силки, ключи, шахматы, зелья.</p>',
+ l:['stone','hagrid','harry','ron','hermione']},
+{i:'dragon',n:'Драконы',s:'От Норберта до слепого стража',k:'beast',g:'g-dragon',b:[1,4,7],
+ t:'Хвосторога в первом испытании Турнира, откуда Гарри выбирается на метле; Норберт, из-за которого трио попадает в Запретный лес; и слепой украинский железнобрюх, охраняющий нижние сейфы Гринготтса.<p>Побег на драконе из банка — единственное ограбление Гринготтса, доведённое до конца, и первая новость, которую волшебная Британия узнаёт о живом Гарри Поттере.</p>',
+ l:['tournament','gringotts','hagrid','griphook','cup']},
+{i:'inferi',n:'Инферналы',s:'Стража в озере',k:'beast',g:'g-inferi',b:[6,7],
+ t:'Трупы, поднятые тёмной магией, ждущие в подземном озере пещеры. Реагируют на воду и свет, боятся огня — Дамблдор выжигает круг пламени, уже отравленный зельем.<p>Их назначение в тексте — показать, во что Волан-де-Морт превращает смерть: не покой и не жизнь, а бесконечное использование.</p>',
+ l:['cave','dumbledore','voldemort','locket','harry']},
+
+/* ── предметы ── */
+{i:'stone',n:'Философский камень',s:'Соблазн бессмертия',k:'obj',g:'g-stone',b:[1],
+ t:'Творение Николаса Фламеля: превращает металл в золото и даёт эликсир жизни. Спрятан в Хогвартсе за препятствиями семи преподавателей, но последняя защита — не заклинание, а условие: камень получит тот, кто хочет найти его, но не использовать.<p>Уничтожен по решению Фламеля, прожившего шестьсот шестьдесят пять лет. Первая книга формулирует тезис всего цикла: попытка отменить смерть — и есть главное зло.</p>',
+ l:['mirror','quirrell','dumbledore','voldemort','gringotts']},
+{i:'diary',n:'Дневник Реддла',s:'Крестраж № 1',k:'obj',g:'g-diary',b:[2,6,7],
+ t:'Первый крестраж, созданный в шестнадцать лет после убийства Плаксы Миртл. Единственный, умеющий разговаривать: он не просто хранит душу, он вербует.<p>Подброшен Люциусом Малфоем Джинни Уизли, уничтожен клыком василиска в Тайной комнате. Дамблдор поймёт по этой истории главное: Волан-де-Морт разделил душу не один раз.</p>',
+ l:['ginny','chamber','fang','lucius','horcrux','basilisk']},
+{i:'ring',n:'Кольцо Марволо',s:'Крестраж и Дар',k:'obj',g:'g-ring',b:[6,7],
+ t:'Перстень Мраксов с чёрным камнем, на котором вырезан знак Даров Смерти. Волан-де-Морт сделал крестраж из фамильной реликвии, не зная, что держит в руках Воскрешающий камень.<p>Дамблдор надел его, поддавшись надежде увидеть сестру и родителей, — и получил проклятие, оставившее ему год жизни. Уничтожен мечом Гриффиндора; камень остался в кольце.</p>',
+ l:['dumbledore','resurrection','gaunt','sword','horcrux','hallows']},
+{i:'locket',n:'Медальон Слизерина',s:'Крестраж, который шепчет',k:'obj',g:'g-locket',b:[6,7],
+ t:'Реликвия Слизерина, проданная Меропой за гроши и добытая Волан-де-Мортом убийством Хэпзибы Смит. Спрятан в пещере под зельем отчаяния — и подменён Регулусом Блэком, ушедшим туда умирать.<p>Кикимер хранил его годами, Мундунгус украл, Амбридж носила как знак чистой крови. Ношение медальона усиливает худшее в человеке: именно он выгоняет Рона из палатки.</p>',
+ l:['rab','kreacher','cave','umbridge','ron','sword','horcrux']},
+{i:'cup',n:'Чаша Пуффендуй',s:'Крестраж в сейфе',k:'obj',g:'g-cup',b:[6,7],
+ t:'Маленькая золотая чаша с барсуком, украденная у Хэпзибы Смит вместе с медальоном. Отдана на хранение Беллатрисе — высшая форма доверия, какую Волан-де-Морт способен выразить.<p>Достать её из сейфа Лестрейнджей мешают чары умножения: любое прикосновение множит золото. Уничтожена Гермионой клыком василиска в Тайной комнате.</p>',
+ l:['bellatrix','gringotts','fang','hermione','griphook','horcrux']},
+{i:'diadem',n:'Диадема Когтевран',s:'Крестраж под потолком',k:'obj',g:'g-diadem',b:[7],
+ t:'Диадема Кандиды Когтевран, украденная её дочерью Еленой и спрятанная в албанском лесу; Реддл выманил тайну у призрака и превратил находку в крестраж.<p>Всё это время она лежала в Выручай-комнате, среди сваленного хлама, — в школе, куда Гарри ходил шесть лет. Сгорела в Адском пламени, вызванном Крэббом.</p>',
+ l:['ror','luna','battle','horcrux','voldemort']},
+{i:'sword',n:'Меч Гриффиндора',s:'Гоблинское серебро',k:'obj',g:'g-sword',b:[2,7],
+ t:'Впитывает то, что делает его сильнее, — с 1993 года это яд василиска. Является только истинному гриффиндорцу: Гарри в Тайной комнате, Невиллу — из шляпы в горящем зале.<p>Оставлен Дамблдором Гарри в завещании и удержан Министерством; настоящий меч Снегг подбрасывает в лесное озеро, подослав патронуса-лань. Гоблины считают его своим — на этом строится сделка с Крюкохватом.</p>',
+ l:['basilisk','neville','doe','snape','griphook','hat','horcrux']},
+{i:'hat',n:'Распределяющая шляпа',s:'Выбор, а не приговор',k:'obj',g:'g-hat',b:[1,2,4,5,7],
+ t:'Шляпа Годрика Гриффиндора, читающая мысли и учитывающая просьбы: Гарри попал на Гриффиндор, потому что попросил «только не Слизерин».<p>Из года в год её песни становятся тревожнее: к пятой книге она прямо призывает факультеты объединиться. Хранит меч и в финале отдаёт его Невиллу, уже горящая на его голове.</p>',
+ l:['sword','harry','mcgonagall','sorting','neville']},
+{i:'map',n:'Карта Мародёров',s:'Замок как чертёж',k:'obj',g:'g-map',b:[3,4,5,6,7],
+ t:'Создана Лунатиком, Бродягой, Сохатым и Хвостом на седьмом курсе: показывает каждого в замке в реальном времени, включая тайные ходы. Отдана Гарри близнецами и трижды меняет сюжет.<p>Именно карта выдаёт живого Питера Петтигрю, разоблачает лже-Грюма и позволяет следить за Драко в шестой книге. Артефакт-детектив: она не лжёт, но её надо уметь читать.</p>',
+ l:['marauders','twins','pettigrew','draco','harry','crouchjr']},
+{i:'timeturner',n:'Маховик времени',s:'Три оборота',k:'obj',g:'g-timeturner',b:[3,5],
+ t:'Министерский артефакт, выданный Гермионе ради лишних уроков и использованный, чтобы спасти Клювокрыла и Сириуса. Правило жёсткое: прошлое уже случилось, изменить его нельзя — можно лишь узнать, что ты в нём и был.<p>Патронус у озера Гарри вызывает потому, что уже видел его. Все маховики разбиты в битве в Отделе тайн — Роулинг закрыла лазейку, ломающую любой сюжет.</p>',
+ l:['hermione','buckbeak','sirius','patronus','ministry','doorway']},
+{i:'cloak',n:'Мантия-невидимка',s:'Дар Смерти',k:'obj',g:'g-cloak',b:[1,2,3,4,5,6,7],
+ t:'Наследство Джеймса, переданное Дамблдором на первое Рождество. В отличие от обычных мантий, не изнашивается и не поддаётся чарам — потому что это третий Дар Смерти, переживший века у Поттеров.<p>Именно она, а не палочка, оказывается правильным ответом на сказку о трёх братьях: младший брат встретил Смерть как старого друга, а не как противника.</p>',
+ l:['hallows','harry','potters','dumbledore','beedle']},
+{i:'elderwand',n:'Бузинная палочка',s:'Дар, который убивает хозяев',k:'obj',g:'g-elderwand',b:[6,7],
+ t:'Старшая палочка переходит к тому, кто победил прежнего владельца, — и потому за ней тянется след из трупов. Грин-де-Вальд украл её у Грегоровича, Дамблдор победил Грин-де-Вальда, Драко обезоружил Дамблдора, Гарри отобрал палочку у Драко в Малфой-мэноре.<p>Волан-де-Морт вскрывает могилу Дамблдора и убивает Снегга, чтобы получить власть, которой у Снегга никогда не было. В финале палочка отказывается убивать законного хозяина. Гарри возвращает её в могилу.</p>',
+ l:['hallows','draco','dumbledore','voldemort','snape','harry']},
+{i:'resurrection',n:'Воскрешающий камень',s:'Возвращает тени',k:'obj',g:'g-resurrection',b:[6,7],
+ t:'Второй Дар: вызывает не мёртвых, а их подобие — достаточно близко, чтобы сойти с ума от тоски, как средний брат в сказке. Вставлен в кольцо Мраксов, стал крестражем, погубил Дамблдора.<p>Спрятан в снитче с надписью «Я открываюсь под конец». Гарри открывает его перед смертью, и родители, Сириус и Люпин доводят его до поляны. Уронен в лесу навсегда — единственно верное обращение с таким предметом.</p>',
+ l:['hallows','ring','snitch','forestdeath','potters','dumbledore']},
+{i:'hallows',n:'Дары Смерти',s:'Палочка, камень, мантия',k:'obj',g:'g-hallows',b:[7],
+ t:'Треугольник, круг и черта — знак, который Дамблдор и Грин-де-Вальд носили как программу: «Ради общего блага». Сказка о трёх братьях в изложении Ксенофилиуса оказывается не сказкой.<p>Развилка седьмой книги: Дары или крестражи, власть над смертью или её принятие. У могилы Добби Гарри выбирает крестражи — и получает Дары именно потому, что перестал их искать.</p>',
+ l:['elderwand','resurrection','cloak','beedle','luna','dumbledore']},
+{i:'pensieve',n:'Омут памяти',s:'Прошлое как улика',k:'obj',g:'g-pensieve',b:[4,5,6,7],
+ t:'Каменная чаша, позволяющая войти в чужое воспоминание и увидеть больше, чем видел его владелец. Композиционный ключ цикла: через омут Роулинг подаёт всю предысторию — суды над Пожирателями, приют Реддла, дом Мраксов, урок Слизнорта.<p>Последнее погружение — воспоминания Снегга, где за один заход переворачиваются шесть книг подряд.</p>',
+ l:['dumbledore','snape','slughorn','voldemort','harry','gaunt']},
+{i:'mirror',n:'Зеркало Еиналеж',s:'Желание наоборот',k:'obj',g:'g-mirror',b:[1,7],
+ t:'«Я показываю не ваше лицо, но ваше самое горячее желание». Гарри видит семью, Рон — себя старостой и капитаном. Дамблдор предупреждает: люди чахнут перед ним, забыв жить.<p>Он же превращает зеркало в сейф: камень достанется тому, кто хочет найти, но не применить. Осколок зеркальца Сириуса в седьмой книге — эхо этой же идеи.</p>',
+ l:['stone','harry','dumbledore','quirrell','ron']},
+{i:'goblet',n:'Кубок огня',s:'Магический контракт',k:'obj',g:'g-goblet',b:[4],
+ t:'Артефакт, выбирающий чемпионов и не принимающий возражений: имя, брошенное четвёртой школой, делает четырнадцатилетнего Гарри участником смертельного турнира без права отказа.<p>Идеальный инструмент для ловушки: Барти Краучу-младшему нужно было лишь обмануть предмет, дальше вся система Министерства сама доставила Гарри к порталу.</p>',
+ l:['tournament','crouchjr','cedric','harry','rebirth']},
+{i:'prophecy',n:'Пророчество',s:'Половина фразы',k:'obj',g:'g-prophecy',b:[5,6,7],
+ t:'«Грядёт тот, у кого хватит могущества победить Тёмного Лорда… и один из них должен погибнуть от руки другого». Снегг подслушал первую половину и донёс — Волан-де-Морт выбрал Поттеров, отметил Гарри как равного себе и тем сделал пророчество явью.<p>Стеклянная сфера в Отделе тайн разбивается, не будучи услышанной. Дамблдор объясняет: сила пророчества не в предсказании, а в том, что в него поверили.</p>',
+ l:['trelawney','snape','voldemort','harry','neville','doorway']},
+{i:'deluminator',n:'Делюминатор',s:'Свет и голос',k:'obj',g:'g-deluminator',b:[1,5,7],
+ t:'Гасилка Дамблдора, вбирающая огни, — в первой главе первой книги ею гасят фонари на Тисовой улице. Завещана Рону.<p>Оказывается прибором для возвращения: она передаёт голоса тех, кто по тебе скучает, и приводит обратно к друзьям. Дамблдор оставил Рону не инструмент, а страховку от собственной слабости.</p>',
+ l:['ron','dumbledore','will','locket','sword']},
+{i:'snitch',n:'Снитч',s:'Открывается под конец',k:'obj',g:'g-snitch',b:[1,4,6,7],
+ t:'Золотой мяч с крыльями, который Гарри в первой игре поймал ртом, — и потому крышка снитча помнит его губы. Дамблдор использовал эту деталь как замок для Воскрешающего камня.<p>Квиддич у Роулинг вообще работает как заготовка: то, что кажется школьным спортом, к седьмой книге превращается в сюжетный механизм.</p>',
+ l:['resurrection','will','harry','broom','quidditch']},
+{i:'ror',n:'Выручай-комната',s:'Комната по нужде',k:'obj',g:'g-ror',b:[5,6,7],
+ t:'Помещение, которое становится тем, что тебе необходимо: тренировочным залом для Отряда Дамблдора, свалкой спрятанного, укрытием для изгнанных учеников.<p>В ней Драко чинит Исчезательный шкаф, впуская в замок Пожирателей; в ней же лежит диадема; в ней Крэбб выпускает Адское пламя и гибнет. Одно помещение — три поворота сюжета.</p>',
+ l:['da','diadem','cabinet','draco','battle','dobby']},
+{i:'cabinet',n:'Исчезательный шкаф',s:'Дверь в замок',k:'obj',g:'g-cabinet',b:[2,5,6],
+ t:'Пара связанных шкафов: один в Выручай-комнате, второй у «Горбина и Бэрка» в Лютном переулке. Сломан в пятой книге, когда близнецы засунули в него Монтегю, — что и подсказало Драко идею.<p>Год починки — и Пожиратели входят в Хогвартс без штурма. Единственный по-настоящему успешный план Драко Малфоя.</p>',
+ l:['draco','ror','battle','borgin','twins']},
+{i:'wandcore',n:'Палочки-сёстры',s:'Перо одного феникса',k:'obj',g:'g-wand',b:[1,4,7],
+ t:'Остролист и тис с сердцевинами из двух перьев Фоукса. Олливандер продаёт Гарри палочку-близнеца той, что оставила ему шрам, — и предупреждает, что от этой пары можно ждать великих дел.<p>На кладбище палочки сцепляются в Приори Инкантатем: из палочки убийцы выходят тени убитых. Это же родство спасает Гарри в погоне над Литтл-Уингингом и заставляет Волан-де-Морта искать чужую палочку.</p>',
+ l:['fawkes','rebirth','harry','voldemort','elderwand','ollivander']},
+{i:'polyjuice',n:'Оборотное зелье',s:'Чужое лицо',k:'obj',g:'g-polyjuice',b:[2,4,6,7],
+ t:'Месяц варки ради часа в чужом теле. Роулинг использует его как мотор интриги в каждой второй книге: Крэбб и Гойл в гостиной Слизерина, Барти Крауч в облике Грюма, семь Поттеров в небе над Литтл-Уингингом, Гермиона в облике Беллатрисы в Гринготтсе.<p>Единственная осечка — кошачий волос Гермионы во второй книге. Даже безупречный план ломается о мелочь.</p>',
+ l:['hermione','crouchjr','sevenpotters','gringotts','chamber']},
+{i:'patronus',n:'Патронус',s:'Счастливое воспоминание',k:'obj',g:'g-patronus',b:[3,4,5,6,7],
+ t:'Единственная защита от дементоров и, с пятой книги, система связи Ордена: сообщение говорит голосом отправителя и не подделывается.<p>Форма выдаёт человека: олень у Гарри, лань у Снегга и Лили, выдра у Гермионы, рысь у Кингсли. У Пожирателей патронуса нет вовсе — заклинание требует счастья, которого у них не осталось.</p>',
+ l:['lupin','dementor','snape','doe','kingsley','harry']},
+{i:'darkmark',n:'Тёмная метка',s:'Клеймо и сигнал',k:'obj',g:'g-darkmark',b:[4,5,6,7],
+ t:'Череп со змеёй: татуировка на предплечье Пожирателей и знак, который они запускают в небо над местом убийства. Через метку Волан-де-Морт созывает своих — и по её потемнению в четвёртой книге становится ясно, что он возвращается.<p>Появление метки над чемпионатом мира по квиддичу — первая сцена цикла, где страх взрослых становится очевиден детям.</p>',
+ l:['voldemort','worldcup','snape','crouchjr','rebirth']},
+{i:'fang',n:'Клык василиска',s:'Инструмент разрушения',k:'obj',g:'g-fang',b:[2,7],
+ t:'Яд, который не берёт ни одно противоядие, кроме слёз феникса, — и одно из немногих веществ, способных уничтожить крестраж, не оставив шанса на восстановление.<p>Дневник, чаша и (через меч) кольцо, медальон и Нагайна уничтожены по сути одним и тем же ядом. Оружие, добытое в двенадцать лет, работает до последней страницы.</p>',
+ l:['basilisk','sword','diary','cup','chamber','hermione']},
+{i:'quill',n:'Кровавое перо',s:'Наказание без чернил',k:'obj',g:'g-quill',b:[5,7],
+ t:'Пишет кровью пишущего, вырезая строку на тыльной стороне ладони. «Я не должен лгать» остаётся у Гарри шрамом на всю жизнь.<p>Самый тихий ужас цикла: пытка ребёнка, оформленная как школьное взыскание и никем в Министерстве не оспоренная.</p>',
+ l:['umbridge','harry','da','ministry']},
+{i:'prophet',n:'«Ежедневный пророк»',s:'Официальная версия',k:'obj',g:'g-prophet',b:[2,3,4,5,6,7],
+ t:'Газета, которая последовательно выполняет позицию Министерства: сначала травит Гарри как лжеца, потом объявляет Избранным, потом печатает списки магглорождённых.<p>Контрудар выходит через «Придиру» Ксенофилиуса Лавгуда: интервью Гарри о возвращении Волан-де-Морта печатает единственный журнал, которому никто не верил.</p>',
+ l:['skeeter','fudge','umbridge','luna','ministry','denial']},
+{i:'beedle',n:'Сказки барда Бидля',s:'Ключ в детской книжке',k:'obj',g:'g-beedle',b:[7],
+ t:'Сборник волшебных сказок, завещанный Гермионе, с пометкой Дамблдора: знак Даров, нарисованный над «Сказкой о трёх братьях».<p>Роулинг делает разгадку демонстративно доступной — она лежала в детской книге, которую любой волшебный ребёнок знает наизусть. Не знали её только магглорождённая Гермиона и выросший у Дурслей Гарри.</p>',
+ l:['hallows','hermione','will','luna','dumbledore']},
+
+/* ── места ── */
+{i:'hogwarts',n:'Хогвартс',s:'Главный герой без реплик',k:'place',g:'g-hogwarts',b:[1,2,3,4,5,6,7],
+ t:'Школа, устройство которой само по себе сюжет: движущиеся лестницы, портреты-осведомители, Выручай-комната, Тайная комната, границы, сквозь которые нельзя трансгрессировать.<p>Семь книг — семь учебных лет, и каждая новая угроза сначала проверяет замок: тролль, василиск, дементоры, Турнир, Амбридж, Пожиратели, наконец полноценная осада.</p>',
+ l:['sorting','ror','chamber','battle','mcgonagall','dumbledore']},
+{i:'ministry',n:'Министерство магии',s:'Бюрократия под Лондоном',k:'place',g:'g-ministry',b:[2,3,4,5,6,7],
+ t:'Восемь уровней под Уайтхоллом: Отдел тайн, залы суда, фонтан «Волшебное братство», где эльф и гоблин смотрят на волшебника снизу вверх.<p>Роулинг ведёт его как отдельного антагониста: сначала некомпетентность, затем цензура, затем — после захвата в седьмой книге — регистрация магглорождённых и статуя «Магия — сила». Ни одного заклинания не понадобилось.</p>',
+ l:['fudge','umbridge','doorway','scrimgeour','harry','fall']},
+{i:'gringotts',n:'Гринготтс',s:'Банк, который нельзя ограбить',k:'place',g:'g-gringotts',b:[1,7],
+ t:'Гоблинский банк с драконом на нижних уровнях, водопадом Вора, смывающим чары, и тележками без тормозов. Ограбление в первой книге — неудачное, сейф 713 опустошён за часы до него.<p>Седьмая книга закрывает арку: Гарри, Рон и Гермиона выносят чашу и улетают на драконе. Первое успешное ограбление за столетия — и конец репутации банка.</p>',
+ l:['griphook','cup','stone','dragon','polyjuice']},
+{i:'azkaban',n:'Азкабан',s:'Крепость в Северном море',k:'place',g:'g-azkaban',b:[3,4,5,6,7],
+ t:'Тюрьма, охраняемая дементорами, где заключённые сходят с ума за месяцы. Сириус выдержал двенадцать лет, потому что мысль о его невиновности не была счастливой — и дементоры не могли её отнять.<p>Массовый побег Пожирателей в пятой книге — момент, когда Министерство теряет контроль окончательно.</p>',
+ l:['dementor','sirius','bellatrix','ministry','hagrid']},
+{i:'grimmauld',n:'Площадь Гриммо, 12',s:'Штаб под Фиделиусом',k:'place',g:'g-veil',b:[5,6,7],
+ t:'Родовой дом Блэков, отданный Сириусом Ордену: портрет вопящей матери, гобелен с выжженными именами, головы эльфов на стене.<p>В седьмой книге дом становится убежищем троих и точкой, где выясняется, кто такой R.A.B. Дом, из которого Сириус сбежал подростком, в итоге даёт ответ, добытый его младшим братом.</p>',
+ l:['sirius','kreacher','order','rab','locket','harry']},
+{i:'godric',n:'Годрикова Впадина',s:'Начало и рифма',k:'place',g:'g-forest',b:[1,7],
+ t:'Деревня, где родился Дамблдор, погибли Поттеры и стоит разрушенный дом, ставший памятником. Здесь же похоронены Кендра и Ариана Дамблдор, а на могиле Игнотуса Певерелла вырезан знак Даров.<p>Гарри возвращается сюда в канун Рождества седьмой книги — и попадает в ловушку: под личиной старушки Батильды его ждёт Нагайна. Место рождения истории едва не становится местом её конца.</p>',
+ l:['potters','voldemort','nagini','hallows','dumbledore','harry']},
+{i:'forest',n:'Запретный лес',s:'Территория без правил',k:'place',g:'g-forest',b:[1,2,4,5,7],
+ t:'Кентавры, акромантулы, фестралы, единороги — пространство, где школьные правила не действуют. Гарри впервые встречает здесь Волан-де-Морта в четвёртой главе своей жизни в волшебном мире.<p>И сюда же он приходит умирать в седьмой книге. Лес обрамляет весь цикл: первое столкновение и последний выбор происходят под одними и теми же деревьями.</p>',
+ l:['hagrid','forestdeath','buckbeak','harry','umbridge']}
+];
+</script>
+
+<script>
+/* дополнительные досье */
+CARDS.push(
+{i:'scar',n:'Шрам-молния',s:'Метка и канал',k:'obj',g:'g-scar',b:[1,2,3,4,5,6,7],
+ t:'След Убивающего проклятия, отскочившего 31 октября 1981 года. Болит, когда Волан-де-Морт рядом или испытывает сильные чувства, — то есть работает как барометр, который Гарри семь книг учится читать.<p>На деле это шов на седьмом крестраже: частица души, отколовшаяся в ту ночь и прицепившаяся к единственному живому существу в доме. Отсюда и парселтанг, и видения, и необходимость Гарри умереть.</p>',
+ l:['harry','voldemort','horcrux','forestdeath','occlumency','kingscross']},
+{i:'veil',n:'Арка с завесой',s:'Дверь в одну сторону',k:'obj',g:'g-veil',b:[5],
+ t:'Древняя каменная арка в Комнате Смерти Отдела тайн, за которой шевелится ветхий занавес. Те, кто потерял близких, слышат за ним голоса; остальные — ничего.<p>Сириус падает сквозь неё от заклинания Беллатрисы, и Роулинг намеренно не объясняет механику. Смерть в цикле не имеет спецэффектов: человек просто уходит за занавес и не выходит.</p>',
+ l:['sirius','doorway','bellatrix','harry','luna']},
+{i:'marauders',n:'Мародёры',s:'Четверо на карте',k:'char',g:'g-map',b:[3,4,5,7],
+ t:'Джеймс Поттер (Сохатый), Сириус Блэк (Бродяга), Римус Люпин (Лунатик) и Питер Петтигрю (Хвост). Трое стали незарегистрированными анимагами, чтобы четвёртый не был один в полнолуние, — редкий случай, когда нарушение закона в цикле подано как акт дружбы.<p>Из четверых двое погибли по вине третьего. Карта, которую они сделали шутки ради, через двадцать лет спасёт сына Сохатого.</p>',
+ l:['sirius','lupin','pettigrew','potters','map','shriek']},
+{i:'rab',n:'Регулус Блэк',s:'R.A.B.',k:'char',g:'g-locket',b:[5,6,7],
+ t:'Младший брат Сириуса, Пожиратель, отдавший хозяину своего домовика для проверки пещеры. Когда Кикимер вернулся живым вопреки приказу умереть, Регулус понял, что стоит за словом «преданность».<p>Он вернулся в пещеру, выпил зелье, подменил медальон запиской — «Я украл настоящий крестраж и намерен уничтожить его, как только смогу» — и остался инферналам. Единственный человек, вычисливший крестражи раньше Дамблдора.</p>',
+ l:['locket','kreacher','sirius','cave','voldemort']},
+{i:'prince',n:'Учебник Принца-полукровки',s:'Чужой почерк',k:'obj',g:'g-polyjuice',b:[6,7],
+ t:'Старое «Расширенное зельеварение» с исправленными рецептами и самодельными заклинаниями на полях: Левикорпус, Муффлиато и Сектумсемпра — «для врагов».<p>Гарри целый год пользуется подсказками человека, которого ненавидит, и получает славу лучшего зельевара. Роулинг заранее показывает то, что признают только в конце: Снегг был на его стороне ещё до того, как Гарри об этом узнал.</p>',
+ l:['snape','harry','slughorn','princebook','draco']},
+{i:'ollivander',n:'Гаррик Олливандер',s:'Палочка выбирает волшебника',k:'char',g:'g-wand',b:[1,4,7],
+ t:'Мастер с Косого переулка, помнящий каждую проданную палочку. Именно он объясняет правило, на котором держится финал: палочка меняет верность, когда её хозяина побеждают.<p>Похищен Волан-де-Мортом ради этого знания и год просидел в подвале Малфой-мэнора. Его аккуратные объяснения в первой книге оборачиваются механизмом развязки в седьмой.</p>',
+ l:['wandcore','elderwand','harry','malfoymanor','voldemort']},
+{i:'burrow',n:'Нора',s:'Дом, который держится на магии',k:'place',g:'g-weasleys',b:[2,4,5,6,7],
+ t:'Кривой дом Уизли с самомоющейся посудой, упырём на чердаке и часами, где вместо времени — «дома», «в пути», «смертельная опасность». Для Гарри — первое место, где ему рады просто так.<p>В шестой книге дом сжигают Пожиратели, в седьмой — свадьбу в саду обрывает патронус Кингсли. Роулинг методично лишает героев всех безопасных мест.</p>',
+ l:['weasleys','ron','wedding','harry','ginny']},
+{i:'borgin',n:'«Горбин и Бэрк»',s:'Лавка в Лютном переулке',k:'place',g:'g-cabinet',b:[2,6],
+ t:'Магазин тёмных артефактов, где юный Том Реддл работал приказчиком и выманивал реликвии у коллекционеров — так к нему попали медальон и чаша.<p>Через полвека сюда приходит Драко: второй Исчезательный шкаф стоит именно здесь. Одна лавка обслужила две поколенческие катастрофы.</p>',
+ l:['cabinet','draco','voldemort','locket','cup']},
+{i:'scrimgeour',n:'Руфус Скримджер',s:'Министр военного времени',k:'char',g:'g-scales',b:[6,7],
+ t:'Бывший глава мракоборцев, сменивший Фаджа: жёсткий, деятельный и всё так же занятый видимостью. Требует от Гарри публичной поддержки Министерства — тот отказывается быть символом.<p>Погибает под пытками, не выдав, где находится Гарри. Роулинг оставляет за ним последнюю честную сцену: чиновник, оказавшийся смелее своей системы.</p>',
+ l:['fudge','ministry','harry','fall','will']}
+);
+
+/* ─────────────────────────────────────────────────────────────
+   УЗЛЫ СЮЖЕТА. b — книга, ln — линия, c — колонка,
+   d — пояснение на схеме, t — разбор, ch — герои и предметы,
+   x — исходящие связи «id:тип»
+   ───────────────────────────────────────────────────────────── */
+const NODES = [
+/* ── I. Философский камень ── */
+{i:'godricnight',b:1,ln:'dark',c:0,k:'31 октября 1981',n:'Годрикова Впадина',g:'g-darkmark',
+ d:'Пророчество, донос, предательство Хранителя тайны — и проклятие, отскочившее в того, кто его бросил.',
+ t:'Волан-де-Морт выбирает Поттеров из двух семей, подходящих под пророчество, и приходит в дом, выданный Питером Петтигрю. Джеймс гибнет без палочки, Лили — отказавшись отойти от кроватки, хотя ей трижды предлагают жить.<p>Её добровольная жертва создаёт защиту, которую Тёмный Лорд не понимает и потому не может обойти. Проклятие отскакивает, тело исчезает, душа — уже разорванная крестражами — цепляется за единственное живое существо в комнате.</p>',
+ q:'Отсюда растёт всё: шрам, связь, пророчество и то, чем оно кончится через семнадцать лет.',
+ ch:['voldemort','potters','pettigrew','scar','prophecy','godric'],x:['tisovaya:flow','scarline:echo']},
+{i:'tisovaya',b:1,ln:'order',c:0,k:'Той же ночью',n:'Тисовая улица, дом 4',g:'g-deluminator',
+ d:'Дамблдор гасит фонари и оставляет ребёнка на пороге к тётке — ради защиты крови.',
+ t:'Три взрослых мага стоят над корзиной: Дамблдор, МакГонагалл, Хагрид. МакГонагалл возражает — эти люди хуже всех на свете. Дамблдор отвечает, что кровь Лили в её сестре продлевает защиту до совершеннолетия Гарри.<p>Решение холодное и расчётливое: десять лет в чулане в обмен на дом, куда Волан-де-Морт не войдёт. Пятая книга подтвердит, что расчёт был верен, а цена — реальна.</p>',
+ ch:['dumbledore','mcgonagall','hagrid','harry','deluminator'],x:['letter:flow']},
+{i:'letter',b:1,ln:'hero',c:1,k:'Июль 1991',n:'Письмо из ниоткуда',g:'g-letter',
+ d:'Сотни конвертов из камина, великан с зонтом и первая фраза: «Ты волшебник, Гарри».',
+ t:'Дурсли забаррикадировались на скале, но письма приходят по адресу «Хижина на скале, пол». Хагрид приносит торт и правду, и мир делится надвое.<p>Косой переулок за один день выдаёт Гарри всё, что понадобится на семь книг: сейф в Гринготтсе, сову, палочку из остролиста с пером Фоукса и предупреждение Олливандера, что её сестра оставила ему шрам.</p>',
+ ch:['hagrid','hedwig','ollivander','wandcore','gringotts','harry'],x:['sorting:flow','vault713:echo']},
+{i:'vault713',b:1,ln:'power',c:1,k:'Тот же день',n:'Сейф 713 опустошён',g:'g-gringotts',
+ d:'Хагрид забирает свёрток по поручению Дамблдора за часы до ограбления.',
+ t:'Гоблины уверяют, что ограбить Гринготтс невозможно; вечерний выпуск «Пророка» сообщает о взломе. Сейф оказался пуст — Дамблдор опередил вора на несколько часов.<p>Классическая для цикла конструкция: детективная подсказка выдана на второй сотне страниц и объяснена на последней. Вором был Квиррелл, свёртком — философский камень.</p>',
+ ch:['gringotts','hagrid','quirrell','stone','prophet'],x:['stonehunt:flow']},
+{i:'sorting',b:1,ln:'school',c:1,k:'1 сентября 1991',n:'Распределение',g:'g-hat',
+ d:'Шляпа предлагает Слизерин, Гарри просит не туда — и получает выбор вместо приговора.',
+ t:'Шляпа видит в нём хитрость, жажду проявить себя и «немалый талант» — всё, что нужно Слизерину. И уступает просьбе.<p>Эта сцена вернётся во второй книге («Наши решения показывают, кто мы есть»), в шестой (Реддла шляпа распределила мгновенно) и в седьмой, когда Гарри назовёт сына в честь двух директоров, один из которых был слизеринцем.</p>',
+ ch:['hat','harry','ron','hermione','draco','mcgonagall','hogwarts'],x:['quidditch:flow','choicespeech:echo']},
+{i:'quidditch',b:1,ln:'school',c:2,k:'Ноябрь 1991',n:'Ловец-первокурсник',g:'g-snitch',
+ d:'Пойманный ртом снитч запускает спортивную линию — и одну важную улику на семь книг вперёд.',
+ t:'МакГонагалл нарушает собственные правила ради таланта, унаследованного от отца. Квиддич даёт Гарри место в школьной иерархии, а Роулинг — регулярную сцену действия в каждой книге.<p>Мелочь из этого матча выстрелит в седьмой: снитч помнит первое прикосновение, и Дамблдор спрячет в нём Воскрешающий камень.</p>',
+ ch:['snitch','mcgonagall','harry','snape','quirrell'],x:['mirrorscene:flow','will:echo']},
+{i:'stonehunt',b:1,ln:'relics',c:2,k:'Зима 1991',n:'Кто такой Фламель',g:'g-stone',
+ d:'Трёхголовый пёс на люке, вкладыш от шоколадной лягушки и шестисотлетний алхимик.',
+ t:'Расследование ведут три первокурсника: Пушок охраняет люк, люк — камень, камень — бессмертие. Дамблдор построил защиту из заклинаний семи преподавателей, каждое из которых трио проходит своим человеком: травология Гермионы, полёт Гарри, шахматы Рона.<p>Последний рубеж — не заклинание, а этическая проверка: зеркало отдаст камень только тому, кто не собирается им пользоваться.</p>',
+ ch:['stone','fluffy','hermione','ron','hagrid','dumbledore'],x:['quirrellfinal:flow']},
+{i:'mirrorscene',b:1,ln:'hero',c:2,k:'Рождество 1991',n:'Зеркало Еиналеж',g:'g-mirror',
+ d:'Гарри видит родителей, Рон — славу. Дамблдор объясняет, чем опасно желание.',
+ t:'Первый разговор Гарри с Дамблдором задаёт главную тему цикла: люди чахли перед этим зеркалом, забыв, что показанное нереально. Мальчик, у которого не было семьи, каждую ночь смотрит на мёртвых.<p>Урок принят не сразу — в седьмой книге Гарри уронит Воскрешающий камень в лесу. Между этими двумя сценами — вся его дуга.</p>',
+ q:'«Не стоит цепляться за сны и забывать жить».',
+ ch:['mirror','dumbledore','harry','potters','ron'],x:['quirrellfinal:flow','forestdeath:echo']},
+{i:'quirrellfinal',b:1,ln:'dark',c:3,k:'Июнь 1992',n:'Лицо под тюрбаном',g:'g-quirrell',
+ d:'Первая встреча: Волан-де-Морт без тела, паразит на чужом затылке.',
+ t:'Квиррелл не может коснуться Гарри — кожа обжигает его. Защита, оставленная материнской жертвой, работает физически, и Дамблдор объясняет это прямо: любовь — не метафора, а магический факт этого мира.<p>Здесь же формулируется первый вывод: Волан-де-Морт не умер и вернётся, потому что нашёл способ остаться. Какой именно — станет ясно только в шестой книге.</p>',
+ ch:['quirrell','voldemort','stone','harry','potters'],x:['diaryfound:dark','chamberopen:dark']},
+{i:'trioborn',b:1,ln:'order',c:3,k:'Июнь 1992',n:'Трое и Кубок школы',g:'g-lion',
+ d:'Тролль, шахматы, дьявольские силки — и десять очков Невиллу за смелость против друзей.',
+ t:'Трио складывается не по симпатии, а по общему делу — и Роулинг сразу распределяет роли, которые продержатся семь книг: Гермиона решает, Рон жертвует, Гарри идёт дальше один.<p>Последние баллы Дамблдор даёт Невиллу — за то, что тот пытался их остановить. Ставка на этого мальчика окупится в седьмой книге у ног Волан-де-Морта.</p>',
+ ch:['ron','hermione','neville','harry','dumbledore','hogwarts'],x:['dobbywarn:flow','battle:echo']},
+
+/* ── II. Тайная комната ── */
+{i:'dobbywarn',b:2,ln:'hero',c:0,k:'Июль 1992',n:'Предупреждение Добби',g:'g-dobby',
+ d:'Домовик перехватывает письма и обрушивает торт, чтобы Гарри не вернулся в школу.',
+ t:'Добби знает о заговоре, но связан магией службы и может только вредить. Помощь, оформленная как саботаж, — первое появление темы, которая дойдёт до самой могилы на берегу: волшебное общество веками держит рабов и не считает это проблемой.<p>Заколоченный барьер на платформе 9¾ отправляет Гарри и Рона в летающем фордике — и в Гремучую иву.</p>',
+ ch:['dobby','lucius','harry','ron','weasleys'],x:['diaryfound:flow']},
+{i:'diaryfound',b:2,ln:'relics',c:0,k:'Сентябрь 1992',n:'Дневник Т. М. Реддла',g:'g-diary',
+ d:'Пустая тетрадь, подброшенная в котёл первокурснице, отвечает на чернила.',
+ t:'Люциус Малфой избавляется от опасной реликвии и одновременно бьёт по Артуру Уизли, чей закон о защите магглов ему мешает. Он не знает, что держит в руках кусок души хозяина.<p>Дневник не просто хранит воспоминание — он пишет ответы, слушает, сочувствует и постепенно перекачивает в себя жизнь одиннадцатилетней Джинни. Единственный крестраж, действующий как вербовщик.</p>',
+ ch:['diary','ginny','lucius','voldemort'],x:['chamberopen:dark','horcrux:echo']},
+{i:'chamberopen',b:2,ln:'dark',c:1,k:'Хэллоуин 1992',n:'Комната открыта',g:'g-serpent',
+ d:'Надпись кровью на стене, окаменевшие ученики и голос в трубах, который слышит только Гарри.',
+ t:'Школа впервые обвиняет самого Гарри: змееуст, наследник, чудовище. Роулинг ставит героя в положение подозреваемого — и держит его там до конца книги.<p>Мимо проходит важное: василиск не убил никого лишь по цепочке случайностей — камера, зеркальце, призрак, лужа отражений. Хогвартс спасён везением, а не защитой.</p>',
+ ch:['basilisk','ginny','diary','draco','hogwarts'],x:['duelclub:flow','luciusplot:dark']},
+{i:'luciusplot',b:2,ln:'power',c:1,k:'Весна 1993',n:'Совет попечителей',g:'g-lucius',
+ d:'Дамблдора отстраняют, Хагрида отправляют в Азкабан — школу обезглавливают в разгар кризиса.',
+ t:'Люциус собирает подписи двенадцати попечителей — угрозами, как выяснится позже. Фадж арестовывает Хагрида «для видимости действий», сознавая его невиновность.<p>Модель, которую Роулинг повторит трижды: власть реагирует на кризис не решением, а назначением виновного. В пятой книге по этой же схеме уберут самого Дамблдора.</p>',
+ ch:['lucius','fudge','hagrid','dumbledore','azkaban','ministry'],x:['chamber:flow','umbridgeyear:echo']},
+{i:'polyjuiceroom',b:2,ln:'school',c:1,k:'Рождество 1992',n:'Оборотное зелье',g:'g-polyjuice',
+ d:'Месяц варки в туалете Плаксы Миртл ради часа в гостиной Слизерина.',
+ t:'Двенадцатилетняя Гермиона варит зелье уровня ЖАБА, и трио впервые действует как разведгруппа. Ответ добыт неверный, зато метод останется: подмена личности станет фирменным приёмом цикла.<p>Кошачий волос вместо человеческого — напоминание, что даже безупречный план ломается о мелочь. В седьмой книге эта же мелочность сработает наоборот: волос с мантии Беллатрисы откроет сейф Гринготтса.</p>',
+ ch:['polyjuice','hermione','ron','draco','harry'],x:['chamber:flow','gringottsraid:echo']},
+{i:'duelclub',b:2,ln:'school',c:2,k:'Декабрь 1992',n:'Дуэльный клуб',g:'g-lockhart',
+ d:'Локонс устраивает шоу, Снегг выпускает змею, Гарри заговаривает с ней — при всей школе.',
+ t:'Парселтанг — редчайший дар, наследство Слизерина, и школа делает единственный логичный вывод. Гарри узнаёт о себе то, что его пугает: он похож на врага больше, чем хотел бы.<p>Дамблдор потом объяснит: часть способностей Волан-де-Морт передал ему в ту ночь. Полное объяснение — почему именно — придёт только в седьмой книге.</p>',
+ ch:['lockhart','snape','draco','harry','basilisk','scar'],x:['chamber:flow']},
+{i:'chamber',b:2,ln:'hero',c:3,k:'Май 1993',n:'Битва в Тайной комнате',g:'g-basilisk',
+ d:'Феникс, шляпа, меч и клык — четыре предмета, которые будут работать до последней книги.',
+ t:'Гарри спускается за Джинни один: Локонс стёр себе память, Рон отрезан обвалом. Верность Дамблдору вызывает Фоукса; Фоукс приносит шляпу; из шляпы выходит меч Гриффиндора.<p>Василиск убит, дневник проколот клыком, Джинни спасена, а яд в ране нейтрализуют слёзы феникса. Двенадцатилетний мальчик, сам того не зная, уничтожает первый крестраж и создаёт оружие против всех остальных.</p>',
+ ch:['sword','fawkes','basilisk','ginny','fang','hat','harry'],x:['diarydead:flow','doe:echo']},
+{i:'diarydead',b:2,ln:'relics',c:3,k:'Май 1993',n:'Первый крестраж уничтожен',g:'g-fang',
+ d:'Чернила хлещут из пробитой тетради — так выглядит смерть куска души.',
+ t:'Дамблдор изучает дневник и делает вывод, к которому шёл годами: предмет, хранящий чужое сознание и способный действовать самостоятельно, — не проклятая вещь, а крестраж. И если Волан-де-Морт использовал его так небрежно, значит, он у него не один.<p>Шестая книга будет посвящена доказательству этой догадки. Вторая — уже содержит ответ.</p>',
+ ch:['diary','fang','dumbledore','voldemort','basilisk'],x:['horcrux:echo','ringcurse:echo']},
+{i:'choicespeech',b:2,ln:'order',c:3,k:'Май 1993',n:'«Наши решения»',g:'g-dumbledore',
+ d:'Дамблдор объясняет сходство с Реддлом и переводит его из проклятия в выбор.',
+ t:'Гарри признаётся, что шляпа хотела отправить его в Слизерин. Дамблдор отвечает формулой, ради которой, по сути, написан весь цикл: значение имеет не то, что в тебе есть, а то, что ты с этим делаешь.<p>И тут же добавляет улику: меч Гриффиндора мог достать из шляпы только настоящий гриффиндорец. Тезис подкреплён предметом — Роулинг никогда не оставляет мораль без доказательства.</p>',
+ ch:['dumbledore','harry','hat','sword','voldemort'],x:['escape:flow']},
+
+/* ── III. Узник Азкабана ── */
+{i:'escape',b:3,ln:'dark',c:0,k:'Лето 1993',n:'Побег из Азкабана',g:'g-azkaban',
+ d:'Первый в истории беглец: анимаг-собака проходит между прутьями мимо слепых стражей.',
+ t:'Двенадцать лет Сириус держался за одну мысль: он невиновен. Дементоры питаются счастьем, а эта мысль счастливой не была — потому её и не смогли отнять.<p>Толчком послужила газетная фотография семьи Уизли: на плече Рона сидела крыса с недостающим пальцем. Вся третья книга запускается снимком в «Ежедневном пророке».</p>',
+ ch:['sirius','azkaban','dementor','pettigrew','prophet'],x:['dementorguard:flow','shriek:flow']},
+{i:'dementorguard',b:3,ln:'power',c:0,k:'Сентябрь 1993',n:'Дементоры у ворот',g:'g-dementor',
+ d:'Министерство ставит тюремную стражу вокруг школы — и она первым делом нападает на ребёнка.',
+ t:'Фадж соглашается охранять Хогвартс существами, которых не контролирует. Дементоры обыскивают «Хогвартс-экспресс», срывают квиддичный матч и в финале едва не целуют самого Гарри.<p>Пятая книга покажет продолжение этой ошибки: как только Волан-де-Морт предложит больше, стража уйдёт к нему целиком.</p>',
+ ch:['dementor','fudge','ministry','harry','patronus'],x:['patronuslesson:flow']},
+{i:'patronuslesson',b:3,ln:'school',c:1,k:'Зима 1993',n:'Экспекто Патронум',g:'g-patronus',
+ d:'Люпин учит вызывать защиту из одного счастливого воспоминания.',
+ t:'Единственный преподаватель ЗоТИ, который занимается с Гарри отдельно, потому что видит в нём не знаменитость, а ученика с конкретной проблемой. Боггарт Гарри принимает форму дементора — то есть он боится самого страха.<p>Патронус-олень окажется отцовским, а через четыре книги серебряная лань приведёт Гарри к мечу. Форма патронуса в этом мире — паспорт души.</p>',
+ ch:['lupin','patronus','dementor','harry','potters'],x:['timeturn:flow','doe:echo']},
+{i:'mapgift',b:3,ln:'relics',c:1,k:'Осень 1993',n:'Карта Мародёров',g:'g-map',
+ d:'Близнецы отдают пергамент, который знает замок лучше директора.',
+ t:'«Торжественно клянусь, что замышляю шалость, и только шалость». Карта показывает всех и каждого в реальном времени — включая тех, кого быть не должно.<p>Именно она разоблачит живого Питера Петтигрю, потом лже-Грюма, потом маршруты Драко. Единственный артефакт цикла, который не лжёт никогда, — но требует, чтобы на него посмотрели вовремя.</p>',
+ ch:['map','twins','marauders','pettigrew','harry'],x:['shriek:flow','moodyyear:echo']},
+{i:'buckbeaktrial',b:3,ln:'power',c:2,k:'Весна 1994',n:'Суд над гиппогрифом',g:'g-buckbeak',
+ d:'Комиссия выносит смертный приговор животному, потому что у истца есть влияние.',
+ t:'Драко получил по заслугам, Люциус оплатил результат. Хагрид проигрывает дело, палач точит топор, Дамблдор не вмешивается — потому что уже придумал, как обойти закон, не нарушая его.<p>Первый в цикле пример того, что правосудие волшебного мира торгуется. К пятой книге это станет системой, а в седьмой — Комиссией по учёту магглорождённых.</p>',
+ ch:['buckbeak','hagrid','lucius','draco','ministry'],x:['timeturn:flow']},
+{i:'shriek',b:3,ln:'hero',c:2,k:'Июнь 1994',n:'Визжащая хижина',g:'g-pettigrew',
+ d:'Крыса оказывается человеком, убийца — невиновным, а учитель — оборотнем.',
+ t:'Роулинг разворачивает всю книгу на сто восемьдесят градусов за одну главу и делает это честно: подсказки были на карте, в крысе без пальца, в поведении Живоглота.<p>Гарри останавливает казнь Петтигрю — не из милосердия к нему, а чтобы Сириус и Люпин не стали убийцами. Дамблдор предупреждает: долг жизни ещё сыграет. Сыграет — в подвале Малфой-мэнора.</p>',
+ ch:['sirius','lupin','pettigrew','marauders','ron','map'],x:['timeturn:flow','malfoymanor:echo']},
+{i:'timeturn',b:3,ln:'hero',c:3,k:'Та же ночь',n:'Три оборота',g:'g-timeturner',
+ d:'Патронус у озера вызвал не отец. Гарри спасает сам себя, потому что уже это видел.',
+ t:'Единственный раз, когда цикл работает с временем, — и правила жёсткие: прошлое неизменно, ты всегда был его частью. Гермиона получает маховик ради лишних уроков, а тратит на спасение гиппогрифа и осуждённого без суда.<p>Сцена задаёт мотив, который вернётся в финале: Гарри ищет помощи снаружи, а находит её в себе.</p>',
+ ch:['timeturner','hermione','buckbeak','sirius','patronus'],x:['pettigrewflees:dark','trelawney2:flow']},
+{i:'pettigrewflees',b:3,ln:'dark',c:3,k:'Июнь 1994',n:'Хвост уходит к хозяину',g:'g-serpent',
+ d:'Слуга, которого считали мёртвым двенадцать лет, отправляется искать Тёмного Лорда.',
+ t:'Побег Петтигрю выглядит поражением, но именно он делает возможной следующую книгу: без слуги, готового отрезать себе руку, ритуал возрождения не состоялся бы.<p>Роулинг заканчивает третью книгу мнимой победой, и это её любимая конструкция: победа героя тут же становится ресурсом врага.</p>',
+ ch:['pettigrew','voldemort','sirius','harry'],x:['worldcup:dark','rebirth:dark']},
+{i:'trelawney2',b:3,ln:'school',c:3,k:'Июнь 1994',n:'Второе пророчество',g:'g-trelawney',
+ d:'Трелони в трансе: слуга вернётся к хозяину до полуночи, и Тёмный Лорд восстанет.',
+ t:'Гарри слышит это на экзамене по прорицанию — предмету, который весь год подавался как шарлатанство. Роулинг прячет настоящее пророчество в самом несерьёзном месте книги.<p>Сама Трелони ничего не помнит. Как и в 1980 году, когда произнесла первое, — и тем определила две жизни на семнадцать лет вперёд.</p>',
+ ch:['trelawney','prophecy','pettigrew','voldemort','dumbledore'],x:['rebirth:dark']},
+
+/* ── IV. Кубок огня ── */
+{i:'worldcup',b:4,ln:'power',c:0,k:'Август 1994',n:'Чемпионат мира',g:'g-darkmark',
+ d:'Праздник, палаточный городок — и Тёмная метка в небе впервые за тринадцать лет.',
+ t:'Пожиратели в масках поднимают семью магглов над лагерем, толпа разбегается, Министерство ищет виновных и хватает эльфийку Винки. Настоящий преступник — Барти Крауч-младший, спрятанный собственным отцом.<p>Сцена ставит тон всей книги: волшебная Британия живёт в отрицании, а её лидеры больше боятся скандала, чем возвращения Волан-де-Морта.</p>',
+ ch:['darkmark','ministry','lucius','crouchjr','weasleys'],x:['tournament:flow','denial:dark']},
+{i:'tournament',b:4,ln:'school',c:0,k:'Октябрь 1994',n:'Турнир Трёх Волшебников',g:'g-goblet',
+ d:'Возрождённое состязание школ, возрастной барьер — и Кубок, выбирающий четвёртого.',
+ t:'Министерство и Дамблдор возрождают турнир как жест международной дружбы. Обмен с Дурмстрангом и Шармбатоном впервые показывает, что волшебный мир больше одной школы.<p>Для Барти Крауча-младшего это идеальное прикрытие: чтобы доставить Гарри к Волан-де-Морту, достаточно обмануть один артефакт, а дальше Министерство само проведёт мальчика через год смертельных испытаний.</p>',
+ ch:['goblet','cedric','crouchjr','hogwarts','moody'],x:['fourthchampion:flow']},
+{i:'fourthchampion',b:4,ln:'hero',c:1,k:'Хэллоуин 1994',n:'Четвёртый чемпион',g:'g-scar',
+ d:'Имя из Кубка связывает четырнадцатилетнего магическим контрактом без права отказа.',
+ t:'Школа решает, что он смошенничал; Рон уходит в обиду; «Пророк» пишет о слезах, которых не было. Впервые Гарри изолирован от всех — и это репетиция пятой книги.<p>Единственный, кто последовательно помогает, — фальшивый Грюм. Читатель принимает его за союзника ровно потому, что все остальные отвернулись.</p>',
+ ch:['goblet','crouchjr','moody','ron','skeeter','harry'],x:['tasks:flow','skeeterpress:flow']},
+{i:'skeeterpress',b:4,ln:'power',c:1,k:'Ноябрь 1994',n:'Перо Риты Скитер',g:'g-prophet',
+ d:'«Пророк» превращает подростка в сенсацию, а потом — в неуравновешенного лжеца.',
+ t:'Скитер пишет о Гарри, о Хагриде-полувеликане, о Гермионе-разбивательнице сердец. Механика простая: щепотка факта, ведро домысла, никакой проверки.<p>Гермиона вычисляет незарегистрированного анимага и сажает жука в банку — единственная в цикле сцена, где кто-то отвечает за напечатанное. В пятой книге это же перо будет работать на них.</p>',
+ ch:['skeeter','prophet','hermione','hagrid','harry'],x:['denial:dark']},
+{i:'tasks',b:4,ln:'school',c:2,k:'1994–1995',n:'Три испытания',g:'g-dragon',
+ d:'Хвосторога, чёрное озеро, живой лабиринт — школьный спорт с настоящей смертью в конце.',
+ t:'Дракон взят на метле, озеро — жаброслями от «Грюма», лабиринт пройден в паре с Седриком. Каждое испытание Гарри проходит не силой, а чужой помощью, и это подчёркнуто.<p>Под всем этим — методичная работа Крауча-младшего: он подсказывает решения, устраняет конкурентов и превращает финальный кубок в портал.</p>',
+ ch:['dragon','cedric','crouchjr','moody','harry','hogwarts'],x:['cupportkey:flow']},
+{i:'moodyyear',b:4,ln:'dark',c:2,k:'Весь учебный год',n:'Год под чужим лицом',g:'g-crouchjr',
+ d:'Оборотное зелье каждый час: настоящий Грюм лежит в собственном сундуке.',
+ t:'Самая наглая операция цикла: Пожиратель год преподаёт защиту от тёмных искусств, показывает детям Непростительные заклятия и пользуется полным доверием Дамблдора.<p>Все улики на виду — фляга, карта Мародёров с двумя Краучами, идеально своевременные подсказки. Роулинг играет честно и всё равно выигрывает.</p>',
+ ch:['crouchjr','moody','polyjuice','map','harry'],x:['rebirth:dark']},
+{i:'cupportkey',b:4,ln:'hero',c:3,k:'24 июня 1995',n:'Кубок оказался порталом',g:'g-goblet',
+ d:'Двое берутся за ручки одновременно — и попадают на кладбище Литтл-Хэнглтона.',
+ t:'Спор о том, кто заслужил победу, заканчивается решением взять кубок вдвоём. Благородство — и есть ловушка: Крауч рассчитывал на одного.<p>«Лишнего убрать» — и Седрик умирает через десять секунд после прибытия, без дуэли и слов. Так в цикл входит смерть как случайность.</p>',
+ ch:['goblet','cedric','pettigrew','voldemort','harry'],x:['rebirth:dark']},
+{i:'rebirth',b:4,ln:'dark',c:3,k:'24 июня 1995',n:'Возрождение',g:'g-mask',
+ d:'Кость отца, плоть слуги, кровь врага — и Тёмный Лорд снова в теле.',
+ t:'Волан-де-Морт берёт кровь именно Гарри, чтобы обойти защиту Лили, — и делает роковую ошибку: теперь защита живёт и в нём, и пока он жив, Гарри может вернуться из-за грани.<p>Пожиратели трансгрессируют на метку, будто и не отрекались. А палочки-сёстры отказываются драться: Приори Инкантатем выпускает тени убитых, и Седрик просит вернуть его тело родителям.</p>',
+ q:'Победа врага здесь — заложенная бомба под его же финалом.',
+ ch:['voldemort','pettigrew','wandcore','darkmark','cedric','bellatrix'],x:['priori:flow','order:flow','denial:dark']},
+{i:'priori',b:4,ln:'relics',c:4,k:'24 июня 1995',n:'Приори Инкантатем',g:'g-wand',
+ d:'Два пера одного феникса не дают палочкам убить друг друга.',
+ t:'Олливандер предупреждал об этом на первой сотне страниц первой книги. Родство сердцевин спасает Гарри дважды: здесь и в погоне над Литтл-Уингингом, когда его палочка сработает сама.<p>Именно из-за этого Волан-де-Морт начнёт искать чужую палочку — и придёт к Бузинной, то есть к своему поражению.</p>',
+ ch:['wandcore','fawkes','ollivander','elderwand','voldemort'],x:['sevenpotters:echo','finalduel:echo']},
+{i:'order',b:4,ln:'order',c:4,k:'Июнь 1995',n:'Орден Феникса поднят',g:'g-fawkes',
+ d:'Дамблдор рассылает старую гвардию в ту же ночь, не дожидаясь разрешения Министерства.',
+ t:'«Помните Седрика Диггори» — речь на прощальном пиру, которой Дамблдор публично объявляет то, что Фадж отказывается признать. Снегг возвращается к Пожирателям, Сириус — к Люпину, Хагрид идёт к великанам.<p>С этого момента в книге две власти: официальная, занятая отрицанием, и подпольная, занятая войной.</p>',
+ ch:['dumbledore','snape','sirius','moody','hagrid','cedric'],x:['grimmauldhq:flow']},
+{i:'denial',b:4,ln:'power',c:4,k:'1995–1996',n:'Год отрицания',g:'g-fudge',
+ d:'Министр выбирает удобную версию и подключает к ней прессу и школу.',
+ t:'Фадж боится не Волан-де-Морта, а Дамблдора — ему мерещится заговор ради директорского кресла. «Пророк» травит обоих, Гарри объявляют неуравновешенным подростком.<p>Год потерян полностью: Орден действует тайно, Министерство мешает, а к концу пятой книги Пожиратели уже свободно ходят по Отделу тайн.</p>',
+ ch:['fudge','prophet','umbridge','dumbledore','ministry','skeeter'],x:['hearing:dark','umbridgeyear:dark']},
+
+/* ── V. Орден Феникса ── */
+{i:'hearing',b:5,ln:'power',c:0,k:'Август 1995',n:'Дисциплинарное слушание',g:'g-scales',
+ d:'Полный состав Визенгамота ради несовершеннолетнего, применившего Патронус в целях самозащиты.',
+ t:'Дело о колдовстве при магглах внезапно рассматривает весь суд, время заседания меняют в последний момент. Оправдание приходит только потому, что Дамблдор приводит свидетеля — миссис Фигг.<p>Заодно выясняется, кто прислал дементоров: Долорес Амбридж, заместитель министра, действовала в обход всех процедур. Наказания не последует.</p>',
+ ch:['ministry','fudge','umbridge','dumbledore','harry','dementor'],x:['umbridgeyear:dark']},
+{i:'dementorattack',b:5,ln:'dark',c:0,k:'Август 1995',n:'Дементоры в Литтл-Уингинге',g:'g-dementor',
+ d:'Нападение в маггловском переулке: под ударом Гарри и Дадли одновременно.',
+ t:'Патронус спасает обоих, но выдаёт Гарри Министерству. Атака оформлена так, что виноватым оказывается жертва, — и это точный портрет того, как в пятой книге работает власть.<p>Дадли впервые получает опыт, который у Гарри был всегда: чужой страх без объяснений. Их отношения меняются именно с этой ночи.</p>',
+ ch:['dementor','umbridge','patronus','harry','hedwig'],x:['hearing:flow']},
+{i:'grimmauldhq',b:5,ln:'order',c:1,k:'Лето 1995',n:'Площадь Гриммо, 12',g:'g-veil',
+ d:'Штаб под Фиделиусом в доме, из которого хозяин сбежал подростком.',
+ t:'Орден работает вслепую: следит за Отделом тайн, вербует великанов, дежурит у пророчества. Взрослые обсуждают войну и выгоняют детей из кухни — конфликт, на котором держится вся книга.<p>Сириус заперт в ненавистном доме и медленно сходит с ума от бездействия. Именно эта клетка сделает его безрассудным в Отделе тайн.</p>',
+ ch:['sirius','order','kreacher','grimmauld','moody','tonks','weasleys'],x:['da:flow','doorway:dark']},
+{i:'umbridgeyear',b:5,ln:'power',c:1,k:'Сентябрь 1995',n:'Генеральный инспектор',g:'g-quill',
+ d:'Декреты, инспекции и наказание, которое пишут кровью наказанного.',
+ t:'Министерство берёт школу под контроль без единого заклинания: сначала преподавание защиты по учебнику без практики, потом право увольнять учителей, потом инспекционная дружина из слизеринцев.<p>Кровавое перо — самая тихая жестокость цикла. Гарри не жалуется, потому что не верит, что кто-то вмешается. Он прав: никто не вмешивается.</p>',
+ ch:['umbridge','quill','fudge','mcgonagall','trelawney','hogwarts'],x:['da:flow','ministrychange:flow']},
+{i:'da',b:5,ln:'hero',c:2,k:'Зима 1995',n:'Отряд Дамблдора',g:'g-ror',
+ d:'Двадцать восемь учеников учатся защите в комнате, которой нет на карте.',
+ t:'Идея Гермионы, имя — от Джинни, помещение нашёл Добби. Гарри впервые оказывается не героем, а учителем, и это лучшее, что с ним случается за год.<p>Список подписей, заколдованный Гермионой, выдаёт предательницу — и оборачивается уликой против самого Гарри. Но именно ОД в седьмой книге удержит Хогвартс изнутри.</p>',
+ ch:['ror','hermione','ginny','neville','luna','dobby','harry'],x:['doorway:flow','battle:echo']},
+{i:'occlumency',b:5,ln:'school',c:2,k:'Весна 1996',n:'Уроки окклюменции',g:'g-pensieve',
+ d:'Снегг учит закрывать сознание — и Гарри лезет в его собственную память.',
+ t:'Занятия проваливаются с обеих сторон: Снегг мстит ученику за отца, Гарри не хочет закрывать канал, который даёт ему видения. Оба ошибаются, и цена — жизнь Сириуса.<p>В омуте памяти Гарри видит, как его отец травит подростка Снегга, и впервые понимает, что герои прошлого могли быть не героями. Одна сцена перестраивает всю мифологию Мародёров.</p>',
+ ch:['snape','pensieve','potters','scar','marauders','harry'],x:['doorway:dark','snapememory:echo']},
+{i:'arthur',b:5,ln:'dark',c:3,k:'Декабрь 1995',n:'Нападение на Артура',g:'g-nagini',
+ d:'Гарри видит нападение глазами змеи — связь через шрам работает в обе стороны.',
+ t:'Артур Уизли дежурил у входа в Отдел тайн; Нагайна нашла его первой. Гарри просыпается с криком и спасает ему жизнь — но именно этот случай доказывает Дамблдору, что канал открыт.<p>С этого дня директор перестаёт смотреть Гарри в глаза, и мальчик читает это как отвержение. Так одна защитная мера рождает всю обиду пятой книги.</p>',
+ ch:['nagini','weasleys','scar','voldemort','dumbledore'],x:['occlumency:flow','doorway:dark']},
+{i:'prophecyorb',b:5,ln:'relics',c:3,k:'Весна 1996',n:'Сфера в Отделе тайн',g:'g-prophecy',
+ d:'Стеклянный шар с двумя именами, взять который может только тот, о ком в нём говорится.',
+ t:'Волан-де-Морт полтора года пытается добыть запись пророчества — потому и держит там дежурных, потому и вламывается в сознание Гарри. Ему нужна вторая половина фразы, которую Снегг не дослушал.<p>Ловушка построена на привязанности: достаточно показать Гарри, что Сириуса пытают. Оружие пятой книги — не заклинание, а любовь как уязвимость.</p>',
+ ch:['prophecy','voldemort','ministry','sirius','harry'],x:['doorway:flow']},
+{i:'doorway',b:5,ln:'hero',c:4,k:'Июнь 1996',n:'Битва в Отделе тайн',g:'g-veil',
+ d:'Шестеро подростков против двенадцати Пожирателей — и арка, из которой не возвращаются.',
+ t:'Пророчество разбито, не прозвучав. Сириус падает за занавес от заклинания собственной кузины. Дамблдор дерётся с Волан-де-Мортом на глазах у министра — отрицание кончается за одну минуту.<p>Волан-де-Морт входит в сознание Гарри и не выдерживает: чужое горе для него невыносимо. Первый раз побеждает не заклинание, а то, что Гарри способен чувствовать.</p>',
+ ch:['veil','sirius','bellatrix','neville','luna','prophecy','dumbledore'],x:['prophecytold:flow','ministrychange:flow']},
+{i:'prophecytold',b:5,ln:'order',c:4,k:'Июнь 1996',n:'Пророчество целиком',g:'g-prophecy',
+ d:'Дамблдор признаёт вину и договаривает фразу, из-за которой погибли Поттеры.',
+ t:'«Ни один из них не сможет жить спокойно, пока жив другой». Снегг донёс первую половину; Волан-де-Морт выбрал Поттеров, а не Долгопупсов, и сам отметил Гарри как равного себе.<p>Дамблдор объясняет: сила пророчества не в предопределении, а в том, что в него поверили. Гарри пойдёт в бой не потому, что должен, а потому что выберет.</p>',
+ ch:['prophecy','trelawney','snape','neville','dumbledore','harry'],x:['dracotask:dark','horcrux:flow']},
+{i:'ministrychange',b:5,ln:'power',c:4,k:'Июнь 1996',n:'Министр уходит',g:'g-ministry',
+ d:'Фаджа сменяет Скримджер: официальная версия наконец совпадает с реальностью.',
+ t:'«Пророк» разворачивается на сто восемьдесят градусов и объявляет Гарри Избранным — с той же лёгкостью, с какой год назад называл лжецом. Амбридж эвакуируют из школы на носилках.<p>Год отрицания стоил войне темпа: Пожиратели свободны, дементоры перешли на сторону врага, Азкабан пуст.</p>',
+ ch:['fudge','scrimgeour','prophet','umbridge','ministry'],x:['warpress:flow']},
+
+/* ── VI. Принц-полукровка ── */
+{i:'dracotask',b:6,ln:'dark',c:0,k:'Лето 1996',n:'Задание Драко',g:'g-mask',
+ d:'Убить Дамблдора — приказ, который на деле является наказанием отцу.',
+ t:'Волан-де-Морт даёт шестнадцатилетнему заведомо невыполнимое задание, рассчитывая на его гибель. Нарцисса идёт к Снеггу, и тот приносит Непреложный обет: если Драко не справится, закончит он.<p>Весь год Драко работает один — бледный, больной, отказывающийся от помощи. Роулинг показывает вербовку подростка изнутри, без единого оправдания и без карикатуры.</p>',
+ ch:['draco','narcissa','snape','voldemort','bellatrix'],x:['cabinetplan:dark','towerdeath:dark']},
+{i:'princebook',b:6,ln:'school',c:0,k:'Сентябрь 1996',n:'Учебник Принца',g:'g-prince',
+ d:'Чужие пометки на полях делают Гарри лучшим зельеваром курса.',
+ t:'Слизнорт хвалит его за талант, Гермиона злится на нечестность, а Гарри пользуется подсказками человека, которого считает врагом. Сектумсемпра «для врагов» окажется настоящим боевым заклятием и едва не убьёт Драко в туалете.<p>Разгадка авторства — за секунду до конца книги: Принц-полукровка, сын Эйлин Принц и маггла Тобиаса Снегга.</p>',
+ ch:['prince','snape','slughorn','draco','hermione','harry'],x:['horcrux:flow','towerdeath:echo']},
+{i:'riddlehouse',b:6,ln:'order',c:1,k:'Осень 1996',n:'Воспоминания Реддла',g:'g-gaunt',
+ d:'Приют, лачуга Мраксов, кража у Хэпзибы Смит — Дамблдор ведёт расследование задним числом.',
+ t:'Уроки директора оказываются не магией, а архивной работой: биография врага, собранная по чужим воспоминаниям. Мальчик, коллекционирующий трофеи жертв, вырастает в мага, коллекционирующего реликвии основателей.<p>Ключевая деталь — привычка Реддла хранить память в предметах. Из неё следует, что и душу он спрятал бы в предметы значимые, а не в случайные.</p>',
+ ch:['pensieve','gaunt','voldemort','dumbledore','borgin','locket'],x:['horcrux:flow']},
+{i:'horcrux',b:6,ln:'relics',c:1,k:'Зима 1996',n:'Семь частей души',g:'g-hallows',
+ d:'Подлинное воспоминание Слизнорта: шестнадцатилетний Реддл спрашивает про семь крестражей.',
+ t:'Слизнорт годами прятал этот разговор, подделав память, — потому что понимал: он подсказал направление. Гарри добывает подлинник с помощью «Феликс Фелицис».<p>Дамблдор составляет список: дневник, кольцо, медальон, чаша, диадема, змея — и, возможно, что-то ещё. Шесть книг подготовки превращаются в план на седьмую.</p>',
+ q:'Разрыв души — не заклинание, а последствие: убийство раскалывает того, кто убивает.',
+ ch:['slughorn','pensieve','dumbledore','diary','ring','locket','cup','diadem','nagini'],x:['ringcurse:flow','cave:flow']},
+{i:'ringcurse',b:6,ln:'relics',c:2,k:'Лето 1996',n:'Кольцо и почерневшая рука',g:'g-ring',
+ d:'Дамблдор надел крестраж, потому что в нём был Воскрешающий камень.',
+ t:'Величайший волшебник эпохи на секунду поверил, что увидит сестру и родителей, — и получил проклятие, которое Снегг сумел лишь запереть в руке. Дамблдору остаётся год.<p>Отсюда весь план шестой книги: смерть всё равно неизбежна, значит, ею надо распорядиться — спасти душу Драко, сохранить прикрытие Снегга и лишить Бузинную палочку силы.</p>',
+ ch:['ring','resurrection','dumbledore','snape','sword','hallows'],x:['towerdeath:flow','hallowstale:echo']},
+{i:'cabinetplan',b:6,ln:'dark',c:2,k:'Весь год',n:'Исчезательный шкаф',g:'g-cabinet',
+ d:'Драко чинит сломанный шкаф — и в замок входят Пожиратели без осады.',
+ t:'Гарри весь год твердит, что Малфой что-то замышляет, и весь год ему не верят: Дамблдор занят крестражами, остальные — экзаменами. Единственный раз, когда его паранойя оказывается точной диагностикой.<p>Пара шкафов — в Выручай-комнате и у «Горбина и Бэрка» — превращает неприступный замок в проходной двор.</p>',
+ ch:['cabinet','draco','ror','borgin','bellatrix'],x:['towerdeath:dark']},
+{i:'warpress',b:6,ln:'power',c:2,k:'1996–1997',n:'Министерство военного времени',g:'g-prophet',
+ d:'Скримджер требует от Гарри публичной поддержки — тот отказывается.',
+ t:'Исчезновения, аресты «для отчётности», листовки о личной безопасности, дементоры, размножающиеся над Британией. Власть работает на картинку, потому что на большее не способна.<p>Отказ Гарри быть символом — политическое заявление, которое стоит ему поддержки Министерства. К седьмой книге это окажется преимуществом.</p>',
+ ch:['scrimgeour','prophet','ministry','dementor','harry'],x:['fall:dark']},
+{i:'cave',b:6,ln:'hero',c:3,k:'Июнь 1997',n:'Пещера у моря',g:'g-inferi',
+ d:'Зелье отчаяния, инферналы в воде — и медальон, оказавшийся подделкой.',
+ t:'Дамблдор заставляет Гарри поклясться, что тот будет вливать в него зелье до конца, что бы он ни кричал. Роль ученика — довести учителя до дна чаши: самая жестокая сцена их отношений.<p>В медальоне — записка от R.A.B. Настоящий крестраж украден за годы до них, а весь поход был напрасен. Дамблдор возвращается в замок обессиленным ровно к появлению Тёмной метки над башней.</p>',
+ ch:['inferi','locket','dumbledore','rab','harry','kreacher'],x:['towerdeath:flow','locketheist:echo']},
+{i:'towerdeath',b:6,ln:'dark',c:3,k:'Июнь 1997',n:'Астрономическая башня',g:'g-elderwand',
+ d:'Драко обезоруживает Дамблдора, но убивает Снегг — по договорённости, о которой не знает никто.',
+ t:'Гарри стоит под мантией, обездвиженный, и видит то, что поймёт лишь через год: старик просит не о пощаде, а о выполнении обещания. «Северус… пожалуйста».<p>Ключевая деталь спрятана в одном движении: палочка Дамблдора вылетела из руки от заклинания Драко. Значит, хозяином Бузинной палочки стал шестнадцатилетний мальчик, который так никого и не убил.</p>',
+ ch:['snape','draco','dumbledore','elderwand','harry','cabinet'],x:['funeral:flow','finalduel:echo']},
+{i:'funeral',b:6,ln:'school',c:3,k:'Июнь 1997',n:'Белая гробница',g:'g-hogwarts',
+ d:'Первые похороны в истории Хогвартса — и решение не возвращаться в школу.',
+ t:'Кентавры, русалки, эльфы и Министерство на одном берегу озера. Феникс поёт последнюю песню и улетает навсегда.<p>Гарри расстаётся с Джинни, чтобы не делать её мишенью, и объявляет друзьям, что в сентябре не вернётся. Школьная часть цикла заканчивается вместе с директором.</p>',
+ ch:['dumbledore','fawkes','ginny','hogwarts','mcgonagall','harry'],x:['sevenpotters:flow','will:flow']},
+
+/* ── VII. Дары Смерти ── */
+{i:'fall',b:7,ln:'power',c:0,k:'Август 1997',n:'Падение Министерства',g:'g-ministry',
+ d:'Никакого штурма: министр убит, преемник под Империусом, аппарат работает дальше.',
+ t:'Пий Толстоватый подписывает всё, что нужно; Комиссия по учёту магглорождённых открывает дела; в атриуме встаёт статуя «Магия — сила», где магглы служат постаментом.<p>Роулинг показывает захват власти как процедуру, а не как битву. Большинство чиновников просто продолжают ходить на работу.</p>',
+ ch:['ministry','umbridge','scrimgeour','prophet','voldemort','kingsley'],x:['locketheist:flow','battle:dark']},
+{i:'sevenpotters',b:7,ln:'hero',c:0,k:'27 июля 1997',n:'Семь Поттеров',g:'g-polyjuice',
+ d:'Шесть двойников на Оборотном зелье, засада в небе, две смерти в первую же ночь.',
+ t:'План выдан изнутри — Пожиратели ждут. Гибнут Грюм и Букля; Джордж теряет ухо. Защита крови на Тисовой улице спадает в момент отъезда, и семнадцать лет безопасности заканчиваются.<p>Палочка Гарри срабатывает сама, узнав старого противника, — и этим окончательно ломается, лишив его привычного оружия перед финалом.</p>',
+ ch:['polyjuice','moody','hedwig','twins','wandcore','harry'],x:['wedding:flow']},
+{i:'will',b:7,ln:'relics',c:0,k:'31 июля 1997',n:'Завещание Дамблдора',g:'g-snitch',
+ d:'Делюминатор, сказки барда Бидля и снитч с надписью — три предмета вместо инструкции.',
+ t:'Министерство держало вещи месяц, изучая их, и ничего не поняло. Меч Гриффиндора, тоже завещанный Гарри, изъят как собственность школы.<p>Каждый подарок — ответ на будущий кризис: делюминатор вернёт Рона, сказки объяснят Дары, снитч откроется в лесу. Дамблдор оставил не помощь, а расписание.</p>',
+ ch:['deluminator','beedle','snitch','scrimgeour','ron','hermione','harry'],x:['hunt:flow','hallowstale:echo']},
+{i:'wedding',b:7,ln:'order',c:1,k:'1 августа 1997',n:'Свадьба и рысь',g:'g-patronus',
+ d:'Патронус Кингсли обрывает праздник тремя словами: «Министерство пало».',
+ t:'Последняя мирная сцена цикла длится страниц двадцать. Дальше — трансгрессия на Тоттенхэм-Корт-роуд и год без дома.<p>Здесь же Ксенофилиус Лавгуд впервые появляется в знаке Даров Смерти на шее, а Виктор Крам называет этот знак символом Грин-де-Вальда. Подсказка выдана за триста страниц до объяснения.</p>',
+ ch:['kingsley','weasleys','burrow','luna','hallows','patronus'],x:['locketheist:flow']},
+{i:'locketheist',b:7,ln:'relics',c:1,k:'Сентябрь 1997',n:'Кража из Министерства',g:'g-locket',
+ d:'Медальон Слизерина висит на шее Долорес Амбридж как доказательство чистой крови.',
+ t:'Кикимер выясняет, что крестраж украл Мундунгус и отдал чиновнице в розовом. Трио проникает в Министерство на Оборотном зелье прямо во время слушаний по делам магглорождённых.<p>Медальон снят, дюжина людей спасена, но точка возврата пройдена: площадь Гриммо раскрыта, и начинается настоящее бегство.</p>',
+ ch:['locket','umbridge','kreacher','polyjuice','ministry','hermione'],x:['hunt:flow']},
+{i:'hunt',b:7,ln:'hero',c:2,k:'Осень 1997',n:'Палатка, лес, молчание',g:'g-forest',
+ d:'Крестраж на шее по очереди — и Рон уходит, наслушавшись собственных страхов.',
+ t:'Самая нехарактерная часть цикла: ни школы, ни расписания, ни взрослых. Три подростка не знают, где искать крестражи и чем их уничтожать.<p>Медальон усиливает худшее — и бьёт по самому уязвимому. Рон возвращается через делюминатор, на голос, и уничтожает крестраж, который показывает ему всё, чего он боится. Победа над предметом и над собой в одном движении.</p>',
+ ch:['locket','deluminator','ron','hermione','sword','harry'],x:['doe:flow','hallowstale:flow']},
+{i:'doe',b:7,ln:'relics',c:2,k:'Декабрь 1997',n:'Серебряная лань',g:'g-patronus',
+ d:'Патронус приводит к мечу подо льдом. Отправитель раскроется только через полгода.',
+ t:'Снегг весь год знает, где они, и передаёт единственное оружие против крестражей единственным безопасным способом — через заклинание, которое нельзя подделать.<p>Меч нужно добыть с доблестью: Гарри ныряет в ледяную воду, медальон душит его, Рон вытаскивает обоих. Оружие достаётся тому, кто вернулся.</p>',
+ ch:['doe','patronus','snape','sword','ron','locket'],x:['gringottsraid:flow','snapememory:echo']},
+{i:'hallowstale',b:7,ln:'relics',c:3,k:'Зима 1997',n:'Сказка о трёх братьях',g:'g-hallows',
+ d:'Ксенофилиус объясняет знак: палочка, камень, мантия. Одна из них уже у Гарри.',
+ t:'Детская сказка оказывается описанием реальных предметов, а знак на шее чудака — не эмблемой секты, а схемой. Гермиона читает вслух, Рон комментирует, Гарри понимает, что мантия отца — третий Дар.<p>Дальше книга ставит развилку: собрать Дары и стать Повелителем Смерти или уничтожать крестражи. Гарри выберет второе у могилы Добби — и получит первое.</p>',
+ ch:['hallows','luna','beedle','cloak','elderwand','resurrection'],x:['malfoymanor:flow','forestdeath:echo']},
+{i:'godrictrap',b:7,ln:'dark',c:2,k:'Канун Рождества 1997',n:'Ловушка в Годриковой Впадине',g:'g-nagini',
+ d:'Под личиной Батильды Бэгшот ждёт Нагайна. Палочка Гарри ломается окончательно.',
+ t:'Он приходит на могилу родителей и к разрушенному дому — и едва уходит живым. Волан-де-Морт держал змею в деревне, где всё началось, зная, что мальчик рано или поздно вернётся.<p>Сломанная палочка из остролиста — момент, когда Гарри лишается последней связи с той ночью 1981 года. Всё, что дальше, он делает чужим оружием.</p>',
+ ch:['nagini','godric','potters','wandcore','voldemort','hermione'],x:['malfoymanor:dark']},
+{i:'malfoymanor',b:7,ln:'dark',c:3,k:'Март 1998',n:'Малфой-мэнор',g:'g-bellatrix',
+ d:'Беллатриса пытает Гермиону из-за меча, Добби вытаскивает всех — и гибнет.',
+ t:'Здесь сходятся три линии: Крюкохват узнаёт про меч, Олливандер объясняет закон палочек, Гарри отбирает палочку Драко — и вместе с ней власть над Бузинной, о чём ещё не догадывается.<p>Добби трансгрессирует туда, где это невозможно, потому что эльфийская магия работает по другим правилам — тем самым, которые Волан-де-Морт всю жизнь считал недостойными внимания.</p>',
+ q:'Могила без магии, вырытая руками, — и решение искать крестражи, а не Дары.',
+ ch:['bellatrix','dobby','hermione','griphook','ollivander','luna','draco','elderwand'],x:['gringottsraid:flow','forestdeath:echo']},
+{i:'gringottsraid',b:7,ln:'hero',c:3,k:'Май 1998',n:'Ограбление Гринготтса',g:'g-gringotts',
+ d:'Гермиона в облике Беллатрисы, чары умножения золота и побег на слепом драконе.',
+ t:'Крюкохват проводит их внутрь и забирает меч в тот момент, когда чаша уже в руках, — сделка соблюдена буквально, по гоблинским понятиям.<p>Волан-де-Морт узнаёт о крестражах и впервые за книгу теряет самообладание: он проверяет тайники и тем самым выдаёт Гарри последний адрес — Хогвартс.</p>',
+ ch:['gringotts','griphook','cup','dragon','polyjuice','hermione'],x:['battle:flow']},
+{i:'battle',b:7,ln:'school',c:4,k:'2 мая 1998',n:'Битва за Хогвартс',g:'g-hogwarts',
+ d:'Замок поднимает каменных рыцарей; в Выручай-комнате горит диадема и погибает Фред.',
+ t:'МакГонагалл ведёт защиту, слизеринцев эвакуируют, Слизнорт возвращается с подкреплением, эльфы Кикимера выходят с ножами. Крэбб выпускает Адское пламя и уничтожает диадему вместе с собой.<p>Гибнут Люпин и Тонкс, Фред, Колин Криви. Роулинг убивает без выбора и без пафоса: война забирает тех, кто оказался рядом.</p>',
+ ch:['hogwarts','mcgonagall','diadem','ror','twins','lupin','tonks','kreacher','slughorn','neville'],x:['snapememory:flow','forestdeath:flow']},
+{i:'snapememory',b:7,ln:'order',c:4,k:'2 мая 1998',n:'Воспоминания Снегга',g:'g-snape',
+ d:'Волан-де-Морт убивает его ради палочки; серебряная нить памяти переписывает шесть книг.',
+ t:'Лили, детская дружба, донос, раскаяние, обещание защищать её сына, лань, годы двойной игры — и последняя инструкция Дамблдора: мальчик должен умереть, и умереть в нужный момент.<p>Просьба «посмотри на меня» перед смертью адресована не Гарри, а его глазам — глазам Лили Эванс. Одна сцена превращает главного подозреваемого цикла в его центральную трагедию.</p>',
+ q:'«Всегда».',
+ ch:['snape','pensieve','potters','dumbledore','elderwand','doe','harry'],x:['forestdeath:flow']},
+{i:'forestdeath',b:7,ln:'hero',c:4,k:'2 мая 1998',n:'Лес: добровольная смерть',g:'g-resurrection',
+ d:'Снитч открывается, камень вызывает тени, и Гарри идёт умирать, не защищаясь.',
+ t:'Родители, Сириус и Люпин доводят его до поляны — не помощь, а сопровождение. Он не поднимает палочку, и это принципиально: жертва работает только добровольной, как у Лили семнадцать лет назад.<p>Проклятие убивает крестраж в шраме, но не Гарри — потому что в жилах Волан-де-Морта течёт его кровь, а значит, защита Лили жива в самом враге. Нарцисса Малфой солжёт, что мальчик мёртв.</p>',
+ ch:['resurrection','snitch','potters','sirius','lupin','narcissa','scar','harry'],x:['kingscross:flow']},
+{i:'kingscross',b:7,ln:'relics',c:5,k:'Между',n:'Вокзал Кингс-Кросс',g:'g-train',
+ d:'Белый перрон, изуродованный младенец под скамьёй и последний разговор с Дамблдором.',
+ t:'Здесь объясняется всё оставшееся: седьмой крестраж создан случайно, кровь в котле стала якорем, а Гарри — истинный хозяин Бузинной палочки через Драко.<p>Дамблдор впервые говорит о собственных ошибках: о Дарах, о сестре, о том, что использовал мальчика. И оставляет выбор — идти дальше или вернуться. Гарри возвращается.</p>',
+ q:'«Конечно, это происходит у тебя в голове. Но почему это значит, что это не по-настоящему?»',
+ ch:['dumbledore','scar','harry','elderwand','voldemort','resurrection'],x:['finalduel:flow']},
+{i:'finalduel',b:7,ln:'dark',c:5,k:'2 мая 1998',n:'Большой зал: развязка',g:'g-elderwand',
+ d:'Невилл убивает Нагайну, палочка отказывается служить — Авада отскакивает в третий раз.',
+ t:'Гарри объявляет вслух то, что Волан-де-Морт не проверил: Снегг никогда не был хозяином Бузинной палочки, потому что Дамблдора обезоружил Драко, а Драко — сам Гарри в Малфой-мэноре.<p>Экспеллиармус против Авады Кедавры. Палочка узнаёт настоящего владельца, проклятие возвращается к отправителю, и Том Реддл умирает как обычный человек — от собственной руки. Гарри возвращает палочку в могилу.</p>',
+ q:'Единственное заклинание, которым Гарри выигрывает войну, — школьное обезоруживающее.',
+ ch:['elderwand','neville','nagini','voldemort','draco','harry','sword'],x:['nineteen:flow']},
+{i:'nineteen',b:7,ln:'order',c:5,k:'1 сентября 2017',n:'Девятнадцать лет спустя',g:'g-train',
+ d:'Платформа 9¾, трое детей, и имя, в котором помещаются оба директора.',
+ t:'Кингсли — министр, Гермиона в Департаменте магического правопорядка, Рон в магазине близнецов, Гарри — глава мракоборцев. Альбус Северус боится попасть в Слизерин, и отец повторяет ему то, что узнал сам: шляпа учитывает выбор.<p>Шрам не болел девятнадцать лет. Это единственная строчка эпилога, которая действительно закрывает семь книг.</p>',
+ ch:['harry','ron','hermione','ginny','draco','kingsley','hat','scar'],x:[]}
+];
+</script>
+
+<script>
+(function(){
+"use strict";
+const LANES=[
+ {i:'hero', n:'Гарри и друзья', v:'--lane-hero',  g:'g-lion'},
+ {i:'dark', n:'Тёмный Лорд',    v:'--lane-dark',  g:'g-darkmark'},
+ {i:'order',n:'Орден и Дамблдор',v:'--lane-order',g:'g-fawkes'},
+ {i:'school',n:'Хогвартс',      v:'--lane-school',g:'g-hogwarts'},
+ {i:'power',n:'Министерство',   v:'--lane-power', g:'g-scales'},
+ {i:'relics',n:'Крестражи и Дары',v:'--lane-relics',g:'g-hallows'}
+];
+const BOOKS=[
+ {n:'I',  t:'Философский камень',   y:'1991 — 1992', s:4},
+ {n:'II', t:'Тайная комната',       y:'1992 — 1993', s:4},
+ {n:'III',t:'Узник Азкабана',       y:'1993 — 1994', s:4},
+ {n:'IV', t:'Кубок огня',           y:'1994 — 1995', s:5},
+ {n:'V',  t:'Орден Феникса',        y:'1995 — 1996', s:5},
+ {n:'VI', t:'Принц-полукровка',     y:'1996 — 1997', s:4},
+ {n:'VII',t:'Дары Смерти',          y:'1997 — 1998', s:6}
+];
+const KIND={char:'Герой',obj:'Предмет',beast:'Существо',place:'Место'};
+const PAD=52, COLW=284, CARDW=252, LANE_H=170, TOP=112, MID=72, BOTTOM=56;
+
+/* ── указатели ── */
+const byId={}, laneOf={};
+CARDS.forEach(c=>{c._t='card'; byId[c.i]=c;});
+NODES.forEach(n=>{n._t='node'; byId[n.i]=n; laneOf[n.i]=n.ln;});
+const known=id=>Object.prototype.hasOwnProperty.call(byId,id);
+CARDS.forEach(c=>c.l=(c.l||[]).filter(known));
+NODES.forEach(n=>{n.ch=(n.ch||[]).filter(known);
+  n.x=(n.x||[]).map(s=>s.split(':')).filter(p=>known(p[0]));});
+
+/* ── геометрия книг ── */
+let cur=0; BOOKS.forEach(b=>{b.x=cur; b.w=PAD*2+(b.s-1)*COLW+CARDW; cur+=b.w;});
+const TOTAL=cur;
+const nodeX=n=>BOOKS[n.b-1].x+PAD+n.c*COLW;
+
+const vp=document.getElementById('vp'), cv=document.getElementById('cv'),
+      wires=document.getElementById('wires'), rail=document.getElementById('rail'),
+      veil=document.getElementById('veil'), win=document.getElementById('win'),
+      seek=document.getElementById('seek'), sw=document.getElementById('switches');
+const off={}; LANES.forEach(l=>off[l.i]=false);
+const use=(g,cls)=>'<svg class="'+(cls||'')+'" viewBox="0 0 64 64" aria-hidden="true"><use href="#'+g+'"/></svg>';
+const esc=s=>String(s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));
+
+/* ── тумблеры линий ── */
+sw.innerHTML=LANES.map(l=>'<button class="sw" data-lane="'+l.i+'" aria-pressed="true" style="--c:var('+l.v+')"><span class="bulb"></span>'+l.n+'</button>').join('');
+
+/* ── сборка схемы ── */
+let laneY={}, H=0;
+function layout(){
+  const vis=LANES.filter(l=>!off[l.i]);
+  vis.forEach((l,k)=>laneY[l.i]=TOP+k*LANE_H);
+  LANES.filter(l=>off[l.i]).forEach(l=>laneY[l.i]=-9999);
+  H=TOP+Math.max(vis.length,1)*LANE_H+BOTTOM;
+}
+function tone(c){
+  return c._t==='node' ? 'var('+(LANES.find(l=>l.i===c.ln)||LANES[0]).v+')'
+       : (c.k==='obj' ? 'var(--patina)' : c.k==='place' ? 'var(--lane-power)' : 'var(--brass)');
+}
+function chip(id){
+  const c=byId[id]; if(!c) return '';
+  return '<button class="chip'+(c.k==='obj'?' obj':'')+'" data-open="'+c.i+'" style="--cc:'+tone(c)+'">'+
+    use(c.g,'')+'<span>'+esc(c.n)+'</span></button>';
+}
+function icon(id){
+  const c=byId[id]; if(!c) return '';
+  const role=c._t==='node'?'узел':(KIND[c.k]||'');
+  return '<button class="ic'+(c.k==='obj'?' obj':'')+'" data-open="'+c.i+'" style="--cc:'+tone(c)+'" '+
+    'aria-label="'+esc(c.n)+'" data-tip="'+esc(c.n)+'|'+role+'">'+use(c.g,'')+'</button>';
+}
+function build(){
+  layout();
+  let h='<svg class="wires" id="wires" aria-hidden="true"></svg>';
+  h+='<div class="shaft" style="width:'+(TOTAL-40)+'px;left:20px"></div>';
+  BOOKS.forEach((b,k)=>{
+    h+='<div class="book-band" style="left:'+b.x+'px;width:'+b.w+'px;height:'+H+'px"></div>';
+    h+='<div class="book-plate" data-book="'+k+'" style="left:'+(b.x+PAD)+'px"><div class="rn">Книга '+b.n+'</div>'+
+       '<div class="tt">'+esc(b.t)+'</div><div class="yr">'+b.y+'</div></div>';
+  });
+  LANES.forEach(l=>{
+    if(off[l.i]) return;
+    const y=laneY[l.i];
+    h+='<div class="lane-rail" style="top:'+y+'px;width:'+TOTAL+'px;--lc:var('+l.v+')"></div>';
+    h+='<div class="lane-row" style="top:'+(y-15)+'px;width:'+TOTAL+'px"><span class="lane-tag" style="--lc:var('+l.v+')">'+
+       use(l.g,'')+l.n+'</span></div>';
+  });
+  NODES.forEach(n=>{
+    if(off[n.ln]) return;
+    const l=LANES.find(x=>x.i===n.ln);
+    h+='<div class="node" id="n-'+n.i+'" data-open="'+n.i+'" role="button" tabindex="0" '+
+       'style="left:'+nodeX(n)+'px;top:'+(laneY[n.ln]+18)+'px;--lc:var('+l.v+')">'+
+       '<div class="n-top">'+use(n.g,'n-ico')+'<span class="n-kind">'+esc(n.k)+'</span></div>'+
+       '<h3>'+esc(n.n)+'</h3><p>'+esc(n.d)+'</p>'+
+       '<div class="n-chips">'+n.ch.slice(0,6).map(c=>icon(c)).join('')+
+       (n.ch.length>6?'<span class="n-more">+'+(n.ch.length-6)+'</span>':'')+'</div></div>';
+  });
+  cv.style.width=TOTAL+'px'; cv.style.height=H+'px'; cv.innerHTML=h;
+  drawWires(); drawRail();
+}
+function drawWires(){
+  const svg=cv.querySelector('.wires');
+  svg.setAttribute('viewBox','0 0 '+TOTAL+' '+H);
+  svg.setAttribute('width',TOTAL); svg.setAttribute('height',H);
+  let p='';
+  NODES.forEach(n=>{
+    if(off[n.ln]) return;
+    n.x.forEach(([to,kind])=>{
+      const m=byId[to]; if(!m||m._t!=='node'||off[m.ln]) return;
+      const x1=nodeX(n)+CARDW, y1=laneY[n.ln]+MID, x2=nodeX(m), y2=laneY[m.ln]+MID;
+      const d=Math.max(64,Math.abs(x2-x1)*0.45);
+      p+='<path class="w-'+(kind==='dark'?'dark':kind==='echo'?'echo':'flow')+'" data-a="'+n.i+'" data-b="'+m.i+'" d="M'+x1+' '+y1+
+         'C'+(x1+d)+' '+y1+','+(x2-d)+' '+y2+','+x2+' '+y2+'"/>';
+    });
+  });
+  svg.innerHTML=p;
+}
+function drawRail(){
+  const w=rail.clientWidth||900, k=w/TOTAL;
+  let h='';
+  BOOKS.forEach(b=>{h+='<div class="rail-seg" style="left:'+(b.x*k)+'px;width:'+(b.w*k)+'px"><span>'+b.n+'</span></div>';});
+  NODES.forEach(n=>{
+    if(off[n.ln]) return;
+    const li=LANES.findIndex(l=>l.i===n.ln);
+    h+='<div class="rail-dot" style="left:'+(nodeX(n)*k+2)+'px;top:'+(8+li*8)+'px;--lc:var('+LANES[li].v+')"></div>';
+  });
+  h+='<div class="rail-win" id="railwin"></div>';
+  rail.innerHTML=h; syncRail();
+}
+function syncRail(){
+  const w=rail.clientWidth||900, k=w/TOTAL, el=document.getElementById('railwin');
+  if(el){el.style.left=(vp.scrollLeft*k)+'px'; el.style.width=Math.max(18,vp.clientWidth*k)+'px';}
+}
+
+/* ── окно-медальон ── */
+let stack=[];
+function open(id,push){
+  const c=byId[id]; if(!c) return;
+  if(push!==false && stack[stack.length-1]!==id) stack.push(id);
+  const isNode=c._t==='node';
+  const lane=isNode?LANES.find(l=>l.i===c.ln):null;
+  const hue=tone(c);
+  const tags=isNode
+    ? '<span class="tag" style="--tc:'+hue+'">'+esc(lane.n)+'</span><span class="tag">Книга '+BOOKS[c.b-1].n+' · '+BOOKS[c.b-1].t+'</span><span class="tag">'+esc(c.k)+'</span>'
+    : '<span class="tag" style="--tc:'+hue+'">'+KIND[c.k]+'</span><span class="tag">книги '+c.b.join(', ')+'</span>';
+  const links=isNode
+    ? c.ch.concat(c.x.map(p=>p[0]))
+    : c.l;
+  const uniq=[...new Set(links)].filter(x=>x!==id);
+  win.innerHTML=
+   '<button class="back'+(stack.length>1?' on':'')+'" id="back">← назад</button>'+
+   '<button class="close" id="close" aria-label="Закрыть">'+
+     '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>'+
+   '<div class="win-grid"><div class="win-art">'+
+     '<div class="medal"><svg viewBox="0 0 214 214"><use href="#frame-medal"/></svg>'+use(c.g,'art')+'</div>'+
+     '<div class="stamp">'+(isNode?esc(c.k):KIND[c.k]+' · '+(c.s||''))+'</div>'+
+   '</div><div class="win-body">'+
+     '<div class="win-kick">'+tags+'</div>'+
+     '<h2 id="winTitle">'+esc(c.n)+'</h2>'+
+     (isNode?'<p class="sub">'+esc(c.d)+'</p>':'<p class="sub">'+esc(c.s)+'</p>')+
+     '<div class="lead">'+(c.t.indexOf('<p>')>-1?'<p>'+c.t.replace('<p>','</p><p>'):'<p>'+c.t+'</p>')+'</div>'+
+     (c.q?'<div class="note"><b>на полях</b>'+esc(c.q)+'</div>':'')+
+     (uniq.length?'<h4>связи</h4><div class="win-links">'+uniq.map(x=>chip(x)).join('')+'</div>':'')+
+     (isNode?'<h4>на схеме</h4><button class="chip" id="goto" data-goto="'+c.i+'" style="--cc:'+hue+'">'+
+        use('g-map','')+'<span>показать узел на чертеже</span></button>':'')+
+   '</div></div>';
+  veil.classList.add('open');
+  win.scrollTop=0;
+  document.getElementById('close').onclick=close;
+  document.getElementById('back').onclick=()=>{stack.pop(); const p=stack[stack.length-1]; if(p) open(p,false); else close();};
+  document.getElementById('close').focus();
+}
+function close(){veil.classList.remove('open'); stack=[];}
+win.addEventListener('click',e=>{
+  const g=e.target.closest('[data-goto]');
+  if(g){const id=g.dataset.goto; close(); setTimeout(()=>focusNode(id),80); return;}
+  const t=e.target.closest('[data-open]');
+  if(t) open(t.dataset.open);
+});
+veil.addEventListener('click',e=>{if(e.target===veil) close();});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&veil.classList.contains('open')) close();
+  if(veil.classList.contains('open')) return;
+  if(e.target.tagName==='INPUT') return;
+  if(e.key==='ArrowRight') vp.scrollLeft+=320;
+  if(e.key==='ArrowLeft')  vp.scrollLeft-=320;
+  if(e.key==='Home') vp.scrollLeft=0;
+  if(e.key==='End') vp.scrollLeft=TOTAL;
+  if(/^[1-7]$/.test(e.key)) jumpBook(+e.key-1);
+});
+
+/* ── взаимодействие со схемой ── */
+cv.addEventListener('click',e=>{
+  const t=e.target.closest('[data-open]');
+  if(t){open(t.dataset.open); return;}
+  const b=e.target.closest('[data-book]'); if(b) jumpBook(+b.dataset.book);
+});
+cv.addEventListener('keydown',e=>{
+  const t=e.target.closest('.node');
+  if(t&&(e.key==='Enter'||e.key===' ')){e.preventDefault(); open(t.dataset.open);}
+});
+cv.addEventListener('mouseover',e=>{
+  const n=e.target.closest('.node'); if(!n) return;
+  const id=n.dataset.open, svg=cv.querySelector('.wires');
+  svg.classList.add('focusing');
+  svg.querySelectorAll('path').forEach(p=>{
+    const on=p.dataset.a===id||p.dataset.b===id;
+    p.classList.toggle('lit',on);
+    if(on){const o=p.dataset.a===id?p.dataset.b:p.dataset.a; const el=document.getElementById('n-'+o); if(el) el.classList.add('hit');}
+  });
+});
+cv.addEventListener('mouseout',e=>{
+  if(e.target.closest('.node')&&!e.relatedTarget?.closest?.('.node')){
+    const svg=cv.querySelector('.wires'); svg.classList.remove('focusing');
+    svg.querySelectorAll('path.lit').forEach(p=>p.classList.remove('lit'));
+    cv.querySelectorAll('.node.hit').forEach(n=>n.classList.remove('hit'));
+  }
+});
+vp.addEventListener('wheel',e=>{
+  if(e.ctrlKey) return;
+  const vert=e.shiftKey||e.altKey;
+  if(vert){ if(cv.offsetHeight>vp.clientHeight){vp.scrollTop+=e.deltaY; e.preventDefault();} return; }
+  vp.scrollLeft+=(Math.abs(e.deltaX)>Math.abs(e.deltaY)?e.deltaX:e.deltaY);
+  e.preventDefault();
+},{passive:false});
+let drag=null;
+vp.addEventListener('pointerdown',e=>{
+  if(e.target.closest('.node')||e.target.closest('.book-plate')) return;
+  drag={x:e.clientX,y:e.clientY,l:vp.scrollLeft,t:vp.scrollTop};
+  vp.classList.add('dragging'); vp.setPointerCapture(e.pointerId);
+});
+vp.addEventListener('pointermove',e=>{
+  if(!drag) return;
+  vp.scrollLeft=drag.l-(e.clientX-drag.x);
+  vp.scrollTop=drag.t-(e.clientY-drag.y);
+});
+['pointerup','pointercancel'].forEach(ev=>vp.addEventListener(ev,()=>{drag=null; vp.classList.remove('dragging');}));
+vp.addEventListener('scroll',syncRail,{passive:true});
+window.addEventListener('resize',()=>{drawRail();});
+
+function jumpBook(k){
+  const b=BOOKS[k]; if(!b) return;
+  vp.scrollTo({left:b.x-24,behavior:'smooth'});
+}
+function focusNode(id){
+  const n=byId[id]; if(!n) return;
+  if(n._t==='node'){
+    if(off[n.ln]){off[n.ln]=false; sw.querySelector('[data-lane="'+n.ln+'"]').setAttribute('aria-pressed','true'); build();}
+    const el=document.getElementById('n-'+id);
+    vp.scrollTo({left:Math.max(0,nodeX(n)-vp.clientWidth/2+CARDW/2),top:Math.max(0,laneY[n.ln]-vp.clientHeight/2+80),behavior:'smooth'});
+    if(el){el.classList.add('pulse'); setTimeout(()=>el.classList.remove('pulse'),3200);}
+  }
+}
+
+/* ── тумблеры ── */
+sw.addEventListener('click',e=>{
+  const b=e.target.closest('.sw'); if(!b) return;
+  const l=b.dataset.lane; off[l]=!off[l];
+  b.setAttribute('aria-pressed',String(!off[l]));
+  build(); applySearch();
+});
+
+/* ── поиск ── */
+function applySearch(){
+  const q=seek.value.trim().toLowerCase();
+  const nodes=cv.querySelectorAll('.node');
+  if(!q){nodes.forEach(n=>n.classList.remove('dim','hit')); return;}
+  let first=null;
+  nodes.forEach(el=>{
+    const n=byId[el.dataset.open];
+    const hay=(n.n+' '+n.d+' '+n.k+' '+n.t+' '+n.ch.map(c=>byId[c]?byId[c].n:'').join(' ')).toLowerCase();
+    const hit=hay.includes(q);
+    el.classList.toggle('dim',!hit); el.classList.toggle('hit',hit);
+    if(hit&&!first) first=n.i;
+  });
+  return first;
+}
+seek.addEventListener('input',applySearch);
+seek.addEventListener('keydown',e=>{
+  if(e.key!=='Enter') return;
+  const q=seek.value.trim().toLowerCase();
+  const card=CARDS.find(c=>c.n.toLowerCase().includes(q));
+  const first=applySearch();
+  if(first) focusNode(first);
+  else if(card) open(card.i);
+});
+rail.addEventListener('pointerdown',e=>{
+  const r=rail.getBoundingClientRect(), k=TOTAL/r.width;
+  vp.scrollTo({left:(e.clientX-r.left)*k-vp.clientWidth/2,behavior:'smooth'});
+});
+
+const tip=document.createElement('div'); tip.id='tip'; document.body.appendChild(tip);
+document.addEventListener('mouseover',e=>{
+  const t=e.target.closest('[data-tip]');
+  if(!t){tip.classList.remove('on'); return;}
+  const [n,r]=t.dataset.tip.split('|');
+  tip.innerHTML='<b>'+n+'</b>'+(r?' · '+r:'');
+  const b=t.getBoundingClientRect();
+  tip.style.left=(b.left+b.width/2)+'px'; tip.style.top=b.top+'px';
+  tip.classList.add('on');
+});
+document.addEventListener('mouseout',e=>{if(e.target.closest('[data-tip]')) tip.classList.remove('on');});
+vp.addEventListener('scroll',()=>tip.classList.remove('on'),{passive:true});
+
+build();
+})();
+</script>
+
+<div style="max-width:1900px;margin:0 auto;padding:0 clamp(14px,3vw,34px) 40px;
+ font:300 12.5px/1.6 Spectral,Georgia,serif;color:#6d6a60">
+  <a href="../" style="color:#c9a24e;text-decoration:none;border-bottom:1px solid rgba(201,162,78,.35)">Шкатулка Мракса</a>
+  — квест по тем же семи книгам: семь механических испытаний в латунной шкатулке.
+</div>
+</body>
+</html>
