@@ -60,6 +60,7 @@ button.ghost[aria-pressed="true"]{background:var(--series-1);border-color:var(--
 h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);
    font-weight:600;margin:30px 0 12px}
 .grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(176px,1fr))}
+@media (min-width:900px){ .grid{grid-template-columns:repeat(4,1fr)} }
 .tile{background:var(--surface-1);border:1px solid var(--line);border-radius:12px;
       padding:14px 15px 10px;box-shadow:var(--shadow);position:relative;overflow:hidden}
 .tile .name{font-size:12px;color:var(--text-secondary);display:flex;justify-content:space-between;gap:8px}
@@ -71,6 +72,8 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--text
 .up{color:var(--good)} .down{color:var(--critical)}
 .spark{display:block;width:100%;height:34px;margin-top:8px}
 .tile.pending .val{color:var(--text-muted)}
+.tile.stale{border-color:var(--warning)}
+.tile.stale .chg{color:var(--warning)}
 
 /* ---------- график ---------- */
 .card{background:var(--surface-1);border:1px solid var(--line);border-radius:12px;
@@ -133,8 +136,11 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
   </div>
 </header>
 
-<h2>Сырьё и валюта</h2>
-<div class="grid" id="grid-macro"></div>
+<h2>Нефть и сырьё</h2>
+<div class="grid" id="grid-oil"></div>
+
+<h2>Валюта и крипта</h2>
+<div class="grid" id="grid-fx"></div>
 
 <h2>Индексы и ставки</h2>
 <div class="grid" id="grid-index"></div>
@@ -186,6 +192,12 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
   <a href="https://www.coingecko.com/api" target="_blank" rel="noopener">CoinGecko</a>.
   Ни одного API-ключа, ни строчки серверного кода: страница ходит за данными сама.</p>
   <p><b>Как читать.</b> Крупная цифра — последняя сделка, под ней изменение к закрытию прошлого дня. Мини-график в плитке — 45 дней, его цвет показывает направление за весь этот период, а не за сегодня. Время везде московское; обновление раз в минуту, пока вкладка открыта. У фьючерсов (Brent, золото, газ) история на графике начинается с первого дня торгов конкретным контрактом, а не с начала выбранного периода.</p>
+  <p><b>Про Urals.</b> Живой котировки у российской нефти нет: биржевого фьючерса не существует,
+  а ежедневные оценки Argus и Platts — платные. В плитке стоит официальная цена мониторинга
+  <a href="https://www.economy.gov.ru/" target="_blank" rel="noopener">Минэкономразвития</a> —
+  среднее за календарный месяц, публикуется в начале следующего и используется для расчёта налогов.
+  Дисконт считается к средней цене ближнего фьючерса Brent за тот же месяц. Если цифра устарела,
+  плитка подсветится жёлтым: значит, вышла новая и её нужно вписать в массив <code>URALS</code>.</p>
   <p><b>Не для торговли.</b> Цифры справочные — для эфира сверяйте с первоисточником.</p>
 </div>
 
@@ -274,17 +286,31 @@ function frontMonths(map) {
    Что показываем
    ========================================================================= */
 const TILES = [
-  { grid: "macro", key: "BR",    name: "Нефть Brent",        unit: "$",  digits: 2, hint: "фьючерс Мосбиржи" },
-  { grid: "macro", key: "GOLD",  name: "Золото",             unit: "$",  digits: 1, hint: "за унцию, фьючерс" },
-  { grid: "macro", key: "NG",    name: "Газ Henry Hub",      unit: "$",  digits: 3, hint: "за MMBtu, фьючерс" },
-  { grid: "macro", key: "USD",   name: "Доллар",             unit: "₽",  digits: 2, hint: "биржевой, TOM" },
-  { grid: "macro", key: "CNY",   name: "Юань",               unit: "₽",  digits: 4, hint: "биржевой, TOM" },
-  { grid: "macro", key: "BTC",   name: "Биткойн",            unit: "$",  digits: 0, hint: "CoinGecko, 24 ч" },
+  { grid: "oil",   key: "BR",    name: "Нефть Brent",        unit: "$",  digits: 2, hint: "фьючерс Мосбиржи" },
+  { grid: "oil",   key: "URALS", name: "Нефть Urals",        unit: "$",  digits: 2, hint: "оценка Минэка" },
+  { grid: "oil",   key: "GOLD",  name: "Золото",             unit: "$",  digits: 1, hint: "за унцию, фьючерс" },
+  { grid: "oil",   key: "NG",    name: "Газ Henry Hub",      unit: "$",  digits: 3, hint: "за MMBtu, фьючерс" },
+  { grid: "fx",    key: "USD",   name: "Доллар",             unit: "₽",  digits: 2, hint: "биржевой, TOM" },
+  { grid: "fx",    key: "EUR",   name: "Евро",               unit: "₽",  digits: 2, hint: "ЦБ РФ" },
+  { grid: "fx",    key: "CNY",   name: "Юань",               unit: "₽",  digits: 4, hint: "биржевой, TOM" },
+  { grid: "fx",    key: "BTC",   name: "Биткойн",            unit: "$",  digits: 0, hint: "CoinGecko, 24 ч" },
   { grid: "index", key: "IMOEX", name: "Индекс МосБиржи",    unit: "",   digits: 2, hint: "рублёвый" },
   { grid: "index", key: "RTSI",  name: "Индекс РТС",         unit: "",   digits: 2, hint: "долларовый" },
   { grid: "index", key: "RGBI",  name: "Индекс гособлигаций",unit: "",   digits: 2, hint: "ОФЗ, RGBI" },
   { grid: "index", key: "RUSFAR",name: "Ставка RUSFAR",      unit: "%",  digits: 2, hint: "деньги овернайт" }
 ];
+
+/* Urals в открытом доступе онлайн не котируется: биржевого фьючерса нет, а
+   оценки Argus и Platts — платные. Поэтому берём официальную цену мониторинга
+   Минэкономразвития: среднее за календарный месяц, публикуется в начале
+   следующего. Добавить месяц — дописать строку; всё остальное посчитается само. */
+const URALS = {
+  source: "Минэкономразвития России",
+  months: [
+    { m: "2026-07", label: "июль 2026",   usd: 59.02 },
+    { m: "2026-08", label: "август 2026", usd: 67.11 }
+  ]
+};
 
 const SHARES = ["SBER","GAZP","LKOH","ROSN","GMKN","NVTK","PLZL","T","MTSS","MGNT","YDEX","VTBR"];
 
@@ -380,6 +406,12 @@ async function loadQuotes() {
   }
   if (coin && coin.bitcoin)
     put("BTC", coin.bitcoin.usd, coin.bitcoin.usd_24h_change, hhmm(new Date()), "BTC/USD");
+  /* биржевой евро на Мосбирже почти не торгуется — берём официальный курс ЦБ */
+  if (cbr && cbr.Valute && cbr.Valute.EUR) {
+    const e = cbr.Valute.EUR;
+    put("EUR", e.Value, e.Previous ? (e.Value - e.Previous) / e.Previous * 100 : null,
+        null, "ЦБ РФ");
+  }
 
   if (Object.keys(q).length) state.lastOk = new Date();
   renderTiles();
@@ -417,6 +449,40 @@ async function loadSparks() {
   renderTiles();
 }
 
+/* Urals: официальная месячная цена плюс дисконт к Brent за тот же месяц.
+   Средняя по Brent считается сама — по контракту, который торговался в этом месяце
+   (августу соответствует серия BR-9.26: фьючерс назван по месяцу экспирации). */
+async function loadUrals() {
+  const ms = URALS.months, last = ms[ms.length - 1], prev = ms[ms.length - 2];
+  if (!last) return;
+  const [y, m] = last.m.split("-").map(Number);
+  const till = iso(new Date(Date.UTC(y, m, 0)));            // последний день месяца
+  const nxt  = new Date(Date.UTC(y, m, 1));                 // следующий месяц — он же в имени серии
+  const secid = "BR" + MONTH_LETTER[nxt.getUTCMonth()] + String(nxt.getUTCFullYear() % 10);
+
+  const j = await getJSON(ISS + "/engines/futures/markets/forts/securities/" + secid
+    + "/candles.json?iss.meta=off&from=" + last.m + "-01&till=" + till
+    + "&interval=24&iss.only=candles&candles.columns=close,end", "Brent за месяц");
+  const cl = rows(j, "candles").map(r => r.close).filter(v => v != null);
+  const brent = cl.length ? cl.reduce((a, b) => a + b, 0) / cl.length : null;
+
+  const parts = [];
+  if (brent) parts.push("к Brent " + nf(last.usd - brent, 2) + " $ ("
+                        + nf((last.usd - brent) / brent * 100, 1) + " %)");
+  if (prev)  parts.push(prev.label.split(" ")[0] + ": " + nf(prev.usd, 2) + " $");
+
+  /* цену за месяц публикуют в начале следующего; отстали на 40+ дней — пора дописать строку */
+  const stale = (Date.now() - Date.UTC(y, m, 1)) / 86400000 > 40;
+  state.quotes.URALS = {
+    value: last.usd,
+    ticker: "Минэк · " + last.label,
+    note: (stale ? "нужно обновить · " : "") + (parts.join(" · ") || "среднее за месяц"),
+    stale
+  };
+  if (ms.length >= 3) state.spark.URALS = ms.map(x => x.usd);
+  renderTiles();
+}
+
 async function loadSeries() {
   const seq = ++state.seq;
   const inst = CHART_SET.find(c => c.id === state.chartId) || CHART_SET[0];
@@ -441,16 +507,18 @@ async function loadSeries() {
    Отрисовка
    ========================================================================= */
 function renderTiles() {
-  for (const grid of ["macro", "index"]) {
+  for (const grid of ["oil", "fx", "index"]) {
     const host = $("#grid-" + grid);
     const html = TILES.filter(t => t.grid === grid).map(t => {
       const q = state.quotes[t.key];
       const v = q ? nf(q.value, t.digits) : "";
       const unit = t.unit ? '<span class="unit">' + t.unit + "</span>" : "";
-      const chg = q && q.change != null
+      /* у месячных показателей вместо процента — своя подпись (дисконт, период) */
+      const chg = q && q.note ? '<div class="chg">' + q.note + "</div>"
+        : q && q.change != null
         ? '<div class="chg ' + cls(q.change) + '">' + pct(q.change, q.chgUnit) + "</div>"
         : '<div class="chg">—</div>';
-      return '<div class="tile' + (q ? "" : " pending") + '">'
+      return '<div class="tile' + (q ? "" : " pending") + (q && q.stale ? " stale" : "") + '">'
         + '<div class="name"><span>' + t.name + "</span>"
         + '<span class="tick">' + (q && q.ticker ? q.ticker : t.hint) + "</span></div>"
         + '<div class="val">' + (q ? v + unit : '<span class="skel"></span>') + "</div>"
@@ -664,6 +732,7 @@ document.addEventListener("visibilitychange", () => { if (!document.hidden) load
 /* поехали */
 buildControls();
 loadQuotes().then(loadSparks);
+loadUrals();
 loadSeries();
 startTimer();
 </script>
