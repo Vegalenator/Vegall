@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Терминал ИИ-цикла</title>
+<meta name="description" content="Отслеживание инвестиционного и финансового цикла ИИ по всем слоям: кремний, облака, модели, энергетика, капитал и внедрение.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="assets/terminal.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <b>Терминал ИИ-цикла</b>
+    <span id="asOf">срез —</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="asof"><i></i>данные слоя C курируются вручную</div>
+  <button class="iconbtn" type="button" id="themeBtn">Тёмная тема</button>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Разделы терминала"></nav>
+  <main id="main"></main>
+</div>
+
+<script src="data/meta.js"></script>
+<script src="data/layers.js"></script>
+<script src="data/companies.js"></script>
+<script src="data/network.js"></script>
+<script src="data/indicators.js"></script>
+<script src="data/scenarios.js"></script>
+<script src="data/russia.js"></script>
+<script src="assets/graph.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

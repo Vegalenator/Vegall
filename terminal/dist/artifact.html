@@ -1,0 +1,2226 @@
+<title>Терминал ИИ-цикла</title>
+<meta name="description" content="Отслеживание инвестиционного и финансового цикла ИИ по всем слоям: кремний, облака, модели, энергетика, капитал и внедрение.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* =========================================================================
+   Терминал ИИ-цикла — оформление
+   Светлая тема основная, тёмная — по переключателю и по системной настройке.
+   Все цвета объявлены токенами в :root; ни один цвет не живёт только внутри
+   media-блока.
+   ========================================================================= */
+
+:root {
+  /* Поверхности и чернила — холодный нейтральный, смещённый к синему акценту */
+  --plane:      #eef1f4;
+  --surface:    #ffffff;
+  --surface-2:  #f6f8fa;
+  --surface-3:  #eaeef2;
+  --ink:        #0e1319;
+  --ink-2:      #4d5560;
+  --muted:      #7b848f;
+  --grid:       #e3e8ed;
+  --rule:       #cdd5dd;
+  --hairline:   rgba(14, 19, 25, 0.10);
+  --shadow:     0 6px 20px rgba(14, 19, 25, 0.12);
+
+  /* Категориальные — проверены валидатором на всех парах, светлая поверхность */
+  --s1: #2a78d6;   /* оплата поставки */
+  --s2: #eb6834;   /* капитал: доля и долг */
+  --s3: #1baf7a;   /* долгосрочный договор */
+  --accent: #2a78d6;
+  --accent-soft: #e7f0fc;
+
+  /* Статус — фиксированный набор, одинаковый в обеих темах */
+  --ok:       #0ca30c;
+  --warning:  #fab219;
+  --serious:  #ec835a;
+  --critical: #d03b3b;
+  --ok-wash:       rgba(12, 163, 12, 0.10);
+  --warning-wash:  rgba(250, 178, 25, 0.16);
+  --critical-wash: rgba(208, 59, 59, 0.10);
+  --neg:         #e34948;
+  --nodata:      #98a0aa;
+  --nodata-wash: rgba(152, 160, 170, 0.14);
+
+  --ff-ui: 'Golos Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --ff-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', 'Cascadia Mono', Consolas, monospace;
+
+  --rail: 236px;
+  --gap: 16px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --plane:      #0b0d10;
+    --surface:    #14171c;
+    --surface-2:  #191d23;
+    --surface-3:  #222830;
+    --ink:        #ffffff;
+    --ink-2:      #c2c8d0;
+    --muted:      #8a939d;
+    --grid:       #262c34;
+    --rule:       #343c45;
+    --hairline:   rgba(255, 255, 255, 0.12);
+    --shadow:     0 6px 22px rgba(0, 0, 0, 0.55);
+    --s1: #3987e5;
+    --s2: #d95926;
+    --s3: #199e70;
+    --neg: #e66767;
+    --accent: #3987e5;
+    --accent-soft: #16273c;
+    --nodata: #8a939d;
+  }
+}
+:root[data-theme="dark"] {
+  --plane:      #0b0d10;
+  --surface:    #14171c;
+  --surface-2:  #191d23;
+  --surface-3:  #222830;
+  --ink:        #ffffff;
+  --ink-2:      #c2c8d0;
+  --muted:      #8a939d;
+  --grid:       #262c34;
+  --rule:       #343c45;
+  --hairline:   rgba(255, 255, 255, 0.12);
+  --shadow:     0 6px 22px rgba(0, 0, 0, 0.55);
+  --s1: #3987e5;
+  --s2: #d95926;
+  --s3: #199e70;
+  --neg: #e66767;
+  --accent: #3987e5;
+  --accent-soft: #16273c;
+  --nodata: #8a939d;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--plane);
+  color: var(--ink);
+  font-family: var(--ff-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+
+/* ---------------------------------------------------------------- шапка */
+.topbar {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 18px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--rule);
+}
+.brand { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.brand b { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+.brand span {
+  font-family: var(--ff-mono); font-size: 11px; color: var(--muted);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.topbar .spacer { flex: 1 1 auto; }
+
+.asof {
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--ff-mono); font-size: 11px; color: var(--ink-2);
+  padding: 4px 9px; border: 1px solid var(--rule); border-radius: 3px;
+  background: var(--surface-2); white-space: nowrap;
+}
+.asof i { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); display: inline-block; }
+
+.iconbtn {
+  font: inherit; font-size: 12px; color: var(--ink-2);
+  background: var(--surface-2); border: 1px solid var(--rule); border-radius: 3px;
+  padding: 5px 11px; cursor: pointer; white-space: nowrap;
+}
+.iconbtn:hover { background: var(--surface-3); color: var(--ink); }
+
+/* ------------------------------------------------------------- каркас */
+.shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); align-items: start; }
+
+.rail {
+  position: sticky; top: calc(52px + env(safe-area-inset-top, 0px));
+  height: calc(100vh - 52px);
+  border-right: 1px solid var(--rule);
+  background: var(--surface);
+  padding: 14px 0;
+  overflow-y: auto;
+}
+.rail .grouplabel {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.09em;
+  color: var(--muted); padding: 12px 18px 6px;
+}
+.navitem {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 9px 18px; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: 13.5px; color: var(--ink-2); text-align: left;
+  border-left: 2px solid transparent;
+}
+.navitem:hover { background: var(--surface-2); color: var(--ink); }
+.navitem[aria-current="true"] {
+  color: var(--ink); font-weight: 600;
+  background: var(--accent-soft); border-left-color: var(--accent);
+}
+.navitem em { font-family: var(--ff-mono); font-style: normal; font-size: 10px; color: var(--muted); margin-left: auto; }
+
+main { padding: 20px 18px 64px; min-width: 0; }
+.view { display: grid; gap: var(--gap); }
+.view[hidden] { display: none !important; }
+
+/* ------------------------------------------------------------ типографика */
+.viewhead { display: grid; gap: 6px; margin-bottom: 2px; }
+.viewhead h1 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; text-wrap: balance; }
+.viewhead p { margin: 0; color: var(--ink-2); max-width: 74ch; }
+
+h2.section {
+  margin: 10px 0 0; font-size: 12px; font-weight: 600; text-transform: uppercase;
+  letter-spacing: 0.08em; color: var(--muted);
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  padding: 16px;
+}
+.panel > h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; }
+.panel > .sub { margin: 0 0 14px; color: var(--muted); font-size: 12.5px; }
+
+.cols { display: grid; gap: var(--gap); }
+.cols-2 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+.cols-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+.cols-4 { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+
+/* --------------------------------------------------------------- бейджи */
+.badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  font-family: var(--ff-mono); font-size: 9.5px; text-transform: uppercase;
+  letter-spacing: 0.05em; padding: 2px 5px; border-radius: 2px;
+  border: 1px solid var(--rule); color: var(--ink-2); background: var(--surface-2);
+  white-space: nowrap; cursor: help;
+}
+.badge.fact     { color: #0a6b0a; border-color: rgba(12,163,12,.45); background: var(--ok-wash); }
+.badge.estimate { color: var(--ink-2); }
+.badge.forecast { color: #8a5a00; border-color: rgba(250,178,25,.55); background: var(--warning-wash); }
+.badge.claim    { color: #a32e2e; border-color: rgba(208,59,59,.45); background: var(--critical-wash); }
+.badge.expert   { color: var(--ink-2); border-style: dashed; }
+:root[data-theme="dark"] .badge.fact { color: #4fd44f; }
+:root[data-theme="dark"] .badge.forecast { color: #f5c25a; }
+:root[data-theme="dark"] .badge.claim { color: #f08a8a; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .badge.fact { color: #4fd44f; }
+  :root:where(:not([data-theme="light"])) .badge.forecast { color: #f5c25a; }
+  :root:where(:not([data-theme="light"])) .badge.claim { color: #f08a8a; }
+}
+
+.src {
+  font-family: var(--ff-mono); font-size: 10px; color: var(--muted);
+  border: 1px solid var(--rule); border-radius: 2px; padding: 1px 4px;
+  background: none; cursor: pointer;
+}
+.src:hover { color: var(--accent); border-color: var(--accent); }
+
+/* ---------------------------------------------------------------- плитки */
+.tile { display: grid; gap: 5px; align-content: start; padding: 14px 16px; background: var(--surface); border: 1px solid var(--rule); border-radius: 4px; }
+.tile .label { font-size: 12px; color: var(--ink-2); }
+.tile .value { font-size: 27px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+.tile .value small { font-size: 14px; font-weight: 500; color: var(--ink-2); }
+.tile .note { font-size: 11.5px; color: var(--muted); }
+.tile .row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+
+.hero { display: grid; gap: 10px; }
+.hero .figure { font-size: 60px; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+.hero .cap { font-size: 12.5px; color: var(--ink-2); max-width: 46ch; }
+
+/* --------------------------------------------------------------- статусы */
+.st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; white-space: nowrap; }
+.st i { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+.st-ok i      { background: var(--ok); }
+.st-watch i   { background: var(--warning); }
+.st-stress i  { background: var(--critical); }
+.st-nodata i  { background: var(--nodata); }
+.st-ok     { color: #0a6b0a; }
+.st-watch  { color: #8a5a00; }
+.st-stress { color: #a32e2e; }
+.st-nodata { color: var(--muted); }
+:root[data-theme="dark"] .st-ok { color: #4fd44f; }
+:root[data-theme="dark"] .st-watch { color: #f5c25a; }
+:root[data-theme="dark"] .st-stress { color: #f08a8a; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .st-ok { color: #4fd44f; }
+  :root:where(:not([data-theme="light"])) .st-watch { color: #f5c25a; }
+  :root:where(:not([data-theme="light"])) .st-stress { color: #f08a8a; }
+}
+
+/* --------------------------------------------------------------- таблицы */
+.tablewrap { overflow-x: auto; border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+thead th {
+  position: sticky; top: 0; z-index: 1;
+  text-align: left; font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--muted); font-weight: 600; padding: 9px 12px;
+  background: var(--surface-2); border-bottom: 1px solid var(--rule); white-space: nowrap;
+}
+tbody td { padding: 10px 12px; border-bottom: 1px solid var(--grid); vertical-align: top; }
+tbody tr:last-child td { border-bottom: 0; }
+tbody tr:hover td { background: var(--surface-2); }
+td.num, th.num { text-align: right; font-family: var(--ff-mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+td .sub { display: block; color: var(--muted); font-size: 11.5px; margin-top: 3px; }
+.tablewrap.compact td { padding: 7px 12px; }
+
+/* --------------------------------------------------------------- полосы */
+.bar { position: relative; height: 10px; background: var(--surface-3); border-radius: 2px; overflow: hidden; }
+.bar > span { position: absolute; inset: 0 auto 0 0; background: var(--s1); border-radius: 0 2px 2px 0; }
+.barrow { display: grid; grid-template-columns: 1fr 46px; align-items: center; gap: 10px; }
+.barrow .n { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; font-size: 12px; text-align: right; color: var(--ink-2); }
+
+/* меры маржи и риска — встречные полосы, легенда обязательна */
+.tornado { display: grid; grid-template-columns: 1fr 12px 1fr; align-items: center; gap: 0; }
+.tornado .left, .tornado .right { height: 12px; position: relative; }
+.tornado .left > span { position: absolute; right: 0; top: 0; bottom: 0; background: var(--s1); border-radius: 2px 0 0 2px; }
+.tornado .right > span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--s2); border-radius: 0 2px 2px 0; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12px; color: var(--ink-2); }
+.legend b { display: inline-flex; align-items: center; gap: 6px; font-weight: 400; }
+.legend b i { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+.legend b i.sq { width: 10px; height: 10px; border-radius: 2px; }
+
+/* ------------------------------------------------------------- граф */
+.graphwrap {
+  position: relative; background: var(--surface);
+  border: 1px solid var(--rule); border-radius: 4px; overflow: hidden;
+}
+.graphwrap svg { display: block; width: 100%; height: 620px; touch-action: none; cursor: grab; }
+.graphwrap svg.dragging { cursor: grabbing; }
+.graph-node-label { font-family: var(--ff-ui); font-size: 11.5px; font-weight: 500; fill: var(--ink); pointer-events: none; }
+.graph-node-sub { font-family: var(--ff-mono); font-size: 9px; fill: var(--muted); pointer-events: none; }
+.gnode circle { stroke: var(--surface); stroke-width: 2; cursor: pointer; }
+.gnode.dim { opacity: 0.22; }
+.gedge { fill: none; stroke-linecap: round; }
+.gedge.dim { opacity: 0.08; }
+.controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.chip {
+  font: inherit; font-size: 12px; padding: 4px 10px; border-radius: 3px;
+  border: 1px solid var(--rule); background: var(--surface-2); color: var(--ink-2); cursor: pointer;
+  display: inline-flex; align-items: center; gap: 7px;
+}
+.chip i { width: 14px; height: 3px; border-radius: 2px; flex: none; }
+.chip i.sq { width: 9px; height: 9px; }
+.chip[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); }
+.chip[aria-pressed="false"] { opacity: 0.55; }
+
+.tip {
+  position: absolute; z-index: 20; max-width: 300px; pointer-events: none;
+  background: var(--surface); border: 1px solid var(--rule); border-radius: 4px;
+  box-shadow: var(--shadow); padding: 10px 12px; font-size: 12.5px;
+}
+.tip b { display: block; font-size: 13px; margin-bottom: 3px; }
+.tip .k { color: var(--muted); font-size: 11.5px; }
+
+/* --------------------------------------------------------- прочее */
+.loop {
+  display: grid; gap: 6px; padding: 12px 14px; border: 1px solid var(--rule);
+  border-left: 3px solid var(--s2); border-radius: 4px; background: var(--surface);
+}
+.loop .path { font-family: var(--ff-mono); font-size: 12px; color: var(--ink); line-height: 1.7; }
+.loop .path span { background: var(--surface-3); padding: 2px 6px; border-radius: 2px; }
+.loop .why { font-size: 12.5px; color: var(--ink-2); }
+
+.list { margin: 0; padding-left: 18px; display: grid; gap: 6px; color: var(--ink-2); }
+.list li::marker { color: var(--muted); }
+.kv { display: grid; grid-template-columns: max-content 1fr; gap: 6px 14px; font-size: 13px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; }
+
+.note {
+  font-size: 12px; color: var(--ink-2); background: var(--surface-2);
+  border-left: 2px solid var(--rule); padding: 9px 12px; border-radius: 0 3px 3px 0;
+}
+
+.ladder { display: grid; gap: 2px; }
+.ladder .rung {
+  display: grid; grid-template-columns: 200px 1fr; gap: 14px; align-items: start;
+  padding: 11px 14px; background: var(--surface); border: 1px solid var(--rule);
+}
+.ladder .rung:first-child { border-radius: 4px 4px 0 0; }
+.ladder .rung:last-child { border-radius: 0 0 4px 4px; }
+.ladder .rung + .rung { border-top: 0; }
+.ladder .lv { display: grid; gap: 4px; }
+.ladder .lv b { font-size: 13px; font-weight: 600; }
+
+.scen { display: grid; gap: 10px; }
+.scen .head { display: flex; align-items: baseline; gap: 10px; }
+.scen .head b { font-size: 15px; }
+.scen .head .p { font-family: var(--ff-mono); font-size: 20px; font-weight: 600; margin-left: auto; }
+.sig { display: grid; grid-template-columns: 18px 1fr; gap: 9px; align-items: start; padding: 7px 0; border-top: 1px solid var(--grid); }
+.sig .mark { font-family: var(--ff-mono); font-size: 13px; text-align: center; }
+.sig .t { font-size: 12.5px; }
+.sig .n { font-size: 11.5px; color: var(--muted); }
+
+.count { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; }
+
+/* ------------------------------------------------------------- адаптив */
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .rail {
+    position: sticky; top: calc(51px + env(safe-area-inset-top, 0px)); height: auto;
+    display: flex; gap: 2px; overflow-x: auto; padding: 6px 10px;
+    border-right: 0; border-bottom: 1px solid var(--rule); z-index: 30;
+  }
+  .rail .grouplabel { display: none; }
+  .navitem { width: auto; white-space: nowrap; padding: 7px 12px; border-left: 0; border-bottom: 2px solid transparent; border-radius: 3px; }
+  .navitem[aria-current="true"] { border-left: 0; border-bottom-color: var(--accent); }
+  .navitem em { display: none; }
+  main { padding: 16px; }
+  .ladder .rung { grid-template-columns: 1fr; gap: 6px; }
+  .graphwrap svg { height: 520px; }
+  .hero .figure { font-size: 46px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  * { animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}
+@media print {
+  .rail, .topbar .iconbtn { display: none; }
+  .view[hidden] { display: grid !important; }
+}
+
+/* ------------------------------------------------ граф: элементы SVG
+   Цвет несёт иерархию потоков, а не идентичность каждого звена:
+   синий — внешний клиент, оранжевый — капитал, бирюзовый — договор,
+   серый — рутинная оплата поставки. Полосы раскладки кодируют слой. */
+.bandline { stroke: var(--grid); stroke-width: 1; }
+.bandlabel { font-family: var(--ff-mono); font-size: 9.5px; fill: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+.gedge { stroke: var(--muted); }
+.ge-supply   { stroke: var(--muted); }
+.ge-equity   { stroke: var(--s2); }
+.ge-debt     { stroke: var(--s2); }
+.ge-contract { stroke: var(--s3); }
+.ge-external { stroke: var(--s1); }
+.gedge.circ  { stroke-width: 2.4; }
+.mk-supply   { fill: var(--muted); }
+.mk-equity, .mk-debt { fill: var(--s2); }
+.mk-contract { fill: var(--s3); }
+.mk-external { fill: var(--s1); }
+.nd { fill: var(--ink-2); }
+.nd-capital { fill: var(--s2); }
+.nd-demand  { fill: var(--s1); }
+.gnode:hover .nd, .gnode:focus-visible .nd { fill: var(--accent); }
+
+/* --------------------------------------------- столбики в HTML */
+.chart { display: grid; gap: 7px; }
+.chartrow { display: grid; grid-template-columns: 138px minmax(0, 1fr); gap: 14px; align-items: center; }
+.chartrow .nm .sub { display: block; font-family: var(--ff-mono); font-size: 10px; color: var(--muted); }
+.chartrow .nm { font-size: 12.5px; color: var(--ink-2); }
+.track { position: relative; height: 22px; display: grid; align-content: center; gap: 2px; }
+.track.pair { height: 30px; }
+.track.pair .mark { height: 10px; }
+.mark { height: 9px; border-radius: 0 2px 2px 0; position: relative; }
+.mark.a { background: var(--s1); }
+.mark.b { background: var(--s2); }
+.mark.neg { background: var(--neg); border-radius: 2px 0 0 2px; }
+.mark span {
+  position: absolute; left: calc(100% + 7px); top: 50%; transform: translateY(-50%);
+  font-family: var(--ff-mono); font-variant-numeric: tabular-nums; font-size: 11px;
+  color: var(--ink-2); white-space: nowrap;
+}
+.axisline { position: absolute; top: -2px; bottom: -2px; width: 1px; background: var(--rule); }
+.axisline b { position: absolute; top: -14px; left: 3px; font-family: var(--ff-mono); font-size: 9.5px; font-weight: 400; color: var(--muted); white-space: nowrap; }
+.track.div { position: relative; }
+.track.div .zero { position: absolute; top: -3px; bottom: -3px; width: 1px; background: var(--rule); }
+.track.div .mark { position: absolute; top: 50%; transform: translateY(-50%); }
+.track.div .mark span { left: auto; }
+.track.div .mark.a span { left: calc(100% + 7px); }
+.track.div .mark.neg span { right: calc(100% + 7px); left: auto; }
+
+</style>
+<header class="topbar">
+  <div class="brand">
+    <b>Терминал ИИ-цикла</b>
+    <span id="asOf">срез —</span>
+  </div>
+  <div class="spacer"></div>
+  <div class="asof"><i></i>данные слоя C курируются вручную</div>
+  <button class="iconbtn" type="button" id="themeBtn">Тёмная тема</button>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Разделы терминала"></nav>
+  <main id="main"></main>
+</div>
+
+<script>
+/* Метаданные терминала и реестр первичных источников.
+   Каждая цифра в терминале ссылается на код источника S1-S30. */
+window.VG_META = {
+  title: 'Терминал ИИ-цикла',
+  asOf: '2026-09-06',              // дата среза исследования
+  builtAt: '2026-09-19',           // дата сборки терминала
+  basis: 'Глубокое исследование «ИИ как инвестиционный и финансовый цикл», 6 сентября 2026',
+  // Типы утверждений — бейдж рядом с каждой цифрой
+  kinds: {
+    fact:     { label: 'факт',      hint: 'Раскрытие компании или наблюдение статистического ведомства' },
+    estimate: { label: 'оценка',    hint: 'Расчёт международной организации или расчёт терминала' },
+    forecast: { label: 'прогноз',   hint: 'Сценарная модель; зависит от допущений' },
+    claim:    { label: 'заявление', hint: 'Сообщено руководством компании без раскрытой независимой методики' },
+    expert:   { label: 'шкала',     hint: 'Экспертная оцифровка качественной таблицы исследования' }
+  },
+  disclaimer: 'Панель проверки, а не торговая рекомендация. Финансовые годы компаний не совпадают с календарными; суммирование разных периодов не даёт точного календарного итога.',
+  sources: {
+    S1:  { org: 'BIS', title: 'Annual Economic Report 2026', date: '2026-06-28', url: 'https://www.bis.org/publications/aer-2026/progress-peril' },
+    S2:  { org: 'BIS', title: 'Quarterly Review, март 2026 — финансирование ИИ-инфраструктуры', date: '2026-03', url: 'https://www.bis.org/publications/financing-ai-infrastructure-boom-on-and-off-balance-sheet-borrowing' },
+    S3:  { org: 'BIS', title: 'Bulletin 120 — от денежного потока к долгу', date: '2026', url: 'https://www.bis.org/publications/bulletin-120-financing-ai-boom-cash-flows-debt.pdf' },
+    S4:  { org: 'IEA', title: 'Key Questions on Energy and AI', date: '2026', url: 'https://www.iea.org/reports/key-questions-on-energy-and-ai/executive-summary' },
+    S5:  { org: 'OECD', title: 'Macroeconomic productivity gains from AI in G7', date: '2025-06-30', url: 'https://www.oecd.org/en/publications/macroeconomic-productivity-gains-from-artificial-intelligence-in-g7-economies_a5319ab5-en.html' },
+    S6:  { org: 'US Census Bureau', title: 'CES WP 26-25 — внедрение ИИ по фирмам', date: '2026', url: 'https://www.census.gov/library/working-papers/2026/adrm/CES-WP-26-25.html' },
+    S7:  { org: 'NBER', title: 'Generative AI at Work', date: '2023', url: 'https://www.nber.org/papers/w31161' },
+    S8:  { org: 'Organization Science / HBS', title: 'Неровная граница возможностей ИИ', date: '2026-03-11', url: 'https://doi.org/10.1287/orsc.2025.21838' },
+    S9:  { org: 'IMF', title: 'Global Financial Stability Report, апрель 2026', date: '2026-04', url: 'https://www.imf.org/-/media/files/publications/gfsr/2026/april/english/ch1.pdf' },
+    S10: { org: 'Microsoft', title: 'FY2026 Q4', date: '2026-07-29', url: 'https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4' },
+    S11: { org: 'Alphabet', title: 'Q2 2026', date: '2026-07', url: 'https://s206.q4cdn.com/479360582/files/doc_financials/2026/q2/2026q2-alphabet-earnings-release.pdf' },
+    S12: { org: 'Nvidia', title: 'Q2 FY2027', date: '2026-08-26', url: 'https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027' },
+    S13: { org: 'Broadcom', title: 'Q3 FY2026', date: '2026-09-02', url: 'https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial' },
+    S14: { org: 'Oracle', title: 'FY2026', date: '2026-06', url: 'https://investor.oracle.com/investor-news/news-details/2026/Oracle-Announces-Record-Q4-and-FY-2026-Results-Driven-by-Cloud-Infrastructure--Cloud-Applications/default.aspx' },
+    S15: { org: 'Amazon', title: 'Q2 2026', date: '2026-07', url: 'https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/' },
+    S16: { org: 'Meta', title: 'Q2 2026', date: '2026-07', url: 'https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/default.aspx' },
+    S17: { org: 'CoreWeave', title: 'Форма 10-Q', date: '2026-08-11', url: 'https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm' },
+    S18: { org: 'TSMC', title: 'Q2 2026 и 20-F 2025', date: '2026-07', url: 'https://investor.tsmc.com/english/quarterly-results/2026/q2' },
+    S19: { org: 'ASML', title: 'Q2 2026', date: '2026-07-15', url: 'https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results' },
+    S20: { org: 'Alibaba', title: 'Результаты и размещение акций, август 2026', date: '2026-08', url: 'https://www.alibabagroup.com/en-US/document-2027233133950140416' },
+    S21: { org: 'Банк России', title: 'Применение ИИ на финансовом рынке', date: '2025-11-20', url: 'https://www.cbr.ru/Content/Document/File/185193/Consultation_Paper_20112025.pdf' },
+    S22: { org: 'Аналитический центр при Правительстве РФ', title: 'Вклад ИИ в ВВП к 2030 году', date: '2025-11-20', url: 'https://ac.gov.ru/news/page/vklad-ii-v-vvp-strany-k-2030-godu-dolzen-prevysit-11-trln-rublej-28260' },
+    S23: { org: 'Сбер', title: 'Результаты по МСФО за 2025 год', date: '2026-02', url: 'https://www.sberbank.com/investor-relations/groupresults/ifrs_february26_reporting_for_the_4th_quarter' },
+    S24: { org: 'Яндекс', title: 'Результаты за II квартал 2026 года', date: '2026-07-29', url: 'https://ir.yandex.ru/press-releases?id=29-07-2026&year=2026' },
+    S25: { org: 'BIS США (Bureau of Industry and Security)', title: 'EAR §746.8 — ограничения для России и Беларуси', date: '2026', url: 'https://www.bis.gov/regulations/ear/746' },
+    S26: { org: 'Европейская комиссия', title: 'InvestAI и гигафабрики ИИ', date: '2026', url: 'https://digital-strategy.ec.europa.eu/en/policies/build-leadership-ai' },
+    S27: { org: 'Constellation', title: 'Договор с Microsoft, Crane Clean Energy Center', date: '2024-09-20', url: 'https://www.constellationenergy.com/news/2024/Constellation-to-Launch-Crane-Clean-Energy-Center-Restoring-Jobs-and-Carbon-Free-Power-to-The-Grid.html' },
+    S28: { org: 'SK hynix', title: 'Корпоративные результаты и HBM4', date: '2026', url: 'https://news.skhynix.com' },
+    S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/' },
+    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/' }
+  },
+  limits: [
+    'Все прогнозы — энергопотребление, производительность, вклад в ВВП — отделены от наблюдаемых фактов.',
+    'Корпоративные заявления об экономическом эффекте считаются оценкой руководства, если нет раскрытой независимой методики.',
+    'Сравнение капвложений проводится только вместе с определением показателя и периодом.',
+    'Портфель обязательств и долгий договор подтверждают контракт, но не заменяют наблюдение фактической загрузки и платежа внешнего клиента.',
+    'Выводы по России ограничены фрагментарностью открытой статистики по ускорителям, загрузке кластеров и энергетической мощности именно ИИ-нагрузок.'
+  ]
+};
+
+</script>
+<script>
+/* Полная цепочка создания стоимости ИИ — 13 звеньев.
+   Поля margin / financing / payoff — экспертная оцифровка (0-100) качественной
+   таблицы исследования (стр. 7-8), помечается бейджем «шкала». */
+window.VG_LAYERS = [
+  {
+    id: 'accel', name: 'Ускорители', group: 'Кремний',
+    players: 'Nvidia, AMD, собственные процессоры облаков',
+    driver: 'Цена и объём систем; программная экосистема удерживает высокую маржу',
+    demand: 'Поставки, использование, цена за полезный результат',
+    capexBy: 'Облака, специализированные облака, государства',
+    overheat: 'Высокая концентрация и быстрая смена поколения',
+    breaks: 'Снижение загрузки, переход на более дешёвые процессоры, экспортные ограничения',
+    margin: 92, financing: 20, payoff: 25, riskType: 'scarcity'
+  },
+  {
+    id: 'hbm', name: 'Высокоскоростная память', group: 'Кремний',
+    players: 'SK hynix, Samsung, Micron',
+    driver: 'Дефицит HBM, технологический переход, долгие договоры',
+    demand: 'Биты HBM, цена, выход годных, запасы',
+    capexBy: 'Производители памяти',
+    overheat: 'Цикличность памяти, строительство под пик',
+    breaks: 'Нормализация цен, задержки упаковки, смена архитектуры',
+    margin: 78, financing: 45, payoff: 35, riskType: 'scarcity'
+  },
+  {
+    id: 'fab', name: 'Литография и фабрики', group: 'Кремний',
+    players: 'ASML, TSMC, Samsung',
+    driver: 'Узкие места EUV, передовые техпроцессы, упаковка',
+    demand: 'Заказы, пластины, загрузка, выход годных',
+    capexBy: 'Производители оборудования и фабрики; субсидии',
+    overheat: 'Региональное дублирование мощностей',
+    breaks: 'Геополитика, слабее спрос, отставание выхода годных',
+    margin: 80, financing: 40, payoff: 28, riskType: 'scarcity'
+  },
+  {
+    id: 'pack', name: 'Передовая упаковка', group: 'Кремний',
+    players: 'TSMC, OSAT-компании',
+    driver: 'CoWoS и аналоги, интеграция кристаллов',
+    demand: 'Пропускная способность упаковки, сроки поставки',
+    capexBy: 'Фабрики и подрядчики',
+    overheat: 'Узкое место может быстро смениться избыточностью',
+    breaks: 'Альтернативная упаковка, перенос нагрузки на менее плотные системы',
+    margin: 66, financing: 50, payoff: 35, riskType: 'scarcity'
+  },
+  {
+    id: 'net', name: 'Сети и межсоединения', group: 'Кремний',
+    players: 'Broadcom, Nvidia, Arista',
+    driver: 'Скорость сети, заказные процессоры, Ethernet/InfiniBand',
+    demand: 'Порты, трафик, загрузка кластера',
+    capexBy: 'Облака и ЦОД',
+    overheat: 'Спрос сконцентрирован в нескольких клиентах',
+    breaks: 'Снижение размера обучения, лучшая локальность вычислений',
+    margin: 74, financing: 25, payoff: 30, riskType: 'scarcity'
+  },
+  {
+    id: 'server', name: 'Серверы и стойки', group: 'Железо',
+    players: 'Supermicro, Dell, ODM',
+    driver: 'Сборка, интеграция, охлаждение; ниже маржа',
+    demand: 'Отгрузки стоек, средняя мощность, ввод в работу',
+    capexBy: 'Облака, операторы ЦОД',
+    overheat: 'Заказ вперёд и низкая дифференциация',
+    breaks: 'Задержка процессоров, электроэнергии или помещений',
+    margin: 28, financing: 55, payoff: 40, riskType: 'financing'
+  },
+  {
+    id: 'dc', name: 'Центры обработки данных', group: 'Физика',
+    players: 'Equinix, Digital Realty, CoreWeave, региональные операторы',
+    driver: 'Аренда мощности, облачный тариф, долгий контракт',
+    demand: 'МВт введено и подключено, фактическая загрузка, цена за МВт·ч',
+    capexBy: 'Баланс, долг, проектные структуры, аренда',
+    overheat: 'Высокий при дорогой земле и долге',
+    breaks: 'Отмена подключения, рост ставки, перенос региона, недозагрузка',
+    margin: 40, financing: 88, payoff: 60, riskType: 'financing'
+  },
+  {
+    id: 'grid', name: 'Электросеть и генерация', group: 'Физика',
+    players: 'Сетевые компании, Constellation, газовые и атомные проекты',
+    driver: 'Регулируемая доходность, договор купли мощности/энергии',
+    demand: 'Реально подключённые МВт, очередь, срок трансформатора',
+    capexBy: 'Технологическая компания, коммунальная компания, тарифоплательщик, государство',
+    overheat: 'Долгий срок актива и общественный конфликт',
+    breaks: 'Регуляторный отказ, задержка турбин и трансформаторов, слабее нагрузка',
+    margin: 45, financing: 72, payoff: 55, riskType: 'financing'
+  },
+  {
+    id: 'cool', name: 'Охлаждение и вода', group: 'Физика',
+    players: 'Vertiv, Schneider Electric, местные коммунальные службы',
+    driver: 'Плотность стойки, теплоотвод, сервис',
+    demand: 'PUE, WUE, температура, отказоустойчивость',
+    capexBy: 'ЦОД',
+    overheat: 'Локальный дефицит воды и оборудования',
+    breaks: 'Ограничения воды, новая технология охлаждения, общественное сопротивление',
+    margin: 42, financing: 45, payoff: 40, riskType: 'financing'
+  },
+  {
+    id: 'cloud', name: 'Облако', group: 'Платформа',
+    players: 'Microsoft, Amazon, Google, Alibaba, Яндекс',
+    driver: 'Потребление, резерв мощности, платформенные сервисы',
+    demand: 'Внешняя облачная выручка, загрузка, цена за токен или задачу',
+    capexBy: 'Денежный поток, облигации, аренда, акции',
+    overheat: 'Сжатие свободного потока и ценовая война',
+    breaks: 'Клиент строит сам, модели дешевеют быстрее спроса',
+    margin: 60, financing: 65, payoff: 50, riskType: 'financing'
+  },
+  {
+    id: 'models', name: 'Модели и платформы', group: 'Платформа',
+    players: 'OpenAI, Anthropic, Google, Meta, Alibaba, Яндекс, Сбер',
+    driver: 'Подписка, интерфейс, API, лицензия',
+    demand: 'Платные пользователи, токены, удержание, валовая маржа',
+    capexBy: 'Венчурный капитал, стратегические инвесторы, облачные кредиты',
+    overheat: 'Высокие расходы на обучение и зависимость от облака',
+    breaks: 'Открытые модели, коммодитизация, регулирование, падение качества',
+    margin: 35, financing: 80, payoff: 75, riskType: 'unproven'
+  },
+  {
+    id: 'apps', name: 'Корпоративные программы и агенты', group: 'Спрос',
+    players: 'Microsoft, Salesforce, ServiceNow, SAP, локальные поставщики',
+    driver: 'Место плюс потребление, интеграция и данные',
+    demand: 'Продление, активность, число рабочих процессов, экономия на единицу',
+    capexBy: 'Операционные бюджеты клиента и поставщика',
+    overheat: 'Продажа мест без устойчивого использования',
+    breaks: 'Слабая интеграция, безопасность, неверные ответы, сопротивление процессов',
+    margin: 55, financing: 35, payoff: 80, riskType: 'unproven'
+  },
+  {
+    id: 'end', name: 'Конечные применения', group: 'Спрос',
+    players: 'Банки, промышленность, торговля, логистика, государство',
+    driver: 'Рост выпуска, маржи, скорости и качества',
+    demand: 'Прибыль, стоимость операции, цикл, ошибки, потери, выручка',
+    capexBy: 'Клиент',
+    overheat: 'Наиболее высокая неопределённость отдачи',
+    breaks: 'Нет владельца процесса, данные плохи, экономия времени не монетизируется',
+    margin: 30, financing: 30, payoff: 95, riskType: 'unproven'
+  }
+];
+
+window.VG_RISK_TYPES = {
+  scarcity:  { label: 'Редкость',    hint: 'Технологическая редкость и ограниченное число поставщиков — здесь сегодня самая высокая маржа' },
+  financing: { label: 'Финансирование', hint: 'Короткий технологический цикл соединён с долгим долгом или арендой' },
+  unproven:  { label: 'Недоказанная отдача', hint: 'Техническая работоспособность не гарантирует изменение процесса и прибыли' }
+};
+
+</script>
+<script>
+/* Капитал против денежного потока. Все суммы — млрд долларов, если не указано иное.
+   period — период раскрытия; сопоставление разных финансовых лет некорректно,
+   поэтому период выводится рядом с каждой строкой. */
+window.VG_COMPANIES = [
+  {
+    id: 'msft', name: 'Microsoft', role: 'Облако и программы', country: 'США',
+    period: 'IV кв. 2026 ф.г.', src: 'S10', kind: 'fact',
+    capex: 41.0, ocf: 55.4, fcf: 19.6,
+    capexNote: 'Включая финансовую аренду; около 2/3 — процессоры и серверы',
+    proof: 'Azure свыше $100 млрд в год; более 30 млн платных мест Copilot; более 100 тыс. клиентов Foundry',
+    risk: 'Две трети капвложений — короткоживущие активы; зависимость от внешних моделей и спроса',
+    breaks: 'Облачный рост замедляется, а капвложения и амортизация остаются высокими',
+    limit: 'Финансовый год; капвложения включают аренду'
+  },
+  {
+    id: 'googl', name: 'Alphabet', role: 'Облако и модели', country: 'США',
+    period: 'II кв. 2026', src: 'S11', kind: 'fact',
+    capex: 44.9, ocf: 39.1, fcf: -5.9,
+    proof: 'Google Cloud $24,8 млрд выручки, операционная прибыль $8,8 млрд',
+    risk: 'Квартальный свободный поток отрицателен; переоценка долей в чужом капитале влияет на прибыль',
+    breaks: 'Рост облака замедляется при сохранении капвложений',
+    limit: 'Квартальный свободный поток искажён сроками платежей; ИИ не отделён от облака'
+  },
+  {
+    id: 'amzn', name: 'Amazon', role: 'Облако', country: 'США',
+    period: '12 мес. к II кв. 2026', src: 'S15', kind: 'fact',
+    capex: 66.1, ocf: 161.4, fcf: -7.6,
+    capexNote: 'Прирост покупок имущества и оборудования; основной драйвер — ИИ',
+    proof: 'AWS $42,2 млрд за квартал, операционная прибыль $16,6 млрд',
+    risk: 'Свободный поток отрицателен на горизонте года при сильном операционном потоке',
+    breaks: 'Снижение маржи AWS при продолжении стройки',
+    limit: 'Вложения включают сеть исполнения заказов и иные активы, не только ИИ'
+  },
+  {
+    id: 'meta', name: 'Meta', role: 'Модели и реклама', country: 'США',
+    period: 'II кв. 2026', src: 'S16', kind: 'fact',
+    capex: 31.1, ocf: 31.9, fcf: 0.8,
+    guide: 'Прогноз капвложений 2026: $130-145 млрд',
+    proof: 'Реклама: показы +14%, цена +12%; ИИ встроен в продукт, отдельной выручки нет',
+    risk: 'Нет отдельной ИИ-выручки — отдача не отделяется от рекламного аукциона',
+    breaks: 'Рост расходов при стабильной цене рекламы',
+    limit: 'Эффект ИИ смешан с рекламным аукционом и продуктом'
+  },
+  {
+    id: 'orcl', name: 'Oracle', role: 'Облако', country: 'США',
+    period: '2026 ф.г.', src: 'S14', kind: 'fact',
+    capex: 55.6, ocf: 32.0, fcf: -23.7, rpo: 638,
+    proof: 'IaaS $18,1 млрд, +77%; портфель обязательств $638 млрд',
+    risk: 'Капвложения намного выше операционного потока; портфель сильно концентрирован',
+    breaks: 'Клиент из портфеля обязательств сокращает или переносит заказ',
+    limit: 'Годовой период; портфель обязательств сильно концентрирован'
+  },
+  {
+    id: 'crwv', name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
+    period: 'I полугодие / II кв. 2026', src: 'S17', kind: 'fact',
+    capex: 14.1, ocf: 3.6, ocfKind: 'estimate', fcf: -10.5, fcfKind: 'estimate',
+    revenue: 2.6, rpo: 103.7, top3: 72,
+    capexNote: 'Денежные капвложения за полугодие; операционный поток выведен из соотношения «почти в четыре раза» и помечен как оценка',
+    proof: 'Выручка $2,6 млрд за квартал; портфель обязательств $103,7 млрд',
+    risk: '72% квартальной выручки от трёх клиентов; все установленные процессоры — Nvidia; постоянная потребность в рефинансировании',
+    breaks: 'Перенос ввода, отказ клиента, подорожание рефинансирования',
+    limit: 'Портфель обязательств подтверждает контракт, но не наблюдаемую загрузку'
+  },
+  {
+    id: 'nvda', name: 'Nvidia', role: 'Ускорители', country: 'США',
+    period: 'II кв. 2027 ф.г.', src: 'S12', kind: 'fact',
+    revenue: 96.2, dcRevenue: 89.0, grossMargin: 75,
+    proof: '$89,0 млрд выручки центра обработки данных при валовой марже 75%',
+    risk: 'Концентрация клиентов, экспортный контроль, переход клиентов на заказные процессоры, круговые связи',
+    breaks: 'Рост запасов и дебиторской задолженности при снижении загрузки облаков',
+    limit: 'Капитальный риск несут клиенты, а не поставщик'
+  },
+  {
+    id: 'avgo', name: 'Broadcom', role: 'Сети и заказные процессоры', country: 'США',
+    period: 'III кв. 2026 ф.г.', src: 'S13', kind: 'fact',
+    capex: 0.5, fcf: 13.7, aiRevenue: 16.7,
+    proof: '$16,7 млрд выручки ИИ-полупроводников (+221%) при капвложениях $0,5 млрд',
+    risk: 'Несколько крупных заказчиков, технологическая смена',
+    breaks: 'Замедление заказных процессоров или сетевых портов',
+    limit: 'Фаблесс-модель: капитал несут фабрики и клиенты'
+  },
+  {
+    id: 'tsmc', name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
+    period: 'II кв. 2026', src: 'S18', kind: 'fact',
+    revenue: 40.2, grossMargin: 67.7, capexPlan: '52-56 (план 2026)',
+    proof: '$40,2 млрд выручки, валовая маржа 67,7%; ИИ-ускорители дали высокую долю выручки 2025',
+    risk: 'Геополитика Тайваня, выход годных зарубежных фабрик, упаковка',
+    breaks: 'Снижение загрузки передовых узлов и перенос капвложений',
+    limit: 'Субсидии по регионам меняют экономику отдельных фабрик'
+  },
+  {
+    id: 'asml', name: 'ASML', role: 'Литография', country: 'Нидерланды',
+    period: 'II кв. 2026', src: 'S19', kind: 'fact',
+    revenueEur: 9.3, grossMargin: 54, guide: 'Прогноз 2026 повышен до €43-45 млрд',
+    proof: '€9,3 млрд выручки при марже 54%',
+    risk: 'Экспортные ограничения и зависимость от планов нескольких фабрик',
+    breaks: 'Заказы фабрик падают после расширения мощности',
+    limit: 'Показатели в евро; прямое сравнение с долларовыми строками некорректно'
+  },
+  {
+    id: 'skhynix', name: 'SK hynix', role: 'HBM и память', country: 'Южная Корея',
+    period: '2026', src: 'S28', kind: 'claim',
+    proof: 'HBM4 пошла в поставки; спрос 2026 года в значительной части законтрактован',
+    risk: 'Классический цикл памяти и риск расширения мощностей под пик',
+    breaks: 'Падение цены HBM, отмена договоров, рост запасов',
+    limit: 'Публичный ряд по ценам и запасам HBM ограничен'
+  },
+  {
+    id: 'baba', name: 'Alibaba', role: 'Облако и модели', country: 'Китай',
+    period: 'II кв. 2026 / август 2026', src: 'S20', kind: 'fact',
+    capex: 10.0, capexKind: 'estimate', cloudRevenue: 7.1, aiRevenue: 1.8,
+    capexNote: 'Около $10 млрд квартальных капвложений; размещение акций на HK$80 млрд, около 60% средств — на вычислительную инфраструктуру',
+    proof: '$7,1 млрд квартальной выручки облака и вычислений, из них $1,8 млрд ИИ-продуктов; маржа облака растёт',
+    risk: 'Разводнение капитала, экспортные ограничения, вертикальная круговая зависимость',
+    breaks: 'ИИ-выручка замедляется при сохранении почти $10 млрд квартальных капвложений',
+    limit: 'Государственная промышленная политика меняет стоимость капитала'
+  },
+  {
+    id: 'yndx', name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
+    period: 'II кв. 2026', src: 'S24', kind: 'fact', currency: 'RUB',
+    rubRevenue: 15.3, rubEbitda: 3.7, tokens: 398,
+    proof: 'B2B Tech 15,3 млрд руб. выручки, EBITDA 3,7 млрд руб.; 398 млрд коммерческих токенов, потребление удвоилось к предыдущему кварталу',
+    risk: 'ИИ смешан с рекламой и облаком; импортная вычислительная база',
+    breaks: 'Рост токенов не превращается во внешнюю выручку и маржу',
+    limit: 'Капвложения 10-12% выручки; отдельной ИИ-строки нет'
+  },
+  {
+    id: 'sber', name: 'Сбер', role: 'Банк и платформа', country: 'Россия',
+    period: '2025', src: 'S23', kind: 'claim', currency: 'RUB',
+    rubEffect: 450, rubGenAiEffect: 50,
+    proof: 'Заявленный эффект ИИ свыше 450 млрд руб., из них около 50 млрд — генеративный ИИ',
+    risk: 'Методика эффекта корпоративная; возможен двойной учёт и перенос обычной цифровизации',
+    breaks: 'Независимая проверка не подтверждает эффект или затраты растут быстрее',
+    limit: 'Заявление руководства без раскрытой независимой методики'
+  }
+];
+
+/* Пять условий теста «производительность или ожидание капитализации» (стр. 10-11).
+   state: 'yes' | 'no' | 'unknown' — по каждой компании. */
+window.VG_TEST5 = {
+  questions: [
+    'Есть внешний денежный поток или измеримая экономия, а не только внутреннее потребление',
+    'Валовая прибыль после энергии, амортизации, интеграции и проверки положительна',
+    'Загрузка мощности и удержание клиента наблюдаемы, а не заменены портфелем договоров',
+    'Финансирование выдерживает стресс цены капитала без постоянной переоценки акций',
+    'Клиентская ценность сохраняется при переходе на более дешёвую модель или новое поколение оборудования'
+  ],
+  answers: {
+    nvda:    ['yes', 'yes', 'unknown', 'yes', 'unknown'],
+    avgo:    ['yes', 'yes', 'unknown', 'yes', 'unknown'],
+    tsmc:    ['yes', 'yes', 'yes', 'yes', 'unknown'],
+    asml:    ['yes', 'yes', 'yes', 'yes', 'yes'],
+    msft:    ['yes', 'unknown', 'unknown', 'yes', 'unknown'],
+    googl:   ['yes', 'unknown', 'unknown', 'yes', 'unknown'],
+    amzn:    ['yes', 'unknown', 'unknown', 'yes', 'unknown'],
+    meta:    ['unknown', 'unknown', 'no', 'yes', 'unknown'],
+    orcl:    ['yes', 'unknown', 'no', 'no', 'unknown'],
+    crwv:    ['yes', 'unknown', 'no', 'no', 'no'],
+    baba:    ['yes', 'unknown', 'unknown', 'unknown', 'unknown'],
+    yndx:    ['yes', 'unknown', 'unknown', 'yes', 'unknown'],
+    sber:    ['unknown', 'unknown', 'unknown', 'yes', 'unknown'],
+    skhynix: ['yes', 'yes', 'unknown', 'yes', 'no']
+  },
+  verdict: {
+    prod: 'Доказанная инвестиция в производительность',
+    mixed: 'Смешанный случай: часть условий не наблюдаема',
+    bet: 'Ближе к ставке на будущую капитализацию',
+    opaque: 'Ни одно условие не нарушено, но часть из них публично не наблюдаема'
+  }
+};
+
+</script>
+<script>
+/* Граф связей: капитал, поставки, контракты.
+   ВАЖНО: стрелка показывает направление ДЕНЕГ. Встречный поток (оборудование,
+   вычисления, энергия) описан в поле back.
+   inReport: 'yes'       — связь прямо описана в исследовании, есть код источника
+             'mechanism' — механизм описан в исследовании (тезис 8), но компании не названы
+             'no'        — общеизвестное корпоративное раскрытие вне исследования */
+window.VG_NODES = [
+  { id: 'asml', name: 'ASML', layer: 'fab', country: 'Нидерланды', note: 'Литография EUV; редкий поставщик' },
+  { id: 'tsmc', name: 'TSMC', layer: 'fab', country: 'Тайвань', note: 'Передовые техпроцессы и упаковка CoWoS' },
+  { id: 'skhynix', name: 'SK hynix', layer: 'memory', country: 'Южная Корея', note: 'HBM4; спрос 2026 во многом законтрактован' },
+  { id: 'nvda', name: 'Nvidia', layer: 'chip', country: 'США', note: 'Ускорители и программная платформа' },
+  { id: 'avgo', name: 'Broadcom', layer: 'chip', country: 'США', note: 'Сети и заказные процессоры; фаблесс' },
+  { id: 'smci', name: 'Сборщики', full: 'Сборщики серверов', layer: 'chip', country: 'США / Азия', note: 'Supermicro, Dell, ODM — низкая маржа' },
+  { id: 'vertiv', name: 'Охлаждение', layer: 'dc', country: 'США / ЕС', note: 'Vertiv, Schneider Electric' },
+  { id: 'msft', name: 'Microsoft', layer: 'cloud', country: 'США', note: 'Azure свыше $100 млрд в год' },
+  { id: 'googl', name: 'Alphabet', layer: 'cloud', country: 'США', note: 'Google Cloud $24,8 млрд за квартал' },
+  { id: 'amzn', name: 'Amazon', layer: 'cloud', country: 'США', note: 'AWS $42,2 млрд за квартал' },
+  { id: 'meta', name: 'Meta', layer: 'cloud', country: 'США', note: 'Капвложения без отдельной ИИ-выручки' },
+  { id: 'orcl', name: 'Oracle', layer: 'cloud', country: 'США', note: 'Портфель обязательств $638 млрд' },
+  { id: 'baba', name: 'Alibaba', layer: 'cloud', country: 'Китай', note: 'Облако $7,1 млрд за квартал' },
+  { id: 'crwv', name: 'CoreWeave', layer: 'speccloud', country: 'США', note: 'RPO $103,7 млрд; 72% выручки от трёх клиентов' },
+  { id: 'equinix', name: 'Операторы ЦОД', full: 'Операторы ЦОД', layer: 'dc', country: 'Мир', note: 'Equinix, Digital Realty, региональные операторы' },
+  { id: 'yndx', name: 'Яндекс', layer: 'cloud', country: 'Россия', note: 'B2B Tech 15,3 млрд руб. за квартал' },
+  { id: 'sber', name: 'Сбер', layer: 'cloud', country: 'Россия', note: 'Заявленный эффект ИИ свыше 450 млрд руб.' },
+  { id: 'openai', name: 'OpenAI', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты' },
+  { id: 'anthropic', name: 'Anthropic', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты' },
+  { id: 'constellation', name: 'Constellation', layer: 'energy', country: 'США', note: 'Перезапуск Crane Clean Energy Center, 835 МВт' },
+  { id: 'grid', name: 'Сеть', full: 'Сеть и генерация', layer: 'energy', country: 'Мир', note: 'Очередь на подключение — реальный ограничитель ввода' },
+  { id: 'bonds', name: 'Облигации', full: 'Облигационный рынок', layer: 'capital', country: 'Мир', note: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025' },
+  { id: 'privcredit', name: 'Частный кредит', full: 'Частный кредит и SPV', layer: 'capital', country: 'Мир', note: 'Проектные структуры, залог серверов и договоров' },
+  { id: 'vc', name: 'Венчур', full: 'Венчурный капитал', layer: 'capital', country: 'Мир', note: 'Финансирует разработчиков моделей и приложений' },
+  { id: 'equity', name: 'Рынок акций', layer: 'capital', country: 'Мир', note: 'Размещения акций финансируют вычисления' },
+  { id: 'states', name: 'Государства', full: 'Государства: субсидии и промполитика', layer: 'capital', country: 'США, ЕС, КНР, Япония, Корея', note: 'Снижают стоимость капитала, создают риск дублирования' },
+  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'План мобилизации €200 млрд; до семи гигафабрик ИИ' },
+  { id: 'sovereign', name: 'Суверенные фонды', layer: 'capital', country: 'Ближний Восток', note: 'Дешёвая энергия и капитал' },
+  { id: 'crwv3', name: 'Клиенты CoreWeave', full: 'Три крупнейших клиента CoreWeave', layer: 'demand', country: 'США', note: '72% квартальной выручки; в отчётности не раскрыты поимённо' },
+  { id: 'enterprises', name: 'Конечные клиенты', layer: 'demand', country: 'Мир', note: 'Единственный источник внешнего денежного потока всей цепочки' }
+];
+
+window.VG_EDGES = [
+  // --- Оплата поставок (деньги идут покупатель → поставщик) ---
+  { from: 'tsmc', to: 'asml', type: 'supply', back: 'литография EUV', label: 'Оплата оборудования', src: 'S19', inReport: 'yes' },
+  { from: 'nvda', to: 'tsmc', type: 'supply', back: 'кристаллы и упаковка CoWoS', label: 'Оплата фабрики', src: 'S18', inReport: 'yes' },
+  { from: 'avgo', to: 'tsmc', type: 'supply', back: 'кристаллы заказных процессоров', label: 'Оплата фабрики', src: 'S13', inReport: 'yes' },
+  { from: 'nvda', to: 'skhynix', type: 'supply', back: 'память HBM4', src: 'S28', label: 'Оплата HBM', inReport: 'yes' },
+  { from: 'msft', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Закупка ускорителей', src: 'S12', inReport: 'yes' },
+  { from: 'googl', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Закупка ускорителей', src: 'S12', inReport: 'yes' },
+  { from: 'amzn', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Закупка ускорителей', src: 'S12', inReport: 'yes' },
+  { from: 'meta', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Закупка ускорителей', src: 'S12', inReport: 'yes' },
+  { from: 'orcl', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Закупка ускорителей', src: 'S12', inReport: 'yes' },
+  { from: 'baba', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Закупка ускорителей', src: 'S20', inReport: 'yes' },
+  { from: 'crwv', to: 'nvda', type: 'supply', back: 'ускорители', label: 'Все установленные процессоры — Nvidia', weight: 3, src: 'S17', inReport: 'yes' },
+  { from: 'googl', to: 'avgo', type: 'supply', back: 'заказные процессоры и сети', label: 'Заказные процессоры', src: 'S13', inReport: 'no' },
+  { from: 'meta', to: 'avgo', type: 'supply', back: 'заказные процессоры и сети', label: 'Заказные процессоры', src: 'S13', inReport: 'no' },
+  { from: 'msft', to: 'smci', type: 'supply', back: 'серверы и стойки', label: 'Закупка серверов', inReport: 'mechanism' },
+  { from: 'crwv', to: 'smci', type: 'supply', back: 'серверы и стойки', label: 'Закупка серверов', inReport: 'mechanism' },
+  { from: 'equinix', to: 'vertiv', type: 'supply', back: 'охлаждение и энергооборудование', label: 'Закупка систем охлаждения', inReport: 'mechanism' },
+  { from: 'equinix', to: 'grid', type: 'supply', back: 'подключение и энергия', label: 'Плата за мощность', src: 'S4', inReport: 'yes' },
+  { from: 'crwv', to: 'equinix', type: 'supply', back: 'машинные залы и МВт', label: 'Аренда мощности', inReport: 'mechanism' },
+
+  // --- Доли в капитале (инвестор → объект) ---
+  { from: 'nvda', to: 'crwv', type: 'equity', amount: '$2 млрд', label: 'Стратегическая инвестиция, январь 2026', weight: 3, src: 'S17', inReport: 'yes', circular: true },
+  { from: 'vc', to: 'openai', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
+  { from: 'vc', to: 'anthropic', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
+  { from: 'msft', to: 'openai', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
+  { from: 'amzn', to: 'anthropic', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
+  { from: 'googl', to: 'anthropic', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
+  { from: 'equity', to: 'baba', type: 'equity', amount: 'HK$80 млрд', label: 'Размещение акций, около 60% средств — на вычисления', src: 'S20', inReport: 'yes' },
+  { from: 'states', to: 'tsmc', type: 'equity', label: 'Субсидии фабрикам по регионам', src: 'S18', inReport: 'yes' },
+  { from: 'eu', to: 'equinix', type: 'equity', amount: '>€30 млрд', label: 'До семи гигафабрик ИИ в рамках InvestAI', src: 'S26', inReport: 'yes' },
+  { from: 'sovereign', to: 'equinix', type: 'equity', label: 'Инфраструктурный капитал', src: 'S3', inReport: 'mechanism' },
+
+  // --- Долг, аренда, проектные структуры ---
+  { from: 'bonds', to: 'msft', type: 'debt', label: 'Облигации и финансовая аренда', src: 'S2', inReport: 'yes' },
+  { from: 'bonds', to: 'googl', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
+  { from: 'bonds', to: 'amzn', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
+  { from: 'bonds', to: 'meta', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
+  { from: 'bonds', to: 'orcl', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
+  { from: 'privcredit', to: 'crwv', type: 'debt', label: 'Долг под залог договоров и оборудования', weight: 2, src: 'S17', inReport: 'yes' },
+  { from: 'privcredit', to: 'equinix', type: 'debt', label: 'Проектное финансирование и SPV', src: 'S2', inReport: 'yes' },
+  { from: 'privcredit', to: 'grid', type: 'debt', label: 'Проектный долг энергообъектов', src: 'S3', inReport: 'mechanism' },
+
+  // --- Долгосрочные договоры и гарантии закупки ---
+  { from: 'msft', to: 'constellation', type: 'contract', amount: '835 МВт', label: 'Двадцатилетний договор купли электроэнергии', weight: 3, src: 'S27', inReport: 'yes' },
+  { from: 'openai', to: 'msft', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', weight: 2, inReport: 'mechanism', circular: true },
+  { from: 'anthropic', to: 'amzn', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
+  { from: 'anthropic', to: 'googl', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
+  { from: 'crwv3', to: 'crwv', type: 'contract', amount: '72% выручки', label: 'Концентрация клиентов', weight: 3, src: 'S17', inReport: 'yes' },
+  { from: 'enterprises', to: 'orcl', type: 'contract', amount: 'RPO $638 млрд', label: 'Портфель обязательств', weight: 2, src: 'S14', inReport: 'yes' },
+
+  // --- Внешний денежный поток: единственная проверка всей цепочки ---
+  { from: 'enterprises', to: 'msft', type: 'external', label: 'Подписки и потребление', src: 'S10', inReport: 'yes' },
+  { from: 'enterprises', to: 'googl', type: 'external', label: 'Облачная выручка', src: 'S11', inReport: 'yes' },
+  { from: 'enterprises', to: 'amzn', type: 'external', label: 'Облачная выручка', src: 'S15', inReport: 'yes' },
+  { from: 'enterprises', to: 'baba', type: 'external', label: 'Облачная выручка', src: 'S20', inReport: 'yes' },
+  { from: 'enterprises', to: 'yndx', type: 'external', label: 'B2B-выручка и токены', src: 'S24', inReport: 'yes' },
+  { from: 'enterprises', to: 'sber', type: 'external', label: 'Банковские и платформенные сервисы', src: 'S23', inReport: 'yes' }
+];
+
+window.VG_EDGE_TYPES = {
+  supply:   { label: 'Оплата поставки', hint: 'Деньги за оборудование, мощность или энергию' },
+  equity:   { label: 'Доля в капитале', hint: 'Инвестиция в капитал получателя' },
+  debt:     { label: 'Долг, аренда, SPV', hint: 'Заёмное и проектное финансирование' },
+  contract: { label: 'Долгосрочный договор', hint: 'Гарантия закупки, PPA, портфель обязательств' },
+  external: { label: 'Внешний клиент', hint: 'Платёж конечного клиента — единственный поток, приходящий в цепочку извне' }
+};
+
+window.VG_LAYER_LABELS = {
+  fab: 'Фабрики и литография', memory: 'Память', chip: 'Кремний и железо',
+  cloud: 'Облако', speccloud: 'Специализированное облако', model: 'Модели',
+  dc: 'ЦОД и охлаждение', energy: 'Энергетика', capital: 'Капитал', demand: 'Спрос'
+};
+
+</script>
+<script>
+/* Панель из 28 показателей (стр. 24-25 исследования).
+   state: 'ok' | 'watch' | 'stress' | 'nodata'
+   'nodata' — показатель необходим, но публичного ряда нет. Это не ноль, а пробел. */
+window.VG_GROUPS = [
+  { id: 'capital', name: 'Капитал', weight: 1.2 },
+  { id: 'semi',    name: 'Полупроводники', weight: 1.0 },
+  { id: 'cloud',   name: 'Облако', weight: 1.1 },
+  { id: 'soft',    name: 'Программы и внедрение', weight: 1.0 },
+  { id: 'energy',  name: 'Энергия', weight: 1.0 },
+  { id: 'russia',  name: 'Россия', weight: 0.8 }
+];
+
+window.VG_INDICATORS = [
+  // Капитал
+  { g: 'capital', name: 'Совокупные капвложения Microsoft, Alphabet, Amazon, Meta, Oracle', why: 'Темп инвестиционного цикла', stress: 'Снижение прогноза двумя и более компаниями', state: 'ok', obs: 'Прогнозов снижения нет; Meta ориентирует на $130-145 млрд в 2026', src: 'S16' },
+  { g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 174%, Alphabet 115%, Meta 97%, Microsoft 74%, Amazon 41%', src: 'S10' },
+  { g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах', src: 'S11' },
+  { g: 'capital', name: 'Валовой выпуск облигаций и средняя срочность', why: 'Переход от потока к долгу', stress: 'Рост выпуска вместе с расширением спрэда', state: 'watch', obs: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025', src: 'S2' },
+  { g: 'capital', name: 'Объём частного кредита и проектного финансирования ЦОД', why: 'Скрытый канал риска', stress: 'Рост быстрее выручки и мощности в эксплуатации', state: 'nodata', obs: 'Единого публичного ряда нет; BIS фиксирует рост качественно', src: 'S2' },
+  { g: 'capital', name: 'Финансовая аренда и долгие гарантии закупки', why: 'Теневой долг', stress: 'Обязательства растут быстрее введённой мощности', state: 'watch', obs: 'Капвложения Microsoft включают аренду; RPO Oracle $638 млрд', src: 'S14' },
+  // Полупроводники
+  { g: 'semi', name: 'Выручка центров обработки данных Nvidia', why: 'Конечный спрос на ускорители', stress: 'Замедление при росте запасов', state: 'ok', obs: '$89,0 млрд во II кв. 2027 ф.г.', src: 'S12' },
+  { g: 'semi', name: 'Валовая маржа Nvidia', why: 'Дефицитная рента', stress: 'Резкое снижение без удешевления для клиента', state: 'ok', obs: '75%', src: 'S12' },
+  { g: 'semi', name: 'Выручка ИИ-полупроводников Broadcom', why: 'Спрос на сети и заказные процессоры', stress: 'Замедление у нескольких заказчиков', state: 'ok', obs: '$16,7 млрд, +221% год к году', src: 'S13' },
+  { g: 'semi', name: 'Цена и объём HBM, запасы производителей', why: 'Узкое место памяти', stress: 'Рост запасов и падение цены одновременно', state: 'watch', obs: 'HBM4 в поставках, спрос 2026 во многом законтрактован; публичного ряда цен нет', src: 'S28' },
+  { g: 'semi', name: 'Заказы и продажи EUV ASML', why: 'Планы фабрик', stress: 'Снижение заказов два квартала', state: 'ok', obs: 'Прогноз 2026 повышен до €43-45 млрд', src: 'S19' },
+  { g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'ok', obs: 'Валовая маржа 67,7% во II кв. 2026', src: 'S18' },
+  // Облако
+  { g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год; OCI IaaS +77%', src: 'S14' },
+  { g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'AWS 39%, Google Cloud 36% операционной маржи сегмента', src: 'S15' },
+  { g: 'cloud', name: 'Цена вычисления или токена и пропускная способность', why: 'Эффективность и конкуренция', stress: 'Цена падает быстрее себестоимости', state: 'nodata', obs: 'Сопоставимого публичного ряда нет', src: 'S4' },
+  { g: 'cloud', name: 'Фактическая загрузка GPU и МВт', why: 'Ключ к окупаемости', stress: 'Снижение при росте введённой мощности', state: 'nodata', obs: 'Не раскрывается ни одним крупным оператором. Главный пробел всей панели', src: 'S17' },
+  // Программы и внедрение
+  { g: 'soft', name: 'Платные места Copilot и аналогов', why: 'Ширина рынка', stress: 'Места растут, активность и продление падают', state: 'ok', obs: 'Более 30 млн платных мест', src: 'S10' },
+  { g: 'soft', name: 'Потребление токенов внешними клиентами', why: 'Глубина использования', stress: 'Внутреннее потребление доминирует', state: 'watch', obs: '398 млрд коммерческих токенов у Яндекса; внешнее и внутреннее потребление разделяется редко', src: 'S24' },
+  { g: 'soft', name: 'Доля компаний, использующих ИИ', why: 'Диффузия', stress: 'Рост доли останавливается', state: 'watch', obs: '18% компаний США, 32% с учётом веса занятости', src: 'S6' },
+  { g: 'soft', name: 'Число функций и задач на компанию', why: 'Глубина внедрения', stress: 'Большинство остаётся на 1-3 функциях', state: 'stress', obs: '57% пользователей — не более трёх функций; 66% применяют ИИ только как дополнение к людям', src: 'S6' },
+  { g: 'soft', name: 'Выпуск на работника и время цикла в подверженных отраслях', why: 'Переход эффекта к фирме', stress: 'Время экономится, выпуск не растёт', state: 'nodata', obs: 'Сопоставимых публичных рядов почти нет', src: 'S5' },
+  { g: 'soft', name: 'Занятость и зарплаты по возрасту в подверженных профессиях', why: 'Распределение эффекта', stress: 'Падение найма молодых без роста выпуска', state: 'watch', obs: 'Наблюдается снижение найма молодых в подверженных профессиях', src: 'S6' },
+  // Энергия
+  { g: 'energy', name: 'ТВт·ч ЦОД и подключённые ГВт', why: 'Физический спрос', stress: 'Заявки растут, ввод и загрузка нет', state: 'watch', obs: '485 ТВт·ч в 2025, прогноз около 950 к 2030; спрос ИИ-ЦОД вырос примерно на 50% за 2025', src: 'S4' },
+  { g: 'energy', name: 'Срок подключения и поставки трансформаторов', why: 'Ограничение предложения', stress: 'Дальнейшее удлинение при отменах заказов', state: 'stress', obs: 'Производственный цикл трансформаторов, турбин и выключателей измеряется годами; очередь на подключение — реальный ограничитель ввода', src: 'S4' },
+  { g: 'energy', name: 'PUE, WUE и стоимость электроэнергии', why: 'Эксплуатационная экономика', stress: 'Ухудшение эффективности или социальные ограничения', state: 'nodata', obs: 'Раскрывается выборочно и несопоставимо', src: 'S4' },
+  // Россия
+  { g: 'russia', name: 'Постоянное внедрение, пилоты, планы', why: 'Переход к масштабу', stress: 'Пилоты не становятся постоянным использованием', state: 'watch', obs: '21% применяют постоянно, 15% тестируют, 29% планируют, 35% не планируют', src: 'S21' },
+  { g: 'russia', name: 'Цена стойки, введённые стойки, ИТ-мощность', why: 'Доступность инфраструктуры', stress: 'Цена растёт, ввод переносится, плотность не увеличивается', state: 'stress', obs: 'В 2024 введено 10,9 тыс. стойко-мест вместо ожидаемых 12 тыс.; значительная часть запусков 2025 перенесена на 2026-2027', src: 'S30' },
+  { g: 'russia', name: 'Внешняя выручка ИИ и облака, эффект с раскрытой методикой', why: 'Реальная монетизация', stress: 'Рост внутренних трансфертов без внешнего дохода', state: 'watch', obs: 'Эффект Сбера свыше 450 млрд руб. заявлен без раскрытой независимой методики', src: 'S23' }
+];
+
+/* Лестница доказательств производительности (стр. 10) */
+window.VG_LADDER = [
+  { level: 'Сэкономленное время', measure: 'Минуты и часы на задачу', seen: 'В ряде структурированных задач экономия значительна', cannot: 'Что время автоматически стало выпуском или прибылью', state: 'ok' },
+  { level: 'Производительность человека', measure: 'Задачи в час, качество', seen: 'Поддержка клиентов +14-15%, сильнее у новичков', cannot: 'Что эффект одинаков у всех профессий и сложных задач', state: 'ok', src: 'S7' },
+  { level: 'Производительность процесса', measure: 'Время цикла, ошибки, пропускная способность', seen: 'Доказана в отдельных внедрениях и банковских конвейерах', cannot: 'Что пилот масштабируется без дополнительного контроля', state: 'watch' },
+  { level: 'Производительность фирмы', measure: 'Выручка на работника, маржа, затраты', seen: 'Есть корпоративные примеры, но мало сопоставимых публичных рядов', cannot: 'Что корреляция внедрения и результата причинна', state: 'stress', src: 'S6' },
+  { level: 'Совокупная производительность', measure: 'Выпуск при данном капитале и труде', seen: 'Пока трудно отделить ИИ от общего цикла цифровизации', cannot: 'Что сценарные 0,4-1,3 п.п. уже реализованы', state: 'stress', src: 'S5' },
+  { level: 'Выручка поставщика', measure: 'Облако, процессоры, подписки', seen: 'Растёт быстро у ведущих поставщиков', cannot: 'Что клиент получил равный экономический эффект', state: 'ok', src: 'S12' },
+  { level: 'Прибыль клиента', measure: 'Чистый эффект после всех затрат', seen: 'Публично раскрывается редко', cannot: 'Что покупка лицензии или токенов эквивалентна окупаемости', state: 'stress' }
+];
+
+</script>
+<script>
+/* Сценарии на 12-36 месяцев и их ранние индикаторы (стр. 22-23).
+   Вероятности — аналитическая оценка авторов исследования, а не расчёт терминала.
+   met: true | false | null (нет наблюдения) */
+window.VG_SCENARIOS = [
+  {
+    id: 'base', name: 'Базовый', prob: 55,
+    assumption: 'Спрос растёт, но цены вычислений падают; внедрение постепенно углубляется',
+    rows: {
+      'Капвложения облаков': 'Рост замедляется к 2027-2028 годам',
+      'Процессоры и память': 'Дефицит HBM до 2027 года, затем нормализация',
+      'ЦОД и энергия': 'Ввод ограничен сетью; лучшие площадки загружены',
+      'Монетизация': 'Облако и корпоративные программы растут, но не все пилоты масштабируются',
+      'Маржа Big Tech': 'Умеренно снижается из-за амортизации, затем стабилизируется',
+      'Акции и долг': 'Волатильность, выборочная переоценка',
+      'Макроэкономика': 'Инвестиции поддерживают США и экспортёров, производительность приходит медленно',
+      'Россия': 'Прикладной рост при дефиците вычислений, консолидация вокруг крупных платформ'
+    },
+    signals: [
+      { text: 'Облачная выручка растёт на 25-40%', met: true, note: 'OCI IaaS +77%, Azure свыше $100 млрд в год', src: 'S14' },
+      { text: 'Загрузка мощностей стабильна', met: null, note: 'Не раскрывается ни одним крупным оператором' },
+      { text: 'Свободный денежный поток восстанавливается', met: false, note: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах', src: 'S11' },
+      { text: 'Сроки поставки HBM постепенно сокращаются', met: null, note: 'Публичного ряда сроков нет' }
+    ]
+  },
+  {
+    id: 'opt', name: 'Оптимистичный', prob: 20,
+    assumption: 'Агенты быстро переходят в производственные процессы, загрузка остаётся высокой',
+    rows: {
+      'Капвложения облаков': 'Высокий рост сохраняется и покрывается облачной выручкой',
+      'Процессоры и память': 'Дефицит дольше, высокая маржа',
+      'ЦОД и энергия': 'Новая генерация и сеть вводятся быстрее',
+      'Монетизация': 'Места плюс потребление и агенты дают заметный внешний доход',
+      'Маржа Big Tech': 'Рост выручки опережает амортизацию',
+      'Акции и долг': 'Высокие оценки поддерживаются прибылью',
+      'Макроэкономика': 'Рост производительности расширяется за пределы ИКТ',
+      'Россия': 'Ускорение отраслевых внедрений и региональных ЦОД'
+    },
+    signals: [
+      { text: 'Выручка корпоративных ИИ-продуктов растёт быстрее капвложений', met: false, note: 'Капвложения растут быстрее раскрываемой ИИ-выручки', src: 'S16' },
+      { text: 'Клиенты раскрывают прибыль и выпуск, а не только сэкономленное время', met: false, note: 'Публичных данных о прибыли конечного клиента почти нет' },
+      { text: 'Энергоподключения вводятся без резкого удорожания', met: false, note: 'Очередь на подключение остаётся ограничителем ввода', src: 'S4' }
+    ]
+  },
+  {
+    id: 'stress', name: 'Стрессовый', prob: 25,
+    assumption: 'Монетизация замедляется, ставка капитала и энергии выше, несколько крупных проектов переносятся',
+    rows: {
+      'Капвложения облаков': 'Сокращение планов на 15-30% после уже подписанных обязательств',
+      'Процессоры и память': 'Быстрая нормализация, запасы и падение цены',
+      'ЦОД и энергия': 'Отмены, незагруженные площадки, давление на проектный долг',
+      'Монетизация': 'Подписки сохраняются, использование и маржа падают',
+      'Маржа Big Tech': 'Сильное снижение, списания и удлинение срока окупаемости',
+      'Акции и долг': 'Падение оценок, расширение спрэда, проблемы у частного кредита',
+      'Макроэкономика': 'Капвложения и экспорт падают, но дешёвая мощность помогает следующей волне',
+      'Россия': 'Дороже импорт, перенос ЦОД, сокращение проектов без быстрого эффекта'
+    },
+    signals: [
+      { text: 'Два квартала подряд снижается прогноз капвложений', met: false, note: 'Снижения прогнозов пока нет', src: 'S16' },
+      { text: 'Растут запасы ускорителей и памяти', met: null, note: 'Ряд запасов по HBM публично не раскрыт' },
+      { text: 'Цена облачного вычисления падает при снижении загрузки', met: null, note: 'Ни цена за полезную задачу, ни загрузка не раскрываются' },
+      { text: 'Расширяются кредитные спрэды специализированных облаков', met: null, note: 'Требует рыночных данных; подключается в слое A' },
+      { text: 'Переносятся энергетические проекты', met: null, note: 'Единичные наблюдения; системного ряда нет' }
+    ]
+  }
+];
+
+/* Кто наиболее уязвим (стр. 13) */
+window.VG_VULNERABLE = [
+  { group: 'Специализированные облака и новые ЦОД', level: 'Очень высокая', why: 'Долг, короткий технологический цикл, несколько клиентов, зависимость от подключения' },
+  { group: 'Поставщики серверов и сборщики', level: 'Высокая', why: 'Низкая маржа, запасы, перенос заказов' },
+  { group: 'Память и упаковка', level: 'Высокая циклическая', why: 'Исторически сильные ценовые циклы; мощности строятся с лагом' },
+  { group: 'Незрелые разработчики моделей', level: 'Высокая', why: 'Стоимость вычислений, слабая дифференциация, зависимость от внешнего капитала' },
+  { group: 'Электросетевые проекты под одного клиента', level: 'Средняя-высокая', why: 'Долгий срок актива и регуляторный риск' },
+  { group: 'Уникальные поставщики литографии и передовых фабрик', level: 'Средняя', why: 'Сильная рыночная власть, но высокая геополитическая концентрация' },
+  { group: 'Гипермасштабные платформы', level: 'Средняя', why: 'Диверсифицированный денежный поток, но огромный объём капитала и риск маржи' },
+  { group: 'Конечные пользователи с модульными решениями', level: 'Низкая-средняя', why: 'Могут сократить подписки и перейти на более дешёвую модель' }
+];
+
+</script>
+<script>
+/* Россия: структурная позиция, внедрение, инфраструктура, риски (стр. 20-21). */
+window.VG_RUSSIA = {
+  position: {
+    strong: ['Данные и прикладные модели', 'Поиск, реклама, рекомендации', 'Банковские конвейеры: скоринг, риск, антифрод', 'Речь, документооборот, клиентское обслуживание', 'Отраслевое программное обеспечение', 'Инженерные кадры и крупные корпоративные заказчики'],
+    weak: ['Передовая литография', 'Массовое производство ускорителей', 'Высокоскоростная память HBM', 'Высокоскоростные сетевые компоненты', 'Оборудование фабрик', 'Быстрый доступ к глобальному капиталу'],
+    verdict: 'Реалистична не полная автономия стека, а избирательная суверенность: автономия по данным, моделям, программному контуру и эксплуатации при управляемой зависимости от импорта.',
+    src: 'S25'
+  },
+  adoption: {
+    title: 'Опрос Банка России, 252 организации, июль 2025',
+    src: 'S21', kind: 'fact',
+    items: [
+      { label: 'Применяют постоянно', value: 21 },
+      { label: 'Тестируют', value: 15 },
+      { label: 'Планируют в течение 1-3 лет', value: 29 },
+      { label: 'Не планируют', value: 35 }
+    ],
+    barriers: [
+      { label: 'Высокая стоимость внедрения', value: 59 },
+      { label: 'Недостаточная экспертиза', value: 46 },
+      { label: 'Дефицит специалистов', value: 44 },
+      { label: 'Трудность оценки эффекта', value: 43 }
+    ],
+    note: 'В системно значимых банках и страховщиках проникновение выше: 24% постоянного применения и 19% тестирования в банках.'
+  },
+  infra: [
+    { label: 'Ориентир Минэнерго по мощности ЦОД для ИИ к 2030', value: '2-2,5 ГВт', kind: 'forecast', note: 'Открытого единого статистического ряда по фактической ИИ-нагрузке нет', src: 'S22' },
+    { label: 'Введено стойко-мест в 2024', value: '10,9 тыс.', kind: 'fact', note: 'Вместо ожидавшихся 12 тыс.', src: 'S30' },
+    { label: 'Запуски 2025 года', value: 'перенос на 2026-2027', kind: 'fact', note: 'Значительная часть проектов перенесена', src: 'S30' },
+    { label: 'Цена размещения в Москве и Петербурге', value: 'растёт', kind: 'fact', note: 'Подтверждает дефицит, но не наличие высокоплотной ИИ-нагрузки', src: 'S30' }
+  ],
+  fastEffect: [
+    { n: 1, area: 'Банковский риск, антифрод, скоринг, контактные центры, документооборот', why: 'Большие данные и измеримая стоимость операции' },
+    { n: 2, area: 'Поиск, реклама, электронная торговля, рекомендации', why: 'Мгновенная обратная связь и прямая связь с выручкой' },
+    { n: 3, area: 'Нефтегаз, металлургия, химия, энергетика', why: 'Предиктивное обслуживание, геология, режимы оборудования; требует интеграции с технологическим контуром' },
+    { n: 4, area: 'Транспорт и логистика', why: 'Маршрутизация, прогноз спроса, контроль запасов, автономные элементы в закрытых средах' },
+    { n: 5, area: 'Государственный документооборот и услуги', why: 'Большой объём типовых операций при высоком риске качества данных' }
+  ],
+  badCapex: [
+    'Универсальные крупные модели без уникальных данных, канала распространения и ясной себестоимости вывода',
+    'ЦОД, построенные под низкоплотные стойки и затем объявленные «ИИ-инфраструктурой»',
+    'Покупка ускорителей без владельца бизнес-процесса, метрики загрузки и плана обновления',
+    'Полная вертикальная автономия во всех компонентах вместо выбора критических узлов',
+    'Государственная поддержка по объёму закупленного оборудования, а не по цене полезной операции'
+  ],
+  questions: [
+    'Как определяется «мощность ЦОД для ИИ» и отделяется ли она от обычной облачной нагрузки?',
+    'Как измеряется фактическая загрузка закупленного оборудования?',
+    'Какая доля проектов финансируется из прибыли, кредита, бюджета и льгот?',
+    'Как исключается двойной учёт эффекта между поставщиком модели и заказчиком?',
+    'Какой показатель должен быть условием продолжения государственной поддержки?'
+  ]
+};
+
+/* География цикла (стр. 18) */
+window.VG_GEO = [
+  { region: 'США', role: 'Модели, облака, ускорители, капитал', strong: 'Масштаб платформ и денежного потока', dep: 'Фабрики, память, литография, сеть', risk: 'Переинвестирование и концентрация рынков' },
+  { region: 'Тайвань', role: 'Передовые фабрики и упаковка', strong: 'TSMC и экосистема', dep: 'Геополитика, оборудование, энергия', risk: 'Единая точка отказа' },
+  { region: 'Южная Корея', role: 'HBM и память', strong: 'SK hynix, Samsung', dep: 'Цикл памяти, оборудование', risk: 'Сверхстроительство после дефицита' },
+  { region: 'Нидерланды и ЕС', role: 'Литография, промышленное оборудование, регулирование', strong: 'ASML и сеть поставщиков', dep: 'Облачный масштаб и процессоры США и Азии', risk: 'Отставание вычислительной мощности' },
+  { region: 'Китай', role: 'Облако, модели, приложения, электрооборудование', strong: 'Внутренний рынок и вертикальная интеграция', dep: 'Передовая литография и часть ускорителей', risk: 'Экспортный контроль и капитальная неэффективность' },
+  { region: 'Япония', role: 'Материалы, оборудование, промышленная политика', strong: 'Точная промышленность', dep: 'Масштаб фабрик и облаков', risk: 'Дорогой капитал и медленный ввод' },
+  { region: 'Ближний Восток', role: 'Энергия и суверенный капитал', strong: 'Дешёвая энергия и фонды', dep: 'Технологии и кадры', risk: 'Ограничения экспорта и климат' },
+  { region: 'Россия', role: 'Прикладные модели, банки, поиск, локальные облака', strong: 'Данные, инженерные кадры, крупные корпоративные заказчики', dep: 'Передовые ускорители, HBM, сети, фабричное оборудование', risk: 'Высокая стоимость вычислений и ограниченная масштабируемость' }
+];
+
+/* Энергетика и физические узкие места (стр. 16-17) */
+window.VG_ENERGY = {
+  headline: { from: 485, to: 950, unit: 'ТВт·ч', fromYear: 2025, toYear: 2030, kind: 'forecast', src: 'S4',
+    note: 'Около 3% мирового спроса на электроэнергию к 2030 году. Потребление ИИ-ориентированных центров должно утроиться.' },
+  facts: [
+    { label: 'Рост спроса ЦОД за 2025', value: '+17%', kind: 'fact', src: 'S4' },
+    { label: 'Рост спроса ИИ-ориентированных ЦОД за 2025', value: '≈ +50%', kind: 'fact', src: 'S4' },
+    { label: 'Диапазон дополнительной пиковой нагрузки ЦОД в США к 2030', value: '13-55 ГВт', kind: 'forecast', src: 'S5',
+      note: 'Разброс в четыре раза означает высокую неопределённость, а не точный план' },
+    { label: 'Потребность в батареях при ЦОД к 2030', value: '20-25 ГВт', kind: 'forecast', src: 'S4' },
+    { label: 'Резерв для надёжной локальной газовой генерации', value: '30-70% сверх нагрузки', kind: 'estimate', src: 'S4' }
+  ],
+  bottlenecks: [
+    { name: 'Подключение к сети', text: 'Проект ЦОД может быть построен раньше линии передачи и подстанции; очередь становится реальным ограничителем ввода' },
+    { name: 'Трансформаторы, турбины, выключатели', text: 'Производственный цикл измеряется годами, а не кварталами; закупка заранее увеличивает риск ошибочного прогноза' },
+    { name: 'Генерация', text: 'Возобновляемые источники дёшевы, но требуют сети и накопителей; газ доступен быстрее, но даёт топливный и углеродный риск; атом вводится медленно' },
+    { name: 'Охлаждение и вода', text: 'Высокая плотность стойки требует жидкостного охлаждения и меняет проект здания; в вододефицитных регионах возможно социальное сопротивление' },
+    { name: 'Резервирование', text: 'Батареи и резервная генерация добавляют капитал к каждому мегаватту полезной нагрузки' }
+  ],
+  keyMetric: 'Главный показатель — не заявленные гигаватты, а подключённые и оплаченные мегаватты с фактической загрузкой.'
+};
+
+</script>
+<script>
+/* =========================================================================
+   Граф связей капитала, поставок и контрактов.
+   Собственная силовая раскладка — без внешних библиотек.
+
+   Ключевая идея раскладки: деньги текут сверху вниз.
+   Наверху — источники денег (капитал и конечные клиенты), внизу — фабрики
+   и память. Любая стрелка, идущая ВВЕРХ против потока, и есть круговая связь.
+   ========================================================================= */
+(function (global) {
+  'use strict';
+
+  var RANK = { capital: 0, demand: 0, model: 1, cloud: 2, speccloud: 2, dc: 3, energy: 4, chip: 4, fab: 5, memory: 5 };
+  var RANKS = 6;
+  var SVGNS = 'http://www.w3.org/2000/svg';
+
+  function el(name, attrs) {
+    var n = document.createElementNS(SVGNS, name);
+    for (var k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) n.setAttribute(k, attrs[k]);
+    return n;
+  }
+
+  function Graph(opts) {
+    this.host = opts.host;
+    this.nodes = opts.nodes.map(function (n) {
+      return { id: n.id, name: n.name, full: n.full || n.name, layer: n.layer, country: n.country,
+               note: n.note, x: 0, y: 0, deg: 0, r: 7, row: 0 };
+    });
+    this.index = {};
+    var self = this;
+    this.nodes.forEach(function (n) { self.index[n.id] = n; });
+    this.edges = opts.edges.filter(function (e) { return self.index[e.from] && self.index[e.to]; })
+      .map(function (e) { return Object.assign({}, e); });
+    this.edges.forEach(function (e) {
+      self.index[e.from].deg++; self.index[e.to].deg++;
+      e.s = self.index[e.from]; e.t = self.index[e.to];
+    });
+    this.nodes.forEach(function (n) { n.r = 6 + Math.min(9, Math.sqrt(n.deg) * 2.6); });
+    this.filters = { types: {}, onlyReport: false, focus: null };
+    Object.keys(opts.edgeTypes).forEach(function (k) { self.filters.types[k] = true; });
+    this.onSelect = opts.onSelect || function () {};
+    this.build();
+  }
+
+  Graph.prototype.visibleEdges = function () {
+    var f = this.filters;
+    return this.edges.filter(function (e) {
+      if (!f.types[e.type]) return false;
+      if (f.onlyReport && e.inReport !== 'yes') return false;
+      return true;
+    });
+  };
+
+  /* --- поиск круговых контуров длиной 2-4 среди видимых рёбер --- */
+  Graph.prototype.cycles = function () {
+    var edges = this.visibleEdges(), adj = {}, found = {}, out = [];
+    edges.forEach(function (e) { (adj[e.from] = adj[e.from] || []).push(e); });
+    var MAXLEN = 4;
+    function walk(start, cur, path, used) {
+      var next = adj[cur] || [];
+      for (var i = 0; i < next.length; i++) {
+        var e = next[i];
+        if (e.to === start && path.length >= 2) {
+          var ring = path.concat([e]);
+          var ids = ring.map(function (x) { return x.from; });
+          var key = ids.slice().sort().join('>');
+          if (!found[key]) { found[key] = 1; out.push(ring); }
+        } else if (path.length < MAXLEN - 1 && !used[e.to] && e.to > start) {
+          used[e.to] = 1;
+          walk(start, e.to, path.concat([e]), used);
+          delete used[e.to];
+        }
+      }
+    }
+    var self = this;
+    Object.keys(adj).sort().forEach(function (id) {
+      var used = {}; used[id] = 1;
+      walk(id, id, [], used);
+    });
+    return out.map(function (ring) {
+      return { edges: ring, names: ring.map(function (e) { return self.index[e.from].name; }) };
+    });
+  };
+
+  Graph.prototype.build = function () {
+    var self = this;
+    var wrap = this.host;
+    wrap.innerHTML = '';
+    var svg = el('svg', { viewBox: '0 0 1000 620', preserveAspectRatio: 'xMidYMid meet', role: 'img',
+                          'aria-label': 'Граф связей капитала, поставок и контрактов' });
+    this.svg = svg;
+
+    var defs = el('defs');
+    ['supply', 'equity', 'debt', 'contract', 'external'].forEach(function (t) {
+      var m = el('marker', { id: 'arw-' + t, viewBox: '0 0 10 10', refX: 9, refY: 5,
+                             markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' });
+      m.appendChild(el('path', { d: 'M0,0 L10,5 L0,10 z', class: 'mk mk-' + t }));
+      defs.appendChild(m);
+    });
+    svg.appendChild(defs);
+
+    this.root = el('g');
+    this.gBands = el('g'); this.gEdges = el('g'); this.gNodes = el('g');
+    this.root.appendChild(this.gBands);
+    this.root.appendChild(this.gEdges);
+    this.root.appendChild(this.gNodes);
+    svg.appendChild(this.root);
+    wrap.appendChild(svg);
+
+    this.tip = document.createElement('div');
+    this.tip.className = 'tip';
+    this.tip.hidden = true;
+    wrap.appendChild(this.tip);
+
+    this.W = 1280; this.H = 660;
+    this.svg.setAttribute('viewBox', '0 0 ' + this.W + ' ' + this.H);
+    this.bandH = (this.H - 34) / RANKS;
+
+    this.ranks = [];
+    for (var r = 0; r < RANKS; r++) this.ranks.push([]);
+    this.nodes.forEach(function (n) {
+      var r = RANK[n.layer] || 0;
+      n.rank = r;
+      self.ranks[r].push(n);
+      n.ty = 30 + r * self.bandH + self.bandH / 2;
+      n.y = n.ty;
+    });
+
+    this.drawBands();
+    this.render();
+    this.layout();
+    this.bindPointer();
+  };
+
+  /* --- ширина подписи: подписи чередуются над и под узлом, поэтому в один
+         ряд попадают только узлы через один --- */
+  function labelWidth(n) { return n.name.length * 6.1 + 14; }
+
+  /* Слоистая раскладка: порядок внутри слоя определяет медиана соседей
+     (классическая эвристика уменьшения пересечений), затем узлы
+     раскладываются по ширине с шагом, который гарантирует читаемость подписей. */
+  Graph.prototype.layout = function () {
+    var self = this, edges = this.visibleEdges(), r, i;
+    var nbr = {};
+    this.nodes.forEach(function (n) { nbr[n.id] = []; });
+    edges.forEach(function (e) { nbr[e.from].push(e.to); nbr[e.to].push(e.from); });
+
+    this.ranks.forEach(function (list) {
+      list.forEach(function (n, i) { n.ord = i; });
+    });
+
+    function spread(list) {
+      list.sort(function (a, b) { return a.ord - b.ord; });
+      var slots = list.map(function (n) { return Math.max(2 * n.r + 16, labelWidth(n) / 2 + 14); });
+      var total = slots.reduce(function (a, b) { return a + b; }, 0);
+      var pad = 54;
+      var free = Math.max(0, (self.W - pad * 2) - total);
+      var gap = list.length > 1 ? free / (list.length - 1) : 0;
+      var x = pad;
+      list.forEach(function (n, i) {
+        var lw = labelWidth(n) / 2 + 6;
+        n.x = Math.max(lw, Math.min(self.W - lw, x + slots[i] / 2));
+        x += slots[i] + gap;
+        n.row = i % 2;
+      });
+    }
+
+    for (var pass = 0; pass < 8; pass++) {
+      var down = pass % 2 === 0;
+      for (var k = 0; k < RANKS; k++) {
+        r = down ? k : RANKS - 1 - k;
+        var list = this.ranks[r];
+        if (!list.length) continue;
+        list.forEach(function (n) {
+          var xs = nbr[n.id].map(function (id) { return self.index[id]; })
+            .filter(function (m) { return m && m.rank !== n.rank; })
+            .map(function (m) { return m.x; });
+          n.ord = xs.length ? xs.reduce(function (a, b) { return a + b; }, 0) / xs.length : n.x;
+        });
+        spread(list);
+      }
+    }
+    for (r = 0; r < RANKS; r++) spread(this.ranks[r]);
+    this.position();
+  };
+
+  Graph.prototype.drawBands = function () {
+    var self = this;
+    var labels = ['Источники денег', 'Модели', 'Облака', 'ЦОД', 'Энергия и кремний', 'Фабрики и память'];
+    this.gBands.innerHTML = '';
+    for (var r = 0; r < RANKS; r++) {
+      var y = 30 + r * this.bandH;
+      if (r > 0) this.gBands.appendChild(el('line', { x1: 0, x2: this.W, y1: y, y2: y, class: 'bandline' }));
+      var t = el('text', { x: 8, y: y + 13, class: 'bandlabel' });
+      t.textContent = labels[r];
+      this.gBands.appendChild(t);
+    }
+  };
+
+  Graph.prototype.render = function () {
+    var self = this;
+    this.gEdges.innerHTML = '';
+    this.gNodes.innerHTML = '';
+    this.edgeEls = [];
+    this.visibleEdges().forEach(function (e) {
+      var p = el('path', { class: 'gedge ge-' + e.type + (e.circular ? ' circ' : ''),
+                           'marker-end': 'url(#arw-' + e.type + ')',
+                           'stroke-width': e.weight ? 1 + e.weight * 0.6 : 1.4,
+                           'stroke-dasharray': e.type === 'debt' ? '5 4' : null });
+      p.addEventListener('mouseenter', function (ev) { self.showTip(ev, self.edgeTip(e)); });
+      p.addEventListener('mouseleave', function () { self.hideTip(); });
+      self.gEdges.appendChild(p);
+      self.edgeEls.push({ e: e, el: p });
+    });
+    this.nodeEls = [];
+    this.nodes.forEach(function (n) {
+      var g = el('g', { class: 'gnode', tabindex: 0, role: 'button', 'aria-label': n.name });
+      var c = el('circle', { r: n.r, class: 'nd nd-' + n.layer });
+      var t1 = el('text', { class: 'graph-node-label', 'text-anchor': 'middle' });
+      t1.textContent = n.name;
+      g.appendChild(c); g.appendChild(t1);
+      g.addEventListener('mouseenter', function (ev) { self.showTip(ev, self.nodeTip(n)); });
+      g.addEventListener('mouseleave', function () { self.hideTip(); });
+      g.addEventListener('click', function () { self.focus(n.id === self.filters.focus ? null : n.id); });
+      g.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); self.focus(n.id === self.filters.focus ? null : n.id); }
+      });
+      self.gNodes.appendChild(g);
+      self.nodeEls.push({ n: n, g: g, c: c, t: t1 });
+    });
+    this.position();
+    this.applyFocus();
+  };
+
+  Graph.prototype.position = function () {
+    if (!this.edgeEls) return;
+    this.edgeEls.forEach(function (o) {
+      var a = o.e.s, b = o.e.t;
+      var up = b.y < a.y - 2;                       // движение против потока
+      var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+      var dx = b.x - a.x, dy = b.y - a.y;
+      var len = Math.sqrt(dx * dx + dy * dy) || 1;
+      var bend = (up ? 34 : 14) * (o.e.circular ? 1.6 : 1);
+      var cx = mx + (dy / len) * bend, cy = my - (dx / len) * bend;
+      // укоротить концы до края круга, оставив место под стрелку
+      var d1 = Math.sqrt((cx - a.x) * (cx - a.x) + (cy - a.y) * (cy - a.y)) || 1;
+      var d2 = Math.sqrt((b.x - cx) * (b.x - cx) + (b.y - cy) * (b.y - cy)) || 1;
+      var ax = a.x + (cx - a.x) / d1 * a.r;
+      var ay = a.y + (cy - a.y) / d1 * a.r;
+      var bx = b.x - (b.x - cx) / d2 * (b.r + 7);
+      var by = b.y - (b.y - cy) / d2 * (b.r + 7);
+      o.el.setAttribute('d', 'M' + ax.toFixed(1) + ',' + ay.toFixed(1) + ' Q' + cx.toFixed(1) + ',' + cy.toFixed(1) + ' ' + bx.toFixed(1) + ',' + by.toFixed(1));
+    });
+    this.nodeEls.forEach(function (o) {
+      o.g.setAttribute('transform', 'translate(' + o.n.x.toFixed(1) + ',' + o.n.y.toFixed(1) + ')');
+      o.t.setAttribute('y', o.n.row ? o.n.r + 14 : -o.n.r - 7);
+    });
+  };
+
+  Graph.prototype.nodeTip = function (n) {
+    var self = this, inc = [], out = [];
+    this.visibleEdges().forEach(function (e) {
+      if (e.to === n.id) inc.push('← ' + self.index[e.from].name + ': ' + (e.label || ''));
+      if (e.from === n.id) out.push('→ ' + self.index[e.to].name + ': ' + (e.label || ''));
+    });
+    return '<b>' + n.full + '</b><span class="k">' + (global.VG_LAYER_LABELS[n.layer] || n.layer) + ' · ' + n.country + '</span>' +
+      '<p style="margin:6px 0 0">' + n.note + '</p>' +
+      '<p class="k" style="margin:6px 0 0">Деньги приходят: ' + (inc.length || 0) + ' · уходят: ' + (out.length || 0) + '</p>';
+  };
+
+  Graph.prototype.edgeTip = function (e) {
+    var t = global.VG_EDGE_TYPES[e.type];
+    var mark = e.inReport === 'yes' ? 'связь описана в исследовании'
+      : e.inReport === 'mechanism' ? 'механизм описан в исследовании, компании не названы'
+      : 'общеизвестное корпоративное раскрытие вне исследования';
+    return '<b>' + e.s.name + ' → ' + e.t.name + '</b>' +
+      '<span class="k">' + t.label + (e.amount ? ' · ' + e.amount : '') + '</span>' +
+      '<p style="margin:6px 0 0">' + (e.label || '') + '</p>' +
+      (e.back ? '<p class="k" style="margin:4px 0 0">Встречный поток: ' + e.back + '</p>' : '') +
+      '<p class="k" style="margin:6px 0 0">' + mark + (e.src ? ' · ' + e.src : '') + '</p>';
+  };
+
+  Graph.prototype.showTip = function (ev, html) {
+    var r = this.host.getBoundingClientRect();
+    this.tip.innerHTML = html;
+    this.tip.hidden = false;
+    var x = ev.clientX - r.left + 14, y = ev.clientY - r.top + 14;
+    if (x + 310 > r.width) x = r.width - 316;
+    if (y + this.tip.offsetHeight + 12 > r.height) y = Math.max(6, r.height - this.tip.offsetHeight - 12);
+    this.tip.style.left = x + 'px';
+    this.tip.style.top = y + 'px';
+  };
+  Graph.prototype.hideTip = function () { this.tip.hidden = true; };
+
+  Graph.prototype.focus = function (id) {
+    this.filters.focus = id;
+    this.applyFocus();
+    this.onSelect(id ? this.index[id] : null, this.neighbours(id));
+  };
+
+  Graph.prototype.neighbours = function (id) {
+    if (!id) return [];
+    return this.visibleEdges().filter(function (e) { return e.from === id || e.to === id; });
+  };
+
+  Graph.prototype.applyFocus = function () {
+    var id = this.filters.focus, keep = {};
+    if (id) {
+      keep[id] = 1;
+      this.visibleEdges().forEach(function (e) {
+        if (e.from === id) keep[e.to] = 1;
+        if (e.to === id) keep[e.from] = 1;
+      });
+    }
+    this.nodeEls.forEach(function (o) { o.g.classList.toggle('dim', !!id && !keep[o.n.id]); });
+    this.edgeEls.forEach(function (o) {
+      o.el.classList.toggle('dim', !!id && o.e.from !== id && o.e.to !== id);
+    });
+  };
+
+  Graph.prototype.setFilter = function (type, on) {
+    this.filters.types[type] = on;
+    this.render();
+    this.layout();
+  };
+  Graph.prototype.setOnlyReport = function (on) {
+    this.filters.onlyReport = on;
+    this.render();
+    this.layout();
+  };
+  Graph.prototype.relax = function () { this.layout(); };
+
+  /* перетаскивание узлов */
+  Graph.prototype.bindPointer = function () {
+    var self = this, drag = null;
+    function toSvg(ev) {
+      var r = self.svg.getBoundingClientRect();
+      return { x: (ev.clientX - r.left) / r.width * self.W, y: (ev.clientY - r.top) / r.height * self.H };
+    }
+    this.svg.addEventListener('pointerdown', function (ev) {
+      var g = ev.target.closest ? ev.target.closest('.gnode') : null;
+      if (!g) return;
+      var i = Array.prototype.indexOf.call(self.gNodes.children, g);
+      if (i < 0) return;
+      drag = self.nodeEls[i].n;
+      self.svg.setPointerCapture(ev.pointerId);
+      self.svg.classList.add('dragging');
+    });
+    this.svg.addEventListener('pointermove', function (ev) {
+      if (!drag) return;
+      var p = toSvg(ev);
+      drag.x = p.x; drag.y = p.y; drag.ty = p.y;
+      self.position();
+    });
+    this.svg.addEventListener('pointerup', function () { drag = null; self.svg.classList.remove('dragging'); });
+    this.svg.addEventListener('pointercancel', function () { drag = null; self.svg.classList.remove('dragging'); });
+  };
+
+  global.VGGraph = Graph;
+})(window);
+
+</script>
+<script>
+/* =========================================================================
+   Терминал ИИ-цикла — сборка экранов.
+   Данные берутся из data/*.js (глобальные объекты VG_*), поэтому файл
+   открывается и по file://, и с сервера, и внутри артефакта.
+   ========================================================================= */
+(function () {
+  'use strict';
+
+  var M = window.VG_META, LAYERS = window.VG_LAYERS, CO = window.VG_COMPANIES,
+      IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
+      RU = window.VG_RUSSIA, EN = window.VG_ENERGY;
+
+  /* ------------------------------------------------------------ утилиты */
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c];
+    });
+  }
+  function num(v, d) {
+    if (v === null || v === undefined || isNaN(v)) return '—';
+    return Number(v).toLocaleString('ru-RU', { minimumFractionDigits: d == null ? 1 : d, maximumFractionDigits: d == null ? 1 : d });
+  }
+  function badge(kind) {
+    var k = M.kinds[kind]; if (!k) return '';
+    return '<span class="badge ' + kind + '" title="' + esc(k.hint) + '">' + esc(k.label) + '</span>';
+  }
+  function srcref(code) {
+    if (!code) return '';
+    var s = M.sources[code]; if (!s) return '';
+    return '<button class="src" type="button" data-src="' + code + '" title="' + esc(s.org + ' — ' + s.title + ', ' + s.date) + '">' + code + '</button>';
+  }
+  var STATE_LABELS = { ok: 'Норма', watch: 'Наблюдение', stress: 'Стресс-сигнал', nodata: 'Нет публичного ряда' };
+  function stateEl(state) {
+    return '<span class="st st-' + state + '"><i></i>' + STATE_LABELS[state] + '</span>';
+  }
+  function pct(v) { return Math.max(0, Math.min(100, v)); }
+
+  /* горизонтальные столбики: значения подписаны прямо у столбика */
+  function bars(rows, max, cls) {
+    return '<div class="chart">' + rows.map(function (r) {
+      var w = pct(r.v / max * 100);
+      return '<div class="chartrow"><div class="nm">' + esc(r.name) + '</div>' +
+        '<div class="track"><div class="mark ' + (cls || 'a') + '" style="width:' + w.toFixed(1) + '%">' +
+        '<span>' + esc(r.label) + '</span></div></div></div>';
+    }).join('') + '</div>';
+  }
+
+  /* столбики с нулевой осью посередине */
+  function divBars(rows, min, max) {
+    var span = max - min, zero = (0 - min) / span * 100;
+    return '<div class="chart">' + rows.map(function (r) {
+      var v = r.v, isNeg = v < 0;
+      var w = Math.abs(v) / span * 100;
+      var style = isNeg ? 'right:' + (100 - zero).toFixed(2) + '%;width:' + w.toFixed(2) + '%'
+                        : 'left:' + zero.toFixed(2) + '%;width:' + w.toFixed(2) + '%';
+      return '<div class="chartrow"><div class="nm">' + esc(r.name) + '</div>' +
+        '<div class="track div"><div class="zero" style="left:' + zero.toFixed(2) + '%"></div>' +
+        '<div class="mark ' + (isNeg ? 'neg' : 'a') + '" style="' + style + '"><span>' + esc(r.label) + '</span></div>' +
+        '</div></div>';
+    }).join('') + '</div>';
+  }
+
+  /* --------------------------------------------------- расчёт индексов */
+  var SCORE = { stress: 100, watch: 60, ok: 20 };
+  function groupIndex(gid) {
+    var items = IND.filter(function (i) { return i.g === gid && i.state !== 'nodata'; });
+    if (!items.length) return null;
+    var sum = items.reduce(function (a, i) { return a + SCORE[i.state]; }, 0);
+    return sum / items.length;
+  }
+  function overallIndex() {
+    var num = 0, den = 0;
+    GROUPS.forEach(function (g) {
+      var v = groupIndex(g.id);
+      if (v !== null) { num += v * g.weight; den += g.weight; }
+    });
+    return den ? num / den : 0;
+  }
+  function tension(v) {
+    if (v < 35) return { label: 'Спокойно', state: 'ok' };
+    if (v < 60) return { label: 'Наблюдение', state: 'watch' };
+    if (v < 80) return { label: 'Напряжение', state: 'watch' };
+    return { label: 'Стресс', state: 'stress' };
+  }
+
+  /* ============================================================ ЭКРАНЫ */
+  var VIEWS = {};
+
+  /* ---------------------------------------------------------- 1. Пульс */
+  VIEWS.pulse = {
+    nav: 'Пульс цикла', hint: '01',
+    title: 'Пульс цикла',
+    sub: 'Один вопрос вместо десяти: какая доля вложенного капитала уже обслуживается внешним денежным потоком. Индекс собран из панели 28 показателей и их стресс-сигналов.',
+    render: function () {
+      var v = overallIndex(), t = tension(v);
+      var covered = IND.filter(function (i) { return i.state !== 'nodata'; }).length;
+      var stressed = IND.filter(function (i) { return i.state === 'stress'; });
+
+      var groupRows = GROUPS.map(function (g) {
+        var gv = groupIndex(g.id);
+        var st = gv === null ? 'nodata' : tension(gv).state;
+        var gaps = IND.filter(function (i) { return i.g === g.id && i.state === 'nodata'; }).length;
+        return '<div class="tile"><div class="label">' + esc(g.name) + '</div>' +
+          '<div class="value">' + (gv === null ? '—' : Math.round(gv)) + '<small>/100</small></div>' +
+          '<div class="bar"><span style="width:' + (gv === null ? 0 : pct(gv)) + '%;background:var(--' + (st === 'stress' ? 'critical' : st === 'watch' ? 'warning' : st === 'ok' ? 'ok' : 'nodata') + ')"></span></div>' +
+          '<div class="note">' + stateEl(st) + (gaps ? ' · пробелов: ' + gaps : '') + '</div></div>';
+      }).join('');
+
+      var three = [
+        { v: 'Более $1 трлн', l: 'Совокупные капвложения пяти крупнейших гипермасштабных облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
+        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 год и прогноз на 2030', k: 'forecast', s: 'S4', lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
+        { v: '18% / 32%', l: 'Доля компаний США, использовавших ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', lim: 'Использование не равно глубокой перестройке бизнеса' }
+      ].map(function (x) {
+        return '<div class="tile"><div class="row"><span class="label">' + esc(x.l) + '</span></div>' +
+          '<div class="value">' + esc(x.v) + '</div>' +
+          '<div class="row">' + badge(x.k) + srcref(x.s) + '</div>' +
+          '<div class="note">' + esc(x.lim) + '</div></div>';
+      }).join('');
+
+      return '' +
+        '<div class="cols cols-2">' +
+          '<div class="panel hero">' +
+            '<h3>Индекс напряжения цикла</h3>' +
+            '<div class="figure">' + Math.round(v) + '</div>' +
+            '<div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + stateEl(t.state) +
+              '<span class="count" style="color:var(--muted);font-size:12px">' + covered + ' из ' + IND.length + ' показателей имеют наблюдение</span>' + badge('expert') + '</div>' +
+            '<p class="cap">0 — спрос подтверждён и обслуживается потоком. 100 — все наблюдаемые показатели дают стресс-сигнал. Экспертная шкала по панели исследования, а не рыночный индекс: она показывает, где сместилось внимание, а не цену актива.</p>' +
+          '</div>' +
+          '<div class="panel">' +
+            '<h3>Сработавшие стресс-сигналы</h3>' +
+            '<p class="sub">Показатели, которые уже перешли порог, описанный в исследовании</p>' +
+            (stressed.length ? stressed.map(function (i) {
+              return '<div class="loop" style="border-left-color:var(--critical);margin-bottom:8px">' +
+                '<div class="why"><b>' + esc(i.name) + '</b></div>' +
+                '<div class="why">' + esc(i.obs) + ' ' + srcref(i.src) + '</div></div>';
+            }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
+          '</div>' +
+        '</div>' +
+        '<h2 class="section">Субиндексы по группам</h2>' +
+        '<div class="cols cols-3">' + groupRows + '</div>' +
+        '<h2 class="section">Три числа, вокруг которых строится разговор</h2>' +
+        '<div class="cols cols-3">' + three + '</div>' +
+        '<div class="note">' + esc(M.disclaimer) + '</div>';
+    }
+  };
+
+  /* ---------------------------------------------------------- 2. Граф */
+  VIEWS.network = {
+    nav: 'Граф связей', hint: '02',
+    title: 'Граф связей: капитал, поставки, контракты',
+    sub: 'Стрелка показывает направление денег. Слои расположены по течению: наверху — источники денег, внизу — фабрики и память. Любая стрелка, идущая вверх, — это деньги, вернувшиеся к тому, кто их дал. Это и есть круговая связь.',
+    render: function () {
+      var types = window.VG_EDGE_TYPES;
+      var chips = Object.keys(types).map(function (k) {
+        var cls = k === 'debt' ? 'dash' : '';
+        return '<button class="chip" type="button" role="switch" aria-pressed="true" data-etype="' + k + '" title="' + esc(types[k].hint) + '">' +
+          '<i style="background:var(--' + (k === 'external' ? 's1' : k === 'contract' ? 's3' : k === 'supply' ? 'muted' : 's2') + ')' + (cls ? ';opacity:.65' : '') + '"></i>' +
+          esc(types[k].label) + (k === 'debt' ? ' (пунктир)' : '') + '</button>';
+      }).join('');
+
+      return '' +
+        '<div class="panel" style="display:grid;gap:12px">' +
+          '<div class="controls">' + chips +
+            '<button class="chip" type="button" role="switch" aria-pressed="false" id="onlyReport">Только связи из исследования</button>' +
+            '<button class="iconbtn" type="button" id="relax">Перестроить</button>' +
+            '<span class="count" style="color:var(--muted);font-size:12px" id="graphStat"></span>' +
+          '</div>' +
+          '<div class="graphwrap" id="graphHost"></div>' +
+          '<p class="sub" style="margin:0">Наведите курсор на связь или узел, потяните узел мышью, нажмите на узел — он оставит только своё окружение.</p>' +
+        '</div>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Найденные круговые контуры</h3>' +
+            '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли</p>' +
+            '<div id="cycles"></div></div>' +
+          '<div class="panel"><h3 id="selTitle">Выбранный узел</h3>' +
+            '<p class="sub" id="selSub">Нажмите на узел графа, чтобы увидеть все его денежные связи</p>' +
+            '<div id="selBody"></div></div>' +
+        '</div>' +
+        '<h2 class="section">Таблица связей</h2>' +
+        '<div class="tablewrap compact"><table><thead><tr>' +
+          '<th>Откуда идут деньги</th><th>Куда</th><th>Тип</th><th>Что это</th><th>Основание</th>' +
+        '</tr></thead><tbody id="edgeTable"></tbody></table></div>';
+    },
+    after: function (root) {
+      var host = root.querySelector('#graphHost');
+      var g = new window.VGGraph({
+        host: host, nodes: window.VG_NODES, edges: window.VG_EDGES, edgeTypes: window.VG_EDGE_TYPES,
+        onSelect: function (node, edges) { showSel(node, edges); }
+      });
+      window.__vgGraph = g;
+
+      function nodeName(id) { return (g.index[id] || {}).name || id; }
+      function refMark(e) {
+        return e.inReport === 'yes' ? '<span class="st st-ok"><i></i>исследование ' + (e.src || '') + '</span>'
+          : e.inReport === 'mechanism' ? '<span class="st st-watch"><i></i>механизм описан, компании не названы</span>'
+          : '<span class="st st-nodata"><i></i>вне исследования</span>';
+      }
+      function refresh() {
+        var edges = g.visibleEdges();
+        root.querySelector('#graphStat').textContent = 'узлов ' + window.VG_NODES.length + ' · связей ' + edges.length;
+        var cy = g.cycles();
+        root.querySelector('#cycles').innerHTML = cy.length ? cy.map(function (c) {
+          var path = c.names.concat([c.names[0]]).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join(' → ');
+          var why = c.edges.map(function (e) { return (e.label || window.VG_EDGE_TYPES[e.type].label); }).join(' · ');
+          return '<div class="loop" style="margin-bottom:8px"><div class="path">' + path + '</div>' +
+            '<div class="why">' + esc(why) + '</div></div>';
+        }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
+
+        root.querySelector('#edgeTable').innerHTML = edges.map(function (e) {
+          return '<tr><td>' + esc(nodeName(e.from)) + '</td><td>' + esc(nodeName(e.to)) + '</td>' +
+            '<td>' + esc(window.VG_EDGE_TYPES[e.type].label) + (e.amount ? ' <b>' + esc(e.amount) + '</b>' : '') + '</td>' +
+            '<td>' + esc(e.label || '') + (e.back ? '<span class="sub">встречный поток: ' + esc(e.back) + '</span>' : '') + '</td>' +
+            '<td>' + refMark(e) + '</td></tr>';
+        }).join('');
+      }
+      function showSel(node, edges) {
+        var t = root.querySelector('#selTitle'), s = root.querySelector('#selSub'), b = root.querySelector('#selBody');
+        if (!node) {
+          t.textContent = 'Выбранный узел';
+          s.textContent = 'Нажмите на узел графа, чтобы увидеть все его денежные связи';
+          b.innerHTML = ''; return;
+        }
+        t.textContent = node.name;
+        s.textContent = (window.VG_LAYER_LABELS[node.layer] || node.layer) + ' · ' + node.country + ' · ' + node.note;
+        var inc = edges.filter(function (e) { return e.to === node.id; });
+        var out = edges.filter(function (e) { return e.from === node.id; });
+        function block(title, list, dir) {
+          return '<h2 class="section">' + title + '</h2>' + (list.length ? '<ul class="list">' + list.map(function (e) {
+            return '<li>' + esc(dir === 'in' ? nodeName(e.from) : nodeName(e.to)) + ' — ' + esc(e.label || window.VG_EDGE_TYPES[e.type].label) +
+              (e.amount ? ' (' + esc(e.amount) + ')' : '') + ' ' + srcref(e.src) + '</li>';
+          }).join('') + '</ul>' : '<p class="note">нет</p>');
+        }
+        b.innerHTML = block('Деньги приходят от', inc, 'in') + block('Деньги уходят к', out, 'out');
+      }
+
+      root.querySelectorAll('[data-etype]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var on = btn.getAttribute('aria-pressed') !== 'true';
+          btn.setAttribute('aria-pressed', String(on));
+          g.setFilter(btn.dataset.etype, on);
+          refresh();
+        });
+      });
+      root.querySelector('#onlyReport').addEventListener('click', function () {
+        var on = this.getAttribute('aria-pressed') !== 'true';
+        this.setAttribute('aria-pressed', String(on));
+        g.setOnlyReport(on);
+        refresh();
+      });
+      root.querySelector('#relax').addEventListener('click', function () { g.relax(); });
+      refresh();
+    }
+  };
+
+  /* ---------------------------------------------------------- 3. Стек */
+  VIEWS.stack = {
+    nav: 'Стек цикла', hint: '03',
+    title: 'Стек цикла: 13 звеньев',
+    sub: 'Чем дальше звено от конечного результата, тем легче измерить поставку; чем ближе к результату, тем труднее отделить вклад ИИ от изменений процесса.',
+    render: function () {
+      var rows = LAYERS.map(function (l, i) {
+        return '<tr data-layer="' + l.id + '">' +
+          '<td><b>' + esc(l.name) + '</b><span class="sub">' + esc(l.players) + '</span></td>' +
+          '<td style="min-width:220px"><div class="tornado">' +
+            '<div class="left"><span style="width:' + pct(l.margin) + '%"></span></div><div></div>' +
+            '<div class="right"><span style="width:' + pct(l.financing) + '%"></span></div>' +
+          '</div><span class="sub">маржа ' + l.margin + ' · риск финансирования ' + l.financing + ' · риск отдачи ' + l.payoff + '</span></td>' +
+          '<td>' + esc(window.VG_RISK_TYPES[l.riskType].label) + '<span class="sub">' + esc(l.overheat) + '</span></td>' +
+          '<td>' + esc(l.demand) + '</td>' +
+          '<td>' + esc(l.capexBy) + '</td>' +
+          '<td>' + esc(l.breaks) + '</td>' +
+        '</tr>';
+      }).join('');
+
+      return '' +
+        '<div class="panel">' +
+          '<h3>Где накапливается прибыль, а где риск</h3>' +
+          '<p class="sub">Встречные полосы: слева — маржа звена, справа — риск финансирования. Шкала 0-100 — экспертная оцифровка качественной таблицы исследования ' + badge('expert') + '</p>' +
+          '<div class="legend" style="margin-bottom:12px">' +
+            '<b><i style="background:var(--s1)"></i>Маржа звена (влево)</b>' +
+            '<b><i style="background:var(--s2)"></i>Риск финансирования (вправо)</b>' +
+          '</div>' +
+          '<div class="tablewrap"><table><thead><tr>' +
+            '<th>Звено и типичные игроки</th><th>Маржа ↔ риск</th><th>Тип риска</th>' +
+            '<th>Реальная метрика спроса</th><th>Кто несёт капвложения</th><th>Что ломает прогноз</th>' +
+          '</tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '</div>' +
+        '<div class="cols cols-3">' + Object.keys(window.VG_RISK_TYPES).map(function (k) {
+          var r = window.VG_RISK_TYPES[k];
+          var list = LAYERS.filter(function (l) { return l.riskType === k; }).map(function (l) { return l.name; });
+          return '<div class="panel"><h3>' + esc(r.label) + '</h3><p class="sub">' + esc(r.hint) + '</p>' +
+            '<ul class="list">' + list.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul></div>';
+        }).join('') + '</div>' +
+        '<div class="note">Самая высокая текущая маржа — там, где есть технологическая редкость и ограниченное число поставщиков. Самый высокий риск финансирования — у специализированных облаков, операторов ЦОД и проектных структур, соединяющих короткий технологический цикл с долгим долгом. Самый высокий риск недоказанной отдачи — у программных агентов и конечных внедрений.</div>';
+    }
+  };
+
+  /* -------------------------------------------------------- 4. Капитал */
+  VIEWS.capital = {
+    nav: 'Капитал и поток', hint: '04',
+    title: 'Капитал против денежного потока',
+    sub: 'Корректный вопрос — не «кто потратил больше», а какая доля прироста капитала уже обслуживается внешней выручкой и денежным потоком. Периоды компаний различаются и указаны в каждой строке.',
+    render: function () {
+      var capexCo = CO.filter(function (c) { return typeof c.capex === 'number' && typeof c.ocf === 'number'; });
+
+      var maxCapex = Math.max.apply(null, capexCo.map(function (c) { return Math.max(c.capex, c.ocf); }));
+      var capexChart = '<div class="chart">' + capexCo.map(function (c) {
+        return '<div class="chartrow"><div class="nm">' + esc(c.name) + '<span class="sub">' + esc(c.period) + '</span></div>' +
+          '<div class="track pair">' +
+            '<div class="mark a" style="width:' + pct(c.capex / maxCapex * 100).toFixed(1) + '%"><span>' + num(c.capex) + '</span></div>' +
+            '<div class="mark b" style="width:' + pct(c.ocf / maxCapex * 100).toFixed(1) + '%"><span>' + num(c.ocf) + '</span></div>' +
+          '</div></div>';
+      }).join('') + '</div>';
+
+      var ratio = capexCo.map(function (c) {
+        return { name: c.name, v: c.capex / c.ocf * 100, label: Math.round(c.capex / c.ocf * 100) + '%' };
+      }).sort(function (a, b) { return b.v - a.v; });
+      var maxR = Math.max.apply(null, ratio.map(function (r) { return r.v; }));
+      var ratioChart = '<div class="chart" style="position:relative">' + ratio.map(function (r) {
+        return '<div class="chartrow"><div class="nm">' + esc(r.name) + '</div>' +
+          '<div class="track"><div class="axisline" style="left:' + pct(100 / maxR * 100).toFixed(2) + '%"></div>' +
+          '<div class="mark ' + (r.v > 100 ? 'b' : 'a') + '" style="width:' + pct(r.v / maxR * 100).toFixed(1) + '%"><span>' + esc(r.label) + '</span></div>' +
+          '</div></div>';
+      }).join('') + '</div>';
+
+      var fcfCo = CO.filter(function (c) { return typeof c.fcf === 'number'; });
+      var fmin = Math.min.apply(null, fcfCo.map(function (c) { return c.fcf; }));
+      var fmax = Math.max.apply(null, fcfCo.map(function (c) { return c.fcf; }));
+      var fcfChart = divBars(fcfCo.map(function (c) {
+        return { name: c.name, v: c.fcf, label: (c.fcf > 0 ? '+' : '') + num(c.fcf) };
+      }), Math.min(fmin * 1.25, -5), Math.max(fmax * 1.25, 5));
+
+      var rows = CO.map(function (c) {
+        return '<tr><td><b>' + esc(c.name) + '</b><span class="sub">' + esc(c.role) + ' · ' + esc(c.country) + '</span></td>' +
+          '<td>' + esc(c.period) + ' ' + badge(c.kind) + '</td>' +
+          '<td class="num">' + (typeof c.capex === 'number' ? '$' + num(c.capex) : '—') + (c.capexKind ? ' ' + badge(c.capexKind) : '') + '</td>' +
+          '<td class="num">' + (typeof c.ocf === 'number' ? '$' + num(c.ocf) : '—') + (c.ocfKind ? ' ' + badge(c.ocfKind) : '') + '</td>' +
+          '<td class="num">' + (typeof c.fcf === 'number' ? (c.fcf > 0 ? '+' : '') + '$' + num(c.fcf) : '—') + '</td>' +
+          '<td>' + esc(c.proof) + (c.guide ? '<span class="sub">' + esc(c.guide) + '</span>' : '') + '</td>' +
+          '<td>' + esc(c.breaks) + '<span class="sub">ограничение: ' + esc(c.limit) + ' ' + '</span></td>' +
+          '<td>' + srcref(c.src) + '</td></tr>';
+      }).join('');
+
+      var T5 = window.VG_TEST5;
+      var t5rows = CO.map(function (c) {
+        var a = T5.answers[c.id]; if (!a) return '';
+        var no = a.filter(function (x) { return x === 'no'; }).length;
+        var unk = a.filter(function (x) { return x === 'unknown'; }).length;
+        var verdict, vstate;
+        if (no >= 2) { verdict = T5.verdict.bet; vstate = 'stress'; }
+        else if (no === 1) { verdict = T5.verdict.mixed; vstate = 'watch'; }
+        else if (unk === 0) { verdict = T5.verdict.prod; vstate = 'ok'; }
+        else { verdict = T5.verdict.opaque; vstate = 'nodata'; }
+        var VLAB = { ok: 'Производительность', watch: 'Смешанный случай', stress: 'Ставка на капитализацию', nodata: 'Нельзя проверить' };
+        return '<tr><td><b>' + esc(c.name) + '</b></td>' +
+          a.map(function (x, qi) {
+            return '<td class="num" title="' + esc(T5.questions[qi] || '') + '">' +
+              (x === 'yes' ? '<span class="st st-ok"><i></i></span>' : x === 'no' ? '<span class="st st-stress"><i></i></span>' : '<span class="st st-nodata"><i></i></span>') +
+              '</td>';
+          }).join('') +
+          '<td><span class="st st-' + vstate + '"><i></i>' + VLAB[vstate] + '</span>' +
+          '<span class="sub">' + esc(verdict) + (unk ? ' · не раскрыто условий: ' + unk : '') + '</span></td></tr>';
+      }).join('');
+
+      return '' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Капвложения и операционный поток</h3>' +
+            '<p class="sub">Млрд долларов за раскрытый период; периоды компаний различаются</p>' +
+            '<div class="legend" style="margin-bottom:10px"><b><i style="background:var(--s1)"></i>Капвложения</b><b><i style="background:var(--s2)"></i>Операционный денежный поток</b></div>' +
+            capexChart + '</div>' +
+          '<div class="panel"><h3>Капвложения к операционному потоку</h3>' +
+            '<p class="sub">Стресс-сигнал исследования: выше 100% два квартала подряд без ускорения выручки. Вертикальная линия — отметка 100%</p>' +
+            ratioChart +
+            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') + '</p></div>' +
+        '</div>' +
+        '<div class="panel"><h3>Свободный денежный поток после капвложений</h3>' +
+          '<p class="sub">Млрд долларов. Отрицательное значение само по себе не приговор — приговором его делает повторение при замедлении облачной выручки</p>' +
+          fcfChart + '</div>' +
+        '<h2 class="section">Раскрытия компаний</h2>' +
+        '<div class="tablewrap"><table><thead><tr><th>Компания</th><th>Период</th><th class="num">Капвложения</th>' +
+          '<th class="num">Операционный поток</th><th class="num">Свободный поток</th><th>Доказанная монетизация</th>' +
+          '<th>Что опровергнет позитивный сценарий</th><th>Источник</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '<h2 class="section">Тест пяти условий: производительность или ставка на капитализацию</h2>' +
+        '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия не выполняются или не наблюдаемы, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
+          '<ol class="list" style="margin-bottom:14px">' + T5.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol>' +
+          '<div class="legend" style="margin-bottom:10px"><b><i class="sq" style="background:var(--ok)"></i>выполняется</b><b><i class="sq" style="background:var(--critical)"></i>не выполняется</b><b><i class="sq" style="background:var(--nodata)"></i>не наблюдаемо публично</b></div>' +
+          '<div class="tablewrap compact"><table><thead><tr><th>Компания</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th>Вывод</th></tr></thead><tbody>' + t5rows + '</tbody></table></div>' +
+        '</div>';
+    }
+  };
+
+  /* -------------------------------------------------------- 5. Энергия */
+  VIEWS.energy = {
+    nav: 'Энергия и физика', hint: '05',
+    title: 'Энергетика и физическая экономика ЦОД',
+    sub: EN.keyMetric,
+    render: function () {
+      var f = EN.headline;
+      return '' +
+        '<div class="cols cols-2">' +
+          '<div class="panel hero"><h3>Потребление электроэнергии мировыми ЦОД</h3>' +
+            '<div class="figure">' + f.from + ' → ' + f.to + '<small style="font-size:20px;font-weight:500;color:var(--ink-2)"> ТВт·ч</small></div>' +
+            '<div class="row" style="display:flex;gap:8px;align-items:center">' + badge(f.kind) + srcref(f.src) +
+              '<span style="font-size:12px;color:var(--muted)">' + f.fromYear + ' → ' + f.toYear + '</span></div>' +
+            '<p class="cap">' + esc(f.note) + '</p></div>' +
+          '<div class="panel"><h3>Физические факты и диапазоны</h3><p class="sub">Диапазон — это неопределённость, а не план</p>' +
+            '<div class="tablewrap compact"><table><tbody>' + EN.facts.map(function (x) {
+              return '<tr><td>' + esc(x.label) + (x.note ? '<span class="sub">' + esc(x.note) + '</span>' : '') + '</td>' +
+                '<td class="num"><b>' + esc(x.value) + '</b></td><td class="num">' + badge(x.kind) + ' ' + srcref(x.src) + '</td></tr>';
+            }).join('') + '</tbody></table></div></div>' +
+        '</div>' +
+        '<h2 class="section">Узкие места, которые определяют ввод мощности</h2>' +
+        '<div class="cols cols-2">' + EN.bottlenecks.map(function (b) {
+          return '<div class="panel"><h3>' + esc(b.name) + '</h3><p class="sub" style="margin:0">' + esc(b.text) + '</p></div>';
+        }).join('') + '</div>' +
+        '<div class="panel"><h3>Дефицит: доказательство спроса или будущая застрявшая мощность</h3>' +
+          '<p class="sub" style="margin:0 0 10px">Оба вывода верны одновременно</p>' +
+          '<p style="margin:0 0 10px;color:var(--ink-2)">Очередь на подключение и высокая цена подтверждают, что текущие заказчики готовы платить. Но дефицит заставляет фиксировать долгие обязательства по пиковой цене. Если вычислительная эффективность, распределённые нагрузки или география изменятся быстрее, чем строится сеть, актив окажется технически полезным, но финансово недозагруженным.</p>' +
+          '<div class="note">' + esc(EN.keyMetric) + '</div></div>' +
+        '<div class="panel"><h3>Корпоративный случай: Constellation и Microsoft</h3>' +
+          '<p class="sub">Двадцатилетний договор купли электроэнергии должен поддержать перезапуск энергоблока Crane Clean Energy Center мощностью 835 МВт ' + srcref('S27') + '</p>' +
+          '<p style="margin:0;color:var(--ink-2)">Технологическая компания готова гарантировать долгий спрос, чтобы разблокировать реальный энергетический актив. Но договор не равен уже поставленной энергии: лицензирование, инвестиции и срок перезапуска остаются проектными рисками.</p></div>';
+    }
+  };
+
+  /* --------------------------------------------------------- 6. Панель */
+  VIEWS.panel = {
+    nav: 'Панель 28 показателей', hint: '06',
+    title: 'Панель из 28 показателей',
+    sub: 'Что проверять каждый квартал. Серый статус означает не ноль, а отсутствие публичного ряда — это самостоятельный вывод: главные показатели окупаемости сегодня просто не раскрываются.',
+    render: function () {
+      var byGroup = GROUPS.map(function (g) {
+        var items = IND.filter(function (i) { return i.g === g.id; });
+        return '<h2 class="section">' + esc(g.name) + '</h2>' +
+          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение на дату среза</th><th>Статус</th></tr></thead><tbody>' +
+          items.map(function (i) {
+            return '<tr><td><b>' + esc(i.name) + '</b></td><td>' + esc(i.why) + '</td><td>' + esc(i.stress) + '</td>' +
+              '<td>' + esc(i.obs) + ' ' + srcref(i.src) + '</td><td>' + stateEl(i.state) + '</td></tr>';
+          }).join('') + '</tbody></table></div>';
+      }).join('');
+
+      var ladder = window.VG_LADDER.map(function (r) {
+        return '<div class="rung"><div class="lv"><b>' + esc(r.level) + '</b>' + stateEl(r.state) +
+          '<span class="sub" style="color:var(--muted);font-size:11.5px">' + esc(r.measure) + '</span></div>' +
+          '<div><div style="margin-bottom:5px">' + esc(r.seen) + ' ' + srcref(r.src) + '</div>' +
+          '<div style="color:var(--muted);font-size:12.5px">Нельзя утверждать: ' + esc(r.cannot) + '</div></div></div>';
+      }).join('');
+
+      var gaps = IND.filter(function (i) { return i.state === 'nodata'; });
+
+      return '' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Пробелы панели</h3>' +
+            '<p class="sub">' + gaps.length + ' из ' + IND.length + ' показателей не имеют публичного ряда. Это самая важная строка терминала: без них окупаемость нельзя ни подтвердить, ни опровергнуть</p>' +
+            '<ul class="list">' + gaps.map(function (i) { return '<li><b>' + esc(i.name) + '</b> — ' + esc(i.obs) + '</li>'; }).join('') + '</ul></div>' +
+          '<div class="panel"><h3>Как читать статусы</h3>' +
+            '<div class="kv"><dt>' + stateEl('ok') + '</dt><dd>Показатель наблюдается и не подаёт сигнала</dd>' +
+            '<dt>' + stateEl('watch') + '</dt><dd>Движется в сторону порога или измеряется неоднозначно</dd>' +
+            '<dt>' + stateEl('stress') + '</dt><dd>Порог, описанный в исследовании, уже пройден</dd>' +
+            '<dt>' + stateEl('nodata') + '</dt><dd>Показатель нужен, но публичного ряда нет</dd></div>' +
+            '<div class="note" style="margin-top:14px">Статусы расставлены по наблюдениям на дату среза. При обновлении данных статус меняется, и вместе с ним пересчитывается индекс напряжения на экране «Пульс».</div></div>' +
+        '</div>' +
+        byGroup +
+        '<h2 class="section">Лестница доказательств производительности</h2>' +
+        '<div class="ladder">' + ladder + '</div>';
+    }
+  };
+
+  /* ------------------------------------------------------- 7. Сценарии */
+  VIEWS.scenarios = {
+    nav: 'Сценарии', hint: '07',
+    title: 'Сценарии на 12-36 месяцев',
+    sub: 'Вероятности — аналитическая оценка авторов исследования, а не расчёт терминала. Ценность в другом: у каждого сценария есть набор ранних индикаторов, который можно проверять.',
+    render: function () {
+      var cards = SCEN.map(function (s) {
+        var met = s.signals.filter(function (x) { return x.met === true; }).length;
+        var known = s.signals.filter(function (x) { return x.met !== null; }).length;
+        return '<div class="panel scen">' +
+          '<div class="head"><b>' + esc(s.name) + '</b><span class="p count">' + s.prob + '%</span></div>' +
+          '<p class="sub" style="margin:0">' + esc(s.assumption) + '</p>' +
+          '<div class="bar"><span style="width:' + s.prob + '%;background:var(--' + (s.id === 'stress' ? 'critical' : s.id === 'opt' ? 'ok' : 's1') + ')"></span></div>' +
+          '<div style="font-size:12.5px;color:var(--ink-2)">Ранние индикаторы: подтверждено <b class="count">' + met + '</b> из ' + s.signals.length +
+            ' · наблюдаемо ' + known + '</div>' +
+          s.signals.map(function (x) {
+            var mark = x.met === true ? '<span class="st st-stress"><i></i></span>' : x.met === false ? '<span class="st st-ok"><i></i></span>' : '<span class="st st-nodata"><i></i></span>';
+            return '<div class="sig"><div class="mark">' + mark + '</div><div><div class="t">' + esc(x.text) + '</div>' +
+              '<div class="n">' + esc(x.note) + ' ' + srcref(x.src) + '</div></div></div>';
+          }).join('') +
+        '</div>';
+      }).join('');
+
+      var keys = Object.keys(SCEN[0].rows);
+      var table = '<div class="tablewrap"><table><thead><tr><th>Параметр</th>' +
+        SCEN.map(function (s) { return '<th>' + esc(s.name) + ' · ' + s.prob + '%</th>'; }).join('') +
+        '</tr></thead><tbody>' + keys.map(function (k) {
+          return '<tr><td><b>' + esc(k) + '</b></td>' + SCEN.map(function (s) { return '<td>' + esc(s.rows[k]) + '</td>'; }).join('') + '</tr>';
+        }).join('') + '</tbody></table></div>';
+
+      var vuln = '<div class="tablewrap compact"><table><thead><tr><th>Группа</th><th>Уязвимость</th><th>Почему</th></tr></thead><tbody>' +
+        window.VG_VULNERABLE.map(function (v) {
+          return '<tr><td><b>' + esc(v.group) + '</b></td><td>' + esc(v.level) + '</td><td>' + esc(v.why) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+
+      return '' +
+        '<div class="note">Отметка у индикатора читается так: красный квадрат — индикатор сценария уже подтверждён наблюдением, зелёный — наблюдение противоречит сценарию, серый — наблюдать нечем.</div>' +
+        '<div class="cols cols-3">' + cards + '</div>' +
+        '<h2 class="section">Что происходит с каждым параметром</h2>' + table +
+        '<h2 class="section">Кто наиболее уязвим при стрессовом сценарии</h2>' + vuln;
+    }
+  };
+
+  /* --------------------------------------------------------- 8. Россия */
+  VIEWS.russia = {
+    nav: 'Россия', hint: '08',
+    title: 'Россия: другое место на кривой',
+    sub: RU.position.verdict,
+    render: function () {
+      var ad = RU.adoption;
+      var maxA = 100;
+      return '' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Где Россия сильна</h3><ul class="list">' +
+            RU.position.strong.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
+          '<div class="panel"><h3>Где слаба</h3><ul class="list">' +
+            RU.position.weak.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+            '<div class="note" style="margin-top:12px">Экспортные ограничения США и ЕС делают поставку передовых процессоров и серверов юридически и логистически сложнее; это повышает цену и удлиняет цикл обновления ' + srcref('S25') + ' ' + srcref('S29') + '</div></div>' +
+        '</div>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Реальное внедрение</h3><p class="sub">' + esc(ad.title) + ' ' + badge(ad.kind) + ' ' + srcref(ad.src) + '</p>' +
+            bars(ad.items.map(function (i) { return { name: i.label, v: i.value, label: i.value + '%' }; }), maxA) +
+            '<h2 class="section">Почему не планируют</h2>' +
+            bars(ad.barriers.map(function (i) { return { name: i.label, v: i.value, label: i.value + '%' }; }), maxA, 'b') +
+            '<div class="note" style="margin-top:12px">' + esc(ad.note) + '</div></div>' +
+          '<div class="panel"><h3>Вычисления, ЦОД и энергетика</h3>' +
+            '<div class="tablewrap compact"><table><tbody>' + RU.infra.map(function (i) {
+              return '<tr><td>' + esc(i.label) + '<span class="sub">' + esc(i.note) + '</span></td>' +
+                '<td class="num"><b>' + esc(i.value) + '</b></td><td class="num">' + badge(i.kind) + ' ' + srcref(i.src) + '</td></tr>';
+            }).join('') + '</tbody></table></div>' +
+            '<h2 class="section">Вопросы российским собеседникам</h2>' +
+            '<ol class="list">' + RU.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol></div>' +
+        '</div>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Где эффект появится быстрее</h3>' +
+            '<div class="tablewrap compact"><table><tbody>' + RU.fastEffect.map(function (r) {
+              return '<tr><td class="num" style="color:var(--muted)">' + r.n + '</td><td><b>' + esc(r.area) + '</b><span class="sub">' + esc(r.why) + '</span></td></tr>';
+            }).join('') + '</tbody></table></div></div>' +
+          '<div class="panel"><h3>Где особенно велик риск неэффективных капвложений</h3>' +
+            '<ul class="list">' + RU.badCapex.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul></div>' +
+        '</div>' +
+        '<h2 class="section">География цикла</h2>' +
+        '<div class="tablewrap"><table><thead><tr><th>Регион</th><th>Роль в цепочке</th><th>Сильная сторона</th><th>Главная зависимость</th><th>Ключевой риск</th></tr></thead><tbody>' +
+          window.VG_GEO.map(function (g) {
+            return '<tr' + (g.region === 'Россия' ? ' style="background:var(--accent-soft)"' : '') + '><td><b>' + esc(g.region) + '</b></td><td>' + esc(g.role) + '</td><td>' + esc(g.strong) + '</td><td>' + esc(g.dep) + '</td><td>' + esc(g.risk) + '</td></tr>';
+          }).join('') + '</tbody></table></div>';
+    }
+  };
+
+  /* ------------------------------------------------------ 9. Источники */
+  VIEWS.sources = {
+    nav: 'Источники и методика', hint: '09',
+    title: 'Источники и методика',
+    sub: 'Каждая цифра терминала прослеживается до первичного источника. Ссылка открывается в новой вкладке.',
+    render: function () {
+      var rows = Object.keys(M.sources).map(function (code) {
+        var s = M.sources[code];
+        return '<tr id="src-' + code + '"><td class="num"><b>' + code + '</b></td><td><b>' + esc(s.org) + '</b><span class="sub">' + esc(s.title) + '</span></td>' +
+          '<td class="num">' + esc(s.date) + '</td>' +
+          '<td><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Открыть</a></td></tr>';
+      }).join('');
+      return '' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Методические ограничения</h3><ul class="list">' +
+            M.limits.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' +
+          '<div class="panel"><h3>Как устроено обновление</h3>' +
+            '<div class="kv">' +
+              '<dt>Слой A</dt><dd>Котировки, капитализация, кредитные спрэды — автоматически, раз в час</dd>' +
+              '<dt>Слой B</dt><dd>Капвложения, потоки, выручка сегментов — по факту подачи отчётности, из машиночитаемых раскрытий</dd>' +
+              '<dt>Слой C</dt><dd>IEA, BIS, Census, Банк России, iKS, связи графа — курируется вручную, с датой и кодом источника</dd>' +
+            '</div>' +
+            '<div class="note" style="margin-top:14px">Полностью автоматическим слой C не будет: эти организации не отдают данные машиночитаемо. Сила терминала не в скорости обновления, а в том, что каждая цифра прослеживается до первоисточника и несёт статус: факт, оценка, прогноз или заявление руководства.</div></div>' +
+        '</div>' +
+        '<h2 class="section">Первичные источники</h2>' +
+        '<div class="tablewrap"><table><thead><tr><th class="num">Код</th><th>Источник</th><th class="num">Дата</th><th>Ссылка</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+        '<div class="note">Основание терминала: ' + esc(M.basis) + '. Дата среза данных — ' + esc(M.asOf) + '.</div>';
+    }
+  };
+
+  /* ============================================================ каркас */
+  var ORDER = ['pulse', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'sources'];
+  var GROUPS_NAV = [
+    { label: 'Обзор', items: ['pulse', 'network'] },
+    { label: 'Слои цикла', items: ['stack', 'capital', 'energy'] },
+    { label: 'Проверка', items: ['panel', 'scenarios'] },
+    { label: 'Контур', items: ['russia', 'sources'] }
+  ];
+
+  var rendered = {};
+
+  function show(id) {
+    if (!VIEWS[id]) id = 'pulse';
+    ORDER.forEach(function (k) {
+      var sec = document.getElementById('view-' + k);
+      if (sec) sec.hidden = (k !== id);
+    });
+    document.querySelectorAll('.navitem').forEach(function (b) {
+      b.setAttribute('aria-current', String(b.dataset.view === id));
+    });
+    if (!rendered[id]) {
+      var host = document.getElementById('view-' + id);
+      var v = VIEWS[id];
+      host.innerHTML = '<div class="viewhead"><h1>' + esc(v.title) + '</h1><p>' + esc(v.sub) + '</p></div>' + v.render();
+      rendered[id] = true;
+      if (v.after) v.after(host);
+      bindSrcRefs(host);
+    }
+    if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
+    window.scrollTo({ top: 0, behavior: 'auto' });
+  }
+
+  function bindSrcRefs(root) {
+    root.querySelectorAll('.src').forEach(function (b) {
+      b.addEventListener('click', function () {
+        show('sources');
+        var row = document.getElementById('src-' + b.dataset.src);
+        if (row) {
+          row.scrollIntoView({ block: 'center' });
+          row.style.background = 'var(--accent-soft)';
+          setTimeout(function () { row.style.background = ''; }, 2200);
+        }
+      });
+    });
+  }
+
+  function theme(set) {
+    var root = document.documentElement;
+    var cur = root.getAttribute('data-theme');
+    if (!cur) {
+      try { cur = localStorage.getItem('vg-theme'); } catch (e) { cur = null; }
+    }
+    if (set) {
+      var next = (cur === 'dark') ? 'light' : 'dark';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('vg-theme', next); } catch (e) {}
+      cur = next;
+      if (window.__vgGraph) window.__vgGraph.position();
+    } else if (cur) {
+      root.setAttribute('data-theme', cur);
+    }
+    var btn = document.getElementById('themeBtn');
+    if (btn) btn.textContent = (root.getAttribute('data-theme') === 'dark') ? 'Светлая тема' : 'Тёмная тема';
+  }
+
+  function init() {
+    document.getElementById('asOf').textContent = 'срез ' + M.asOf + ' · сборка ' + M.builtAt;
+
+    var nav = document.getElementById('rail');
+    nav.innerHTML = GROUPS_NAV.map(function (g) {
+      return '<div class="grouplabel">' + esc(g.label) + '</div>' + g.items.map(function (id) {
+        return '<button class="navitem" type="button" data-view="' + id + '" aria-current="false">' +
+          esc(VIEWS[id].nav) + '<em>' + VIEWS[id].hint + '</em></button>';
+      }).join('');
+    }).join('');
+
+    var main = document.getElementById('main');
+    main.innerHTML = ORDER.map(function (id) { return '<section class="view" id="view-' + id + '" hidden></section>'; }).join('');
+
+    nav.addEventListener('click', function (e) {
+      var b = e.target.closest('.navitem');
+      if (b) show(b.dataset.view);
+    });
+    document.getElementById('themeBtn').addEventListener('click', function () { theme(true); });
+    window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
+
+    theme(false);
+    show(location.hash.slice(1) || 'pulse');
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+  else init();
+})();
+
+</script>
