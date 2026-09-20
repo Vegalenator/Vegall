@@ -64,39 +64,146 @@
     }).join('') + '</div>';
   }
 
-  /* --------------------------------------------------- расчёт индексов */
-  /* 0 — все наблюдаемые показатели в норме, 100 — все дают стресс-сигнал */
-  var SCORE = { stress: 100, watch: 50, ok: 0 };
-  var MIN_COVERAGE = 0.6;
+  /* ------------------------------------------------- расчёты и история */
+  var VGM = window.VGM;
+  var HIST = window.VG_HISTORY || [];
+  var MIN_COVERAGE = VGM.MIN_COVERAGE;
 
-  function coverage(gid) {
-    var all = IND.filter(function (i) { return !gid || i.g === gid; });
-    var seen = all.filter(function (i) { return i.state !== 'nodata'; });
-    return { seen: seen.length, all: all.length, share: all.length ? seen.length / all.length : 0 };
+  function coverage(gid) { return VGM.coverage(IND, gid); }
+  function groupIndex(gid) { return VGM.groupIndex(IND, gid); }
+  function overallIndex() { return VGM.overallIndex(IND, GROUPS); }
+  function tension(v) { return VGM.tension(v); }
+
+  function today() { return new Date().toISOString().slice(0, 10); }
+
+  /* словари для расшифровки ключей снимка */
+  var DICT = {
+    groups: {}, indicators: {}, companies: {}, nodes: {},
+    fields: { capex: 'капвложения', capexDelta: 'прирост капвложений', ocf: 'операционный поток',
+              fcf: 'свободный поток', rpo: 'портфель обязательств', revenue: 'выручка' }
+  };
+  GROUPS.forEach(function (g) { DICT.groups[g.id] = g.name; });
+  IND.forEach(function (i) { DICT.indicators[i.id] = i.name; });
+  CO.forEach(function (c) { DICT.companies[c.id] = c.name; });
+  (window.VG_NODES || []).forEach(function (n) { DICT.nodes[n.id] = n.full || n.name; });
+
+  function cycleNames(key) {
+    return key.split(' + ').map(function (id) { return DICT.nodes[id] || id; }).join(' и ');
   }
-  function groupIndex(gid) {
-    var items = IND.filter(function (i) { return i.g === gid && i.state !== 'nodata'; });
-    if (!items.length) return null;
-    var sum = items.reduce(function (a, i) { return a + SCORE[i.state]; }, 0);
-    return sum / items.length;
+
+  /* текущее состояние в том же виде, что и снимок истории */
+  function currentSnapshot() {
+    return VGM.snapshot({
+      meta: M, groups: GROUPS, indicators: IND, companies: CO,
+      nodes: window.VG_NODES, edges: window.VG_EDGES, scenarios: SCEN
+    }, 'текущее состояние');
   }
-  function overallIndex() {
-    var num = 0, den = 0;
-    GROUPS.forEach(function (g) {
-      var v = groupIndex(g.id);
-      if (v !== null) { num += v * g.weight; den += g.weight; }
-    });
-    return den ? num / den : 0;
-  }
-  function tension(v) {
-    if (v < 25) return { label: 'Спокойно', state: 'ok' };
-    if (v < 50) return { label: 'Наблюдение', state: 'watch' };
-    if (v < 75) return { label: 'Напряжение', state: 'watch' };
-    return { label: 'Стресс', state: 'stress' };
-  }
+
+  var CUR = currentSnapshot();
+  var LAST = HIST.length ? HIST[HIST.length - 1] : null;
+  var PREV = HIST.length > 1 ? HIST[HIST.length - 2] : null;
+  var DIFF = VGM.diff(PREV, LAST, DICT);
+  var DIFF_N = LAST ? VGM.count(DIFF) : 0;
+  /* сверка: данные могли изменить, не зафиксировав снимок */
+  var UNSAVED = LAST ? VGM.count(VGM.diff(LAST, CUR, DICT)) : 0;
 
   /* ============================================================ ЭКРАНЫ */
   var VIEWS = {};
+
+
+  /* --------------------------------------------------- 0. Что изменилось */
+  function changeRows() {
+    var out = [];
+    DIFF.indicators.forEach(function (c) {
+      out.push({ arr: c.to === 'stress' ? '▲' : c.from === 'stress' ? '▼' : '→',
+        cls: c.to === 'stress' ? 'up' : c.from === 'stress' ? 'down' : '',
+        html: '<b>' + esc(c.name) + '</b><br><span class="from">' + esc(c.fromName || '—') + '</span> → <span class="to">' + esc(c.toName) + '</span>' });
+    });
+    DIFF.companies.forEach(function (c) {
+      var f = DICT.fields[c.field] || c.field;
+      out.push({ arr: '→', cls: '',
+        html: '<b>' + esc(c.name) + '</b> · ' + esc(f) + '<br><span class="from">' +
+          (c.from === undefined || c.from === null ? 'не раскрыто' : num(c.from)) + '</span> → <span class="to">' +
+          (c.to === undefined || c.to === null ? 'не раскрыто' : num(c.to)) + '</span>' });
+    });
+    DIFF.cycles.forEach(function (c) {
+      out.push({ arr: c.added ? '▲' : '▼', cls: c.added ? 'up' : 'down',
+        html: '<b>Круговой контур ' + (c.added ? 'появился' : 'исчез') + '</b><br>' + esc(cycleNames(c.key)) });
+    });
+    DIFF.scenarios.forEach(function (c) {
+      var sc = SCEN.filter(function (x) { return x.id === c.id; })[0] || { name: c.id };
+      out.push({ arr: c.metTo > c.metFrom ? '▲' : '▼', cls: c.metTo > c.metFrom ? 'up' : 'down',
+        html: '<b>Сценарий «' + esc(sc.name) + '»</b><br><span class="from">подтверждено ' + c.metFrom + '</span> → <span class="to">' + c.metTo + ' из ' + c.total + '</span>' });
+    });
+    DIFF.groups.forEach(function (c) {
+      var parts = [];
+      if (c.from !== c.to) parts.push('субиндекс <span class="from">' + num(c.from, 0) + '</span> → <span class="to">' + num(c.to, 0) + '</span>');
+      if (c.seenFrom !== c.seenTo) parts.push('данные <span class="from">' + c.seenFrom + '</span> → <span class="to">' + c.seenTo + ' из ' + c.all + '</span>');
+      if (!parts.length) return;
+      var down = (c.to !== null && c.from !== null) ? c.to < c.from : false;
+      out.push({ arr: c.from === c.to ? '→' : down ? '▼' : '▲', cls: c.from === c.to ? '' : down ? 'down' : 'up',
+        html: '<b>' + esc(c.name) + '</b><br>' + parts.join(' · ') });
+    });
+    if (DIFF.graph) {
+      out.push({ arr: '→', cls: '',
+        html: '<b>Граф связей</b><br><span class="from">' + DIFF.graph.edgesFrom + ' связей</span> → <span class="to">' + DIFF.graph.edgesTo + ' связей</span>' });
+    }
+    return out;
+  }
+
+  VIEWS.changes = {
+    nav: 'Что изменилось', hint: '00',
+    title: 'Что изменилось',
+    sub: 'Сравнение двух последних снимков. Снимок фиксируется при каждом обновлении данных и считается тем же кодом, что и показания на экранах, поэтому история не может разойтись с интерфейсом.',
+    render: function () {
+      if (!LAST) return '<div class="note">История ещё не заполнена: снимков нет.</div>';
+      var rows = changeRows();
+      var idx = DIFF.index;
+      var mx = Math.max.apply(null, HIST.map(function (h) { return h.index.overall; }).concat([1]));
+      var spark = '<div class="spark">' + HIST.map(function (h, i) {
+        return '<div class="col' + (i === HIST.length - 1 ? ' now' : '') + '">' +
+          '<b>' + num(h.index.overall, 0) + '</b>' +
+          '<i style="height:' + Math.max(4, h.index.overall / mx * 56).toFixed(0) + 'px"></i>' +
+          '<span title="' + esc(h.label) + '">' + esc(h.builtAt.slice(5)) + '</span></div>';
+      }).join('') + '</div>';
+
+      var log = '<div class="tablewrap compact"><table><thead><tr><th>Сборка</th><th>Что обновляли</th>' +
+        '<th class="num">Индекс</th><th class="num">Изменение</th><th class="num">Контуров</th><th class="num">Данные</th></tr></thead><tbody>' +
+        HIST.slice().reverse().map(function (h, i, arr) {
+          var prev = arr[i + 1];
+          var d = prev ? Math.round((h.index.overall - prev.index.overall) * 10) / 10 : null;
+          var seen = 0, all = 0;
+          Object.keys(h.index.groups).forEach(function (g) { seen += h.index.groups[g].seen; all += h.index.groups[g].all; });
+          return '<tr><td>' + esc(h.builtAt) + '</td><td>' + esc(h.label) + '</td>' +
+            '<td class="num">' + num(h.index.overall) + '</td>' +
+            '<td class="num">' + (d === null ? '—' : '<span class="delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '') + '">' + (d > 0 ? '+' : '') + num(d) + '</span>') + '</td>' +
+            '<td class="num">' + h.graph.cycles.length + '</td>' +
+            '<td class="num">' + seen + ' из ' + all + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+
+      return '' +
+        (UNSAVED ? '<div class="warnbar"><b>Снимок не зафиксирован.</b><span>Данные изменены после последнего снимка: расхождений ' + UNSAVED +
+          '. Выполните <code>python3 build/snapshot.py «что обновили»</code>, иначе этот экран показывает прошлое сравнение.</span></div>' : '') +
+        '<div class="cols cols-2">' +
+          '<div class="panel hero"><h3>Индекс напряжения</h3>' +
+            (idx ? '<div class="figure">' + num(idx.to, 0) + '<small style="font-size:22px;font-weight:500;color:var(--ink-2)"> ← ' + num(idx.from, 0) + '</small></div>' +
+                   '<div><span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span>' +
+                   '<span style="color:var(--ink-2)"> к прошлой сборке</span></div>'
+                 : '<div class="figure">' + num(CUR.index.overall, 0) + '</div><div style="color:var(--ink-2)">без изменений к прошлой сборке</div>') +
+            '<p class="cap">Снимки: ' + HIST.length + '. Сравниваются «' + esc(PREV ? PREV.label : '—') + '» и «' + esc(LAST.label) + '».</p>' +
+            spark +
+          '</div>' +
+          '<div class="panel"><h3>Изменения по существу</h3>' +
+            '<p class="sub">Расхождений: ' + rows.length + ' в данных' + (idx ? ' и движение индекса' : '') + '</p>' +
+            (rows.length ? rows.map(function (r) {
+              return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
+            }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
+          '</div>' +
+        '</div>' +
+        '<h2 class="section">Журнал обновлений</h2>' + log +
+        '<div class="note"><b>Как читать историю.</b> Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран. Поэтому изменение методики никогда не выглядит как изменение рынка: между снимками движется только то, что менялось в данных. По той же причине контуры в раннем снимке посчитаны исправленным алгоритмом — в данных они были и тогда, их не показывал интерфейс.</div>';
+    }
+  };
 
   /* ---------------------------------------------------------- 1. Пульс */
   VIEWS.pulse = {
@@ -133,7 +240,16 @@
           '<div class="note">' + esc(x.lim) + '</div></div>';
       }).join('');
 
-      return '' +
+      var idx = DIFF.index;
+      var changeLine = !LAST ? '' :
+        '<div class="note" style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">' +
+          '<b>С прошлой сборки (' + esc(LAST.builtAt) + '):</b>' +
+          (idx ? '<span>индекс <span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span></span>' : '<span>индекс без изменений</span>') +
+          '<span>расхождений: ' + DIFF_N + '</span>' +
+          '<button class="src" type="button" data-goto="changes">смотреть, что изменилось</button>' +
+        '</div>';
+
+      return '' + changeLine +
         '<div class="cols cols-2">' +
           '<div class="panel hero">' +
             '<h3>Индекс напряжения цикла</h3>' +
@@ -487,15 +603,24 @@
   VIEWS.panel = {
     nav: 'Панель 28 показателей', hint: '06',
     title: 'Панель из 28 показателей',
-    sub: 'Что проверять каждый квартал. Серый статус означает не ноль, а отсутствие публичного ряда — это самостоятельный вывод: главные показатели окупаемости сегодня просто не раскрываются.',
+    sub: 'Что проверять каждый квартал. Колонка «Проверено» показывает, когда наблюдение последний раз сверялось с источником и сколько осталось до ожидаемого обновления. Серый статус означает не ноль, а отсутствие публичного ряда — это самостоятельный вывод: главные показатели окупаемости сегодня просто не раскрываются.',
     render: function () {
       var byGroup = GROUPS.map(function (g) {
         var items = IND.filter(function (i) { return i.g === g.id; });
         return '<h2 class="section">' + esc(g.name) + '</h2>' +
-          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение на дату среза</th><th>Статус</th></tr></thead><tbody>' +
+          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение</th><th>Проверено</th><th>Статус</th></tr></thead><tbody>' +
           items.map(function (i) {
+            var f = VGM.freshness(i, today());
+            var srcDate = (M.sources[(i.srcs || [i.src])[0]] || {}).date;
+            var cls = f.overdue ? 'over' : f.ratio > 0.75 ? 'due' : '';
             return '<tr><td><b>' + esc(i.name) + '</b></td><td>' + esc(i.why) + '</td><td>' + esc(i.stress) + '</td>' +
-              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + refs(i) + '</td><td>' + stateEl(i.state) + '</td></tr>';
+              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + refs(i) + '</td>' +
+              '<td class="num" style="min-width:132px">' + esc(i.checked) +
+                '<span class="sub">' + f.age + ' дн. назад из ' + f.due +
+                (f.overdue ? ' · <b style="color:var(--critical)">требует проверки</b>' : '') + '</span>' +
+                '<div class="freshbar ' + cls + '"><span style="width:' + pct(f.ratio * 100).toFixed(0) + '%"></span></div>' +
+                (srcDate ? '<span class="sub">источник от ' + esc(srcDate) + '</span>' : '') +
+              '</td><td>' + stateEl(i.state) + '</td></tr>';
           }).join('') + '</tbody></table></div>';
       }).join('');
 
@@ -646,9 +771,9 @@
   };
 
   /* ============================================================ каркас */
-  var ORDER = ['pulse', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'sources'];
+  var ORDER = ['changes', 'pulse', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'sources'];
   var GROUPS_NAV = [
-    { label: 'Обзор', items: ['pulse', 'network'] },
+    { label: 'Обзор', items: ['changes', 'pulse', 'network'] },
     { label: 'Слои цикла', items: ['stack', 'capital', 'energy'] },
     { label: 'Проверка', items: ['panel', 'scenarios'] },
     { label: 'Контур', items: ['russia', 'sources'] }
@@ -681,7 +806,9 @@
   function bindSrcRefs() {
     document.addEventListener('click', function (ev) {
       var b = ev.target.closest ? ev.target.closest('.src') : null;
-      if (!b || !b.dataset.src) return;
+      if (!b) return;
+      if (b.dataset.goto) { show(b.dataset.goto); return; }
+      if (!b.dataset.src) return;
       show('sources');
       var row = document.getElementById('src-' + b.dataset.src);
       if (row) {
@@ -713,6 +840,17 @@
 
   function init() {
     document.getElementById('asOf').textContent = 'срез ' + M.asOf + ' · сборка ' + M.builtAt;
+
+    var ages = IND.map(function (i) { return VGM.freshness(i, today()); });
+    var overdue = ages.filter(function (f) { return f.overdue; }).length;
+    var oldest = Math.max.apply(null, ages.map(function (f) { return f.age; }));
+    var fresh = document.getElementById('freshness');
+    fresh.innerHTML = overdue
+      ? '<i style="background:var(--warning)"></i>требуют проверки: ' + overdue + ' из ' + IND.length
+      : '<i></i>данные проверялись ' + oldest + ' дн. назад';
+    fresh.title = overdue
+      ? 'У ' + overdue + ' показателей истекла ожидаемая периодичность обновления'
+      : 'Наибольшая давность проверки среди 28 показателей панели';
 
     var nav = document.getElementById('rail');
     nav.innerHTML = GROUPS_NAV.map(function (g) {

@@ -50,33 +50,10 @@
     });
   };
 
-  /* --- поиск круговых контуров длиной 2-4 среди видимых рёбер --- */
+  /* Контуры ищет общий модуль расчётов: тот же код пишет снимки истории */
   Graph.prototype.cycles = function () {
-    var edges = this.visibleEdges(), adj = {}, found = {}, out = [];
-    edges.forEach(function (e) { (adj[e.from] = adj[e.from] || []).push(e); });
-    var MAXLEN = 4;
-    function walk(start, cur, path, used) {
-      var next = adj[cur] || [];
-      for (var i = 0; i < next.length; i++) {
-        var e = next[i];
-        if (e.to === start && path.length >= 1) {
-          var ring = path.concat([e]);
-          var ids = ring.map(function (x) { return x.from; });
-          var key = ids.slice().sort().join('>');
-          if (!found[key]) { found[key] = 1; out.push(ring); }
-        } else if (path.length < MAXLEN - 1 && !used[e.to] && e.to > start) {
-          used[e.to] = 1;
-          walk(start, e.to, path.concat([e]), used);
-          delete used[e.to];
-        }
-      }
-    }
     var self = this;
-    Object.keys(adj).sort().forEach(function (id) {
-      var used = {}; used[id] = 1;
-      walk(id, id, [], used);
-    });
-    return out.map(function (ring) {
+    return global.VGM.findCycles(this.visibleEdges()).map(function (ring) {
       return { edges: ring, names: ring.map(function (e) { return self.index[e.from].name; }) };
     });
   };
