@@ -146,10 +146,23 @@
 
   /* текущее состояние в том же виде, что и снимок истории */
   function currentSnapshot() {
-    return VGM.snapshot({
-      meta: M, groups: GROUPS, indicators: IND, companies: CO,
-      nodes: window.VG_NODES, edges: window.VG_EDGES, scenarios: SCEN
-    }, 'текущее состояние');
+    return VGM.snapshot(VGM.collect(window), 'текущее состояние');
+  }
+
+  /* Последнее движение индекса. Между двумя соседними сборками он может не
+     меняться — и тогда заголовок теряет смысл, если не сказать, с какого
+     момента величина держится и каким было предыдущее движение. */
+  function lastIndexMove() {
+    if (HIST.length < 2) return null;
+    var cur = HIST[HIST.length - 1].index.overall;
+    for (var i = HIST.length - 2; i >= 0; i--) {
+      if (HIST[i].index.overall !== cur) {
+        return { from: HIST[i].index.overall, to: cur,
+                 delta: Math.round((cur - HIST[i].index.overall) * 10) / 10,
+                 since: HIST[i + 1].builtAt, held: HIST.length - 1 - i };
+      }
+    }
+    return null;
   }
 
   var CUR = currentSnapshot();
@@ -279,16 +292,29 @@
           '. Выполните <code>python3 build/snapshot.py «что обновили»</code>, иначе сравнение показывает прошлый круг.</span></div>' : '') +
         '<div class="cols cols-2">' +
           '<div class="panel hero"><h3>Индекс напряжения цикла</h3>' +
-            (idx ? '<div class="figure">' + num(idx.to, 0) + '<small style="font-size:22px;font-weight:500;color:var(--ink-2)"> ← ' + num(idx.from, 0) + '</small></div>' +
-                   '<div><span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span>' +
-                   '<span style="color:var(--ink-2)"> к сборке ' + esc(PREV ? PREV.builtAt : '') + '</span></div>'
-                 : '<div class="figure">' + num(v, 0) + '</div><div style="color:var(--ink-2)">без изменений к прошлой сборке</div>') +
+            (function () {
+              var mv = lastIndexMove();
+              if (idx) {
+                return '<div class="figure">' + num(idx.to, 0) + '<small style="font-size:22px;font-weight:500;color:var(--ink-2)"> ← ' + num(idx.from, 0) + '</small></div>' +
+                  '<div><span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span>' +
+                  '<span style="color:var(--ink-2)"> к сборке ' + esc(PREV ? PREV.builtAt : '') + '</span></div>';
+              }
+              if (mv) {
+                return '<div class="figure">' + num(v, 0) + '</div>' +
+                  '<div style="color:var(--ink-2)">держится с ' + esc(mv.since) + ', сборок подряд: ' + mv.held + '</div>' +
+                  '<div style="color:var(--ink-2)">последнее движение: <span class="delta ' + (mv.delta > 0 ? 'up' : 'down') + '">' +
+                  (mv.delta > 0 ? '+' : '') + num(mv.delta) + '</span> (' + num(mv.from, 0) + ' → ' + num(mv.to, 0) + ')</div>';
+              }
+              return '<div class="figure">' + num(v, 0) + '</div><div style="color:var(--ink-2)">первая сборка, сравнивать не с чем</div>';
+            })() +
             '<div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + stateEl(t.state) +
               '<span class="count" style="color:var(--muted);font-size:12px">' + cov.seen + ' из ' + cov.all + ' показателей наблюдаются</span>' + badge('expert') + '</div>' +
             spark +
           '</div>' +
           '<div class="panel"><h3>Изменения по существу</h3>' +
-            '<p class="sub">' + (LAST && PREV ? 'Сравниваются сборки ' + esc(PREV.builtAt) + ' и ' + esc(LAST.builtAt) : 'Снимков для сравнения пока нет') + '</p>' +
+            '<p class="sub">' + (LAST && PREV
+              ? 'Сравниваются «' + esc(PREV.label) + '» (' + esc(PREV.builtAt) + ') и «' + esc(LAST.label) + '» (' + esc(LAST.builtAt) + ')'
+              : 'Снимков для сравнения пока нет') + '</p>' +
             (rows.length ? rows.map(function (r) {
               return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
             }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +

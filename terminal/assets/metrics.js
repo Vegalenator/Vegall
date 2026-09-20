@@ -87,6 +87,20 @@
     return ring.map(function (e) { return e.from; }).slice().sort().join(' + ');
   }
 
+  /* ---- сбор исходных данных --------------------------------------------
+     Одна функция и для страницы, и для скрипта снимков. Раньше состав полей
+     повторялся в двух местах, и при добавлении реестра сверок страница
+     осталась со старым составом: она считала, что данные изменились, хотя
+     менялся только способ их собрать. */
+  function collect(root) {
+    root = root || (typeof window !== 'undefined' ? window : globalThis);
+    return {
+      meta: root.VG_META, groups: root.VG_GROUPS, indicators: root.VG_INDICATORS,
+      companies: root.VG_COMPANIES, nodes: root.VG_NODES, edges: root.VG_EDGES,
+      scenarios: root.VG_SCENARIOS, cites: root.VG_CITES || {}
+    };
+  }
+
   /* ---- снимок состояния ------------------------------------------------ */
   function snapshot(d, label) {
     var snap = {
@@ -200,7 +214,7 @@
 
   var api = { SCORE: SCORE, MIN_COVERAGE: MIN_COVERAGE, METHOD: METHOD, STATE_NAMES: STATE_NAMES,
               coverage: coverage, groupIndex: groupIndex, overallIndex: overallIndex, tension: tension,
-              days: days, freshness: freshness, findCycles: findCycles, cycleKey: cycleKey,
+              collect: collect, days: days, freshness: freshness, findCycles: findCycles, cycleKey: cycleKey,
               snapshot: snapshot, diff: diff, count: count };
 
   if (typeof module === 'object' && module.exports) module.exports = api;

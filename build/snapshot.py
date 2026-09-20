@@ -33,16 +33,7 @@ window.VG_INDICATORS.forEach(function (i) {
   if (!i.id) i.id = idByName[i.name] || ('noid:' + i.name);
 });
 
-const snap = M.snapshot({
-  meta: window.VG_META,
-  groups: window.VG_GROUPS,
-  indicators: window.VG_INDICATORS,
-  companies: window.VG_COMPANIES,
-  nodes: window.VG_NODES,
-  edges: window.VG_EDGES,
-  scenarios: window.VG_SCENARIOS,
-  cites: window.VG_CITES || {}
-}, {label});
+const snap = M.snapshot(M.collect(window), {label});
 process.stdout.write(JSON.stringify(snap));
 """
 
