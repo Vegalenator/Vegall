@@ -9,7 +9,7 @@
   var M = window.VG_META, LAYERS = window.VG_LAYERS, CO = window.VG_COMPANIES,
       IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
-      LADDER = window.VG_LADDER;
+      LADDER = window.VG_LADDER, CITES = window.VG_CITES || {};
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -32,7 +32,58 @@
     var t = s.org + ' — ' + s.title + ', ' + s.date + (s.generic ? '. Ссылка ведёт на общую страницу организации, прямого документа нет' : '');
     return '<button class="src' + (s.generic ? ' generic' : '') + '" type="button" data-src="' + code + '" title="' + esc(t) + '">' + code + (s.generic ? '*' : '') + '</button>';
   }
-  function refs(o) { return srcref(o.srcs || o.src); }
+  function refs(o) { return o.cite ? citeref(o.cite) : srcref(o.srcs || o.src); }
+
+  /* ------------------------------------------------- статусы сверки */
+  var CITE_STATUS = {
+    verified:    { glyph: '✓', label: 'сверено дословно', cls: 'ok' },
+    partial:     { glyph: '≈', label: 'подтверждено частично', cls: 'partial' },
+    mismatch:    { glyph: '✕', label: 'по ссылке утверждения нет', cls: 'bad' },
+    unreachable: { glyph: '⊘', label: 'источник недоступен из среды сборки', cls: 'none' },
+    pending:     { glyph: '?', label: 'сверка не проводилась', cls: 'none' }
+  };
+  var CITE_RANK = { mismatch: 0, pending: 1, unreachable: 2, partial: 3, verified: 4 };
+
+  /* чипы сверки, сгруппированные по источнику: пять цитат из одного доклада
+     не должны превращаться в пять одинаковых значков */
+  function citeref(list) {
+    if (!list) return '';
+    if (!Array.isArray(list)) list = [list];
+    var bySrc = {};
+    list.forEach(function (id) {
+      var c = CITES[id]; if (!c) return;
+      (bySrc[c.src] = bySrc[c.src] || []).push({ id: id, c: c });
+    });
+    return Object.keys(bySrc).map(function (src) {
+      var items = bySrc[src];
+      var worst = items.reduce(function (a, x) {
+        return CITE_RANK[x.c.status] < CITE_RANK[a] ? x.c.status : a;
+      }, 'verified');
+      var st = CITE_STATUS[worst];
+      var counts = {};
+      items.forEach(function (x) { counts[x.c.status] = (counts[x.c.status] || 0) + 1; });
+      var tip = items.map(function (x) {
+        return CITE_STATUS[x.c.status].label.toUpperCase() +
+          (x.c.loc ? ' · ' + x.c.loc : '') +
+          (x.c.quote ? '\n«' + x.c.quote + '»' : '') +
+          (x.c.note ? '\n' + x.c.note : '');
+      }).join('\n\n');
+      var extra = items.length > 1 ? ' ' + Object.keys(counts).map(function (k) {
+        return counts[k] + CITE_STATUS[k].glyph;
+      }).join(' ') : ' ' + st.glyph;
+      return '<button class="cite ' + st.cls + '" type="button" data-cite="' + items[0].id + '" title="' + esc(tip) + '">' +
+        src + extra + '</button>';
+    }).join(' ');
+  }
+
+  function citeSummary(list) {
+    var out = { verified: 0, partial: 0, mismatch: 0, unreachable: 0, pending: 0, total: 0 };
+    (list || Object.keys(CITES)).forEach(function (id) {
+      var c = CITES[id]; if (!c) return;
+      out[c.status]++; out.total++;
+    });
+    return out;
+  }
   var STATE_LABELS = { ok: 'Норма', watch: 'Наблюдение', stress: 'Стресс-сигнал', nodata: 'Нет публичного ряда' };
   function stateEl(state) {
     return '<span class="st st-' + state + '"><i></i>' + STATE_LABELS[state] + '</span>';
@@ -121,9 +172,11 @@
   function changeRows() {
     var out = [];
     DIFF.indicators.forEach(function (c) {
-      out.push({ arr: c.to === 'stress' ? '▲' : c.from === 'stress' ? '▼' : '→',
+      var toName = c.toName || VGM.STATE_NAMES[c.to] || c.to;
+      out.push({ arr: c.added ? '+' : c.to === 'stress' ? '▲' : c.from === 'stress' ? '▼' : '→',
         cls: c.to === 'stress' ? 'up' : c.from === 'stress' ? 'down' : '',
-        html: '<b>' + esc(c.name) + '</b><br><span class="from">' + esc(c.fromName || '—') + '</span> → <span class="to">' + esc(c.toName) + '</span>' });
+        html: '<b>' + esc(c.name) + '</b><br>' + (c.added ? '<span class="from">показатель добавлен</span>'
+          : '<span class="from">' + esc(c.fromName || '—') + '</span>') + ' → <span class="to">' + esc(toName) + '</span>' });
     });
     DIFF.companies.forEach(function (c) {
       var f = DICT.fields[c.field] || c.field;
@@ -153,6 +206,11 @@
     if (DIFF.graph) {
       out.push({ arr: '→', cls: '',
         html: '<b>Граф связей</b><br><span class="from">' + DIFF.graph.edgesFrom + ' связей</span> → <span class="to">' + DIFF.graph.edgesTo + ' связей</span>' });
+    }
+    if (DIFF.cites) {
+      out.push({ arr: '▲', cls: 'down',
+        html: '<b>Сверка с первоисточниками</b><br><span class="from">' + DIFF.cites.verifiedFrom + ' из ' + DIFF.cites.totalFrom +
+          '</span> → <span class="to">' + DIFF.cites.verifiedTo + ' из ' + DIFF.cites.totalTo + ' дословно</span>' });
     }
     return out;
   }
@@ -254,13 +312,13 @@
       }).join('');
 
       var anchors = [
-        { v: 'Более $1 трлн', l: 'Капвложения пяти крупнейших облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
-        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 и прогноз на 2030', k: 'forecast', s: 'S4', lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
-        { v: '18% / 32%', l: 'Доля компаний США с ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', lim: 'Использование не равно глубокой перестройке бизнеса' }
+        { v: 'Более $1 трлн', l: 'Капвложения пяти крупнейших облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', c: ['bis-trillion'], lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
+        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 и прогноз на 2030', k: 'forecast', s: 'S4', c: ['iea-energy'], lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
+        { v: '18% / 32%', l: 'Доля компаний США с ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', c: ['census-adoption'], lim: 'Использование не равно глубокой перестройке бизнеса' }
       ].map(function (x) {
         return '<div class="tile"><div class="label">' + esc(x.l) + '</div>' +
           '<div class="value">' + esc(x.v) + '</div>' +
-          '<div class="row">' + badge(x.k) + srcref(x.s) + '</div>' +
+          '<div class="row">' + badge(x.k) + srcref(x.s) + citeref(x.c) + '</div>' +
           '<div class="note">' + esc(x.lim) + '</div></div>';
       }).join('');
 
@@ -275,6 +333,12 @@
             }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
           '</div>' +
           '<div class="panel"><h3>Чем вывод не обеспечен</h3>' +
+            (function () {
+              var cs = citeSummary();
+              return '<div class="note" style="margin-bottom:12px"><b>Сверка с первоисточниками: ' + cs.verified + ' из ' + cs.total + ' дословно.</b> ' +
+                'Частично подтверждено ' + cs.partial + ', расхождений ' + cs.mismatch + ', источник недоступен у ' + cs.unreachable + ', не сверялось ' + cs.pending + '. ' +
+                '<button class="linkbtn" type="button" data-goto="sources" style="margin:0">Реестр сверок →</button></div>';
+            })() +
             '<p class="sub">' + gaps.length + ' показателей из ' + IND.length + ' не имеют публичного ряда. Это не ноль, а пробел</p>' +
             '<ul class="list">' + gaps.map(function (i) { return '<li><b>' + esc(i.name) + '</b> — ' + esc(i.obs) + '</li>'; }).join('') + '</ul>' +
           '</div>' +
@@ -330,7 +394,7 @@
       /* ---------- журнал ---------- */
       var log = HIST.length ? '<h2 class="section">Журнал обновлений</h2>' +
         '<div class="tablewrap compact"><table><thead><tr><th>Сборка</th><th>Что обновляли</th>' +
-        '<th class="num">Индекс</th><th class="num">Изменение</th><th class="num">Контуров</th><th class="num">Данные</th></tr></thead><tbody>' +
+        '<th class="num">Индекс</th><th class="num">Изменение</th><th class="num">Контуров</th><th class="num">Данные</th><th class="num">Сверено</th></tr></thead><tbody>' +
         HIST.slice().reverse().map(function (h, i, arr) {
           var prev = arr[i + 1];
           var d = prev ? Math.round((h.index.overall - prev.index.overall) * 10) / 10 : null;
@@ -340,7 +404,8 @@
             '<td class="num">' + num(h.index.overall) + '</td>' +
             '<td class="num">' + (d === null ? '—' : '<span class="delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '') + '">' + (d > 0 ? '+' : '') + num(d) + '</span>') + '</td>' +
             '<td class="num">' + h.graph.cycles.length + '</td>' +
-            '<td class="num">' + seen + ' из ' + all + '</td></tr>';
+            '<td class="num">' + seen + ' из ' + all + '</td>' +
+            '<td class="num">' + (h.cites && h.cites.total ? h.cites.verified + ' из ' + h.cites.total : '—') + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
         '<div class="note">Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран: изменение методики не должно выглядеть как изменение рынка. ' +
           esc(M.disclaimer) + '</div>' : '';
@@ -384,7 +449,7 @@
         '</div>' +
         '<h2 class="section">Таблица связей</h2>' +
         '<div class="tablewrap compact"><table><thead><tr>' +
-          '<th>Откуда идут деньги</th><th>Куда</th><th>Тип</th><th>Что это</th><th>Основание</th>' +
+          '<th>Откуда идут деньги</th><th>Куда</th><th>Тип</th><th>Что это</th><th>Основание</th><th>Сверка</th>' +
         '</tr></thead><tbody id="edgeTable"></tbody></table></div>';
     },
     after: function (root) {
@@ -422,7 +487,8 @@
           return '<tr><td>' + esc(nodeName(e.from)) + '</td><td>' + esc(nodeName(e.to)) + '</td>' +
             '<td>' + esc(window.VG_EDGE_TYPES[e.type].label) + (e.amount ? ' <b>' + esc(e.amount) + '</b>' : '') + '</td>' +
             '<td>' + esc(e.label || '') + (e.back ? '<span class="sub">встречный поток: ' + esc(e.back) + '</span>' : '') + '</td>' +
-            '<td>' + refMark(e) + '</td></tr>';
+            '<td>' + refMark(e) + '</td>' +
+            '<td>' + (e.cite ? citeref(e.cite) : '<span class="cite none">—</span>') + '</td></tr>';
         }).join('');
       }
       function showSel(node, edges) {
@@ -575,7 +641,7 @@
           '<td class="num">' + (typeof c.fcf === 'number' ? (c.fcf > 0 ? '+' : '') + '$' + num(c.fcf) : '—') + '</td>' +
           '<td>' + esc(c.proof) + (c.guide ? '<span class="sub">' + esc(c.guide) + '</span>' : '') + '</td>' +
           '<td>' + esc(c.breaks) + '<span class="sub">ограничение: ' + esc(c.limit) + ' ' + '</span></td>' +
-          '<td>' + srcref(c.src) + '</td></tr>' +
+          '<td>' + srcref(c.src) + '<span class="sub">' + (c.cite ? citeref(c.cite) : '') + '</span></td></tr>' +
           (c.capexNote || c.crossCheck ? '<tr class="rownote"><td colspan="8">' +
             (c.capexNote ? '<b>Примечание к капвложениям.</b> ' + esc(c.capexNote) + '. ' : '') +
             (c.crossCheck ? '<br>' + esc(c.crossCheck.label) + ': <b>' + esc(c.crossCheck.value) + '</b>, ' + esc(c.crossCheck.ratio) + ' ' + badge('unverified') +
@@ -624,7 +690,7 @@
         '<h2 class="section">Раскрытия компаний</h2>' +
         '<div class="tablewrap"><table><thead><tr><th>Компания</th><th>Период</th><th class="num">Капвложения</th>' +
           '<th class="num">Операционный поток</th><th class="num">Свободный поток</th><th>Доказанная монетизация</th>' +
-          '<th>Что опровергнет позитивный сценарий</th><th>Источник</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+          '<th>Что опровергнет позитивный сценарий</th><th>Источник и сверка</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<h2 class="section">Тест пяти условий: производительность или ставка на капитализацию</h2>' +
         '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия нарушены, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
           '<div class="note" style="margin-bottom:14px">' + esc(T5.rule) + '</div>' +
@@ -678,13 +744,14 @@
       var byGroup = GROUPS.map(function (g) {
         var items = IND.filter(function (i) { return i.g === g.id; });
         return '<h2 class="section">' + esc(g.name) + '</h2>' +
-          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение</th><th>Проверено</th><th>Статус</th></tr></thead><tbody>' +
+          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение</th><th>Сверка</th><th>Проверено</th><th>Статус</th></tr></thead><tbody>' +
           items.map(function (i) {
             var f = VGM.freshness(i, today());
             var srcDate = (M.sources[(i.srcs || [i.src])[0]] || {}).date;
             var cls = f.overdue ? 'over' : f.ratio > 0.75 ? 'due' : '';
             return '<tr><td><b>' + esc(i.name) + '</b></td><td>' + esc(i.why) + '</td><td>' + esc(i.stress) + '</td>' +
-              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + refs(i) + '</td>' +
+              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + srcref(i.srcs || i.src) + '</td>' +
+              '<td style="min-width:96px">' + (i.cite ? citeref(i.cite) : '<span class="cite none">не привязано</span>') + '</td>' +
               '<td class="num" style="min-width:132px">' + esc(i.checked) +
                 '<span class="sub">' + f.age + ' дн. назад из ' + f.due +
                 (f.overdue ? ' · <b style="color:var(--critical)">требует проверки</b>' : '') + '</span>' +
@@ -902,7 +969,49 @@
           '<td class="num">' + esc(s.date) + '</td>' +
           '<td><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Открыть</a></td></tr>';
       }).join('');
+      var sum = citeSummary();
+      var ORDER_ST = ['mismatch', 'pending', 'unreachable', 'partial', 'verified'];
+      var citeRows = Object.keys(CITES).sort(function (a, b) {
+        var d = CITE_RANK[CITES[a].status] - CITE_RANK[CITES[b].status];
+        return d || (CITES[a].src > CITES[b].src ? 1 : -1);
+      }).map(function (id) {
+        var c = CITES[id], st = CITE_STATUS[c.status], srcObj = M.sources[c.src] || {};
+        return '<tr id="cite-' + id + '"><td class="num">' + srcref(c.src) + '</td>' +
+          '<td><span class="cite ' + st.cls + '">' + st.glyph + '</span> ' + esc(st.label) + '</td>' +
+          '<td>' + esc(srcObj.org || '') + '<span class="sub">' + esc(c.loc || 'место в документе не указано') + '</span></td>' +
+          '<td>' + (c.quote ? '<p class="quote"><em>дословно из источника</em>' + esc(c.quote) + '</p>' : '') +
+            (c.note ? '<span class="sub">' + esc(c.note) + '</span>' : '') + '</td>' +
+          '<td class="num">' + esc(c.checked || '—') + '</td></tr>';
+      }).join('');
+
+      var queue = Object.keys(CITES).filter(function (id) {
+        return ['mismatch', 'pending', 'unreachable'].indexOf(CITES[id].status) >= 0;
+      });
+
+      var tiles = [
+        { k: 'verified', l: 'Сверено дословно' },
+        { k: 'partial', l: 'Подтверждено частично' },
+        { k: 'mismatch', l: 'Расхождение' },
+        { k: 'unreachable', l: 'Источник недоступен' },
+        { k: 'pending', l: 'Не сверялось' }
+      ].map(function (x) {
+        var st = CITE_STATUS[x.k];
+        return '<div class="tile"><div class="label">' + esc(x.l) + '</div>' +
+          '<div class="value">' + sum[x.k] + '<small>/' + sum.total + '</small></div>' +
+          '<div class="bar"><span style="width:' + (sum[x.k] / sum.total * 100).toFixed(0) + '%;background:var(--' +
+            (x.k === 'verified' ? 'ok' : x.k === 'partial' ? 'warning' : x.k === 'mismatch' ? 'critical' : 'nodata') + ')"></span></div>' +
+          '<div class="note"><span class="cite ' + st.cls + '">' + st.glyph + '</span> ' + esc(st.label) + '</div></div>';
+      }).join('');
+
       return '' +
+        '<h2 class="section">Сверка с первоисточниками</h2>' +
+        '<div class="cols cols-3">' + tiles + '</div>' +
+        '<div class="panel"><h3>Что значит сверка</h3>' +
+          '<p class="sub" style="margin-bottom:12px">Ссылка на источник — ещё не проверяемость. Сверка означает, что первоисточник открыт, найдено конкретное место в документе и записана дословная формулировка. Чип рядом с цифрой показывает статус, наведение открывает цитату, нажатие ведёт в этот реестр.</p>' +
+          '<div class="note"><b>Очередь сверки: ' + queue.length + ' из ' + sum.total + '.</b> Сюда попадают расхождения, недоступные источники и то, что ещё не проверялось. Часть источников отвечает отказом на запрос из среды сборки — это не значит, что они недостоверны, это значит, что сверку по ним нужно проводить вручную.</div>' +
+        '</div>' +
+        '<div class="tablewrap"><table><thead><tr><th class="num">Источник</th><th>Статус</th><th>Где в документе</th><th>Что там написано</th><th class="num">Сверено</th></tr></thead><tbody>' +
+          citeRows + '</tbody></table></div>' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Методические ограничения</h3><ul class="list">' +
             M.limits.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' +
@@ -955,9 +1064,19 @@
      которые собираются после первой отрисовки экрана */
   function bindSrcRefs() {
     document.addEventListener('click', function (ev) {
-      var b = ev.target.closest ? ev.target.closest('.src, .linkbtn') : null;
+      var b = ev.target.closest ? ev.target.closest('.src, .linkbtn, .cite') : null;
       if (!b) return;
       if (b.dataset.goto) { show(b.dataset.goto); return; }
+      if (b.dataset.cite) {
+        show('sources');
+        var crow = document.getElementById('cite-' + b.dataset.cite);
+        if (crow) {
+          crow.scrollIntoView({ block: 'center' });
+          crow.style.background = 'var(--accent-soft)';
+          setTimeout(function () { crow.style.background = ''; }, 2600);
+        }
+        return;
+      }
       if (!b.dataset.src) return;
       show('sources');
       var row = document.getElementById('src-' + b.dataset.src);

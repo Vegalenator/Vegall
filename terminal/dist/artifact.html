@@ -483,6 +483,28 @@ tr.rownote td b { color: var(--ink); }
 }
 .linkbtn:hover { color: var(--ink); }
 
+/* ------------------------------------------------ статусы сверки */
+.cite {
+  font-family: var(--ff-mono); font-size: 10px; line-height: 1.5;
+  border: 1px solid var(--rule); border-radius: 2px; padding: 1px 5px;
+  background: var(--surface-2); color: var(--ink-2); cursor: pointer; white-space: nowrap;
+}
+.cite:hover { border-color: var(--accent); color: var(--accent); }
+.cite.ok      { color: #0a6b0a; border-color: rgba(12,163,12,.45); background: var(--ok-wash); }
+.cite.partial { color: #8a5a00; border-color: rgba(250,178,25,.55); background: var(--warning-wash); }
+.cite.bad     { color: #a32e2e; border-color: rgba(208,59,59,.5); background: var(--critical-wash); }
+.cite.none    { color: var(--muted); border-style: dashed; }
+:root[data-theme="dark"] .cite.ok { color: #4fd44f; }
+:root[data-theme="dark"] .cite.partial { color: #f5c25a; }
+:root[data-theme="dark"] .cite.bad { color: #f08a8a; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .cite.ok { color: #4fd44f; }
+  :root:where(:not([data-theme="light"])) .cite.partial { color: #f5c25a; }
+  :root:where(:not([data-theme="light"])) .cite.bad { color: #f08a8a; }
+}
+.quote { font-size: 12px; color: var(--ink-2); border-left: 2px solid var(--rule); padding-left: 10px; margin: 5px 0 0; }
+.quote em { font-style: normal; color: var(--muted); display: block; font-size: 11px; margin-bottom: 3px; }
+
 </style>
 <header class="topbar">
   <div class="brand">
@@ -720,7 +742,7 @@ window.VG_RISK_TYPES = {
    поэтому период выводится рядом с каждой строкой. */
 window.VG_COMPANIES = [
   {
-    id: 'msft', name: 'Microsoft', role: 'Облако и программы', country: 'США',
+    id: 'msft', cite: ['msft-capex', 'msft-copilot', 'msft-azure100', 'msft-leases'], name: 'Microsoft', role: 'Облако и программы', country: 'США',
     periodType: 'quarter', period: 'IV кв. 2026 ф.г.', src: 'S10', kind: 'fact',
     capex: 41.0, ocf: 55.4, fcf: 19.6,
     capexNote: 'Включая финансовую аренду; около 2/3 — процессоры и серверы',
@@ -730,7 +752,7 @@ window.VG_COMPANIES = [
     limit: 'Финансовый год; капвложения включают аренду'
   },
   {
-    id: 'googl', name: 'Alphabet', role: 'Облако и модели', country: 'США',
+    id: 'googl', cite: ['googl-capex', 'googl-ocf', 'googl-cloud', 'googl-cloud-oi'], name: 'Alphabet', role: 'Облако и модели', country: 'США',
     periodType: 'quarter', period: 'II кв. 2026', src: 'S11', kind: 'fact',
     capex: 44.9, ocf: 39.1, fcf: -5.9,
     proof: 'Google Cloud $24,8 млрд выручки, операционная прибыль $8,8 млрд',
@@ -739,7 +761,7 @@ window.VG_COMPANIES = [
     limit: 'Квартальный свободный поток искажён сроками платежей; ИИ не отделён от облака'
   },
   {
-    id: 'amzn', name: 'Amazon', role: 'Облако', country: 'США',
+    id: 'amzn', cite: ['amzn-q2'], name: 'Amazon', role: 'Облако', country: 'США',
     periodType: 'ttm', period: '12 мес. к II кв. 2026', src: 'S15', kind: 'fact',
     capexDelta: 66.1, ocf: 161.4, fcf: -7.6,
     capexNote: 'В исследовании приведён ПРИРОСТ покупок имущества и оборудования за год, а не уровень капвложений за период. Поэтому Amazon исключён из сравнения уровней и из расчёта самофинансирования',
@@ -752,7 +774,7 @@ window.VG_COMPANIES = [
     limit: 'Вложения включают сеть исполнения заказов и иные активы, не только ИИ'
   },
   {
-    id: 'meta', name: 'Meta', role: 'Модели и реклама', country: 'США',
+    id: 'meta', cite: ['meta-q2'], name: 'Meta', role: 'Модели и реклама', country: 'США',
     periodType: 'quarter', period: 'II кв. 2026', src: 'S16', kind: 'fact',
     capex: 31.1, ocf: 31.9, fcf: 0.8,
     guide: 'Прогноз капвложений 2026: $130-145 млрд',
@@ -762,7 +784,7 @@ window.VG_COMPANIES = [
     limit: 'Эффект ИИ смешан с рекламным аукционом и продуктом'
   },
   {
-    id: 'orcl', name: 'Oracle', role: 'Облако', country: 'США',
+    id: 'orcl', cite: ['orcl-fy26'], name: 'Oracle', role: 'Облако', country: 'США',
     periodType: 'year', period: '2026 ф.г.', src: 'S14', kind: 'fact',
     capex: 55.6, ocf: 32.0, fcf: -23.7, rpo: 638,
     proof: 'IaaS $18,1 млрд, +77%; портфель обязательств $638 млрд',
@@ -771,7 +793,7 @@ window.VG_COMPANIES = [
     limit: 'Годовой период; портфель обязательств сильно концентрирован'
   },
   {
-    id: 'crwv', name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
+    id: 'crwv', cite: ['crwv-10q'], name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
     periodType: 'half', period: 'I полугодие / II кв. 2026', src: 'S17', kind: 'fact',
     capex: 14.1, ocf: 3.6, ocfKind: 'estimate', fcf: -10.5, fcfKind: 'estimate',
     revenue: 2.6, rpo: 103.7, top3: 72,
@@ -782,7 +804,7 @@ window.VG_COMPANIES = [
     limit: 'Портфель обязательств подтверждает контракт, но не наблюдаемую загрузку'
   },
   {
-    id: 'nvda', name: 'Nvidia', role: 'Ускорители', country: 'США',
+    id: 'nvda', cite: ['nvda-rev', 'nvda-dc', 'nvda-margin'], name: 'Nvidia', role: 'Ускорители', country: 'США',
     period: 'II кв. 2027 ф.г.', src: 'S12', kind: 'fact',
     revenue: 96.2, dcRevenue: 89.0, grossMargin: 75,
     proof: '$89,0 млрд выручки центра обработки данных при валовой марже 75%',
@@ -791,7 +813,7 @@ window.VG_COMPANIES = [
     limit: 'Капитальный риск несут клиенты, а не поставщик'
   },
   {
-    id: 'avgo', name: 'Broadcom', role: 'Сети и заказные процессоры', country: 'США',
+    id: 'avgo', cite: ['avgo-q3'], name: 'Broadcom', role: 'Сети и заказные процессоры', country: 'США',
     period: 'III кв. 2026 ф.г.', src: 'S13', kind: 'fact',
     capex: 0.5, fcf: 13.7, aiRevenue: 16.7,
     proof: '$16,7 млрд выручки ИИ-полупроводников (+221%) при капвложениях $0,5 млрд',
@@ -800,7 +822,7 @@ window.VG_COMPANIES = [
     limit: 'Фаблесс-модель: капитал несут фабрики и клиенты'
   },
   {
-    id: 'tsmc', name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
+    id: 'tsmc', cite: ['tsmc-q2'], name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
     period: 'II кв. 2026', src: 'S18', kind: 'fact',
     revenue: 40.2, grossMargin: 67.7, capexPlan: '52-56 (план 2026)',
     proof: '$40,2 млрд выручки, валовая маржа 67,7%; ИИ-ускорители дали высокую долю выручки 2025',
@@ -809,7 +831,7 @@ window.VG_COMPANIES = [
     limit: 'Субсидии по регионам меняют экономику отдельных фабрик'
   },
   {
-    id: 'asml', name: 'ASML', role: 'Литография', country: 'Нидерланды',
+    id: 'asml', cite: ['asml-q2', 'asml-guide'], name: 'ASML', role: 'Литография', country: 'Нидерланды',
     period: 'II кв. 2026', src: 'S19', kind: 'fact',
     revenueEur: 9.3, grossMargin: 54, guide: 'Прогноз 2026 повышен до €43-45 млрд',
     proof: '€9,3 млрд выручки при марже 54%',
@@ -818,7 +840,7 @@ window.VG_COMPANIES = [
     limit: 'Показатели в евро; прямое сравнение с долларовыми строками некорректно'
   },
   {
-    id: 'skhynix', name: 'SK hynix', role: 'HBM и память', country: 'Южная Корея',
+    id: 'skhynix', cite: ['skhynix-hbm4'], name: 'SK hynix', role: 'HBM и память', country: 'Южная Корея',
     period: '2026', src: 'S28', kind: 'claim',
     proof: 'HBM4 пошла в поставки; спрос 2026 года в значительной части законтрактован',
     risk: 'Классический цикл памяти и риск расширения мощностей под пик',
@@ -826,7 +848,7 @@ window.VG_COMPANIES = [
     limit: 'Публичный ряд по ценам и запасам HBM ограничен'
   },
   {
-    id: 'baba', name: 'Alibaba', role: 'Облако и модели', country: 'Китай',
+    id: 'baba', cite: ['baba-cloud', 'baba-ai'], name: 'Alibaba', role: 'Облако и модели', country: 'Китай',
     periodType: 'quarter', period: 'II кв. 2026 / август 2026', src: 'S20', kind: 'fact',
     capex: 10.0, capexKind: 'estimate', cloudRevenue: 7.1, aiRevenue: 1.8,
     capexNote: 'Около $10 млрд квартальных капвложений; размещение акций на HK$80 млрд, около 60% средств — на вычислительную инфраструктуру',
@@ -836,7 +858,7 @@ window.VG_COMPANIES = [
     limit: 'Государственная промышленная политика меняет стоимость капитала'
   },
   {
-    id: 'yndx', name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
+    id: 'yndx', cite: ['yndx-b2b'], name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
     period: 'II кв. 2026', src: 'S24', kind: 'fact', currency: 'RUB',
     rubRevenue: 15.3, rubEbitda: 3.7, tokens: 398,
     proof: 'B2B Tech 15,3 млрд руб. выручки, EBITDA 3,7 млрд руб.; 398 млрд коммерческих токенов, потребление удвоилось к предыдущему кварталу',
@@ -845,7 +867,7 @@ window.VG_COMPANIES = [
     limit: 'Капвложения 10-12% выручки; отдельной ИИ-строки нет'
   },
   {
-    id: 'sber', name: 'Сбер', role: 'Банк и платформа', country: 'Россия',
+    id: 'sber', cite: ['sber-effect'], name: 'Сбер', role: 'Банк и платформа', country: 'Россия',
     period: '2025', src: 'S23', kind: 'claim', currency: 'RUB',
     rubEffect: 450, rubGenAiEffect: 50,
     proof: 'Заявленный эффект ИИ свыше 450 млрд руб., из них около 50 млрд — генеративный ИИ',
@@ -925,7 +947,7 @@ window.VG_NODES = [
   { id: 'vc', name: 'Венчур', full: 'Венчурный капитал', layer: 'capital', country: 'Мир', note: 'Финансирует разработчиков моделей и приложений' },
   { id: 'equity', name: 'Рынок акций', layer: 'capital', country: 'Мир', note: 'Размещения акций финансируют вычисления' },
   { id: 'states', name: 'Государства', full: 'Государства: субсидии и промполитика', layer: 'capital', country: 'США, ЕС, КНР, Япония, Корея', note: 'Снижают стоимость капитала, создают риск дублирования' },
-  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'План мобилизации €200 млрд; до семи гигафабрик ИИ' },
+  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'До семи гигафабрик ИИ и более €30 млрд инвестиций — подтверждено. Сумма €200 млрд инициативы InvestAI по указанной ссылке не найдена, нужна отдельная ссылка' },
   { id: 'sovereign', name: 'Суверенные фонды', layer: 'capital', country: 'Ближний Восток', note: 'Дешёвая энергия и капитал' },
   { id: 'crwv3', name: 'Клиенты CoreWeave', full: 'Три крупнейших клиента CoreWeave', layer: 'demand', country: 'США', note: '72% квартальной выручки; в отчётности не раскрыты поимённо' },
   { id: 'enterprises', name: 'Конечные клиенты', layer: 'demand', country: 'Мир', note: 'Единственный источник внешнего денежного потока всей цепочки' }
@@ -953,7 +975,7 @@ window.VG_EDGES = [
   { from: 'crwv', to: 'equinix', type: 'supply', back: 'машинные залы и МВт', label: 'Аренда мощности', inReport: 'mechanism' },
 
   // --- Доли в капитале (инвестор → объект) ---
-  { from: 'nvda', to: 'crwv', type: 'equity', amount: '$2 млрд', label: 'Стратегическая инвестиция, январь 2026', weight: 3, src: 'S17', inReport: 'yes', circular: true },
+  { from: 'nvda', to: 'crwv', type: 'equity', amount: '$2 млрд', label: 'Стратегическая инвестиция, январь 2026', weight: 3, src: 'S17', cite: ['crwv-10q'], inReport: 'yes', circular: true },
   { from: 'vc', to: 'openai', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
   { from: 'vc', to: 'anthropic', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
   { from: 'msft', to: 'openai', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
@@ -961,21 +983,21 @@ window.VG_EDGES = [
   { from: 'googl', to: 'anthropic', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
   { from: 'equity', to: 'baba', type: 'equity', amount: 'HK$80 млрд', label: 'Размещение акций, около 60% средств — на вычисления', src: 'S20', inReport: 'yes' },
   { from: 'states', to: 'tsmc', type: 'equity', label: 'Субсидии фабрикам по регионам', src: 'S18', inReport: 'yes' },
-  { from: 'eu', to: 'equinix', type: 'equity', amount: '>€30 млрд', label: 'До семи гигафабрик ИИ в рамках InvestAI', src: 'S26', inReport: 'yes' },
+  { from: 'eu', to: 'equinix', type: 'equity', amount: '>€30 млрд', label: 'До семи гигафабрик ИИ в рамках InvestAI', src: 'S26', cite: ['eu-giga', 'eu-investai-200'], inReport: 'yes' },
   { from: 'sovereign', to: 'equinix', type: 'equity', label: 'Инфраструктурный капитал', src: 'S3', inReport: 'mechanism' },
 
   // --- Долг, аренда, проектные структуры ---
-  { from: 'bonds', to: 'msft', type: 'debt', label: 'Облигации и финансовая аренда', src: 'S2', inReport: 'yes' },
+  { from: 'bonds', to: 'msft', type: 'debt', label: 'Облигации и финансовая аренда', src: 'S2', cite: ['bis-bonds'], inReport: 'yes' },
   { from: 'bonds', to: 'googl', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'bonds', to: 'amzn', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'bonds', to: 'meta', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'bonds', to: 'orcl', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'privcredit', to: 'crwv', type: 'debt', label: 'Долг под залог договоров и оборудования', weight: 2, src: 'S17', inReport: 'yes' },
-  { from: 'privcredit', to: 'equinix', type: 'debt', label: 'Проектное финансирование и SPV', src: 'S2', inReport: 'yes' },
+  { from: 'privcredit', to: 'equinix', type: 'debt', label: 'Проектное финансирование и SPV', src: 'S2', cite: ['bis-privcredit'], inReport: 'yes' },
   { from: 'privcredit', to: 'grid', type: 'debt', label: 'Проектный долг энергообъектов', src: 'S3', inReport: 'mechanism' },
 
   // --- Долгосрочные договоры и гарантии закупки ---
-  { from: 'msft', to: 'constellation', type: 'contract', amount: '835 МВт', label: 'Двадцатилетний договор купли электроэнергии', weight: 3, src: 'S27', inReport: 'yes' },
+  { from: 'msft', to: 'constellation', type: 'contract', amount: '835 МВт', label: 'Двадцатилетний договор купли электроэнергии', weight: 3, src: 'S27', cite: ['constellation-ppa'], inReport: 'yes' },
   { from: 'openai', to: 'msft', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', weight: 2, inReport: 'mechanism', circular: true },
   { from: 'anthropic', to: 'amzn', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
   { from: 'anthropic', to: 'googl', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
@@ -1025,48 +1047,48 @@ window.VG_GROUPS = [
 
 window.VG_INDICATORS = [
   // Капитал
-  { id: 'cap-capex-total', checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Совокупные капвложения Microsoft, Alphabet, Amazon, Meta, Oracle', why: 'Темп инвестиционного цикла', stress: 'Снижение прогноза двумя и более компаниями', state: 'ok', obs: 'Прогнозов снижения нет; Meta ориентирует на $130-145 млрд в 2026', src: 'S16' },
-  { id: 'cap-selffund', checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 174%, Alphabet 115%, Meta 97%, Microsoft 74%. Расчёт терминала по раскрытиям; Amazon исключён, в исследовании приведён прирост, а не уровень капвложений', kind: 'calc', srcs: ['S10', 'S11', 'S14', 'S15', 'S16'] },
-  { id: 'cap-fcf', checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах. Периоды разной длины, поэтому величины между собой не сопоставимы', srcs: ['S11', 'S14', 'S15'] },
-  { id: 'cap-bonds', checked: '2026-09-06', cadence: 180, g: 'capital', name: 'Валовой выпуск облигаций и средняя срочность', why: 'Переход от потока к долгу', stress: 'Рост выпуска вместе с расширением спрэда', state: 'watch', obs: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025', src: 'S2' },
-  { id: 'cap-privcredit', checked: '2026-09-06', cadence: 180, g: 'capital', name: 'Объём частного кредита и проектного финансирования ЦОД', why: 'Скрытый канал риска', stress: 'Рост быстрее выручки и мощности в эксплуатации', state: 'nodata', obs: 'Единого публичного ряда нет; BIS фиксирует рост качественно', src: 'S2' },
-  { id: 'cap-leases', checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Финансовая аренда и долгие гарантии закупки', why: 'Теневой долг', stress: 'Обязательства растут быстрее введённой мощности', state: 'watch', obs: 'Капвложения Microsoft включают аренду; RPO Oracle $638 млрд', src: 'S14' },
+  { id: 'cap-capex-total', cite: ['bis-trillion', 'meta-q2'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Совокупные капвложения Microsoft, Alphabet, Amazon, Meta, Oracle', why: 'Темп инвестиционного цикла', stress: 'Снижение прогноза двумя и более компаниями', state: 'ok', obs: 'Прогнозов снижения нет; Meta ориентирует на $130-145 млрд в 2026', src: 'S16' },
+  { id: 'cap-selffund', cite: ['googl-capex', 'googl-ocf', 'msft-capex', 'orcl-fy26', 'meta-q2'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 174%, Alphabet 115%, Meta 97%, Microsoft 74%. Расчёт терминала по раскрытиям; Amazon исключён, в исследовании приведён прирост, а не уровень капвложений', kind: 'calc', srcs: ['S10', 'S11', 'S14', 'S15', 'S16'] },
+  { id: 'cap-fcf', cite: ['googl-capex', 'googl-ocf', 'amzn-q2', 'orcl-fy26'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах. Периоды разной длины, поэтому величины между собой не сопоставимы', srcs: ['S11', 'S14', 'S15'] },
+  { id: 'cap-bonds', cite: ['bis-bonds'], checked: '2026-09-06', cadence: 180, g: 'capital', name: 'Валовой выпуск облигаций и средняя срочность', why: 'Переход от потока к долгу', stress: 'Рост выпуска вместе с расширением спрэда', state: 'watch', obs: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025', src: 'S2' },
+  { id: 'cap-privcredit', cite: ['bis-privcredit'], checked: '2026-09-06', cadence: 180, g: 'capital', name: 'Объём частного кредита и проектного финансирования ЦОД', why: 'Скрытый канал риска', stress: 'Рост быстрее выручки и мощности в эксплуатации', state: 'nodata', obs: 'Единого публичного ряда нет; BIS фиксирует рост качественно', src: 'S2' },
+  { id: 'cap-leases', cite: ['msft-leases', 'orcl-fy26'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Финансовая аренда и долгие гарантии закупки', why: 'Теневой долг', stress: 'Обязательства растут быстрее введённой мощности', state: 'watch', obs: 'Капвложения Microsoft включают аренду; RPO Oracle $638 млрд', src: 'S14' },
   // Полупроводники
-  { id: 'semi-nvda-dc', checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Выручка центров обработки данных Nvidia', why: 'Конечный спрос на ускорители', stress: 'Замедление при росте запасов', state: 'ok', obs: '$89,0 млрд во II кв. 2027 ф.г.', src: 'S12' },
-  { id: 'semi-nvda-margin', checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Валовая маржа Nvidia', why: 'Дефицитная рента', stress: 'Резкое снижение без удешевления для клиента', state: 'ok', obs: '75%', src: 'S12' },
-  { id: 'semi-avgo-ai', checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Выручка ИИ-полупроводников Broadcom', why: 'Спрос на сети и заказные процессоры', stress: 'Замедление у нескольких заказчиков', state: 'ok', obs: '$16,7 млрд, +221% год к году', src: 'S13' },
-  { id: 'semi-hbm', checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Цена и объём HBM, запасы производителей', why: 'Узкое место памяти', stress: 'Рост запасов и падение цены одновременно', state: 'watch', obs: 'HBM4 в поставках, спрос 2026 во многом законтрактован; публичного ряда цен нет', src: 'S28' },
-  { id: 'semi-asml', checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Заказы и продажи EUV ASML', why: 'Планы фабрик', stress: 'Снижение заказов два квартала', state: 'ok', obs: 'Прогноз 2026 повышен до €43-45 млрд', src: 'S19' },
-  { id: 'semi-tsmc-util', checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'nodata', obs: 'Прямого показателя загрузки в раскрытиях нет. Валовая маржа 67,7% — косвенный признак, она не измеряет загрузку', src: 'S18' },
+  { id: 'semi-nvda-dc', cite: ['nvda-dc'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Выручка центров обработки данных Nvidia', why: 'Конечный спрос на ускорители', stress: 'Замедление при росте запасов', state: 'ok', obs: '$89,0 млрд во II кв. 2027 ф.г.', src: 'S12' },
+  { id: 'semi-nvda-margin', cite: ['nvda-margin'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Валовая маржа Nvidia', why: 'Дефицитная рента', stress: 'Резкое снижение без удешевления для клиента', state: 'ok', obs: '75%', src: 'S12' },
+  { id: 'semi-avgo-ai', cite: ['avgo-q3'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Выручка ИИ-полупроводников Broadcom', why: 'Спрос на сети и заказные процессоры', stress: 'Замедление у нескольких заказчиков', state: 'ok', obs: '$16,7 млрд, +221% год к году', src: 'S13' },
+  { id: 'semi-hbm', cite: ['skhynix-hbm4'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Цена и объём HBM, запасы производителей', why: 'Узкое место памяти', stress: 'Рост запасов и падение цены одновременно', state: 'watch', obs: 'HBM4 в поставках, спрос 2026 во многом законтрактован; публичного ряда цен нет', src: 'S28' },
+  { id: 'semi-asml', cite: ['asml-guide'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Заказы и продажи EUV ASML', why: 'Планы фабрик', stress: 'Снижение заказов два квартала', state: 'ok', obs: 'Прогноз 2026 повышен до €43-45 млрд', src: 'S19' },
+  { id: 'semi-tsmc-util', cite: ['tsmc-q2'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'nodata', obs: 'Прямого показателя загрузки в раскрытиях нет. Валовая маржа 67,7% — косвенный признак, она не измеряет загрузку', src: 'S18' },
   // Облако
-  { id: 'cloud-growth', checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год; OCI IaaS +77%. Сопоставимого показателя роста по всем пяти облакам в раскрытиях нет', srcs: ['S10', 'S14'] },
-  { id: 'cloud-margin', checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'AWS 39%, Google Cloud 36% операционной маржи сегмента. Расчёт терминала: операционная прибыль сегмента к его выручке', kind: 'calc', srcs: ['S11', 'S15'] },
+  { id: 'cloud-growth', cite: ['msft-azure100', 'orcl-fy26'], checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год; OCI IaaS +77%. Сопоставимого показателя роста по всем пяти облакам в раскрытиях нет', srcs: ['S10', 'S14'] },
+  { id: 'cloud-margin', cite: ['googl-cloud-oi', 'amzn-q2'], checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'AWS 39%, Google Cloud 36% операционной маржи сегмента. Расчёт терминала: операционная прибыль сегмента к его выручке', kind: 'calc', srcs: ['S11', 'S15'] },
   { id: 'cloud-price', checked: '2026-09-06', cadence: 180, g: 'cloud', name: 'Цена вычисления или токена и пропускная способность', why: 'Эффективность и конкуренция', stress: 'Цена падает быстрее себестоимости', state: 'nodata', obs: 'Сопоставимого публичного ряда нет', src: 'S4' },
-  { id: 'cloud-util', checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Фактическая загрузка GPU и МВт', why: 'Ключ к окупаемости', stress: 'Снижение при росте введённой мощности', state: 'nodata', obs: 'Не раскрывается ни одним крупным оператором. Главный пробел всей панели', src: 'S17' },
+  { id: 'cloud-util', cite: ['crwv-10q'], checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Фактическая загрузка GPU и МВт', why: 'Ключ к окупаемости', stress: 'Снижение при росте введённой мощности', state: 'nodata', obs: 'Не раскрывается ни одним крупным оператором. Главный пробел всей панели', src: 'S17' },
   // Программы и внедрение
-  { id: 'soft-seats', checked: '2026-09-06', cadence: 95, g: 'soft', name: 'Платные места Copilot и аналогов', why: 'Ширина рынка', stress: 'Места растут, активность и продление падают', state: 'ok', obs: 'Более 30 млн платных мест', src: 'S10' },
-  { id: 'soft-tokens', checked: '2026-09-06', cadence: 95, g: 'soft', name: 'Потребление токенов внешними клиентами', why: 'Глубина использования', stress: 'Внутреннее потребление доминирует', state: 'watch', obs: '398 млрд коммерческих токенов у Яндекса; внешнее и внутреннее потребление разделяется редко', src: 'S24' },
-  { id: 'soft-adoption', checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Доля компаний, использующих ИИ', why: 'Диффузия', stress: 'Рост доли останавливается', state: 'watch', obs: '18% компаний США, 32% с учётом веса занятости', src: 'S6' },
-  { id: 'soft-depth', checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Число функций и задач на компанию', why: 'Глубина внедрения', stress: 'Большинство остаётся на 1-3 функциях', state: 'stress', obs: '57% пользователей — не более трёх функций; 66% применяют ИИ только как дополнение к людям', src: 'S6' },
-  { id: 'soft-firm', checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Выпуск на работника и время цикла в подверженных отраслях', why: 'Переход эффекта к фирме', stress: 'Время экономится, выпуск не растёт', state: 'nodata', obs: 'Сопоставимых публичных рядов почти нет', src: 'S5' },
+  { id: 'soft-seats', cite: ['msft-copilot'], checked: '2026-09-06', cadence: 95, g: 'soft', name: 'Платные места Copilot и аналогов', why: 'Ширина рынка', stress: 'Места растут, активность и продление падают', state: 'ok', obs: 'Более 30 млн платных мест', src: 'S10' },
+  { id: 'soft-tokens', cite: ['yndx-b2b', 'baba-ai'], checked: '2026-09-06', cadence: 95, g: 'soft', name: 'Потребление токенов внешними клиентами', why: 'Глубина использования', stress: 'Внутреннее потребление доминирует', state: 'watch', obs: '398 млрд коммерческих токенов у Яндекса; внешнее и внутреннее потребление разделяется редко', src: 'S24' },
+  { id: 'soft-adoption', cite: ['census-adoption'], checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Доля компаний, использующих ИИ', why: 'Диффузия', stress: 'Рост доли останавливается', state: 'watch', obs: '18% компаний США, 32% с учётом веса занятости', src: 'S6' },
+  { id: 'soft-depth', cite: ['census-depth'], checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Число функций и задач на компанию', why: 'Глубина внедрения', stress: 'Большинство остаётся на 1-3 функциях', state: 'stress', obs: '57% пользователей — не более трёх функций; 66% применяют ИИ только как дополнение к людям', src: 'S6' },
+  { id: 'soft-firm', cite: ['oecd-g7'], checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Выпуск на работника и время цикла в подверженных отраслях', why: 'Переход эффекта к фирме', stress: 'Время экономится, выпуск не растёт', state: 'nodata', obs: 'Сопоставимых публичных рядов почти нет', src: 'S5' },
   { id: 'soft-labour', checked: '2026-09-06', cadence: 180, g: 'soft', name: 'Занятость и зарплаты по возрасту в подверженных профессиях', why: 'Распределение эффекта', stress: 'Падение найма молодых без роста выпуска', state: 'watch', obs: 'Наблюдается снижение найма молодых в подверженных профессиях', src: 'S6' },
   // Энергия
-  { id: 'energy-twh', checked: '2026-09-06', cadence: 365, g: 'energy', name: 'ТВт·ч ЦОД и подключённые ГВт', why: 'Физический спрос', stress: 'Заявки растут, ввод и загрузка нет', state: 'watch', obs: '485 ТВт·ч в 2025, прогноз около 950 к 2030; спрос ИИ-ЦОД вырос примерно на 50% за 2025', src: 'S4' },
-  { id: 'energy-leadtime', checked: '2026-09-06', cadence: 180, g: 'energy', name: 'Срок подключения и поставки трансформаторов', why: 'Ограничение предложения', stress: 'Дальнейшее удлинение при отменах заказов', state: 'watch', obs: 'Производственный цикл трансформаторов, турбин и выключателей измеряется годами; очередь на подключение — реальный ограничитель ввода. Но удлинение сроков вместе с отменами заказов, то есть полный состав стресс-сигнала, не подтверждено', src: 'S4' },
-  { id: 'energy-pue', checked: '2026-09-06', cadence: 365, g: 'energy', name: 'PUE, WUE и стоимость электроэнергии', why: 'Эксплуатационная экономика', stress: 'Ухудшение эффективности или социальные ограничения', state: 'nodata', obs: 'Раскрывается выборочно и несопоставимо', src: 'S4' },
+  { id: 'energy-twh', cite: ['iea-energy'], checked: '2026-09-06', cadence: 365, g: 'energy', name: 'ТВт·ч ЦОД и подключённые ГВт', why: 'Физический спрос', stress: 'Заявки растут, ввод и загрузка нет', state: 'watch', obs: '485 ТВт·ч в 2025, прогноз около 950 к 2030; спрос ИИ-ЦОД вырос примерно на 50% за 2025', src: 'S4' },
+  { id: 'energy-leadtime', cite: ['iea-energy'], checked: '2026-09-06', cadence: 180, g: 'energy', name: 'Срок подключения и поставки трансформаторов', why: 'Ограничение предложения', stress: 'Дальнейшее удлинение при отменах заказов', state: 'watch', obs: 'Производственный цикл трансформаторов, турбин и выключателей измеряется годами; очередь на подключение — реальный ограничитель ввода. Но удлинение сроков вместе с отменами заказов, то есть полный состав стресс-сигнала, не подтверждено', src: 'S4' },
+  { id: 'energy-pue', cite: ['iea-energy'], checked: '2026-09-06', cadence: 365, g: 'energy', name: 'PUE, WUE и стоимость электроэнергии', why: 'Эксплуатационная экономика', stress: 'Ухудшение эффективности или социальные ограничения', state: 'nodata', obs: 'Раскрывается выборочно и несопоставимо', src: 'S4' },
   // Россия
-  { id: 'ru-adoption', checked: '2026-09-06', cadence: 365, g: 'russia', name: 'Постоянное внедрение, пилоты, планы', why: 'Переход к масштабу', stress: 'Пилоты не становятся постоянным использованием', state: 'watch', obs: '21% применяют постоянно, 15% тестируют, 29% планируют, 35% не планируют', src: 'S21' },
-  { id: 'ru-racks', checked: '2026-09-06', cadence: 365, g: 'russia', name: 'Цена стойки, введённые стойки, ИТ-мощность', why: 'Доступность инфраструктуры', stress: 'Цена растёт, ввод переносится, плотность не увеличивается', state: 'stress', obs: 'В 2024 введено 10,9 тыс. стойко-мест вместо ожидаемых 12 тыс.; значительная часть запусков 2025 перенесена на 2026-2027', src: 'S30' },
-  { id: 'ru-revenue', checked: '2026-09-06', cadence: 180, g: 'russia', name: 'Внешняя выручка ИИ и облака, эффект с раскрытой методикой', why: 'Реальная монетизация', stress: 'Рост внутренних трансфертов без внешнего дохода', state: 'watch', obs: 'Эффект Сбера свыше 450 млрд руб. заявлен без раскрытой независимой методики', src: 'S23' }
+  { id: 'ru-adoption', cite: ['cbr-permanent', 'cbr-test', 'cbr-plan3y', 'cbr-noplan', 'cbr-sample'], checked: '2026-09-06', cadence: 365, g: 'russia', name: 'Постоянное внедрение, пилоты, планы', why: 'Переход к масштабу', stress: 'Пилоты не становятся постоянным использованием', state: 'watch', obs: '21% применяют постоянно, 15% тестируют, 29% планируют, 35% не планируют', src: 'S21' },
+  { id: 'ru-racks', cite: ['iks-racks'], checked: '2026-09-06', cadence: 365, g: 'russia', name: 'Цена стойки, введённые стойки, ИТ-мощность', why: 'Доступность инфраструктуры', stress: 'Цена растёт, ввод переносится, плотность не увеличивается', state: 'stress', obs: 'В 2024 введено 10,9 тыс. стойко-мест вместо ожидаемых 12 тыс.; значительная часть запусков 2025 перенесена на 2026-2027', src: 'S30' },
+  { id: 'ru-revenue', cite: ['sber-effect'], checked: '2026-09-06', cadence: 180, g: 'russia', name: 'Внешняя выручка ИИ и облака, эффект с раскрытой методикой', why: 'Реальная монетизация', stress: 'Рост внутренних трансфертов без внешнего дохода', state: 'watch', obs: 'Эффект Сбера свыше 450 млрд руб. заявлен без раскрытой независимой методики', src: 'S23' }
 ];
 
 /* Лестница доказательств производительности (стр. 10) */
 window.VG_LADDER = [
   { level: 'Сэкономленное время', measure: 'Минуты и часы на задачу', seen: 'В ряде структурированных задач экономия значительна', cannot: 'Что время автоматически стало выпуском или прибылью', state: 'ok' },
-  { level: 'Производительность человека', measure: 'Задачи в час, качество', seen: 'Поддержка клиентов +14-15%, сильнее у новичков', cannot: 'Что эффект одинаков у всех профессий и сложных задач', state: 'ok', src: 'S7' },
+  { level: 'Производительность человека', measure: 'Задачи в час, качество', seen: 'Поддержка клиентов +14-15%, сильнее у новичков', cannot: 'Что эффект одинаков у всех профессий и сложных задач', state: 'ok', src: 'S7', cite: ['nber-support', 'nber-1415'] },
   { level: 'Производительность процесса', measure: 'Время цикла, ошибки, пропускная способность', seen: 'Доказана в отдельных внедрениях и банковских конвейерах', cannot: 'Что пилот масштабируется без дополнительного контроля', state: 'watch' },
-  { level: 'Производительность фирмы', measure: 'Выручка на работника, маржа, затраты', seen: 'Есть корпоративные примеры, но мало сопоставимых публичных рядов', cannot: 'Что корреляция внедрения и результата причинна', state: 'stress', src: 'S6' },
-  { level: 'Совокупная производительность', measure: 'Выпуск при данном капитале и труде', seen: 'Пока трудно отделить ИИ от общего цикла цифровизации', cannot: 'Что сценарные 0,4-1,3 п.п. уже реализованы', state: 'stress', src: 'S5' },
+  { level: 'Производительность фирмы', measure: 'Выручка на работника, маржа, затраты', seen: 'Есть корпоративные примеры, но мало сопоставимых публичных рядов', cannot: 'Что корреляция внедрения и результата причинна', state: 'stress', src: 'S6', cite: ['census-adoption'] },
+  { level: 'Совокупная производительность', measure: 'Выпуск при данном капитале и труде', seen: 'Пока трудно отделить ИИ от общего цикла цифровизации', cannot: 'Что сценарные 0,4-1,3 п.п. уже реализованы', state: 'stress', src: 'S5', cite: ['oecd-g7'] },
   { level: 'Выручка поставщика', measure: 'Облако, процессоры, подписки', seen: 'Растёт быстро у ведущих поставщиков', cannot: 'Что клиент получил равный экономический эффект', state: 'ok', src: 'S12' },
   { level: 'Прибыль клиента', measure: 'Чистый эффект после всех затрат', seen: 'Публично раскрывается редко', cannot: 'Что покупка лицензии или токенов эквивалентна окупаемости', state: 'stress' }
 ];
@@ -1163,7 +1185,7 @@ window.VG_RUSSIA = {
   },
   adoption: {
     title: 'Опрос Банка России, 252 организации, июль 2025',
-    src: 'S21', kind: 'fact',
+    src: 'S21', kind: 'fact', cite: ['cbr-permanent', 'cbr-test', 'cbr-plan3y', 'cbr-noplan', 'cbr-sample'],
     items: [
       { label: 'Применяют постоянно', value: 21 },
       { label: 'Тестируют', value: 15 },
@@ -1179,8 +1201,8 @@ window.VG_RUSSIA = {
     note: 'В системно значимых банках и страховщиках проникновение выше: 24% постоянного применения и 19% тестирования в банках.'
   },
   infra: [
-    { label: 'Ориентир Минэнерго по мощности ЦОД для ИИ к 2030', value: '2-2,5 ГВт', kind: 'forecast', note: 'Открытого единого статистического ряда по фактической ИИ-нагрузке нет', src: 'S22' },
-    { label: 'Введено стойко-мест в 2024', value: '10,9 тыс.', kind: 'fact', note: 'Вместо ожидавшихся 12 тыс.', src: 'S30' },
+    { label: 'Ориентир Минэнерго по мощности ЦОД для ИИ к 2030', value: '2-2,5 ГВт', kind: 'forecast', note: 'Открытого единого статистического ряда по фактической ИИ-нагрузке нет', src: 'S22', cite: ['ac-gov'] },
+    { label: 'Введено стойко-мест в 2024', value: '10,9 тыс.', kind: 'fact', note: 'Вместо ожидавшихся 12 тыс.', src: 'S30', cite: ['iks-racks'] },
     { label: 'Запуски 2025 года', value: 'перенос на 2026-2027', kind: 'fact', note: 'Значительная часть проектов перенесена', src: 'S30' },
     { label: 'Цена размещения в Москве и Петербурге', value: 'растёт', kind: 'fact', note: 'Подтверждает дефицит, но не наличие высокоплотной ИИ-нагрузки', src: 'S30' }
   ],
@@ -1221,12 +1243,12 @@ window.VG_GEO = [
 
 /* Энергетика и физические узкие места (стр. 16-17) */
 window.VG_ENERGY = {
-  headline: { from: 485, to: 950, unit: 'ТВт·ч', fromYear: 2025, toYear: 2030, kind: 'forecast', src: 'S4',
+  headline: { from: 485, to: 950, unit: 'ТВт·ч', fromYear: 2025, toYear: 2030, kind: 'forecast', src: 'S4', cite: ['iea-energy'],
     note: 'Около 3% мирового спроса на электроэнергию к 2030 году. Потребление ИИ-ориентированных центров должно утроиться.' },
   facts: [
-    { label: 'Рост спроса ЦОД за 2025', value: '+17%', kind: 'fact', src: 'S4' },
+    { label: 'Рост спроса ЦОД за 2025', value: '+17%', kind: 'fact', src: 'S4', cite: ['iea-energy'] },
     { label: 'Рост спроса ИИ-ориентированных ЦОД за 2025', value: '≈ +50%', kind: 'fact', src: 'S4' },
-    { label: 'Диапазон дополнительной пиковой нагрузки ЦОД в США к 2030', value: '13-55 ГВт', kind: 'forecast', src: 'S5',
+    { label: 'Диапазон дополнительной пиковой нагрузки ЦОД в США к 2030', value: '13-55 ГВт', kind: 'forecast', src: 'S5', cite: ['oecd-g7'],
       note: 'Разброс в четыре раза означает высокую неопределённость, а не точный план' },
     { label: 'Потребность в батареях при ЦОД к 2030', value: '20-25 ГВт', kind: 'forecast', src: 'S4' },
     { label: 'Резерв для надёжной локальной газовой генерации', value: '30-70% сверх нагрузки', kind: 'estimate', src: 'S4' }
@@ -1239,6 +1261,162 @@ window.VG_ENERGY = {
     { name: 'Резервирование', text: 'Батареи и резервная генерация добавляют капитал к каждому мегаватту полезной нагрузки' }
   ],
   keyMetric: 'Главный показатель — не заявленные гигаватты, а подключённые и оплаченные мегаватты с фактической загрузкой.'
+};
+
+</script>
+<script>
+/* Реестр сверок. Ссылка на источник — ещё не проверяемость: важно, где именно
+   в документе утверждение и что там написано дословно.
+
+   status:
+     verified    — первоисточник открыт, формулировка найдена дословно
+     partial     — источник подтверждает частично: другая формулировка,
+                   иная величина рядом или значение взято из графика
+     mismatch    — по указанной ссылке утверждения нет
+     unreachable — источник не открывается из среды сборки (403)
+     pending     — сверка не проводилась
+
+   checked — дата сверки. quote — дословная цитата из первоисточника. */
+window.VG_CITES = {
+  /* ---------------- сверено дословно ---------------- */
+  'bis-trillion': { src: 'S1', status: 'verified', checked: '2026-09-20',
+    loc: 'Annual Economic Report 2026, глава об ИИ-инвестициях',
+    quote: 'The five largest hyperscalers are set to spend over a trillion US dollars on AI-related capital expenditure from 2025 through 2026. These commitments are outpacing earnings and the free cash flow of these firms.' },
+  'bis-bonds': { src: 'S2', status: 'verified', checked: '2026-09-20',
+    loc: 'Quarterly Review, раздел о финансировании, Graph A1.B',
+    quote: "Their gross issuance increased markedly, topping $100 billion in 2025 (Graph A1.B). Most issuance was long-term, with maturities over five years." },
+  'bis-privcredit': { src: 'S2', status: 'verified', checked: '2026-09-20',
+    loc: 'Quarterly Review, раздел о внебалансовых структурах',
+    quote: 'A common structure involves a dedicated vehicle — often a joint venture or special purpose entity — that acquires or develops data centre assets.' },
+  'bis-gdp': { src: 'S3', status: 'verified', checked: '2026-09-20',
+    loc: 'Bulletin 120, Graph 1.B',
+    quote: 'Manufacturing facilities and data centres have contributed on average 0.4 percentage points (pp) to GDP growth over the subsequent three years.' },
+  'nvda-rev': { src: 'S12', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз от 26.08.2026, подзаголовок',
+    quote: 'Revenue of $96.2 billion, up 106% from a year ago.' },
+  'nvda-dc': { src: 'S12', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз от 26.08.2026, подзаголовок',
+    quote: 'Data Center revenue of $89.0 billion, up 117% from a year ago.' },
+  'nvda-margin': { src: 'S12', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз от 26.08.2026, раздел результатов квартала',
+    quote: 'For the quarter, GAAP and non-GAAP gross margins were both 75.0%.' },
+  'asml-q2': { src: 'S19', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз от 15.07.2026, сводная таблица и заявление CEO',
+    quote: 'Q2 total net sales of €9.3 billion, gross margin of 54.0%, net income of €2.9 billion. Total net sales 9,326; Gross margin (%) 54.0.' },
+  'asml-guide': { src: 'S19', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз от 15.07.2026, заголовок',
+    quote: 'ASML now expects 2026 total net sales to be between €43 billion and €45 billion, with a gross margin between 54% and 56%.' },
+  'googl-cloud': { src: 'S11', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз за II кв. 2026, раздел результатов',
+    quote: 'Google Cloud saw a meaningful acceleration in growth as revenues increased 82% to $24.8 billion.' },
+  'googl-cloud-oi': { src: 'S11', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз за II кв. 2026, таблица операционной прибыли сегментов',
+    quote: 'Operating income (loss): Google Cloud 2,826 (2025) → 8,814 (2026).' },
+  'googl-capex': { src: 'S11', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз за II кв. 2026, отчёт о движении денежных средств',
+    quote: 'Purchases of property and equipment (22,446) → (44,924).' },
+  'googl-ocf': { src: 'S11', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз за II кв. 2026, отчёт о движении денежных средств',
+    quote: 'Net cash provided by operating activities 27,747 → 39,069.' },
+  'msft-capex': { src: 'S10', status: 'verified', checked: '2026-09-20',
+    loc: 'Материалы к отчёту за IV кв. 2026 ф.г., комментарий финансового директора',
+    quote: 'Capital expenditures were $41 billion including the impact from higher component pricing as noted in our guide.' },
+  'msft-copilot': { src: 'S10', status: 'verified', checked: '2026-09-20',
+    loc: 'Материалы к отчёту за IV кв. 2026 ф.г., выступление CEO',
+    quote: 'We now have over 30 million paid Microsoft 365 Copilot seats, with net seat adds more than doubling quarter-over-quarter.' },
+  'census-adoption': { src: 'S6', status: 'verified', checked: '2026-09-20',
+    loc: 'CES WP 26-25, аннотация',
+    quote: 'During the supplement reference period (Nov 2025 - Jan 2026), 18% of firms used AI in a business function, rising to 32% on an employment-weighted basis; adoption is expected to reach 22% within six months.' },
+  'baba-cloud': { src: 'S20', status: 'verified', checked: '2026-09-20',
+    loc: 'Отчёт за квартал, раздел облачного сегмента',
+    quote: 'AI Cloud and Compute Services revenue reached US$7.1 billion, up 45% year-over-year, recording the 22-quarter high.' },
+  'baba-ai': { src: 'S20', status: 'verified', checked: '2026-09-20',
+    loc: 'Отчёт за квартал, раздел ИИ-продуктов',
+    quote: 'AI-related product revenue of US$1.8 billion extended triple-digit year-over-year growth for the twelfth consecutive quarter.' },
+  'yndx-b2b': { src: 'S24', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз за II кв. 2026, таблица сегментов',
+    quote: 'Б2Б Тех: Выручка 15,3 (против 11,9, +29%); Скорр. показатель EBITDA 3,7 (против 2,6, +43%).' },
+  'cbr-test': { src: 'S21', status: 'verified', checked: '2026-09-20',
+    loc: 'Доклад Банка России, раздел 2.1, рис. 6',
+    quote: '15% респондентов тестирует пилотные проекты, связанные с ИИ.' },
+  'cbr-noplan': { src: 'S21', status: 'verified', checked: '2026-09-20',
+    loc: 'Доклад Банка России, раздел 2.1',
+    quote: '35% опрошенных не используют и не планируют использовать ИИ в своей деятельности в будущем.' },
+  'cbr-barriers': { src: 'S21', status: 'verified', checked: '2026-09-20',
+    loc: 'Доклад Банка России, раздел 2.1',
+    quote: 'Высокая стоимость внедрения ИИ (59%), недостаточная экспертиза (46%), дефицит специалистов в области ИИ (44%).' },
+  'cbr-sample': { src: 'S21', status: 'verified', checked: '2026-09-20',
+    loc: 'Доклад Банка России, описание выборки',
+    quote: 'В выборку вошло 252 организации из числа финансовых организаций, представителей инфраструктуры финансового рынка, иных организаций. Опрос проведён в июле 2025 года.' },
+  'constellation-ppa': { src: 'S27', status: 'verified', checked: '2026-09-20',
+    loc: 'Пресс-релиз от 20.09.2024, первый абзац',
+    quote: 'Constellation announced today the signing of a 20-year power purchase agreement with Microsoft that will pave the way for the launch of the Crane Clean Energy Center, adding approximately 835 megawatts of carbon-free energy to the grid.' },
+  'nber-support': { src: 'S7', status: 'verified', checked: '2026-09-20',
+    loc: 'NBER Working Paper 31161, аннотация',
+    quote: 'Access to the tool increases productivity, as measured by issues resolved per hour, by 14% on average, including a 34% improvement for novice and low-skilled workers but with minimal impact on experienced and highly skilled workers.' },
+  'eu-giga': { src: 'S26', status: 'verified', checked: '2026-09-20',
+    loc: 'Страница политики ЕС, новость от 30.07.2026',
+    quote: 'EU launches AI Gigafactories call to boost Europe’s computing capacity and unlock more than €30 billion in investment. The EU has launched a call for tenders to establish up to seven AI Gigafactories across Europe.' },
+
+  /* ---------------- подтверждено частично ---------------- */
+  'cbr-permanent': { src: 'S21', status: 'partial', checked: '2026-09-20',
+    loc: 'Доклад Банка России, раздел 2.1, рис. 6',
+    quote: 'На постоянной основе ИИ применяет каждая пятая организация.',
+    note: 'В тексте источника — «каждая пятая», то есть около 20%. Точное значение 21% относится к рис. 6, машинно из PDF не читается.' },
+  'cbr-plan3y': { src: 'S21', status: 'partial', checked: '2026-09-20',
+    loc: 'Доклад Банка России, раздел 2.1, рис. 6',
+    quote: 'Ещё треть от общего числа опрошенных компаний планирует внедрить ИИ в свои бизнес-процессы на горизонте 3 лет.',
+    note: 'В тексте — «треть», то есть около 33%. Значение 29% относится к рис. 6.' },
+  'nber-1415': { src: 'S7', status: 'partial', checked: '2026-09-20',
+    loc: 'NBER Working Paper 31161, аннотация',
+    quote: 'Increases productivity... by 14% on average, including a 34% improvement for novice and low-skilled workers.',
+    note: 'Источник даёт 14% в среднем и 34% у новичков. Формулировка «14-15%» в исследовании — обобщение по нескольким работам, вторая величина в этом источнике отсутствует.' },
+  'census-depth': { src: 'S6', status: 'partial', checked: '2026-09-20',
+    loc: 'CES WP 26-25, аннотация',
+    quote: '18% of firms used AI in a business function, rising to 32% on an employment-weighted basis.',
+    note: 'Доли внедрения подтверждены. Величины «57% — не более трёх функций» и «66% — только как дополнение к людям» в открытой аннотации отсутствуют: они в полном тексте работы, машинно не сверялись.' },
+  'msft-leases': { src: 'S10', status: 'partial', checked: '2026-09-20',
+    loc: 'Материалы к отчёту за IV кв. 2026 ф.г.',
+    quote: 'Capital expenditures were $41 billion including the impact from higher component pricing.',
+    note: 'Сумма подтверждена. Утверждение «включая финансовую аренду» в найденной формулировке не выражено прямо и требует сверки с формой 10-K.' },
+
+  /* ---------------- расхождение ---------------- */
+  'eu-investai-200': { src: 'S26', status: 'mismatch', checked: '2026-09-20',
+    loc: 'Страница политики ЕС',
+    quote: '',
+    note: 'На указанной странице сумма €200 млрд инициативы InvestAI не найдена. Страница описывает конкурс гигафабрик ИИ и более €30 млрд инвестиций. Для суммы €200 млрд нужна отдельная ссылка на документ InvestAI.' },
+
+  /* ---------------- источник недоступен из среды сборки ---------------- */
+  'iea-energy': { src: 'S4', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'iea.org отвечает 403. Сверить 485 → 950 ТВт·ч, диапазон 13-55 ГВт и оценку батарей 20-25 ГВт из среды сборки не удалось.' },
+  'crwv-10q': { src: 'S17', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'sec.gov отвечает 403. Не сверены: RPO $103,7 млрд, 72% выручки от трёх клиентов, капвложения $14,1 млрд за полугодие.' },
+  'avgo-q3': { src: 'S13', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'investors.broadcom.com отвечает 403. Не сверены: $16,7 млрд выручки ИИ-полупроводников, +221%, свободный поток $13,7 млрд.' },
+  'orcl-fy26': { src: 'S14', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'investor.oracle.com отвечает 403. Не сверены: IaaS $18,1 млрд, +77%, RPO $638 млрд, капвложения $55,6 млрд.' },
+  'tsmc-q2': { src: 'S18', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'investor.tsmc.com отвечает 403. Не сверены: выручка $40,2 млрд, валовая маржа 67,7%, план капвложений $52-56 млрд.' },
+  'amzn-q2': { src: 'S15', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'ir.aboutamazon.com отвечает 403. Не сверены: AWS $42,2 млрд, операционная прибыль $16,6 млрд, операционный поток $161,4 млрд и главное — уровень капвложений за 12 месяцев.' },
+  'meta-q2': { src: 'S16', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'investor.atmeta.com отвечает 403. Не сверены: капвложения $31,1 млрд и прогноз $130-145 млрд на 2026 год.' },
+  'oecd-g7': { src: 'S5', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'oecd.org отвечает 403. Не сверен сценарный диапазон 0,4-1,3 процентного пункта.' },
+  'imf-gfsr': { src: 'S9', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'imf.org отвечает 403. Не сверены выводы о концентрации рынка и круговом финансировании.' },
+  'ac-gov': { src: 'S22', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
+    note: 'ac.gov.ru не отвечает из среды сборки. Не сверен ориентир 2-2,5 ГВт мощности ЦОД для ИИ к 2030 году.' },
+
+  /* ---------------- сверка не проводилась ---------------- */
+  'skhynix-hbm4': { src: 'S28', status: 'pending', checked: '', loc: '', quote: '',
+    note: 'Ссылка ведёт на общую страницу новостей SK hynix. Нужен конкретный релиз о поставках HBM4 и законтрактованном спросе 2026 года.' },
+  'iks-racks': { src: 'S30', status: 'pending', checked: '', loc: '', quote: '',
+    note: 'Ссылка ведёт на общую страницу iKS-Consulting. Нужен конкретный отчёт по рынку коммерческих ЦОД с цифрой 10,9 тыс. стойко-мест.' },
+  'sber-effect': { src: 'S23', status: 'pending', checked: '', loc: '', quote: '',
+    note: 'Заявленный эффект свыше 450 млрд руб. требует сверки с раскрытием по МСФО и, отдельно, с методикой расчёта эффекта, которая публично не раскрыта.' },
+  'msft-azure100': { src: 'S10', status: 'pending', checked: '', loc: '', quote: '',
+    note: 'Годовая выручка Azure свыше $100 млрд в найденных материалах к отчёту не встретилась. Нужна сверка со стенограммой звонка или формой 10-K.' }
 };
 
 </script>
@@ -1561,12 +1739,241 @@ window.VG_HISTORY = [
     "known": 1,
     "total": 5
    }
-  }
+  },
+  "cites": {
+   "verified": 0,
+   "partial": 0,
+   "mismatch": 0,
+   "unreachable": 0,
+   "pending": 0,
+   "total": 0
+  },
+  "rev": "64242c2",
+  "seq": 1
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-09-19",
+  "label": "исправления по внешнему разбору",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok"
+   },
+   "cap-selffund": {
+    "state": "watch"
+   },
+   "cap-fcf": {
+    "state": "watch"
+   },
+   "cap-bonds": {
+    "state": "watch"
+   },
+   "cap-privcredit": {
+    "state": "nodata"
+   },
+   "cap-leases": {
+    "state": "watch"
+   },
+   "semi-nvda-dc": {
+    "state": "ok"
+   },
+   "semi-nvda-margin": {
+    "state": "ok"
+   },
+   "semi-avgo-ai": {
+    "state": "ok"
+   },
+   "semi-hbm": {
+    "state": "watch"
+   },
+   "semi-asml": {
+    "state": "ok"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata"
+   },
+   "cloud-growth": {
+    "state": "ok"
+   },
+   "cloud-margin": {
+    "state": "ok"
+   },
+   "cloud-price": {
+    "state": "nodata"
+   },
+   "cloud-util": {
+    "state": "nodata"
+   },
+   "soft-seats": {
+    "state": "ok"
+   },
+   "soft-tokens": {
+    "state": "watch"
+   },
+   "soft-adoption": {
+    "state": "watch"
+   },
+   "soft-depth": {
+    "state": "stress"
+   },
+   "soft-firm": {
+    "state": "nodata"
+   },
+   "soft-labour": {
+    "state": "watch"
+   },
+   "energy-twh": {
+    "state": "watch"
+   },
+   "energy-leadtime": {
+    "state": "watch"
+   },
+   "energy-pue": {
+    "state": "nodata"
+   },
+   "ru-adoption": {
+    "state": "watch"
+   },
+   "ru-racks": {
+    "state": "stress"
+   },
+   "ru-revenue": {
+    "state": "watch"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 41,
+    "ocf": 55.4,
+    "fcf": 19.6
+   },
+   "googl": {
+    "capex": 44.9,
+    "ocf": 39.1,
+    "fcf": -5.9
+   },
+   "amzn": {
+    "capexDelta": 66.1,
+    "ocf": 161.4,
+    "fcf": -7.6
+   },
+   "meta": {
+    "capex": 31.1,
+    "ocf": 31.9,
+    "fcf": 0.8
+   },
+   "orcl": {
+    "capex": 55.6,
+    "ocf": 32,
+    "fcf": -23.7,
+    "rpo": 638
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.6,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 40.2
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 48,
+   "cycles": [
+    "amzn + anthropic",
+    "anthropic + googl",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 0,
+   "partial": 0,
+   "mismatch": 0,
+   "unreachable": 0,
+   "pending": 0,
+   "total": 0
+  },
+  "rev": "4db8cf8",
+  "seq": 2
  },
  {
   "asOf": "2026-09-06",
   "builtAt": "2026-09-20",
-  "label": "исправления по внешнему разбору",
+  "label": "сверка с первоисточниками",
   "method": 2,
   "index": {
    "overall": 34.6,
@@ -1798,7 +2205,16 @@ window.VG_HISTORY = [
     "known": 1,
     "total": 5
    }
-  }
+  },
+  "cites": {
+   "verified": 26,
+   "partial": 5,
+   "mismatch": 1,
+   "unreachable": 10,
+   "pending": 4,
+   "total": 46
+  },
+  "seq": 3
  }
 ];
 
@@ -1904,8 +2320,14 @@ window.VG_HISTORY = [
       indicators: {},
       companies: {},
       graph: {},
-      scenarios: {}
+      scenarios: {},
+      cites: { verified: 0, partial: 0, mismatch: 0, unreachable: 0, pending: 0, total: 0 }
     };
+    Object.keys(d.cites || {}).forEach(function (id) {
+      var st = d.cites[id].status;
+      if (snap.cites[st] === undefined) snap.cites[st] = 0;
+      snap.cites[st]++; snap.cites.total++;
+    });
     d.groups.forEach(function (g) {
       var c = coverage(d.indicators, g.id), v = groupIndex(d.indicators, g.id);
       snap.index.groups[g.id] = { value: v === null ? null : Math.round(v * 10) / 10, seen: c.seen, all: c.all };
@@ -1940,7 +2362,7 @@ window.VG_HISTORY = [
 
   function diff(prev, cur, dict) {
     dict = dict || {};
-    var out = { index: null, groups: [], indicators: [], companies: [], cycles: [], graph: null, scenarios: [] };
+    var out = { index: null, groups: [], indicators: [], companies: [], cycles: [], graph: null, scenarios: [], cites: null };
     if (!prev) return out;
 
     if (prev.index.overall !== cur.index.overall) {
@@ -1978,6 +2400,12 @@ window.VG_HISTORY = [
     if (prev.graph.nodes !== cur.graph.nodes || prev.graph.edges !== cur.graph.edges) {
       out.graph = { nodesFrom: prev.graph.nodes, nodesTo: cur.graph.nodes, edgesFrom: prev.graph.edges, edgesTo: cur.graph.edges };
     }
+    var pc = prev.cites, cc = cur.cites;
+    if (pc && cc && (pc.verified !== cc.verified || pc.total !== cc.total)) {
+      out.cites = { verifiedFrom: pc.verified, verifiedTo: cc.verified, totalFrom: pc.total, totalTo: cc.total };
+    } else if (!pc && cc && cc.total) {
+      out.cites = { verifiedFrom: 0, verifiedTo: cc.verified, totalFrom: 0, totalTo: cc.total };
+    }
     Object.keys(cur.scenarios).forEach(function (id) {
       var a = prev.scenarios[id], b = cur.scenarios[id];
       if (a && (a.met !== b.met || a.known !== b.known)) {
@@ -1989,7 +2417,7 @@ window.VG_HISTORY = [
 
   function count(d) {
     return d.indicators.length + d.companies.length + d.cycles.length + d.groups.length +
-           d.scenarios.length + (d.graph ? 1 : 0) + (d.index ? 1 : 0);
+           d.scenarios.length + (d.graph ? 1 : 0) + (d.index ? 1 : 0) + (d.cites ? 1 : 0);
   }
 
   var api = { SCORE: SCORE, MIN_COVERAGE: MIN_COVERAGE, METHOD: METHOD, STATE_NAMES: STATE_NAMES,
@@ -2353,7 +2781,7 @@ window.VG_HISTORY = [
   var M = window.VG_META, LAYERS = window.VG_LAYERS, CO = window.VG_COMPANIES,
       IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
-      LADDER = window.VG_LADDER;
+      LADDER = window.VG_LADDER, CITES = window.VG_CITES || {};
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -2376,7 +2804,58 @@ window.VG_HISTORY = [
     var t = s.org + ' — ' + s.title + ', ' + s.date + (s.generic ? '. Ссылка ведёт на общую страницу организации, прямого документа нет' : '');
     return '<button class="src' + (s.generic ? ' generic' : '') + '" type="button" data-src="' + code + '" title="' + esc(t) + '">' + code + (s.generic ? '*' : '') + '</button>';
   }
-  function refs(o) { return srcref(o.srcs || o.src); }
+  function refs(o) { return o.cite ? citeref(o.cite) : srcref(o.srcs || o.src); }
+
+  /* ------------------------------------------------- статусы сверки */
+  var CITE_STATUS = {
+    verified:    { glyph: '✓', label: 'сверено дословно', cls: 'ok' },
+    partial:     { glyph: '≈', label: 'подтверждено частично', cls: 'partial' },
+    mismatch:    { glyph: '✕', label: 'по ссылке утверждения нет', cls: 'bad' },
+    unreachable: { glyph: '⊘', label: 'источник недоступен из среды сборки', cls: 'none' },
+    pending:     { glyph: '?', label: 'сверка не проводилась', cls: 'none' }
+  };
+  var CITE_RANK = { mismatch: 0, pending: 1, unreachable: 2, partial: 3, verified: 4 };
+
+  /* чипы сверки, сгруппированные по источнику: пять цитат из одного доклада
+     не должны превращаться в пять одинаковых значков */
+  function citeref(list) {
+    if (!list) return '';
+    if (!Array.isArray(list)) list = [list];
+    var bySrc = {};
+    list.forEach(function (id) {
+      var c = CITES[id]; if (!c) return;
+      (bySrc[c.src] = bySrc[c.src] || []).push({ id: id, c: c });
+    });
+    return Object.keys(bySrc).map(function (src) {
+      var items = bySrc[src];
+      var worst = items.reduce(function (a, x) {
+        return CITE_RANK[x.c.status] < CITE_RANK[a] ? x.c.status : a;
+      }, 'verified');
+      var st = CITE_STATUS[worst];
+      var counts = {};
+      items.forEach(function (x) { counts[x.c.status] = (counts[x.c.status] || 0) + 1; });
+      var tip = items.map(function (x) {
+        return CITE_STATUS[x.c.status].label.toUpperCase() +
+          (x.c.loc ? ' · ' + x.c.loc : '') +
+          (x.c.quote ? '\n«' + x.c.quote + '»' : '') +
+          (x.c.note ? '\n' + x.c.note : '');
+      }).join('\n\n');
+      var extra = items.length > 1 ? ' ' + Object.keys(counts).map(function (k) {
+        return counts[k] + CITE_STATUS[k].glyph;
+      }).join(' ') : ' ' + st.glyph;
+      return '<button class="cite ' + st.cls + '" type="button" data-cite="' + items[0].id + '" title="' + esc(tip) + '">' +
+        src + extra + '</button>';
+    }).join(' ');
+  }
+
+  function citeSummary(list) {
+    var out = { verified: 0, partial: 0, mismatch: 0, unreachable: 0, pending: 0, total: 0 };
+    (list || Object.keys(CITES)).forEach(function (id) {
+      var c = CITES[id]; if (!c) return;
+      out[c.status]++; out.total++;
+    });
+    return out;
+  }
   var STATE_LABELS = { ok: 'Норма', watch: 'Наблюдение', stress: 'Стресс-сигнал', nodata: 'Нет публичного ряда' };
   function stateEl(state) {
     return '<span class="st st-' + state + '"><i></i>' + STATE_LABELS[state] + '</span>';
@@ -2465,9 +2944,11 @@ window.VG_HISTORY = [
   function changeRows() {
     var out = [];
     DIFF.indicators.forEach(function (c) {
-      out.push({ arr: c.to === 'stress' ? '▲' : c.from === 'stress' ? '▼' : '→',
+      var toName = c.toName || VGM.STATE_NAMES[c.to] || c.to;
+      out.push({ arr: c.added ? '+' : c.to === 'stress' ? '▲' : c.from === 'stress' ? '▼' : '→',
         cls: c.to === 'stress' ? 'up' : c.from === 'stress' ? 'down' : '',
-        html: '<b>' + esc(c.name) + '</b><br><span class="from">' + esc(c.fromName || '—') + '</span> → <span class="to">' + esc(c.toName) + '</span>' });
+        html: '<b>' + esc(c.name) + '</b><br>' + (c.added ? '<span class="from">показатель добавлен</span>'
+          : '<span class="from">' + esc(c.fromName || '—') + '</span>') + ' → <span class="to">' + esc(toName) + '</span>' });
     });
     DIFF.companies.forEach(function (c) {
       var f = DICT.fields[c.field] || c.field;
@@ -2497,6 +2978,11 @@ window.VG_HISTORY = [
     if (DIFF.graph) {
       out.push({ arr: '→', cls: '',
         html: '<b>Граф связей</b><br><span class="from">' + DIFF.graph.edgesFrom + ' связей</span> → <span class="to">' + DIFF.graph.edgesTo + ' связей</span>' });
+    }
+    if (DIFF.cites) {
+      out.push({ arr: '▲', cls: 'down',
+        html: '<b>Сверка с первоисточниками</b><br><span class="from">' + DIFF.cites.verifiedFrom + ' из ' + DIFF.cites.totalFrom +
+          '</span> → <span class="to">' + DIFF.cites.verifiedTo + ' из ' + DIFF.cites.totalTo + ' дословно</span>' });
     }
     return out;
   }
@@ -2598,13 +3084,13 @@ window.VG_HISTORY = [
       }).join('');
 
       var anchors = [
-        { v: 'Более $1 трлн', l: 'Капвложения пяти крупнейших облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
-        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 и прогноз на 2030', k: 'forecast', s: 'S4', lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
-        { v: '18% / 32%', l: 'Доля компаний США с ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', lim: 'Использование не равно глубокой перестройке бизнеса' }
+        { v: 'Более $1 трлн', l: 'Капвложения пяти крупнейших облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', c: ['bis-trillion'], lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
+        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 и прогноз на 2030', k: 'forecast', s: 'S4', c: ['iea-energy'], lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
+        { v: '18% / 32%', l: 'Доля компаний США с ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', c: ['census-adoption'], lim: 'Использование не равно глубокой перестройке бизнеса' }
       ].map(function (x) {
         return '<div class="tile"><div class="label">' + esc(x.l) + '</div>' +
           '<div class="value">' + esc(x.v) + '</div>' +
-          '<div class="row">' + badge(x.k) + srcref(x.s) + '</div>' +
+          '<div class="row">' + badge(x.k) + srcref(x.s) + citeref(x.c) + '</div>' +
           '<div class="note">' + esc(x.lim) + '</div></div>';
       }).join('');
 
@@ -2619,6 +3105,12 @@ window.VG_HISTORY = [
             }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
           '</div>' +
           '<div class="panel"><h3>Чем вывод не обеспечен</h3>' +
+            (function () {
+              var cs = citeSummary();
+              return '<div class="note" style="margin-bottom:12px"><b>Сверка с первоисточниками: ' + cs.verified + ' из ' + cs.total + ' дословно.</b> ' +
+                'Частично подтверждено ' + cs.partial + ', расхождений ' + cs.mismatch + ', источник недоступен у ' + cs.unreachable + ', не сверялось ' + cs.pending + '. ' +
+                '<button class="linkbtn" type="button" data-goto="sources" style="margin:0">Реестр сверок →</button></div>';
+            })() +
             '<p class="sub">' + gaps.length + ' показателей из ' + IND.length + ' не имеют публичного ряда. Это не ноль, а пробел</p>' +
             '<ul class="list">' + gaps.map(function (i) { return '<li><b>' + esc(i.name) + '</b> — ' + esc(i.obs) + '</li>'; }).join('') + '</ul>' +
           '</div>' +
@@ -2674,7 +3166,7 @@ window.VG_HISTORY = [
       /* ---------- журнал ---------- */
       var log = HIST.length ? '<h2 class="section">Журнал обновлений</h2>' +
         '<div class="tablewrap compact"><table><thead><tr><th>Сборка</th><th>Что обновляли</th>' +
-        '<th class="num">Индекс</th><th class="num">Изменение</th><th class="num">Контуров</th><th class="num">Данные</th></tr></thead><tbody>' +
+        '<th class="num">Индекс</th><th class="num">Изменение</th><th class="num">Контуров</th><th class="num">Данные</th><th class="num">Сверено</th></tr></thead><tbody>' +
         HIST.slice().reverse().map(function (h, i, arr) {
           var prev = arr[i + 1];
           var d = prev ? Math.round((h.index.overall - prev.index.overall) * 10) / 10 : null;
@@ -2684,7 +3176,8 @@ window.VG_HISTORY = [
             '<td class="num">' + num(h.index.overall) + '</td>' +
             '<td class="num">' + (d === null ? '—' : '<span class="delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '') + '">' + (d > 0 ? '+' : '') + num(d) + '</span>') + '</td>' +
             '<td class="num">' + h.graph.cycles.length + '</td>' +
-            '<td class="num">' + seen + ' из ' + all + '</td></tr>';
+            '<td class="num">' + seen + ' из ' + all + '</td>' +
+            '<td class="num">' + (h.cites && h.cites.total ? h.cites.verified + ' из ' + h.cites.total : '—') + '</td></tr>';
         }).join('') + '</tbody></table></div>' +
         '<div class="note">Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран: изменение методики не должно выглядеть как изменение рынка. ' +
           esc(M.disclaimer) + '</div>' : '';
@@ -2728,7 +3221,7 @@ window.VG_HISTORY = [
         '</div>' +
         '<h2 class="section">Таблица связей</h2>' +
         '<div class="tablewrap compact"><table><thead><tr>' +
-          '<th>Откуда идут деньги</th><th>Куда</th><th>Тип</th><th>Что это</th><th>Основание</th>' +
+          '<th>Откуда идут деньги</th><th>Куда</th><th>Тип</th><th>Что это</th><th>Основание</th><th>Сверка</th>' +
         '</tr></thead><tbody id="edgeTable"></tbody></table></div>';
     },
     after: function (root) {
@@ -2766,7 +3259,8 @@ window.VG_HISTORY = [
           return '<tr><td>' + esc(nodeName(e.from)) + '</td><td>' + esc(nodeName(e.to)) + '</td>' +
             '<td>' + esc(window.VG_EDGE_TYPES[e.type].label) + (e.amount ? ' <b>' + esc(e.amount) + '</b>' : '') + '</td>' +
             '<td>' + esc(e.label || '') + (e.back ? '<span class="sub">встречный поток: ' + esc(e.back) + '</span>' : '') + '</td>' +
-            '<td>' + refMark(e) + '</td></tr>';
+            '<td>' + refMark(e) + '</td>' +
+            '<td>' + (e.cite ? citeref(e.cite) : '<span class="cite none">—</span>') + '</td></tr>';
         }).join('');
       }
       function showSel(node, edges) {
@@ -2919,7 +3413,7 @@ window.VG_HISTORY = [
           '<td class="num">' + (typeof c.fcf === 'number' ? (c.fcf > 0 ? '+' : '') + '$' + num(c.fcf) : '—') + '</td>' +
           '<td>' + esc(c.proof) + (c.guide ? '<span class="sub">' + esc(c.guide) + '</span>' : '') + '</td>' +
           '<td>' + esc(c.breaks) + '<span class="sub">ограничение: ' + esc(c.limit) + ' ' + '</span></td>' +
-          '<td>' + srcref(c.src) + '</td></tr>' +
+          '<td>' + srcref(c.src) + '<span class="sub">' + (c.cite ? citeref(c.cite) : '') + '</span></td></tr>' +
           (c.capexNote || c.crossCheck ? '<tr class="rownote"><td colspan="8">' +
             (c.capexNote ? '<b>Примечание к капвложениям.</b> ' + esc(c.capexNote) + '. ' : '') +
             (c.crossCheck ? '<br>' + esc(c.crossCheck.label) + ': <b>' + esc(c.crossCheck.value) + '</b>, ' + esc(c.crossCheck.ratio) + ' ' + badge('unverified') +
@@ -2968,7 +3462,7 @@ window.VG_HISTORY = [
         '<h2 class="section">Раскрытия компаний</h2>' +
         '<div class="tablewrap"><table><thead><tr><th>Компания</th><th>Период</th><th class="num">Капвложения</th>' +
           '<th class="num">Операционный поток</th><th class="num">Свободный поток</th><th>Доказанная монетизация</th>' +
-          '<th>Что опровергнет позитивный сценарий</th><th>Источник</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
+          '<th>Что опровергнет позитивный сценарий</th><th>Источник и сверка</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<h2 class="section">Тест пяти условий: производительность или ставка на капитализацию</h2>' +
         '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия нарушены, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
           '<div class="note" style="margin-bottom:14px">' + esc(T5.rule) + '</div>' +
@@ -3022,13 +3516,14 @@ window.VG_HISTORY = [
       var byGroup = GROUPS.map(function (g) {
         var items = IND.filter(function (i) { return i.g === g.id; });
         return '<h2 class="section">' + esc(g.name) + '</h2>' +
-          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение</th><th>Проверено</th><th>Статус</th></tr></thead><tbody>' +
+          '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение</th><th>Сверка</th><th>Проверено</th><th>Статус</th></tr></thead><tbody>' +
           items.map(function (i) {
             var f = VGM.freshness(i, today());
             var srcDate = (M.sources[(i.srcs || [i.src])[0]] || {}).date;
             var cls = f.overdue ? 'over' : f.ratio > 0.75 ? 'due' : '';
             return '<tr><td><b>' + esc(i.name) + '</b></td><td>' + esc(i.why) + '</td><td>' + esc(i.stress) + '</td>' +
-              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + refs(i) + '</td>' +
+              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + srcref(i.srcs || i.src) + '</td>' +
+              '<td style="min-width:96px">' + (i.cite ? citeref(i.cite) : '<span class="cite none">не привязано</span>') + '</td>' +
               '<td class="num" style="min-width:132px">' + esc(i.checked) +
                 '<span class="sub">' + f.age + ' дн. назад из ' + f.due +
                 (f.overdue ? ' · <b style="color:var(--critical)">требует проверки</b>' : '') + '</span>' +
@@ -3246,7 +3741,49 @@ window.VG_HISTORY = [
           '<td class="num">' + esc(s.date) + '</td>' +
           '<td><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Открыть</a></td></tr>';
       }).join('');
+      var sum = citeSummary();
+      var ORDER_ST = ['mismatch', 'pending', 'unreachable', 'partial', 'verified'];
+      var citeRows = Object.keys(CITES).sort(function (a, b) {
+        var d = CITE_RANK[CITES[a].status] - CITE_RANK[CITES[b].status];
+        return d || (CITES[a].src > CITES[b].src ? 1 : -1);
+      }).map(function (id) {
+        var c = CITES[id], st = CITE_STATUS[c.status], srcObj = M.sources[c.src] || {};
+        return '<tr id="cite-' + id + '"><td class="num">' + srcref(c.src) + '</td>' +
+          '<td><span class="cite ' + st.cls + '">' + st.glyph + '</span> ' + esc(st.label) + '</td>' +
+          '<td>' + esc(srcObj.org || '') + '<span class="sub">' + esc(c.loc || 'место в документе не указано') + '</span></td>' +
+          '<td>' + (c.quote ? '<p class="quote"><em>дословно из источника</em>' + esc(c.quote) + '</p>' : '') +
+            (c.note ? '<span class="sub">' + esc(c.note) + '</span>' : '') + '</td>' +
+          '<td class="num">' + esc(c.checked || '—') + '</td></tr>';
+      }).join('');
+
+      var queue = Object.keys(CITES).filter(function (id) {
+        return ['mismatch', 'pending', 'unreachable'].indexOf(CITES[id].status) >= 0;
+      });
+
+      var tiles = [
+        { k: 'verified', l: 'Сверено дословно' },
+        { k: 'partial', l: 'Подтверждено частично' },
+        { k: 'mismatch', l: 'Расхождение' },
+        { k: 'unreachable', l: 'Источник недоступен' },
+        { k: 'pending', l: 'Не сверялось' }
+      ].map(function (x) {
+        var st = CITE_STATUS[x.k];
+        return '<div class="tile"><div class="label">' + esc(x.l) + '</div>' +
+          '<div class="value">' + sum[x.k] + '<small>/' + sum.total + '</small></div>' +
+          '<div class="bar"><span style="width:' + (sum[x.k] / sum.total * 100).toFixed(0) + '%;background:var(--' +
+            (x.k === 'verified' ? 'ok' : x.k === 'partial' ? 'warning' : x.k === 'mismatch' ? 'critical' : 'nodata') + ')"></span></div>' +
+          '<div class="note"><span class="cite ' + st.cls + '">' + st.glyph + '</span> ' + esc(st.label) + '</div></div>';
+      }).join('');
+
       return '' +
+        '<h2 class="section">Сверка с первоисточниками</h2>' +
+        '<div class="cols cols-3">' + tiles + '</div>' +
+        '<div class="panel"><h3>Что значит сверка</h3>' +
+          '<p class="sub" style="margin-bottom:12px">Ссылка на источник — ещё не проверяемость. Сверка означает, что первоисточник открыт, найдено конкретное место в документе и записана дословная формулировка. Чип рядом с цифрой показывает статус, наведение открывает цитату, нажатие ведёт в этот реестр.</p>' +
+          '<div class="note"><b>Очередь сверки: ' + queue.length + ' из ' + sum.total + '.</b> Сюда попадают расхождения, недоступные источники и то, что ещё не проверялось. Часть источников отвечает отказом на запрос из среды сборки — это не значит, что они недостоверны, это значит, что сверку по ним нужно проводить вручную.</div>' +
+        '</div>' +
+        '<div class="tablewrap"><table><thead><tr><th class="num">Источник</th><th>Статус</th><th>Где в документе</th><th>Что там написано</th><th class="num">Сверено</th></tr></thead><tbody>' +
+          citeRows + '</tbody></table></div>' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Методические ограничения</h3><ul class="list">' +
             M.limits.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' +
@@ -3299,9 +3836,19 @@ window.VG_HISTORY = [
      которые собираются после первой отрисовки экрана */
   function bindSrcRefs() {
     document.addEventListener('click', function (ev) {
-      var b = ev.target.closest ? ev.target.closest('.src, .linkbtn') : null;
+      var b = ev.target.closest ? ev.target.closest('.src, .linkbtn, .cite') : null;
       if (!b) return;
       if (b.dataset.goto) { show(b.dataset.goto); return; }
+      if (b.dataset.cite) {
+        show('sources');
+        var crow = document.getElementById('cite-' + b.dataset.cite);
+        if (crow) {
+          crow.scrollIntoView({ block: 'center' });
+          crow.style.background = 'var(--accent-soft)';
+          setTimeout(function () { crow.style.background = ''; }, 2600);
+        }
+        return;
+      }
       if (!b.dataset.src) return;
       show('sources');
       var row = document.getElementById('src-' + b.dataset.src);

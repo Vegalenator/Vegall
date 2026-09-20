@@ -476,3 +476,25 @@ tr.rownote td b { color: var(--ink); }
   padding: 0 0 1px; margin-top: 12px; cursor: pointer; align-self: start;
 }
 .linkbtn:hover { color: var(--ink); }
+
+/* ------------------------------------------------ статусы сверки */
+.cite {
+  font-family: var(--ff-mono); font-size: 10px; line-height: 1.5;
+  border: 1px solid var(--rule); border-radius: 2px; padding: 1px 5px;
+  background: var(--surface-2); color: var(--ink-2); cursor: pointer; white-space: nowrap;
+}
+.cite:hover { border-color: var(--accent); color: var(--accent); }
+.cite.ok      { color: #0a6b0a; border-color: rgba(12,163,12,.45); background: var(--ok-wash); }
+.cite.partial { color: #8a5a00; border-color: rgba(250,178,25,.55); background: var(--warning-wash); }
+.cite.bad     { color: #a32e2e; border-color: rgba(208,59,59,.5); background: var(--critical-wash); }
+.cite.none    { color: var(--muted); border-style: dashed; }
+:root[data-theme="dark"] .cite.ok { color: #4fd44f; }
+:root[data-theme="dark"] .cite.partial { color: #f5c25a; }
+:root[data-theme="dark"] .cite.bad { color: #f08a8a; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .cite.ok { color: #4fd44f; }
+  :root:where(:not([data-theme="light"])) .cite.partial { color: #f5c25a; }
+  :root:where(:not([data-theme="light"])) .cite.bad { color: #f08a8a; }
+}
+.quote { font-size: 12px; color: var(--ink-2); border-left: 2px solid var(--rule); padding-left: 10px; margin: 5px 0 0; }
+.quote em { font-style: normal; color: var(--muted); display: block; font-size: 11px; margin-bottom: 3px; }

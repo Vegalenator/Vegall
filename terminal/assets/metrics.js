@@ -98,8 +98,14 @@
       indicators: {},
       companies: {},
       graph: {},
-      scenarios: {}
+      scenarios: {},
+      cites: { verified: 0, partial: 0, mismatch: 0, unreachable: 0, pending: 0, total: 0 }
     };
+    Object.keys(d.cites || {}).forEach(function (id) {
+      var st = d.cites[id].status;
+      if (snap.cites[st] === undefined) snap.cites[st] = 0;
+      snap.cites[st]++; snap.cites.total++;
+    });
     d.groups.forEach(function (g) {
       var c = coverage(d.indicators, g.id), v = groupIndex(d.indicators, g.id);
       snap.index.groups[g.id] = { value: v === null ? null : Math.round(v * 10) / 10, seen: c.seen, all: c.all };
@@ -134,7 +140,7 @@
 
   function diff(prev, cur, dict) {
     dict = dict || {};
-    var out = { index: null, groups: [], indicators: [], companies: [], cycles: [], graph: null, scenarios: [] };
+    var out = { index: null, groups: [], indicators: [], companies: [], cycles: [], graph: null, scenarios: [], cites: null };
     if (!prev) return out;
 
     if (prev.index.overall !== cur.index.overall) {
@@ -172,6 +178,12 @@
     if (prev.graph.nodes !== cur.graph.nodes || prev.graph.edges !== cur.graph.edges) {
       out.graph = { nodesFrom: prev.graph.nodes, nodesTo: cur.graph.nodes, edgesFrom: prev.graph.edges, edgesTo: cur.graph.edges };
     }
+    var pc = prev.cites, cc = cur.cites;
+    if (pc && cc && (pc.verified !== cc.verified || pc.total !== cc.total)) {
+      out.cites = { verifiedFrom: pc.verified, verifiedTo: cc.verified, totalFrom: pc.total, totalTo: cc.total };
+    } else if (!pc && cc && cc.total) {
+      out.cites = { verifiedFrom: 0, verifiedTo: cc.verified, totalFrom: 0, totalTo: cc.total };
+    }
     Object.keys(cur.scenarios).forEach(function (id) {
       var a = prev.scenarios[id], b = cur.scenarios[id];
       if (a && (a.met !== b.met || a.known !== b.known)) {
@@ -183,7 +195,7 @@
 
   function count(d) {
     return d.indicators.length + d.companies.length + d.cycles.length + d.groups.length +
-           d.scenarios.length + (d.graph ? 1 : 0) + (d.index ? 1 : 0);
+           d.scenarios.length + (d.graph ? 1 : 0) + (d.index ? 1 : 0) + (d.cites ? 1 : 0);
   }
 
   var api = { SCORE: SCORE, MIN_COVERAGE: MIN_COVERAGE, METHOD: METHOD, STATE_NAMES: STATE_NAMES,

@@ -3,7 +3,7 @@
    поэтому период выводится рядом с каждой строкой. */
 window.VG_COMPANIES = [
   {
-    id: 'msft', name: 'Microsoft', role: 'Облако и программы', country: 'США',
+    id: 'msft', cite: ['msft-capex', 'msft-copilot', 'msft-azure100', 'msft-leases'], name: 'Microsoft', role: 'Облако и программы', country: 'США',
     periodType: 'quarter', period: 'IV кв. 2026 ф.г.', src: 'S10', kind: 'fact',
     capex: 41.0, ocf: 55.4, fcf: 19.6,
     capexNote: 'Включая финансовую аренду; около 2/3 — процессоры и серверы',
@@ -13,7 +13,7 @@ window.VG_COMPANIES = [
     limit: 'Финансовый год; капвложения включают аренду'
   },
   {
-    id: 'googl', name: 'Alphabet', role: 'Облако и модели', country: 'США',
+    id: 'googl', cite: ['googl-capex', 'googl-ocf', 'googl-cloud', 'googl-cloud-oi'], name: 'Alphabet', role: 'Облако и модели', country: 'США',
     periodType: 'quarter', period: 'II кв. 2026', src: 'S11', kind: 'fact',
     capex: 44.9, ocf: 39.1, fcf: -5.9,
     proof: 'Google Cloud $24,8 млрд выручки, операционная прибыль $8,8 млрд',
@@ -22,7 +22,7 @@ window.VG_COMPANIES = [
     limit: 'Квартальный свободный поток искажён сроками платежей; ИИ не отделён от облака'
   },
   {
-    id: 'amzn', name: 'Amazon', role: 'Облако', country: 'США',
+    id: 'amzn', cite: ['amzn-q2'], name: 'Amazon', role: 'Облако', country: 'США',
     periodType: 'ttm', period: '12 мес. к II кв. 2026', src: 'S15', kind: 'fact',
     capexDelta: 66.1, ocf: 161.4, fcf: -7.6,
     capexNote: 'В исследовании приведён ПРИРОСТ покупок имущества и оборудования за год, а не уровень капвложений за период. Поэтому Amazon исключён из сравнения уровней и из расчёта самофинансирования',
@@ -35,7 +35,7 @@ window.VG_COMPANIES = [
     limit: 'Вложения включают сеть исполнения заказов и иные активы, не только ИИ'
   },
   {
-    id: 'meta', name: 'Meta', role: 'Модели и реклама', country: 'США',
+    id: 'meta', cite: ['meta-q2'], name: 'Meta', role: 'Модели и реклама', country: 'США',
     periodType: 'quarter', period: 'II кв. 2026', src: 'S16', kind: 'fact',
     capex: 31.1, ocf: 31.9, fcf: 0.8,
     guide: 'Прогноз капвложений 2026: $130-145 млрд',
@@ -45,7 +45,7 @@ window.VG_COMPANIES = [
     limit: 'Эффект ИИ смешан с рекламным аукционом и продуктом'
   },
   {
-    id: 'orcl', name: 'Oracle', role: 'Облако', country: 'США',
+    id: 'orcl', cite: ['orcl-fy26'], name: 'Oracle', role: 'Облако', country: 'США',
     periodType: 'year', period: '2026 ф.г.', src: 'S14', kind: 'fact',
     capex: 55.6, ocf: 32.0, fcf: -23.7, rpo: 638,
     proof: 'IaaS $18,1 млрд, +77%; портфель обязательств $638 млрд',
@@ -54,7 +54,7 @@ window.VG_COMPANIES = [
     limit: 'Годовой период; портфель обязательств сильно концентрирован'
   },
   {
-    id: 'crwv', name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
+    id: 'crwv', cite: ['crwv-10q'], name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
     periodType: 'half', period: 'I полугодие / II кв. 2026', src: 'S17', kind: 'fact',
     capex: 14.1, ocf: 3.6, ocfKind: 'estimate', fcf: -10.5, fcfKind: 'estimate',
     revenue: 2.6, rpo: 103.7, top3: 72,
@@ -65,7 +65,7 @@ window.VG_COMPANIES = [
     limit: 'Портфель обязательств подтверждает контракт, но не наблюдаемую загрузку'
   },
   {
-    id: 'nvda', name: 'Nvidia', role: 'Ускорители', country: 'США',
+    id: 'nvda', cite: ['nvda-rev', 'nvda-dc', 'nvda-margin'], name: 'Nvidia', role: 'Ускорители', country: 'США',
     period: 'II кв. 2027 ф.г.', src: 'S12', kind: 'fact',
     revenue: 96.2, dcRevenue: 89.0, grossMargin: 75,
     proof: '$89,0 млрд выручки центра обработки данных при валовой марже 75%',
@@ -74,7 +74,7 @@ window.VG_COMPANIES = [
     limit: 'Капитальный риск несут клиенты, а не поставщик'
   },
   {
-    id: 'avgo', name: 'Broadcom', role: 'Сети и заказные процессоры', country: 'США',
+    id: 'avgo', cite: ['avgo-q3'], name: 'Broadcom', role: 'Сети и заказные процессоры', country: 'США',
     period: 'III кв. 2026 ф.г.', src: 'S13', kind: 'fact',
     capex: 0.5, fcf: 13.7, aiRevenue: 16.7,
     proof: '$16,7 млрд выручки ИИ-полупроводников (+221%) при капвложениях $0,5 млрд',
@@ -83,7 +83,7 @@ window.VG_COMPANIES = [
     limit: 'Фаблесс-модель: капитал несут фабрики и клиенты'
   },
   {
-    id: 'tsmc', name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
+    id: 'tsmc', cite: ['tsmc-q2'], name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
     period: 'II кв. 2026', src: 'S18', kind: 'fact',
     revenue: 40.2, grossMargin: 67.7, capexPlan: '52-56 (план 2026)',
     proof: '$40,2 млрд выручки, валовая маржа 67,7%; ИИ-ускорители дали высокую долю выручки 2025',
@@ -92,7 +92,7 @@ window.VG_COMPANIES = [
     limit: 'Субсидии по регионам меняют экономику отдельных фабрик'
   },
   {
-    id: 'asml', name: 'ASML', role: 'Литография', country: 'Нидерланды',
+    id: 'asml', cite: ['asml-q2', 'asml-guide'], name: 'ASML', role: 'Литография', country: 'Нидерланды',
     period: 'II кв. 2026', src: 'S19', kind: 'fact',
     revenueEur: 9.3, grossMargin: 54, guide: 'Прогноз 2026 повышен до €43-45 млрд',
     proof: '€9,3 млрд выручки при марже 54%',
@@ -101,7 +101,7 @@ window.VG_COMPANIES = [
     limit: 'Показатели в евро; прямое сравнение с долларовыми строками некорректно'
   },
   {
-    id: 'skhynix', name: 'SK hynix', role: 'HBM и память', country: 'Южная Корея',
+    id: 'skhynix', cite: ['skhynix-hbm4'], name: 'SK hynix', role: 'HBM и память', country: 'Южная Корея',
     period: '2026', src: 'S28', kind: 'claim',
     proof: 'HBM4 пошла в поставки; спрос 2026 года в значительной части законтрактован',
     risk: 'Классический цикл памяти и риск расширения мощностей под пик',
@@ -109,7 +109,7 @@ window.VG_COMPANIES = [
     limit: 'Публичный ряд по ценам и запасам HBM ограничен'
   },
   {
-    id: 'baba', name: 'Alibaba', role: 'Облако и модели', country: 'Китай',
+    id: 'baba', cite: ['baba-cloud', 'baba-ai'], name: 'Alibaba', role: 'Облако и модели', country: 'Китай',
     periodType: 'quarter', period: 'II кв. 2026 / август 2026', src: 'S20', kind: 'fact',
     capex: 10.0, capexKind: 'estimate', cloudRevenue: 7.1, aiRevenue: 1.8,
     capexNote: 'Около $10 млрд квартальных капвложений; размещение акций на HK$80 млрд, около 60% средств — на вычислительную инфраструктуру',
@@ -119,7 +119,7 @@ window.VG_COMPANIES = [
     limit: 'Государственная промышленная политика меняет стоимость капитала'
   },
   {
-    id: 'yndx', name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
+    id: 'yndx', cite: ['yndx-b2b'], name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
     period: 'II кв. 2026', src: 'S24', kind: 'fact', currency: 'RUB',
     rubRevenue: 15.3, rubEbitda: 3.7, tokens: 398,
     proof: 'B2B Tech 15,3 млрд руб. выручки, EBITDA 3,7 млрд руб.; 398 млрд коммерческих токенов, потребление удвоилось к предыдущему кварталу',
@@ -128,7 +128,7 @@ window.VG_COMPANIES = [
     limit: 'Капвложения 10-12% выручки; отдельной ИИ-строки нет'
   },
   {
-    id: 'sber', name: 'Сбер', role: 'Банк и платформа', country: 'Россия',
+    id: 'sber', cite: ['sber-effect'], name: 'Сбер', role: 'Банк и платформа', country: 'Россия',
     period: '2025', src: 'S23', kind: 'claim', currency: 'RUB',
     rubEffect: 450, rubGenAiEffect: 50,
     proof: 'Заявленный эффект ИИ свыше 450 млрд руб., из них около 50 млрд — генеративный ИИ',

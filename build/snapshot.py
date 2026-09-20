@@ -19,7 +19,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "terminal" / "data"
 HISTORY = DATA / "history.js"
-FILES = ["meta", "layers", "companies", "network", "indicators", "scenarios", "russia"]
+FILES = ["meta", "layers", "companies", "network", "indicators", "scenarios", "russia", "citations"]
 
 NODE_TEMPLATE = """
 globalThis.window = globalThis;   // объявить до require: metrics.js ищет window
@@ -40,7 +40,8 @@ const snap = M.snapshot({
   companies: window.VG_COMPANIES,
   nodes: window.VG_NODES,
   edges: window.VG_EDGES,
-  scenarios: window.VG_SCENARIOS
+  scenarios: window.VG_SCENARIOS,
+  cites: window.VG_CITES || {}
 }, {label});
 process.stdout.write(JSON.stringify(snap));
 """
@@ -51,17 +52,20 @@ def read_sources(rev: str | None) -> dict:
     for name in FILES:
         rel = f"terminal/data/{name}.js"
         if rev:
-            out[name] = subprocess.run(
-                ["git", "show", f"{rev}:{rel}"], cwd=ROOT,
-                capture_output=True, text=True, check=True).stdout
+            res = subprocess.run(["git", "show", f"{rev}:{rel}"], cwd=ROOT,
+                                 capture_output=True, text=True)
+            # файла могло не быть в ранней сборке — это нормально
+            out[name] = res.stdout if res.returncode == 0 else ""
         else:
-            out[name] = (ROOT / rel).read_text(encoding="utf-8")
+            path = ROOT / rel
+            out[name] = path.read_text(encoding="utf-8") if path.exists() else ""
     return out
 
 
 def current_id_map() -> dict:
     src = (DATA / "indicators.js").read_text(encoding="utf-8")
-    ids = re.findall(r"\{ id: '([^']+)', checked:.*?name: '((?:[^'\\]|\\.)*)'", src, re.S)
+    # поля между id и name меняются со временем, поэтому разбор к их порядку не привязан
+    ids = re.findall(r"\{ id: '([^']+)',[^{}]*?name: '((?:[^'\\]|\\.)*)'", src, re.S)
     return {name.replace("\\'", "'"): key for key, name in ids}
 
 
@@ -104,7 +108,8 @@ def main() -> None:
     args = sys.argv[1:]
     if "--list" in args:
         for s in load_history():
-            print(f"{s['builtAt']}  индекс {s['index']['overall']:>5}  {s['label']}")
+            print(f"{s.get('seq', 0):>2}  {s['builtAt']}  индекс {s['index']['overall']:>5}  "
+                  f"сверено {s.get('cites', {}).get('verified', 0):>2}/{s.get('cites', {}).get('total', 0):<2}  {s['label']}")
         return
 
     rev = None
@@ -115,11 +120,18 @@ def main() -> None:
     label = args[0] if args else "обновление данных"
 
     snap = make(rev, label)
+    if rev:
+        snap["rev"] = subprocess.run(["git", "rev-parse", "--short", rev], cwd=ROOT,
+                                     capture_output=True, text=True).stdout.strip()
     items = load_history()
-    # снимок за ту же дату сборки с той же меткой заменяется, а не дублируется
+    # снимок с той же датой сборки и меткой заменяется, а не дублируется;
+    # порядок держится на seq: две сборки одного дня иначе встали бы по алфавиту
+    old = [s for s in items if s["builtAt"] == snap["builtAt"] and s["label"] == snap["label"]]
+    snap["seq"] = old[0]["seq"] if old and "seq" in old[0] else (
+        max([s.get("seq", 0) for s in items], default=0) + 1)
     items = [s for s in items if not (s["builtAt"] == snap["builtAt"] and s["label"] == snap["label"])]
     items.append(snap)
-    items.sort(key=lambda s: (s["builtAt"], s["label"]))
+    items.sort(key=lambda s: s.get("seq", 0))
     save_history(items)
     print(f"снимок {snap['builtAt']} · индекс {snap['index']['overall']} · "
           f"контуров {len(snap['graph']['cycles'])} · «{label}»")

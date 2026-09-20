@@ -31,7 +31,7 @@ window.VG_NODES = [
   { id: 'vc', name: 'Венчур', full: 'Венчурный капитал', layer: 'capital', country: 'Мир', note: 'Финансирует разработчиков моделей и приложений' },
   { id: 'equity', name: 'Рынок акций', layer: 'capital', country: 'Мир', note: 'Размещения акций финансируют вычисления' },
   { id: 'states', name: 'Государства', full: 'Государства: субсидии и промполитика', layer: 'capital', country: 'США, ЕС, КНР, Япония, Корея', note: 'Снижают стоимость капитала, создают риск дублирования' },
-  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'План мобилизации €200 млрд; до семи гигафабрик ИИ' },
+  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'До семи гигафабрик ИИ и более €30 млрд инвестиций — подтверждено. Сумма €200 млрд инициативы InvestAI по указанной ссылке не найдена, нужна отдельная ссылка' },
   { id: 'sovereign', name: 'Суверенные фонды', layer: 'capital', country: 'Ближний Восток', note: 'Дешёвая энергия и капитал' },
   { id: 'crwv3', name: 'Клиенты CoreWeave', full: 'Три крупнейших клиента CoreWeave', layer: 'demand', country: 'США', note: '72% квартальной выручки; в отчётности не раскрыты поимённо' },
   { id: 'enterprises', name: 'Конечные клиенты', layer: 'demand', country: 'Мир', note: 'Единственный источник внешнего денежного потока всей цепочки' }
@@ -59,7 +59,7 @@ window.VG_EDGES = [
   { from: 'crwv', to: 'equinix', type: 'supply', back: 'машинные залы и МВт', label: 'Аренда мощности', inReport: 'mechanism' },
 
   // --- Доли в капитале (инвестор → объект) ---
-  { from: 'nvda', to: 'crwv', type: 'equity', amount: '$2 млрд', label: 'Стратегическая инвестиция, январь 2026', weight: 3, src: 'S17', inReport: 'yes', circular: true },
+  { from: 'nvda', to: 'crwv', type: 'equity', amount: '$2 млрд', label: 'Стратегическая инвестиция, январь 2026', weight: 3, src: 'S17', cite: ['crwv-10q'], inReport: 'yes', circular: true },
   { from: 'vc', to: 'openai', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
   { from: 'vc', to: 'anthropic', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
   { from: 'msft', to: 'openai', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
@@ -67,21 +67,21 @@ window.VG_EDGES = [
   { from: 'googl', to: 'anthropic', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
   { from: 'equity', to: 'baba', type: 'equity', amount: 'HK$80 млрд', label: 'Размещение акций, около 60% средств — на вычисления', src: 'S20', inReport: 'yes' },
   { from: 'states', to: 'tsmc', type: 'equity', label: 'Субсидии фабрикам по регионам', src: 'S18', inReport: 'yes' },
-  { from: 'eu', to: 'equinix', type: 'equity', amount: '>€30 млрд', label: 'До семи гигафабрик ИИ в рамках InvestAI', src: 'S26', inReport: 'yes' },
+  { from: 'eu', to: 'equinix', type: 'equity', amount: '>€30 млрд', label: 'До семи гигафабрик ИИ в рамках InvestAI', src: 'S26', cite: ['eu-giga', 'eu-investai-200'], inReport: 'yes' },
   { from: 'sovereign', to: 'equinix', type: 'equity', label: 'Инфраструктурный капитал', src: 'S3', inReport: 'mechanism' },
 
   // --- Долг, аренда, проектные структуры ---
-  { from: 'bonds', to: 'msft', type: 'debt', label: 'Облигации и финансовая аренда', src: 'S2', inReport: 'yes' },
+  { from: 'bonds', to: 'msft', type: 'debt', label: 'Облигации и финансовая аренда', src: 'S2', cite: ['bis-bonds'], inReport: 'yes' },
   { from: 'bonds', to: 'googl', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'bonds', to: 'amzn', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'bonds', to: 'meta', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'bonds', to: 'orcl', type: 'debt', label: 'Облигации', src: 'S2', inReport: 'yes' },
   { from: 'privcredit', to: 'crwv', type: 'debt', label: 'Долг под залог договоров и оборудования', weight: 2, src: 'S17', inReport: 'yes' },
-  { from: 'privcredit', to: 'equinix', type: 'debt', label: 'Проектное финансирование и SPV', src: 'S2', inReport: 'yes' },
+  { from: 'privcredit', to: 'equinix', type: 'debt', label: 'Проектное финансирование и SPV', src: 'S2', cite: ['bis-privcredit'], inReport: 'yes' },
   { from: 'privcredit', to: 'grid', type: 'debt', label: 'Проектный долг энергообъектов', src: 'S3', inReport: 'mechanism' },
 
   // --- Долгосрочные договоры и гарантии закупки ---
-  { from: 'msft', to: 'constellation', type: 'contract', amount: '835 МВт', label: 'Двадцатилетний договор купли электроэнергии', weight: 3, src: 'S27', inReport: 'yes' },
+  { from: 'msft', to: 'constellation', type: 'contract', amount: '835 МВт', label: 'Двадцатилетний договор купли электроэнергии', weight: 3, src: 'S27', cite: ['constellation-ppa'], inReport: 'yes' },
   { from: 'openai', to: 'msft', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', weight: 2, inReport: 'mechanism', circular: true },
   { from: 'anthropic', to: 'amzn', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
   { from: 'anthropic', to: 'googl', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
