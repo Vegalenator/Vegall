@@ -8,7 +8,8 @@
 
   var M = window.VG_META, LAYERS = window.VG_LAYERS, CO = window.VG_COMPANIES,
       IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
-      RU = window.VG_RUSSIA, EN = window.VG_ENERGY;
+      RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
+      LADDER = window.VG_LADDER;
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -111,7 +112,12 @@
   var VIEWS = {};
 
 
-  /* --------------------------------------------------- 0. Что изменилось */
+  /* =====================================================================
+     ГЛАВНОЕ — один экран вокруг четырёх рабочих вопросов:
+     что изменилось · чем подтверждено · какой вывод допустим ·
+     какой вопрос задать эксперту.
+     ===================================================================== */
+
   function changeRows() {
     var out = [];
     DIFF.indicators.forEach(function (c) {
@@ -151,23 +157,179 @@
     return out;
   }
 
-  VIEWS.changes = {
-    nav: 'Что изменилось', hint: '00',
-    title: 'Что изменилось',
-    sub: 'Сравнение двух последних снимков. Снимок фиксируется при каждом обновлении данных и считается тем же кодом, что и показания на экранах, поэтому история не может разойтись с интерфейсом.',
+  /* Какие группы сейчас требуют внимания и почему. Отсюда подбираются вопросы
+     собеседникам: подбор должен быть объясним, а не случаен. */
+  function hotGroups(strict) {
+    var hot = {};
+    DIFF.indicators.forEach(function (c) {
+      var ind = IND.filter(function (i) { return i.id === c.id; })[0];
+      if (ind) hot[ind.g] = 'изменился показатель «' + ind.name + '»';
+    });
+    if (!strict) {
+      GROUPS.forEach(function (g) {
+        var v = groupIndex(g.id), c = coverage(g.id);
+        if (c.share < MIN_COVERAGE) hot[g.id] = hot[g.id] || 'данных недостаточно для вывода: ' + c.seen + ' из ' + c.all;
+        else if (v !== null && v >= 50) hot[g.id] = hot[g.id] || 'субиндекс ' + Math.round(v) + ' из 100';
+      });
+    }
+    IND.forEach(function (i) {
+      if (i.state === 'stress') hot[i.g] = hot[i.g] || 'сработал стресс-сигнал «' + i.name + '»';
+    });
+    return hot;
+  }
+
+  function pickQuestions(limit) {
+    var hot = hotGroups(), keys = Object.keys(hot);
+    if (!keys.length) return [];
+    var scored = ED.questions.map(function (q) {
+      var hits = q.tags.filter(function (t) { return keys.indexOf(t) >= 0; });
+      return { q: q, hits: hits, score: hits.length };
+    }).filter(function (x) { return x.score > 0; });
+    scored.sort(function (a, b) { return b.score - a.score; });
+    /* по одному вопросу на адресата, чтобы подборка не съезжала в одну тему */
+    var seen = {}, out = [];
+    scored.forEach(function (x) {
+      var key = x.q.to + '|' + x.hits[0];
+      if (seen[key] || out.length >= limit) return;
+      seen[key] = 1;
+      out.push({ q: x.q, why: hot[x.hits[0]], group: DICT.groups[x.hits[0]] || x.hits[0] });
+    });
+    return out;
+  }
+
+  VIEWS.brief = {
+    nav: 'Главное', hint: '00',
+    title: 'Главное',
+    sub: 'Четыре вопроса перед эфиром: что изменилось, чем это подтверждено, какой вывод допустим и какой вопрос стоит задать собеседнику.',
     render: function () {
-      if (!LAST) return '<div class="note">История ещё не заполнена: снимков нет.</div>';
+      /* ---------- 1. Что изменилось ---------- */
       var rows = changeRows();
       var idx = DIFF.index;
       var mx = Math.max.apply(null, HIST.map(function (h) { return h.index.overall; }).concat([1]));
-      var spark = '<div class="spark">' + HIST.map(function (h, i) {
+      var spark = HIST.length > 1 ? '<div class="spark">' + HIST.map(function (h, i) {
         return '<div class="col' + (i === HIST.length - 1 ? ' now' : '') + '">' +
           '<b>' + num(h.index.overall, 0) + '</b>' +
           '<i style="height:' + Math.max(4, h.index.overall / mx * 56).toFixed(0) + 'px"></i>' +
           '<span title="' + esc(h.label) + '">' + esc(h.builtAt.slice(5)) + '</span></div>';
-      }).join('') + '</div>';
+      }).join('') + '</div>' : '';
 
-      var log = '<div class="tablewrap compact"><table><thead><tr><th>Сборка</th><th>Что обновляли</th>' +
+      var v = overallIndex(), t = tension(v), cov = coverage(null);
+
+      var block1 = '<h2 class="section">1 · Что изменилось</h2>' +
+        (UNSAVED ? '<div class="warnbar"><b>Снимок не зафиксирован.</b><span>Данные изменены после последнего снимка: расхождений ' + UNSAVED +
+          '. Выполните <code>python3 build/snapshot.py «что обновили»</code>, иначе сравнение показывает прошлый круг.</span></div>' : '') +
+        '<div class="cols cols-2">' +
+          '<div class="panel hero"><h3>Индекс напряжения цикла</h3>' +
+            (idx ? '<div class="figure">' + num(idx.to, 0) + '<small style="font-size:22px;font-weight:500;color:var(--ink-2)"> ← ' + num(idx.from, 0) + '</small></div>' +
+                   '<div><span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span>' +
+                   '<span style="color:var(--ink-2)"> к сборке ' + esc(PREV ? PREV.builtAt : '') + '</span></div>'
+                 : '<div class="figure">' + num(v, 0) + '</div><div style="color:var(--ink-2)">без изменений к прошлой сборке</div>') +
+            '<div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + stateEl(t.state) +
+              '<span class="count" style="color:var(--muted);font-size:12px">' + cov.seen + ' из ' + cov.all + ' показателей наблюдаются</span>' + badge('expert') + '</div>' +
+            spark +
+          '</div>' +
+          '<div class="panel"><h3>Изменения по существу</h3>' +
+            '<p class="sub">' + (LAST && PREV ? 'Сравниваются сборки ' + esc(PREV.builtAt) + ' и ' + esc(LAST.builtAt) : 'Снимков для сравнения пока нет') + '</p>' +
+            (rows.length ? rows.map(function (r) {
+              return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
+            }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
+          '</div>' +
+        '</div>';
+
+      /* ---------- 2. Чем подтверждено ---------- */
+      var stressed = IND.filter(function (i) { return i.state === 'stress'; });
+      var gaps = IND.filter(function (i) { return i.state === 'nodata'; });
+
+      var groupTiles = GROUPS.map(function (g) {
+        var gv = groupIndex(g.id), c = coverage(g.id), weak = c.share < MIN_COVERAGE;
+        var st = gv === null ? 'nodata' : tension(gv).state;
+        return '<div class="tile' + (weak ? ' weak' : '') + '"><div class="label">' + esc(g.name) +
+          '<span style="color:var(--muted)"> · вес ' + num(g.weight, 1) + '</span></div>' +
+          '<div class="value">' + (gv === null ? '—' : Math.round(gv)) + '<small>/100</small></div>' +
+          '<div class="bar"><span style="width:' + (gv === null ? 0 : pct(gv)) + '%;background:var(--' +
+            (st === 'stress' ? 'critical' : st === 'watch' ? 'warning' : st === 'ok' ? 'ok' : 'nodata') + ')"></span></div>' +
+          '<div class="note">' + stateEl(st) + '</div>' +
+          '<div class="note">Данные: ' + c.seen + ' из ' + c.all +
+            (weak ? ' · <b style="color:var(--critical)">вывод не обеспечен</b>' : '') + '</div></div>';
+      }).join('');
+
+      var anchors = [
+        { v: 'Более $1 трлн', l: 'Капвложения пяти крупнейших облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
+        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 и прогноз на 2030', k: 'forecast', s: 'S4', lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
+        { v: '18% / 32%', l: 'Доля компаний США с ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', lim: 'Использование не равно глубокой перестройке бизнеса' }
+      ].map(function (x) {
+        return '<div class="tile"><div class="label">' + esc(x.l) + '</div>' +
+          '<div class="value">' + esc(x.v) + '</div>' +
+          '<div class="row">' + badge(x.k) + srcref(x.s) + '</div>' +
+          '<div class="note">' + esc(x.lim) + '</div></div>';
+      }).join('');
+
+      var block2 = '<h2 class="section">2 · Чем подтверждено</h2>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Сработавшие стресс-сигналы</h3>' +
+            '<p class="sub">Показатели, перешедшие порог, описанный в исследовании</p>' +
+            (stressed.length ? stressed.map(function (i) {
+              return '<div class="loop" style="border-left-color:var(--critical);margin-bottom:8px">' +
+                '<div class="why"><b>' + esc(i.name) + '</b></div>' +
+                '<div class="why">' + esc(i.obs) + ' ' + refs(i) + '</div></div>';
+            }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
+          '</div>' +
+          '<div class="panel"><h3>Чем вывод не обеспечен</h3>' +
+            '<p class="sub">' + gaps.length + ' показателей из ' + IND.length + ' не имеют публичного ряда. Это не ноль, а пробел</p>' +
+            '<ul class="list">' + gaps.map(function (i) { return '<li><b>' + esc(i.name) + '</b> — ' + esc(i.obs) + '</li>'; }).join('') + '</ul>' +
+          '</div>' +
+        '</div>' +
+        '<div class="cols cols-3">' + groupTiles + '</div>' +
+        '<div class="cols cols-3">' + anchors + '</div>';
+
+      /* ---------- 3. Какой вывод допустим ---------- */
+      var can = LADDER.filter(function (r) { return r.state === 'ok'; });
+      var cant = LADDER.filter(function (r) { return r.state !== 'ok'; });
+
+      var block3 = '<h2 class="section">3 · Какой вывод допустим</h2>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Что можно утверждать</h3>' +
+            '<p class="sub">Ступени лестницы доказательств, где наблюдение есть</p>' +
+            can.map(function (r) {
+              return '<div class="change"><div class="arr" style="color:var(--ok)">✓</div><div class="body"><b>' + esc(r.level) + '</b><br>' + esc(r.seen) + ' ' + refs(r) + '</div></div>';
+            }).join('') +
+            '<div class="note" style="margin-top:12px">Индекс ' + num(v, 0) + ' означает: среди ' + cov.seen + ' наблюдаемых показателей ' +
+              IND.filter(function (i) { return i.state === 'stress'; }).length + ' дают стресс-сигнал и ' +
+              IND.filter(function (i) { return i.state === 'watch'; }).length + ' требуют наблюдения. Это состояние панели, а не измеренная вероятность коррекции.</div>' +
+          '</div>' +
+          '<div class="panel"><h3>Чего утверждать нельзя</h3>' +
+            '<p class="sub">Ступени, где наблюдения не хватает или оно противоречиво</p>' +
+            cant.map(function (r) {
+              return '<div class="change"><div class="arr" style="color:var(--critical)">✕</div><div class="body"><b>' + esc(r.level) + '</b><br>' + esc(r.cannot) + ' ' + refs(r) + '</div></div>';
+            }).join('') +
+          '</div>' +
+        '</div>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Формулировки, которых стоит избегать</h3>' +
+            '<ul class="list">' + ED.badPhrases.slice(0, 3).map(function (b) {
+              return '<li>«' + esc(b.text) + '» — ' + esc(b.why) + '</li>';
+            }).join('') + '</ul>' +
+            '<button class="linkbtn" type="button" data-goto="editorial">Все пять и точные формулировки неопределённости →</button></div>' +
+          '<div class="panel"><h3>Как говорить о неопределённости</h3>' +
+            '<ul class="list">' + ED.precisePhrases.slice(0, 3).map(function (x) { return '<li>«' + esc(x) + '»</li>'; }).join('') + '</ul></div>' +
+        '</div>';
+
+      /* ---------- 4. Какой вопрос задать ---------- */
+      var qs = pickQuestions(6);
+      var block4 = '<h2 class="section">4 · Какой вопрос задать эксперту</h2>' +
+        '<div class="panel"><h3>Подобрано под текущую картину</h3>' +
+          '<p class="sub">Вопросы из исследования, у которых тема совпадает с тем, что сейчас движется или не обеспечено данными</p>' +
+          (qs.length ? '<div class="tablewrap compact"><table><thead><tr><th>Вопрос</th><th>Кому</th><th>Почему сейчас</th></tr></thead><tbody>' +
+            qs.map(function (x) {
+              return '<tr><td><b>' + esc(x.q.q) + '</b></td><td>' + esc(ED.audiences[x.q.to]) + '</td>' +
+                '<td>' + esc(x.group) + '<span class="sub">' + esc(x.why) + '</span></td></tr>';
+            }).join('') + '</tbody></table></div>' : '<p class="note">Нечего выделить: ни один показатель не движется и не помечен как необеспеченный.</p>') +
+          '<button class="linkbtn" type="button" data-goto="editorial">Все 65 вопросов собеседникам →</button>' +
+        '</div>';
+
+      /* ---------- журнал ---------- */
+      var log = HIST.length ? '<h2 class="section">Журнал обновлений</h2>' +
+        '<div class="tablewrap compact"><table><thead><tr><th>Сборка</th><th>Что обновляли</th>' +
         '<th class="num">Индекс</th><th class="num">Изменение</th><th class="num">Контуров</th><th class="num">Данные</th></tr></thead><tbody>' +
         HIST.slice().reverse().map(function (h, i, arr) {
           var prev = arr[i + 1];
@@ -179,109 +341,17 @@
             '<td class="num">' + (d === null ? '—' : '<span class="delta ' + (d > 0 ? 'up' : d < 0 ? 'down' : '') + '">' + (d > 0 ? '+' : '') + num(d) + '</span>') + '</td>' +
             '<td class="num">' + h.graph.cycles.length + '</td>' +
             '<td class="num">' + seen + ' из ' + all + '</td></tr>';
-        }).join('') + '</tbody></table></div>';
+        }).join('') + '</tbody></table></div>' +
+        '<div class="note">Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран: изменение методики не должно выглядеть как изменение рынка. ' +
+          esc(M.disclaimer) + '</div>' : '';
 
-      return '' +
-        (UNSAVED ? '<div class="warnbar"><b>Снимок не зафиксирован.</b><span>Данные изменены после последнего снимка: расхождений ' + UNSAVED +
-          '. Выполните <code>python3 build/snapshot.py «что обновили»</code>, иначе этот экран показывает прошлое сравнение.</span></div>' : '') +
-        '<div class="cols cols-2">' +
-          '<div class="panel hero"><h3>Индекс напряжения</h3>' +
-            (idx ? '<div class="figure">' + num(idx.to, 0) + '<small style="font-size:22px;font-weight:500;color:var(--ink-2)"> ← ' + num(idx.from, 0) + '</small></div>' +
-                   '<div><span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span>' +
-                   '<span style="color:var(--ink-2)"> к прошлой сборке</span></div>'
-                 : '<div class="figure">' + num(CUR.index.overall, 0) + '</div><div style="color:var(--ink-2)">без изменений к прошлой сборке</div>') +
-            '<p class="cap">Снимки: ' + HIST.length + '. Сравниваются «' + esc(PREV ? PREV.label : '—') + '» и «' + esc(LAST.label) + '».</p>' +
-            spark +
-          '</div>' +
-          '<div class="panel"><h3>Изменения по существу</h3>' +
-            '<p class="sub">Расхождений: ' + rows.length + ' в данных' + (idx ? ' и движение индекса' : '') + '</p>' +
-            (rows.length ? rows.map(function (r) {
-              return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
-            }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
-          '</div>' +
-        '</div>' +
-        '<h2 class="section">Журнал обновлений</h2>' + log +
-        '<div class="note"><b>Как читать историю.</b> Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран. Поэтому изменение методики никогда не выглядит как изменение рынка: между снимками движется только то, что менялось в данных. По той же причине контуры в раннем снимке посчитаны исправленным алгоритмом — в данных они были и тогда, их не показывал интерфейс.</div>';
-    }
-  };
-
-  /* ---------------------------------------------------------- 1. Пульс */
-  VIEWS.pulse = {
-    nav: 'Пульс цикла', hint: '01',
-    title: 'Пульс цикла',
-    sub: 'Один вопрос вместо десяти: какая доля вложенного капитала уже обслуживается внешним денежным потоком. Индекс собран из панели 28 показателей и их стресс-сигналов.',
-    render: function () {
-      var v = overallIndex(), t = tension(v);
-      var cov = coverage(null);
-      var stressed = IND.filter(function (i) { return i.state === 'stress'; });
-      var weakGroups = GROUPS.filter(function (g) { return coverage(g.id).share < MIN_COVERAGE; });
-
-      var groupRows = GROUPS.map(function (g) {
-        var gv = groupIndex(g.id);
-        var c = coverage(g.id);
-        var weak = c.share < MIN_COVERAGE;
-        var st = gv === null ? 'nodata' : tension(gv).state;
-        return '<div class="tile' + (weak ? ' weak' : '') + '"><div class="label">' + esc(g.name) + '<span style="color:var(--muted)"> · вес ' + num(g.weight, 1) + '</span></div>' +
-          '<div class="value">' + (gv === null ? '—' : Math.round(gv)) + '<small>/100</small></div>' +
-          '<div class="bar"><span style="width:' + (gv === null ? 0 : pct(gv)) + '%;background:var(--' + (st === 'stress' ? 'critical' : st === 'watch' ? 'warning' : st === 'ok' ? 'ok' : 'nodata') + ')"></span></div>' +
-          '<div class="note">' + stateEl(st) + '</div>' +
-          '<div class="note">Данные: ' + c.seen + ' из ' + c.all +
-            (weak ? ' · <b style="color:var(--critical)">вывод не обеспечен данными</b>' : '') + '</div></div>';
-      }).join('');
-
-      var three = [
-        { v: 'Более $1 трлн', l: 'Совокупные капвложения пяти крупнейших гипермасштабных облаков за 2025-2026, связанные с ИИ', k: 'estimate', s: 'S1', lim: 'Определения компаний различаются, часть расходов относится ко всему облаку' },
-        { v: '485 → 950', l: 'ТВт·ч электропотребления мировых ЦОД: 2025 год и прогноз на 2030', k: 'forecast', s: 'S4', lim: 'Чувствителен к эффективности процессоров, видам запросов и загрузке' },
-        { v: '18% / 32%', l: 'Доля компаний США, использовавших ИИ: простая и взвешенная по занятости', k: 'fact', s: 'S6', lim: 'Использование не равно глубокой перестройке бизнеса' }
-      ].map(function (x) {
-        return '<div class="tile"><div class="row"><span class="label">' + esc(x.l) + '</span></div>' +
-          '<div class="value">' + esc(x.v) + '</div>' +
-          '<div class="row">' + badge(x.k) + srcref(x.s) + '</div>' +
-          '<div class="note">' + esc(x.lim) + '</div></div>';
-      }).join('');
-
-      var idx = DIFF.index;
-      var changeLine = !LAST ? '' :
-        '<div class="note" style="display:flex;gap:12px;flex-wrap:wrap;align-items:baseline">' +
-          '<b>С прошлой сборки (' + esc(LAST.builtAt) + '):</b>' +
-          (idx ? '<span>индекс <span class="delta ' + (idx.delta > 0 ? 'up' : 'down') + '">' + (idx.delta > 0 ? '+' : '') + num(idx.delta) + '</span></span>' : '<span>индекс без изменений</span>') +
-          '<span>расхождений: ' + DIFF_N + '</span>' +
-          '<button class="src" type="button" data-goto="changes">смотреть, что изменилось</button>' +
-        '</div>';
-
-      return '' + changeLine +
-        '<div class="cols cols-2">' +
-          '<div class="panel hero">' +
-            '<h3>Индекс напряжения цикла</h3>' +
-            '<div class="figure">' + Math.round(v) + '</div>' +
-            '<div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + stateEl(t.state) +
-              '<span class="count" style="color:var(--muted);font-size:12px">' + cov.seen + ' из ' + cov.all + ' показателей имеют наблюдение</span>' + badge('expert') + '</div>' +
-            '<p class="cap">0 — все наблюдаемые показатели в норме. 100 — все дают стресс-сигнал. Норма 0, наблюдение 50, стресс 100; среднее по группе, затем среднее по группам с весами ' +
-              GROUPS.map(function (g) { return esc(g.name.toLowerCase()) + ' ' + num(g.weight, 1); }).join(', ') + '.</p>' +
-            '<div class="note"><b>Чем это не является.</b> Это среднее авторских оценок, а не измеренная степень перегрева рынка. Веса и пороги выбраны экспертно и не проверены на исторических данных: терминал не показывает, предупреждал ли такой индекс о прошлых коррекциях. Показатели без публичного ряда в расчёт не входят, поэтому низкое значение группы может означать не спокойствие, а отсутствие данных — рядом с каждой группой указана достаточность.' +
-              (weakGroups.length ? ' Сейчас данных недостаточно для вывода по группам: ' + weakGroups.map(function (g) { return esc(g.name.toLowerCase()); }).join(', ') + '.' : '') + '</div>' +
-          '</div>' +
-          '<div class="panel">' +
-            '<h3>Сработавшие стресс-сигналы</h3>' +
-            '<p class="sub">Показатели, которые уже перешли порог, описанный в исследовании</p>' +
-            (stressed.length ? stressed.map(function (i) {
-              return '<div class="loop" style="border-left-color:var(--critical);margin-bottom:8px">' +
-                '<div class="why"><b>' + esc(i.name) + '</b></div>' +
-                '<div class="why">' + esc(i.obs) + ' ' + refs(i) + '</div></div>';
-            }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
-          '</div>' +
-        '</div>' +
-        '<h2 class="section">Субиндексы по группам</h2>' +
-        '<div class="cols cols-3">' + groupRows + '</div>' +
-        '<h2 class="section">Три числа, вокруг которых строится разговор</h2>' +
-        '<div class="cols cols-3">' + three + '</div>' +
-        '<div class="note">' + esc(M.disclaimer) + '</div>';
+      return block1 + block2 + block3 + block4 + log;
     }
   };
 
   /* ---------------------------------------------------------- 2. Граф */
   VIEWS.network = {
-    nav: 'Граф связей', hint: '02',
+    nav: 'Граф связей', hint: '01',
     title: 'Граф связей: капитал, поставки, контракты',
     sub: 'Стрелка показывает направление денег. Слои расположены по течению: наверху — источники денег, внизу — фабрики и память. Любая стрелка, идущая вверх, — это деньги, вернувшиеся к тому, кто их дал. Это и есть круговая связь.',
     render: function () {
@@ -402,7 +472,7 @@
 
   /* ---------------------------------------------------------- 3. Стек */
   VIEWS.stack = {
-    nav: 'Стек цикла', hint: '03',
+    nav: 'Стек цикла', hint: '02',
     title: 'Стек цикла: 13 звеньев',
     sub: 'Чем дальше звено от конечного результата, тем легче измерить поставку; чем ближе к результату, тем труднее отделить вклад ИИ от изменений процесса.',
     render: function () {
@@ -445,7 +515,7 @@
 
   /* -------------------------------------------------------- 4. Капитал */
   VIEWS.capital = {
-    nav: 'Капитал и поток', hint: '04',
+    nav: 'Капитал и поток', hint: '03',
     title: 'Капитал против денежного потока',
     sub: 'Корректный вопрос — не «кто потратил больше», а какая доля прироста капитала уже обслуживается внешней выручкой и денежным потоком. Периоды компаний различаются и указаны в каждой строке.',
     render: function () {
@@ -567,7 +637,7 @@
 
   /* -------------------------------------------------------- 5. Энергия */
   VIEWS.energy = {
-    nav: 'Энергия и физика', hint: '05',
+    nav: 'Энергия и физика', hint: '04',
     title: 'Энергетика и физическая экономика ЦОД',
     sub: EN.keyMetric,
     render: function () {
@@ -601,7 +671,7 @@
 
   /* --------------------------------------------------------- 6. Панель */
   VIEWS.panel = {
-    nav: 'Панель 28 показателей', hint: '06',
+    nav: 'Панель 28 показателей', hint: '05',
     title: 'Панель из 28 показателей',
     sub: 'Что проверять каждый квартал. Колонка «Проверено» показывает, когда наблюдение последний раз сверялось с источником и сколько осталось до ожидаемого обновления. Серый статус означает не ноль, а отсутствие публичного ряда — это самостоятельный вывод: главные показатели окупаемости сегодня просто не раскрываются.',
     render: function () {
@@ -653,7 +723,7 @@
 
   /* ------------------------------------------------------- 7. Сценарии */
   VIEWS.scenarios = {
-    nav: 'Сценарии', hint: '07',
+    nav: 'Сценарии', hint: '06',
     title: 'Сценарии на 12-36 месяцев',
     sub: 'Вероятности — аналитическая оценка авторов исследования, а не расчёт терминала. Ценность в другом: у каждого сценария есть набор ранних индикаторов, который можно проверять.',
     render: function () {
@@ -696,7 +766,7 @@
 
   /* --------------------------------------------------------- 8. Россия */
   VIEWS.russia = {
-    nav: 'Россия', hint: '08',
+    nav: 'Россия', hint: '07',
     title: 'Россия: другое место на кривой',
     sub: RU.position.verdict,
     render: function () {
@@ -740,6 +810,85 @@
     }
   };
 
+
+  /* ----------------------------------------------------- 8. Для эфира */
+  VIEWS.editorial = {
+    nav: 'Для эфира', hint: '08',
+    title: 'Подводки, формулировки, вопросы',
+    sub: 'Редакционная часть исследования целиком: три подводки разной длины, два сильных тезиса, формулировки, которых стоит избегать, и 65 вопросов собеседникам.',
+    render: function () {
+      var leads = ED.leads.map(function (l) {
+        return '<div class="panel"><h3>' + esc(l.title) + '</h3>' +
+          '<p style="margin:0;color:var(--ink-2);max-width:68ch">' + esc(l.text) + '</p>' +
+          '<div class="note" style="margin-top:10px">Знаков: ' + l.text.length + ' · вслух примерно ' + Math.round(l.text.length / 14) + ' секунд</div></div>';
+      }).join('');
+
+      var theses = ED.theses.map(function (t) {
+        return '<div class="panel"><h3>' + esc(t.side) + '</h3><p style="margin:0;color:var(--ink-2)">' + esc(t.text) + '</p></div>';
+      }).join('');
+
+      var bad = '<div class="panel"><h3>Пять формулировок, которых стоит избегать</h3>' +
+        '<div class="tablewrap compact"><table><tbody>' + ED.badPhrases.map(function (b) {
+          return '<tr><td><span class="st st-stress"><i></i></span></td><td><b>«' + esc(b.text) + '»</b><span class="sub">' + esc(b.why) + '</span></td></tr>';
+        }).join('') + '</tbody></table></div></div>';
+
+      var good = '<div class="panel"><h3>Пять точных формулировок неопределённости</h3>' +
+        '<div class="tablewrap compact"><table><tbody>' + ED.precisePhrases.map(function (x) {
+          return '<tr><td><span class="st st-ok"><i></i></span></td><td>«' + esc(x) + '»</td></tr>';
+        }).join('') + '</tbody></table></div></div>';
+
+      var hot = hotGroups(true);   // фильтр — только то, что сдвинулось или подаёт сигнал
+      var filters = '<div class="controls" style="margin-bottom:12px">' +
+        Object.keys(ED.audiences).map(function (k) {
+          return '<button class="chip" type="button" role="switch" aria-pressed="true" data-aud="' + k + '">' + esc(ED.audiences[k]) + '</button>';
+        }).join('') +
+        '<button class="chip" type="button" role="switch" aria-pressed="false" id="onlyHot">Только темы, которые сдвинулись</button></div>';
+
+      var qrows = ED.questions.map(function (q, i) {
+        var hits = q.tags.filter(function (t) { return hot[t]; });
+        return '<tr data-aud="' + q.to + '" data-hot="' + (hits.length ? '1' : '0') + '">' +
+          '<td class="num" style="color:var(--muted)">' + (i + 1) + '</td>' +
+          '<td><b>' + esc(q.q) + '</b></td>' +
+          '<td>' + esc(ED.audiences[q.to]) + '</td>' +
+          '<td>' + q.tags.map(function (t) { return '<span class="badge' + (hot[t] ? ' fact' : '') + '">' + esc(DICT.groups[t] || t) + '</span>'; }).join(' ') + '</td></tr>';
+      }).join('');
+
+      return '' +
+        '<h2 class="section">Подводки</h2>' +
+        '<div class="cols cols-2">' + leads + '</div>' +
+        '<h2 class="section">Два сильных тезиса</h2>' +
+        '<div class="cols cols-2">' + theses + '</div>' +
+        '<h2 class="section">Формулировки</h2>' +
+        '<div class="cols cols-2">' + bad + good + '</div>' +
+        '<h2 class="section">Вопросы собеседникам</h2>' +
+        '<div class="panel">' + filters +
+          '<p class="sub">Тема помечена зелёным, если в этой группе что-то изменилось с прошлой сборки или сработал стресс-сигнал</p>' +
+          '<div class="tablewrap compact"><table id="qtable"><thead><tr><th class="num">№</th><th>Вопрос</th><th>Кому</th><th>Тема</th></tr></thead><tbody>' + qrows + '</tbody></table></div>' +
+        '</div>' +
+        '<div class="note">Темы вопросов расставлены по ключевым словам самого вопроса — правило видно в файле данных, поэтому подбор проверяем.</div>';
+    },
+    after: function (root) {
+      function apply() {
+        var auds = {};
+        root.querySelectorAll('[data-aud][role="switch"]').forEach(function (b) {
+          auds[b.dataset.aud] = b.getAttribute('aria-pressed') === 'true';
+        });
+        var onlyHot = root.querySelector('#onlyHot').getAttribute('aria-pressed') === 'true';
+        root.querySelectorAll('#qtable tbody tr').forEach(function (tr) {
+          var ok = auds[tr.dataset.aud] && (!onlyHot || tr.dataset.hot === '1');
+          tr.hidden = !ok;
+        });
+      }
+      root.querySelectorAll('.chip[role="switch"]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          b.setAttribute('aria-pressed', String(b.getAttribute('aria-pressed') !== 'true'));
+          apply();
+        });
+      });
+      apply();
+    }
+  };
+
   /* ------------------------------------------------------ 9. Источники */
   VIEWS.sources = {
     nav: 'Источники и методика', hint: '09',
@@ -771,18 +920,19 @@
   };
 
   /* ============================================================ каркас */
-  var ORDER = ['changes', 'pulse', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'sources'];
+  var ORDER = ['brief', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'editorial', 'sources'];
   var GROUPS_NAV = [
-    { label: 'Обзор', items: ['changes', 'pulse', 'network'] },
+    { label: 'Обзор', items: ['brief', 'network'] },
     { label: 'Слои цикла', items: ['stack', 'capital', 'energy'] },
     { label: 'Проверка', items: ['panel', 'scenarios'] },
-    { label: 'Контур', items: ['russia', 'sources'] }
+    { label: 'Контур', items: ['russia'] },
+    { label: 'Работа', items: ['editorial', 'sources'] }
   ];
 
   var rendered = {};
 
   function show(id) {
-    if (!VIEWS[id]) id = 'pulse';
+    if (!VIEWS[id]) id = 'brief';
     ORDER.forEach(function (k) {
       var sec = document.getElementById('view-' + k);
       if (sec) sec.hidden = (k !== id);
@@ -805,7 +955,7 @@
      которые собираются после первой отрисовки экрана */
   function bindSrcRefs() {
     document.addEventListener('click', function (ev) {
-      var b = ev.target.closest ? ev.target.closest('.src') : null;
+      var b = ev.target.closest ? ev.target.closest('.src, .linkbtn') : null;
       if (!b) return;
       if (b.dataset.goto) { show(b.dataset.goto); return; }
       if (!b.dataset.src) return;
@@ -872,7 +1022,7 @@
 
     bindSrcRefs();
     theme(false);
-    show(location.hash.slice(1) || 'pulse');
+    show(location.hash.slice(1) || 'brief');
   }
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
