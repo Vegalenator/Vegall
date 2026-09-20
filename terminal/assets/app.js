@@ -9,7 +9,8 @@
   var M = window.VG_META, LAYERS = window.VG_LAYERS, CO = window.VG_COMPANIES,
       IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
-      LADDER = window.VG_LADDER, CITES = window.VG_CITES || {};
+      LADDER = window.VG_LADDER, CITES = window.VG_CITES || {},
+      FEEDS = window.VG_FEEDS || { connectors: [], declared: [] };
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -1003,7 +1004,49 @@
           '<div class="note"><span class="cite ' + st.cls + '">' + st.glyph + '</span> ' + esc(st.label) + '</div></div>';
       }).join('');
 
+      /* ---- подключения ---- */
+      var conns = FEEDS.connectors || [], decl = FEEDS.declared || [];
+      var connRows = conns.map(function (c) {
+        var stCls = c.state === 'ok' ? 'ok' : 'bad';
+        var stTxt = c.state === 'ok' ? 'работает' : 'отказ';
+        return '<tr><td><b>' + esc(c.title) + '</b><span class="sub">' + esc(c.id) + ' · раз в ' + c.cadence + ' дн. · ' + srcref(c.source) + '</span></td>' +
+          '<td><span class="cite ' + stCls + '">' + (c.state === 'ok' ? '✓' : '✕') + '</span> ' + stTxt +
+            (c.error ? '<span class="sub">' + esc(c.error) + '</span>' : '') +
+            '<span class="sub">запуск ' + esc(c.lastRun) + (c.period ? ' · ' + esc(c.period) : '') + '</span></td>' +
+          '<td>' + (c.fields || []).map(function (f) {
+            return '<div class="change" style="border-top-color:var(--grid)"><div class="arr ' + (f.match ? '' : 'up') + '">' + (f.match ? '=' : '≠') + '</div>' +
+              '<div class="body"><b>' + esc(f.key) + '</b> · источник <b>' + num(f.source_value) + '</b> ' + esc(f.unit) +
+              ' · в терминале ' + (f.terminal_value === null ? '—' : num(f.terminal_value)) +
+              '<span class="sub">определение: ' + esc(f.definition) + '</span>' +
+              (f.quote ? '<p class="quote"><em>дословно</em>' + esc(f.quote) + '</p>' : '') + '</div></div>';
+          }).join('') + '</td></tr>';
+      }).join('');
+
+      var declRows = decl.map(function (d) {
+        return '<tr><td>' + (d.source !== '—' ? srcref(d.source) : '<span class="cite none">—</span>') + '</td>' +
+          '<td><b>' + esc(d.title) + '</b></td><td>' + esc(d.why) + '</td></tr>';
+      }).join('');
+
+      var okCount = conns.filter(function (c) { return c.state === 'ok'; }).length;
+      var divergent = conns.reduce(function (a, c) { return a + (c.divergent || 0); }, 0);
+
       return '' +
+        '<h2 class="section">Подключения к первоисточникам</h2>' +
+        '<div class="cols cols-3">' +
+          '<div class="tile"><div class="label">Подключено и работает</div><div class="value">' + okCount + '<small>/' + conns.length + '</small></div>' +
+            '<div class="note">Забирают документ, проверяют определения, кладут предложение</div></div>' +
+          '<div class="tile"><div class="label">Расхождений с терминалом</div><div class="value">' + divergent + '</div>' +
+            '<div class="note">' + (divergent ? 'Есть что перенести в данные' : 'Источники и данные совпадают') + '</div></div>' +
+          '<div class="tile weak"><div class="label">Объявлено, но не подключено</div><div class="value">' + decl.length + '</div>' +
+            '<div class="note">Причина указана в таблице ниже</div></div>' +
+        '</div>' +
+        '<div class="panel"><h3>Почему подключение не пишет в данные само</h3>' +
+          '<p class="sub" style="margin-bottom:10px">Подключение забирает документ, разбирает величину вместе с дословной цитатой и проверяет определения: единицу, период, диапазон и то, что документ вообще является нужным релизом. Дальше оно кладёт предложение, а перенос величины остаётся решением человека.</p>' +
+          '<div class="note">Проверка нужна не для красоты. Страница несуществующего квартального релиза Nvidia отвечает кодом 200 и молча уводит в архив новостей: подключение, доверяющее коду ответа, записало бы в терминал пустоту. Каркас проверяется самотестом <code>python3 build/connect.py --selftest</code> на четырёх случаях, каждый из которых однажды испортил бы данные.</div>' +
+        '</div>' +
+        (conns.length ? '<div class="tablewrap"><table><thead><tr><th>Подключение</th><th>Состояние</th><th>Величины и определения</th></tr></thead><tbody>' + connRows + '</tbody></table></div>' : '') +
+        '<h2 class="section">Объявлено, но не подключено</h2>' +
+        '<div class="tablewrap compact"><table><thead><tr><th class="num">Источник</th><th>Что</th><th>Почему</th></tr></thead><tbody>' + declRows + '</tbody></table></div>' +
         '<h2 class="section">Сверка с первоисточниками</h2>' +
         '<div class="cols cols-3">' + tiles + '</div>' +
         '<div class="panel"><h3>Что значит сверка</h3>' +

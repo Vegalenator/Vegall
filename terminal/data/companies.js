@@ -92,7 +92,7 @@ window.VG_COMPANIES = [
     limit: 'Субсидии по регионам меняют экономику отдельных фабрик'
   },
   {
-    id: 'asml', cite: ['asml-q2', 'asml-guide'], name: 'ASML', role: 'Литография', country: 'Нидерланды',
+    id: 'asml', cite: ['asml-q2', 'asml-margin', 'asml-guide'], name: 'ASML', role: 'Литография', country: 'Нидерланды',
     period: 'II кв. 2026', src: 'S19', kind: 'fact',
     revenueEur: 9.3, grossMargin: 54, guide: 'Прогноз 2026 повышен до €43-45 млрд',
     proof: '€9,3 млрд выручки при марже 54%',
