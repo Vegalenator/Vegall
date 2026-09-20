@@ -11,7 +11,18 @@ window.VG_META = {
     estimate: { label: 'оценка',    hint: 'Расчёт международной организации или расчёт терминала' },
     forecast: { label: 'прогноз',   hint: 'Сценарная модель; зависит от допущений' },
     claim:    { label: 'заявление', hint: 'Сообщено руководством компании без раскрытой независимой методики' },
-    expert:   { label: 'шкала',     hint: 'Экспертная оцифровка качественной таблицы исследования' }
+    expert:   { label: 'шкала',     hint: 'Экспертная оцифровка качественной таблицы исследования' },
+    calc:     { label: 'расчёт',    hint: 'Вычислено терминалом из раскрытых компанией величин' },
+    unverified: { label: 'не сверено', hint: 'Величина из внешней проверки, не сверенная с первоисточником в этой сборке' }
+  },
+  mode: {
+    current: 'ручное обновление',
+    note: 'Все данные записаны в файлах и обновляются вручную. Автоматических подключений к источникам в этой сборке нет. Истории значений тоже нет, поэтому терминал отвечает на вопрос «как сейчас», но пока не на вопрос «что изменилось с прошлого раза».',
+    planned: [
+      'Слой A — котировки, капитализация, кредитные спрэды. Планируется: обновление по расписанию.',
+      'Слой B — капвложения, потоки, выручка сегментов. Планируется: импорт из машиночитаемых раскрытий.',
+      'Слой C — IEA, BIS, Census, Банк России, iKS, связи графа. Останется ручным: эти организации не отдают данные машиночитаемо.'
+    ]
   },
   disclaimer: 'Панель проверки, а не торговая рекомендация. Финансовые годы компаний не совпадают с календарными; суммирование разных периодов не даёт точного календарного итога.',
   sources: {
@@ -32,25 +43,26 @@ window.VG_META = {
     S15: { org: 'Amazon', title: 'Q2 2026', date: '2026-07', url: 'https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/' },
     S16: { org: 'Meta', title: 'Q2 2026', date: '2026-07', url: 'https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/default.aspx' },
     S17: { org: 'CoreWeave', title: 'Форма 10-Q', date: '2026-08-11', url: 'https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm' },
-    S18: { org: 'TSMC', title: 'Q2 2026 и 20-F 2025', date: '2026-07', url: 'https://investor.tsmc.com/english/quarterly-results/2026/q2' },
+    S18: { org: 'TSMC', title: 'Q2 2026 и 20-F 2025', date: '2026-07', url: 'https://investor.tsmc.com/english/quarterly-results/2026/q2', generic: true },
     S19: { org: 'ASML', title: 'Q2 2026', date: '2026-07-15', url: 'https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results' },
     S20: { org: 'Alibaba', title: 'Результаты и размещение акций, август 2026', date: '2026-08', url: 'https://www.alibabagroup.com/en-US/document-2027233133950140416' },
     S21: { org: 'Банк России', title: 'Применение ИИ на финансовом рынке', date: '2025-11-20', url: 'https://www.cbr.ru/Content/Document/File/185193/Consultation_Paper_20112025.pdf' },
     S22: { org: 'Аналитический центр при Правительстве РФ', title: 'Вклад ИИ в ВВП к 2030 году', date: '2025-11-20', url: 'https://ac.gov.ru/news/page/vklad-ii-v-vvp-strany-k-2030-godu-dolzen-prevysit-11-trln-rublej-28260' },
     S23: { org: 'Сбер', title: 'Результаты по МСФО за 2025 год', date: '2026-02', url: 'https://www.sberbank.com/investor-relations/groupresults/ifrs_february26_reporting_for_the_4th_quarter' },
-    S24: { org: 'Яндекс', title: 'Результаты за II квартал 2026 года', date: '2026-07-29', url: 'https://ir.yandex.ru/press-releases?id=29-07-2026&year=2026' },
-    S25: { org: 'BIS США (Bureau of Industry and Security)', title: 'EAR §746.8 — ограничения для России и Беларуси', date: '2026', url: 'https://www.bis.gov/regulations/ear/746' },
-    S26: { org: 'Европейская комиссия', title: 'InvestAI и гигафабрики ИИ', date: '2026', url: 'https://digital-strategy.ec.europa.eu/en/policies/build-leadership-ai' },
+    S24: { org: 'Яндекс', title: 'Результаты за II квартал 2026 года', date: '2026-07-29', url: 'https://ir.yandex.ru/press-releases?id=29-07-2026&year=2026', generic: true },
+    S25: { org: 'BIS США (Bureau of Industry and Security)', title: 'EAR §746.8 — ограничения для России и Беларуси', date: '2026', url: 'https://www.bis.gov/regulations/ear/746', generic: true },
+    S26: { org: 'Европейская комиссия', title: 'InvestAI и гигафабрики ИИ', date: '2026', url: 'https://digital-strategy.ec.europa.eu/en/policies/build-leadership-ai', generic: true },
     S27: { org: 'Constellation', title: 'Договор с Microsoft, Crane Clean Energy Center', date: '2024-09-20', url: 'https://www.constellationenergy.com/news/2024/Constellation-to-Launch-Crane-Clean-Energy-Center-Restoring-Jobs-and-Carbon-Free-Power-to-The-Grid.html' },
-    S28: { org: 'SK hynix', title: 'Корпоративные результаты и HBM4', date: '2026', url: 'https://news.skhynix.com' },
-    S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/' },
-    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/' }
+    S28: { org: 'SK hynix', title: 'Корпоративные результаты и HBM4', date: '2026', url: 'https://news.skhynix.com', generic: true },
+    S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/', generic: true },
+    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/', generic: true }
   },
   limits: [
     'Все прогнозы — энергопотребление, производительность, вклад в ВВП — отделены от наблюдаемых фактов.',
     'Корпоративные заявления об экономическом эффекте считаются оценкой руководства, если нет раскрытой независимой методики.',
     'Сравнение капвложений проводится только вместе с определением показателя и периодом.',
     'Портфель обязательств и долгий договор подтверждают контракт, но не заменяют наблюдение фактической загрузки и платежа внешнего клиента.',
+    'Ссылка на источник не равна полной проверяемости: часть ссылок ведёт на общие страницы организаций, такие помечены отдельно.',
     'Выводы по России ограничены фрагментарностью открытой статистики по ускорителям, загрузке кластеров и энергетической мощности именно ИИ-нагрузок.'
   ]
 };

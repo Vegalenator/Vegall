@@ -439,6 +439,11 @@ td .sub { display: block; color: var(--muted); font-size: 11.5px; margin-top: 3p
 .track.div .mark span { left: auto; }
 .track.div .mark.a span { left: calc(100% + 7px); }
 .track.div .mark.neg span { right: calc(100% + 7px); left: auto; }
+.src.generic { border-style: dashed; }
+.tile.weak { border-style: dashed; }
+td.num .sub { display: block; white-space: normal; text-align: right; font-family: var(--ff-ui); }
+tr.rownote td { padding-top: 0; font-size: 12px; color: var(--ink-2); background: var(--surface-2); }
+tr.rownote td b { color: var(--ink); }
 
 </style>
 <header class="topbar">
@@ -470,7 +475,18 @@ window.VG_META = {
     estimate: { label: 'оценка',    hint: 'Расчёт международной организации или расчёт терминала' },
     forecast: { label: 'прогноз',   hint: 'Сценарная модель; зависит от допущений' },
     claim:    { label: 'заявление', hint: 'Сообщено руководством компании без раскрытой независимой методики' },
-    expert:   { label: 'шкала',     hint: 'Экспертная оцифровка качественной таблицы исследования' }
+    expert:   { label: 'шкала',     hint: 'Экспертная оцифровка качественной таблицы исследования' },
+    calc:     { label: 'расчёт',    hint: 'Вычислено терминалом из раскрытых компанией величин' },
+    unverified: { label: 'не сверено', hint: 'Величина из внешней проверки, не сверенная с первоисточником в этой сборке' }
+  },
+  mode: {
+    current: 'ручное обновление',
+    note: 'Все данные записаны в файлах и обновляются вручную. Автоматических подключений к источникам в этой сборке нет. Истории значений тоже нет, поэтому терминал отвечает на вопрос «как сейчас», но пока не на вопрос «что изменилось с прошлого раза».',
+    planned: [
+      'Слой A — котировки, капитализация, кредитные спрэды. Планируется: обновление по расписанию.',
+      'Слой B — капвложения, потоки, выручка сегментов. Планируется: импорт из машиночитаемых раскрытий.',
+      'Слой C — IEA, BIS, Census, Банк России, iKS, связи графа. Останется ручным: эти организации не отдают данные машиночитаемо.'
+    ]
   },
   disclaimer: 'Панель проверки, а не торговая рекомендация. Финансовые годы компаний не совпадают с календарными; суммирование разных периодов не даёт точного календарного итога.',
   sources: {
@@ -491,25 +507,26 @@ window.VG_META = {
     S15: { org: 'Amazon', title: 'Q2 2026', date: '2026-07', url: 'https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/' },
     S16: { org: 'Meta', title: 'Q2 2026', date: '2026-07', url: 'https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/default.aspx' },
     S17: { org: 'CoreWeave', title: 'Форма 10-Q', date: '2026-08-11', url: 'https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm' },
-    S18: { org: 'TSMC', title: 'Q2 2026 и 20-F 2025', date: '2026-07', url: 'https://investor.tsmc.com/english/quarterly-results/2026/q2' },
+    S18: { org: 'TSMC', title: 'Q2 2026 и 20-F 2025', date: '2026-07', url: 'https://investor.tsmc.com/english/quarterly-results/2026/q2', generic: true },
     S19: { org: 'ASML', title: 'Q2 2026', date: '2026-07-15', url: 'https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results' },
     S20: { org: 'Alibaba', title: 'Результаты и размещение акций, август 2026', date: '2026-08', url: 'https://www.alibabagroup.com/en-US/document-2027233133950140416' },
     S21: { org: 'Банк России', title: 'Применение ИИ на финансовом рынке', date: '2025-11-20', url: 'https://www.cbr.ru/Content/Document/File/185193/Consultation_Paper_20112025.pdf' },
     S22: { org: 'Аналитический центр при Правительстве РФ', title: 'Вклад ИИ в ВВП к 2030 году', date: '2025-11-20', url: 'https://ac.gov.ru/news/page/vklad-ii-v-vvp-strany-k-2030-godu-dolzen-prevysit-11-trln-rublej-28260' },
     S23: { org: 'Сбер', title: 'Результаты по МСФО за 2025 год', date: '2026-02', url: 'https://www.sberbank.com/investor-relations/groupresults/ifrs_february26_reporting_for_the_4th_quarter' },
-    S24: { org: 'Яндекс', title: 'Результаты за II квартал 2026 года', date: '2026-07-29', url: 'https://ir.yandex.ru/press-releases?id=29-07-2026&year=2026' },
-    S25: { org: 'BIS США (Bureau of Industry and Security)', title: 'EAR §746.8 — ограничения для России и Беларуси', date: '2026', url: 'https://www.bis.gov/regulations/ear/746' },
-    S26: { org: 'Европейская комиссия', title: 'InvestAI и гигафабрики ИИ', date: '2026', url: 'https://digital-strategy.ec.europa.eu/en/policies/build-leadership-ai' },
+    S24: { org: 'Яндекс', title: 'Результаты за II квартал 2026 года', date: '2026-07-29', url: 'https://ir.yandex.ru/press-releases?id=29-07-2026&year=2026', generic: true },
+    S25: { org: 'BIS США (Bureau of Industry and Security)', title: 'EAR §746.8 — ограничения для России и Беларуси', date: '2026', url: 'https://www.bis.gov/regulations/ear/746', generic: true },
+    S26: { org: 'Европейская комиссия', title: 'InvestAI и гигафабрики ИИ', date: '2026', url: 'https://digital-strategy.ec.europa.eu/en/policies/build-leadership-ai', generic: true },
     S27: { org: 'Constellation', title: 'Договор с Microsoft, Crane Clean Energy Center', date: '2024-09-20', url: 'https://www.constellationenergy.com/news/2024/Constellation-to-Launch-Crane-Clean-Energy-Center-Restoring-Jobs-and-Carbon-Free-Power-to-The-Grid.html' },
-    S28: { org: 'SK hynix', title: 'Корпоративные результаты и HBM4', date: '2026', url: 'https://news.skhynix.com' },
-    S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/' },
-    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/' }
+    S28: { org: 'SK hynix', title: 'Корпоративные результаты и HBM4', date: '2026', url: 'https://news.skhynix.com', generic: true },
+    S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/', generic: true },
+    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/', generic: true }
   },
   limits: [
     'Все прогнозы — энергопотребление, производительность, вклад в ВВП — отделены от наблюдаемых фактов.',
     'Корпоративные заявления об экономическом эффекте считаются оценкой руководства, если нет раскрытой независимой методики.',
     'Сравнение капвложений проводится только вместе с определением показателя и периодом.',
     'Портфель обязательств и долгий договор подтверждают контракт, но не заменяют наблюдение фактической загрузки и платежа внешнего клиента.',
+    'Ссылка на источник не равна полной проверяемости: часть ссылок ведёт на общие страницы организаций, такие помечены отдельно.',
     'Выводы по России ограничены фрагментарностью открытой статистики по ускорителям, загрузке кластеров и энергетической мощности именно ИИ-нагрузок.'
   ]
 };
@@ -666,7 +683,7 @@ window.VG_RISK_TYPES = {
 window.VG_COMPANIES = [
   {
     id: 'msft', name: 'Microsoft', role: 'Облако и программы', country: 'США',
-    period: 'IV кв. 2026 ф.г.', src: 'S10', kind: 'fact',
+    periodType: 'quarter', period: 'IV кв. 2026 ф.г.', src: 'S10', kind: 'fact',
     capex: 41.0, ocf: 55.4, fcf: 19.6,
     capexNote: 'Включая финансовую аренду; около 2/3 — процессоры и серверы',
     proof: 'Azure свыше $100 млрд в год; более 30 млн платных мест Copilot; более 100 тыс. клиентов Foundry',
@@ -676,7 +693,7 @@ window.VG_COMPANIES = [
   },
   {
     id: 'googl', name: 'Alphabet', role: 'Облако и модели', country: 'США',
-    period: 'II кв. 2026', src: 'S11', kind: 'fact',
+    periodType: 'quarter', period: 'II кв. 2026', src: 'S11', kind: 'fact',
     capex: 44.9, ocf: 39.1, fcf: -5.9,
     proof: 'Google Cloud $24,8 млрд выручки, операционная прибыль $8,8 млрд',
     risk: 'Квартальный свободный поток отрицателен; переоценка долей в чужом капитале влияет на прибыль',
@@ -685,17 +702,20 @@ window.VG_COMPANIES = [
   },
   {
     id: 'amzn', name: 'Amazon', role: 'Облако', country: 'США',
-    period: '12 мес. к II кв. 2026', src: 'S15', kind: 'fact',
-    capex: 66.1, ocf: 161.4, fcf: -7.6,
-    capexNote: 'Прирост покупок имущества и оборудования; основной драйвер — ИИ',
+    periodType: 'ttm', period: '12 мес. к II кв. 2026', src: 'S15', kind: 'fact',
+    capexDelta: 66.1, ocf: 161.4, fcf: -7.6,
+    capexNote: 'В исследовании приведён ПРИРОСТ покупок имущества и оборудования за год, а не уровень капвложений за период. Поэтому Amazon исключён из сравнения уровней и из расчёта самофинансирования',
+    crossCheck: { label: 'Уровень капвложений за 12 месяцев по внешней проверке', value: 'около $169 млрд', ratio: 'около 105% операционного потока',
+                  note: 'Величина не сверена с первоисточником в этой сборке: сайт отношений с инвесторами Amazon недоступен из среды сборки. До сверки в расчёты не берётся' },
     proof: 'AWS $42,2 млрд за квартал, операционная прибыль $16,6 млрд',
+    gap: 'Уровень капвложений за период в исследовании не приведён',
     risk: 'Свободный поток отрицателен на горизонте года при сильном операционном потоке',
     breaks: 'Снижение маржи AWS при продолжении стройки',
     limit: 'Вложения включают сеть исполнения заказов и иные активы, не только ИИ'
   },
   {
     id: 'meta', name: 'Meta', role: 'Модели и реклама', country: 'США',
-    period: 'II кв. 2026', src: 'S16', kind: 'fact',
+    periodType: 'quarter', period: 'II кв. 2026', src: 'S16', kind: 'fact',
     capex: 31.1, ocf: 31.9, fcf: 0.8,
     guide: 'Прогноз капвложений 2026: $130-145 млрд',
     proof: 'Реклама: показы +14%, цена +12%; ИИ встроен в продукт, отдельной выручки нет',
@@ -705,7 +725,7 @@ window.VG_COMPANIES = [
   },
   {
     id: 'orcl', name: 'Oracle', role: 'Облако', country: 'США',
-    period: '2026 ф.г.', src: 'S14', kind: 'fact',
+    periodType: 'year', period: '2026 ф.г.', src: 'S14', kind: 'fact',
     capex: 55.6, ocf: 32.0, fcf: -23.7, rpo: 638,
     proof: 'IaaS $18,1 млрд, +77%; портфель обязательств $638 млрд',
     risk: 'Капвложения намного выше операционного потока; портфель сильно концентрирован',
@@ -714,7 +734,7 @@ window.VG_COMPANIES = [
   },
   {
     id: 'crwv', name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
-    period: 'I полугодие / II кв. 2026', src: 'S17', kind: 'fact',
+    periodType: 'half', period: 'I полугодие / II кв. 2026', src: 'S17', kind: 'fact',
     capex: 14.1, ocf: 3.6, ocfKind: 'estimate', fcf: -10.5, fcfKind: 'estimate',
     revenue: 2.6, rpo: 103.7, top3: 72,
     capexNote: 'Денежные капвложения за полугодие; операционный поток выведен из соотношения «почти в четыре раза» и помечен как оценка',
@@ -769,7 +789,7 @@ window.VG_COMPANIES = [
   },
   {
     id: 'baba', name: 'Alibaba', role: 'Облако и модели', country: 'Китай',
-    period: 'II кв. 2026 / август 2026', src: 'S20', kind: 'fact',
+    periodType: 'quarter', period: 'II кв. 2026 / август 2026', src: 'S20', kind: 'fact',
     capex: 10.0, capexKind: 'estimate', cloudRevenue: 7.1, aiRevenue: 1.8,
     capexNote: 'Около $10 млрд квартальных капвложений; размещение акций на HK$80 млрд, около 60% средств — на вычислительную инфраструктуру',
     proof: '$7,1 млрд квартальной выручки облака и вычислений, из них $1,8 млрд ИИ-продуктов; маржа облака растёт',
@@ -823,6 +843,7 @@ window.VG_TEST5 = {
     sber:    ['unknown', 'unknown', 'unknown', 'yes', 'unknown'],
     skhynix: ['yes', 'yes', 'unknown', 'yes', 'no']
   },
+  rule: 'Вывод выносится только по нарушенным условиям. Состояние «публично не наблюдаемо» считается отдельно и не приравнивается к нарушению: оно означает, что проверку провести нельзя.',
   verdict: {
     prod: 'Доказанная инвестиция в производительность',
     mixed: 'Смешанный случай: часть условий не наблюдаема',
@@ -963,8 +984,8 @@ window.VG_GROUPS = [
 window.VG_INDICATORS = [
   // Капитал
   { g: 'capital', name: 'Совокупные капвложения Microsoft, Alphabet, Amazon, Meta, Oracle', why: 'Темп инвестиционного цикла', stress: 'Снижение прогноза двумя и более компаниями', state: 'ok', obs: 'Прогнозов снижения нет; Meta ориентирует на $130-145 млрд в 2026', src: 'S16' },
-  { g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 174%, Alphabet 115%, Meta 97%, Microsoft 74%, Amazon 41%', src: 'S10' },
-  { g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах', src: 'S11' },
+  { g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 174%, Alphabet 115%, Meta 97%, Microsoft 74%. Расчёт терминала по раскрытиям; Amazon исключён, в исследовании приведён прирост, а не уровень капвложений', kind: 'calc', srcs: ['S10', 'S11', 'S14', 'S15', 'S16'] },
+  { g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах. Периоды разной длины, поэтому величины между собой не сопоставимы', srcs: ['S11', 'S14', 'S15'] },
   { g: 'capital', name: 'Валовой выпуск облигаций и средняя срочность', why: 'Переход от потока к долгу', stress: 'Рост выпуска вместе с расширением спрэда', state: 'watch', obs: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025', src: 'S2' },
   { g: 'capital', name: 'Объём частного кредита и проектного финансирования ЦОД', why: 'Скрытый канал риска', stress: 'Рост быстрее выручки и мощности в эксплуатации', state: 'nodata', obs: 'Единого публичного ряда нет; BIS фиксирует рост качественно', src: 'S2' },
   { g: 'capital', name: 'Финансовая аренда и долгие гарантии закупки', why: 'Теневой долг', stress: 'Обязательства растут быстрее введённой мощности', state: 'watch', obs: 'Капвложения Microsoft включают аренду; RPO Oracle $638 млрд', src: 'S14' },
@@ -974,10 +995,10 @@ window.VG_INDICATORS = [
   { g: 'semi', name: 'Выручка ИИ-полупроводников Broadcom', why: 'Спрос на сети и заказные процессоры', stress: 'Замедление у нескольких заказчиков', state: 'ok', obs: '$16,7 млрд, +221% год к году', src: 'S13' },
   { g: 'semi', name: 'Цена и объём HBM, запасы производителей', why: 'Узкое место памяти', stress: 'Рост запасов и падение цены одновременно', state: 'watch', obs: 'HBM4 в поставках, спрос 2026 во многом законтрактован; публичного ряда цен нет', src: 'S28' },
   { g: 'semi', name: 'Заказы и продажи EUV ASML', why: 'Планы фабрик', stress: 'Снижение заказов два квартала', state: 'ok', obs: 'Прогноз 2026 повышен до €43-45 млрд', src: 'S19' },
-  { g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'ok', obs: 'Валовая маржа 67,7% во II кв. 2026', src: 'S18' },
+  { g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'nodata', obs: 'Прямого показателя загрузки в раскрытиях нет. Валовая маржа 67,7% — косвенный признак, она не измеряет загрузку', src: 'S18' },
   // Облако
-  { g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год; OCI IaaS +77%', src: 'S14' },
-  { g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'AWS 39%, Google Cloud 36% операционной маржи сегмента', src: 'S15' },
+  { g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год; OCI IaaS +77%. Сопоставимого показателя роста по всем пяти облакам в раскрытиях нет', srcs: ['S10', 'S14'] },
+  { g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'AWS 39%, Google Cloud 36% операционной маржи сегмента. Расчёт терминала: операционная прибыль сегмента к его выручке', kind: 'calc', srcs: ['S11', 'S15'] },
   { g: 'cloud', name: 'Цена вычисления или токена и пропускная способность', why: 'Эффективность и конкуренция', stress: 'Цена падает быстрее себестоимости', state: 'nodata', obs: 'Сопоставимого публичного ряда нет', src: 'S4' },
   { g: 'cloud', name: 'Фактическая загрузка GPU и МВт', why: 'Ключ к окупаемости', stress: 'Снижение при росте введённой мощности', state: 'nodata', obs: 'Не раскрывается ни одним крупным оператором. Главный пробел всей панели', src: 'S17' },
   // Программы и внедрение
@@ -989,7 +1010,7 @@ window.VG_INDICATORS = [
   { g: 'soft', name: 'Занятость и зарплаты по возрасту в подверженных профессиях', why: 'Распределение эффекта', stress: 'Падение найма молодых без роста выпуска', state: 'watch', obs: 'Наблюдается снижение найма молодых в подверженных профессиях', src: 'S6' },
   // Энергия
   { g: 'energy', name: 'ТВт·ч ЦОД и подключённые ГВт', why: 'Физический спрос', stress: 'Заявки растут, ввод и загрузка нет', state: 'watch', obs: '485 ТВт·ч в 2025, прогноз около 950 к 2030; спрос ИИ-ЦОД вырос примерно на 50% за 2025', src: 'S4' },
-  { g: 'energy', name: 'Срок подключения и поставки трансформаторов', why: 'Ограничение предложения', stress: 'Дальнейшее удлинение при отменах заказов', state: 'stress', obs: 'Производственный цикл трансформаторов, турбин и выключателей измеряется годами; очередь на подключение — реальный ограничитель ввода', src: 'S4' },
+  { g: 'energy', name: 'Срок подключения и поставки трансформаторов', why: 'Ограничение предложения', stress: 'Дальнейшее удлинение при отменах заказов', state: 'watch', obs: 'Производственный цикл трансформаторов, турбин и выключателей измеряется годами; очередь на подключение — реальный ограничитель ввода. Но удлинение сроков вместе с отменами заказов, то есть полный состав стресс-сигнала, не подтверждено', src: 'S4' },
   { g: 'energy', name: 'PUE, WUE и стоимость электроэнергии', why: 'Эксплуатационная экономика', stress: 'Ухудшение эффективности или социальные ограничения', state: 'nodata', obs: 'Раскрывается выборочно и несопоставимо', src: 'S4' },
   // Россия
   { g: 'russia', name: 'Постоянное внедрение, пилоты, планы', why: 'Переход к масштабу', stress: 'Пилоты не становятся постоянным использованием', state: 'watch', obs: '21% применяют постоянно, 15% тестируют, 29% планируют, 35% не планируют', src: 'S21' },
@@ -1028,7 +1049,7 @@ window.VG_SCENARIOS = [
       'Россия': 'Прикладной рост при дефиците вычислений, консолидация вокруг крупных платформ'
     },
     signals: [
-      { text: 'Облачная выручка растёт на 25-40%', met: true, note: 'OCI IaaS +77%, Azure свыше $100 млрд в год', src: 'S14' },
+      { text: 'Облачная выручка растёт на 25-40%', met: null, note: 'Сопоставимого показателя роста по всем крупным облакам нет. OCI IaaS +77% и годовой объём Azure свыше $100 млрд — другие величины и не подтверждают диапазон', srcs: ['S10', 'S14'] },
       { text: 'Загрузка мощностей стабильна', met: null, note: 'Не раскрывается ни одним крупным оператором' },
       { text: 'Свободный денежный поток восстанавливается', met: false, note: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах', src: 'S11' },
       { text: 'Сроки поставки HBM постепенно сокращаются', met: null, note: 'Публичного ряда сроков нет' }
@@ -1241,7 +1262,7 @@ window.VG_ENERGY = {
       var next = adj[cur] || [];
       for (var i = 0; i < next.length; i++) {
         var e = next[i];
-        if (e.to === start && path.length >= 2) {
+        if (e.to === start && path.length >= 1) {
           var ring = path.concat([e]);
           var ids = ring.map(function (x) { return x.from; });
           var key = ids.slice().sort().join('>');
@@ -1570,9 +1591,12 @@ window.VG_ENERGY = {
   }
   function srcref(code) {
     if (!code) return '';
+    if (Array.isArray(code)) return code.map(srcref).join(' ');
     var s = M.sources[code]; if (!s) return '';
-    return '<button class="src" type="button" data-src="' + code + '" title="' + esc(s.org + ' — ' + s.title + ', ' + s.date) + '">' + code + '</button>';
+    var t = s.org + ' — ' + s.title + ', ' + s.date + (s.generic ? '. Ссылка ведёт на общую страницу организации, прямого документа нет' : '');
+    return '<button class="src' + (s.generic ? ' generic' : '') + '" type="button" data-src="' + code + '" title="' + esc(t) + '">' + code + (s.generic ? '*' : '') + '</button>';
   }
+  function refs(o) { return srcref(o.srcs || o.src); }
   var STATE_LABELS = { ok: 'Норма', watch: 'Наблюдение', stress: 'Стресс-сигнал', nodata: 'Нет публичного ряда' };
   function stateEl(state) {
     return '<span class="st st-' + state + '"><i></i>' + STATE_LABELS[state] + '</span>';
@@ -1597,7 +1621,8 @@ window.VG_ENERGY = {
       var w = Math.abs(v) / span * 100;
       var style = isNeg ? 'right:' + (100 - zero).toFixed(2) + '%;width:' + w.toFixed(2) + '%'
                         : 'left:' + zero.toFixed(2) + '%;width:' + w.toFixed(2) + '%';
-      return '<div class="chartrow"><div class="nm">' + esc(r.name) + '</div>' +
+      return '<div class="chartrow"><div class="nm">' + esc(r.name) +
+        (r.period ? '<span class="sub">' + esc(r.period) + '</span>' : '') + '</div>' +
         '<div class="track div"><div class="zero" style="left:' + zero.toFixed(2) + '%"></div>' +
         '<div class="mark ' + (isNeg ? 'neg' : 'a') + '" style="' + style + '"><span>' + esc(r.label) + '</span></div>' +
         '</div></div>';
@@ -1605,7 +1630,15 @@ window.VG_ENERGY = {
   }
 
   /* --------------------------------------------------- расчёт индексов */
-  var SCORE = { stress: 100, watch: 60, ok: 20 };
+  /* 0 — все наблюдаемые показатели в норме, 100 — все дают стресс-сигнал */
+  var SCORE = { stress: 100, watch: 50, ok: 0 };
+  var MIN_COVERAGE = 0.6;
+
+  function coverage(gid) {
+    var all = IND.filter(function (i) { return !gid || i.g === gid; });
+    var seen = all.filter(function (i) { return i.state !== 'nodata'; });
+    return { seen: seen.length, all: all.length, share: all.length ? seen.length / all.length : 0 };
+  }
   function groupIndex(gid) {
     var items = IND.filter(function (i) { return i.g === gid && i.state !== 'nodata'; });
     if (!items.length) return null;
@@ -1621,9 +1654,9 @@ window.VG_ENERGY = {
     return den ? num / den : 0;
   }
   function tension(v) {
-    if (v < 35) return { label: 'Спокойно', state: 'ok' };
-    if (v < 60) return { label: 'Наблюдение', state: 'watch' };
-    if (v < 80) return { label: 'Напряжение', state: 'watch' };
+    if (v < 25) return { label: 'Спокойно', state: 'ok' };
+    if (v < 50) return { label: 'Наблюдение', state: 'watch' };
+    if (v < 75) return { label: 'Напряжение', state: 'watch' };
     return { label: 'Стресс', state: 'stress' };
   }
 
@@ -1637,17 +1670,21 @@ window.VG_ENERGY = {
     sub: 'Один вопрос вместо десяти: какая доля вложенного капитала уже обслуживается внешним денежным потоком. Индекс собран из панели 28 показателей и их стресс-сигналов.',
     render: function () {
       var v = overallIndex(), t = tension(v);
-      var covered = IND.filter(function (i) { return i.state !== 'nodata'; }).length;
+      var cov = coverage(null);
       var stressed = IND.filter(function (i) { return i.state === 'stress'; });
+      var weakGroups = GROUPS.filter(function (g) { return coverage(g.id).share < MIN_COVERAGE; });
 
       var groupRows = GROUPS.map(function (g) {
         var gv = groupIndex(g.id);
+        var c = coverage(g.id);
+        var weak = c.share < MIN_COVERAGE;
         var st = gv === null ? 'nodata' : tension(gv).state;
-        var gaps = IND.filter(function (i) { return i.g === g.id && i.state === 'nodata'; }).length;
-        return '<div class="tile"><div class="label">' + esc(g.name) + '</div>' +
+        return '<div class="tile' + (weak ? ' weak' : '') + '"><div class="label">' + esc(g.name) + '<span style="color:var(--muted)"> · вес ' + num(g.weight, 1) + '</span></div>' +
           '<div class="value">' + (gv === null ? '—' : Math.round(gv)) + '<small>/100</small></div>' +
           '<div class="bar"><span style="width:' + (gv === null ? 0 : pct(gv)) + '%;background:var(--' + (st === 'stress' ? 'critical' : st === 'watch' ? 'warning' : st === 'ok' ? 'ok' : 'nodata') + ')"></span></div>' +
-          '<div class="note">' + stateEl(st) + (gaps ? ' · пробелов: ' + gaps : '') + '</div></div>';
+          '<div class="note">' + stateEl(st) + '</div>' +
+          '<div class="note">Данные: ' + c.seen + ' из ' + c.all +
+            (weak ? ' · <b style="color:var(--critical)">вывод не обеспечен данными</b>' : '') + '</div></div>';
       }).join('');
 
       var three = [
@@ -1667,8 +1704,11 @@ window.VG_ENERGY = {
             '<h3>Индекс напряжения цикла</h3>' +
             '<div class="figure">' + Math.round(v) + '</div>' +
             '<div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + stateEl(t.state) +
-              '<span class="count" style="color:var(--muted);font-size:12px">' + covered + ' из ' + IND.length + ' показателей имеют наблюдение</span>' + badge('expert') + '</div>' +
-            '<p class="cap">0 — спрос подтверждён и обслуживается потоком. 100 — все наблюдаемые показатели дают стресс-сигнал. Экспертная шкала по панели исследования, а не рыночный индекс: она показывает, где сместилось внимание, а не цену актива.</p>' +
+              '<span class="count" style="color:var(--muted);font-size:12px">' + cov.seen + ' из ' + cov.all + ' показателей имеют наблюдение</span>' + badge('expert') + '</div>' +
+            '<p class="cap">0 — все наблюдаемые показатели в норме. 100 — все дают стресс-сигнал. Норма 0, наблюдение 50, стресс 100; среднее по группе, затем среднее по группам с весами ' +
+              GROUPS.map(function (g) { return esc(g.name.toLowerCase()) + ' ' + num(g.weight, 1); }).join(', ') + '.</p>' +
+            '<div class="note"><b>Чем это не является.</b> Это среднее авторских оценок, а не измеренная степень перегрева рынка. Веса и пороги выбраны экспертно и не проверены на исторических данных: терминал не показывает, предупреждал ли такой индекс о прошлых коррекциях. Показатели без публичного ряда в расчёт не входят, поэтому низкое значение группы может означать не спокойствие, а отсутствие данных — рядом с каждой группой указана достаточность.' +
+              (weakGroups.length ? ' Сейчас данных недостаточно для вывода по группам: ' + weakGroups.map(function (g) { return esc(g.name.toLowerCase()); }).join(', ') + '.' : '') + '</div>' +
           '</div>' +
           '<div class="panel">' +
             '<h3>Сработавшие стресс-сигналы</h3>' +
@@ -1676,7 +1716,7 @@ window.VG_ENERGY = {
             (stressed.length ? stressed.map(function (i) {
               return '<div class="loop" style="border-left-color:var(--critical);margin-bottom:8px">' +
                 '<div class="why"><b>' + esc(i.name) + '</b></div>' +
-                '<div class="why">' + esc(i.obs) + ' ' + srcref(i.src) + '</div></div>';
+                '<div class="why">' + esc(i.obs) + ' ' + refs(i) + '</div></div>';
             }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
           '</div>' +
         '</div>' +
@@ -1712,6 +1752,7 @@ window.VG_ENERGY = {
           '<div class="graphwrap" id="graphHost"></div>' +
           '<p class="sub" style="margin:0">Наведите курсор на связь или узел, потяните узел мышью, нажмите на узел — он оставит только своё окружение.</p>' +
         '</div>' +
+        '<div class="note"><b>Как читать контур и как его не читать.</b> Стрелка вверх — признак встречного движения, но сама по себе она замкнутого круга не доказывает: контур засчитывается только при наличии обратного пути, и именно его ищет алгоритм. При этом доля в капитале, облачный кредит, подписанный договор и уже совершённый платёж — разные экономические события. Замкнутый контур связей означает взаимную зависимость сторон, а не доказанный возврат одних и тех же денег. Чтобы утверждать второе, нужны суммы, даты, сроки обязательств и доля в выручке получателя; в этой сборке суммы есть не у всех связей.</div>' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Найденные круговые контуры</h3>' +
             '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли</p>' +
@@ -1745,9 +1786,15 @@ window.VG_ENERGY = {
         var cy = g.cycles();
         root.querySelector('#cycles').innerHTML = cy.length ? cy.map(function (c) {
           var path = c.names.concat([c.names[0]]).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join(' → ');
-          var why = c.edges.map(function (e) { return (e.label || window.VG_EDGE_TYPES[e.type].label); }).join(' · ');
+          var why = c.edges.map(function (e) {
+            return window.VG_EDGE_TYPES[e.type].label.toLowerCase() + ': ' + (e.label || '') + (e.amount ? ' (' + e.amount + ')' : '');
+          }).join(' · ');
+          var amounts = c.edges.filter(function (e) { return e.amount; }).length;
+          var basis = c.edges.every(function (e) { return e.inReport === 'yes'; }) ? 'все связи контура описаны в исследовании'
+            : 'часть связей контура — вне исследования, см. таблицу';
           return '<div class="loop" style="margin-bottom:8px"><div class="path">' + path + '</div>' +
-            '<div class="why">' + esc(why) + '</div></div>';
+            '<div class="why">' + esc(why) + '</div>' +
+            '<div class="why" style="color:var(--muted);font-size:11.5px">Сумма указана у ' + amounts + ' из ' + c.edges.length + ' связей · ' + basis + '</div></div>';
         }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
 
         root.querySelector('#edgeTable').innerHTML = edges.map(function (e) {
@@ -1777,19 +1824,25 @@ window.VG_ENERGY = {
         b.innerHTML = block('Деньги приходят от', inc, 'in') + block('Деньги уходят к', out, 'out');
       }
 
+      /* после смены фильтров карточка узла пересобирается по видимым связям */
+      function afterFilter() {
+        refresh();
+        var id = g.filters.focus;
+        showSel(id ? g.index[id] : null, g.neighbours(id));
+      }
       root.querySelectorAll('[data-etype]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var on = btn.getAttribute('aria-pressed') !== 'true';
           btn.setAttribute('aria-pressed', String(on));
           g.setFilter(btn.dataset.etype, on);
-          refresh();
+          afterFilter();
         });
       });
       root.querySelector('#onlyReport').addEventListener('click', function () {
         var on = this.getAttribute('aria-pressed') !== 'true';
         this.setAttribute('aria-pressed', String(on));
         g.setOnlyReport(on);
-        refresh();
+        afterFilter();
       });
       root.querySelector('#relax').addEventListener('click', function () { g.relax(); });
       refresh();
@@ -1846,15 +1899,33 @@ window.VG_ENERGY = {
     sub: 'Корректный вопрос — не «кто потратил больше», а какая доля прироста капитала уже обслуживается внешней выручкой и денежным потоком. Периоды компаний различаются и указаны в каждой строке.',
     render: function () {
       var capexCo = CO.filter(function (c) { return typeof c.capex === 'number' && typeof c.ocf === 'number'; });
+      var excluded = CO.filter(function (c) {
+        return (c.capexDelta && !c.capex) || (typeof c.capex === 'number' && typeof c.ocf !== 'number');
+      });
 
-      var maxCapex = Math.max.apply(null, capexCo.map(function (c) { return Math.max(c.capex, c.ocf); }));
-      var capexChart = '<div class="chart">' + capexCo.map(function (c) {
-        return '<div class="chartrow"><div class="nm">' + esc(c.name) + '<span class="sub">' + esc(c.period) + '</span></div>' +
-          '<div class="track pair">' +
-            '<div class="mark a" style="width:' + pct(c.capex / maxCapex * 100).toFixed(1) + '%"><span>' + num(c.capex) + '</span></div>' +
-            '<div class="mark b" style="width:' + pct(c.ocf / maxCapex * 100).toFixed(1) + '%"><span>' + num(c.ocf) + '</span></div>' +
-          '</div></div>';
-      }).join('') + '</div>';
+      /* Столбики сравнимы только внутри одинаковой длины периода, поэтому
+         чарт разбит по периодам, а общая шкала считается внутри каждого. */
+      var PERIODS = [
+        { id: 'quarter', label: 'Квартал' },
+        { id: 'half', label: 'Полугодие' },
+        { id: 'year', label: 'Год и 12 месяцев', match: ['year', 'ttm'] }
+      ];
+      var capexChart = PERIODS.map(function (pr) {
+        var list = capexCo.filter(function (c) { return (pr.match || [pr.id]).indexOf(c.periodType) >= 0; });
+        if (!list.length) return '';
+        var mx = Math.max.apply(null, list.map(function (c) { return Math.max(c.capex, c.ocf); }));
+        return '<h2 class="section">' + esc(pr.label) + '</h2><div class="chart">' + list.map(function (c) {
+          return '<div class="chartrow"><div class="nm">' + esc(c.name) + '<span class="sub">' + esc(c.period) + '</span></div>' +
+            '<div class="track pair">' +
+              '<div class="mark a" style="width:' + pct(c.capex / mx * 100).toFixed(1) + '%"><span>' + num(c.capex) + '</span></div>' +
+              '<div class="mark b" style="width:' + pct(c.ocf / mx * 100).toFixed(1) + '%"><span>' + num(c.ocf) + '</span></div>' +
+            '</div></div>';
+        }).join('') + '</div>';
+      }).join('') +
+        (excluded.length ? '<div class="note" style="margin-top:12px"><b>Исключены из сравнения.</b> ' +
+          excluded.map(function (c) {
+            return esc(c.name) + ': ' + esc(c.capexNote || 'операционный денежный поток в исследовании не приведён, сопоставить капвложения с потоком нельзя');
+          }).join('. ') + '</div>' : '');
 
       var ratio = capexCo.map(function (c) {
         return { name: c.name, v: c.capex / c.ocf * 100, label: Math.round(c.capex / c.ocf * 100) + '%' };
@@ -1871,18 +1942,24 @@ window.VG_ENERGY = {
       var fmin = Math.min.apply(null, fcfCo.map(function (c) { return c.fcf; }));
       var fmax = Math.max.apply(null, fcfCo.map(function (c) { return c.fcf; }));
       var fcfChart = divBars(fcfCo.map(function (c) {
-        return { name: c.name, v: c.fcf, label: (c.fcf > 0 ? '+' : '') + num(c.fcf) };
+        return { name: c.name, period: c.period, v: c.fcf, label: (c.fcf > 0 ? '+' : '') + num(c.fcf) };
       }), Math.min(fmin * 1.25, -5), Math.max(fmax * 1.25, 5));
 
       var rows = CO.map(function (c) {
         return '<tr><td><b>' + esc(c.name) + '</b><span class="sub">' + esc(c.role) + ' · ' + esc(c.country) + '</span></td>' +
           '<td>' + esc(c.period) + ' ' + badge(c.kind) + '</td>' +
-          '<td class="num">' + (typeof c.capex === 'number' ? '$' + num(c.capex) : '—') + (c.capexKind ? ' ' + badge(c.capexKind) : '') + '</td>' +
+          '<td class="num">' + (typeof c.capex === 'number' ? '$' + num(c.capex) : c.capexDelta ? '+$' + num(c.capexDelta) + '<span class="sub">прирост, не уровень</span>' : '—') +
+            (c.capexKind ? ' ' + badge(c.capexKind) : '') + '</td>' +
           '<td class="num">' + (typeof c.ocf === 'number' ? '$' + num(c.ocf) : '—') + (c.ocfKind ? ' ' + badge(c.ocfKind) : '') + '</td>' +
           '<td class="num">' + (typeof c.fcf === 'number' ? (c.fcf > 0 ? '+' : '') + '$' + num(c.fcf) : '—') + '</td>' +
           '<td>' + esc(c.proof) + (c.guide ? '<span class="sub">' + esc(c.guide) + '</span>' : '') + '</td>' +
           '<td>' + esc(c.breaks) + '<span class="sub">ограничение: ' + esc(c.limit) + ' ' + '</span></td>' +
-          '<td>' + srcref(c.src) + '</td></tr>';
+          '<td>' + srcref(c.src) + '</td></tr>' +
+          (c.capexNote || c.crossCheck ? '<tr class="rownote"><td colspan="8">' +
+            (c.capexNote ? '<b>Примечание к капвложениям.</b> ' + esc(c.capexNote) + '. ' : '') +
+            (c.crossCheck ? '<br>' + esc(c.crossCheck.label) + ': <b>' + esc(c.crossCheck.value) + '</b>, ' + esc(c.crossCheck.ratio) + ' ' + badge('unverified') +
+              '. ' + esc(c.crossCheck.note) + '.' : '') +
+            '</td></tr>' : '');
       }).join('');
 
       var T5 = window.VG_TEST5;
@@ -1909,23 +1986,27 @@ window.VG_ENERGY = {
       return '' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Капвложения и операционный поток</h3>' +
-            '<p class="sub">Млрд долларов за раскрытый период; периоды компаний различаются</p>' +
+            '<p class="sub">Млрд долларов. Столбики сопоставимы только внутри одной длины периода, поэтому разнесены по блокам. Между блоками сравнивать нельзя</p>' +
             '<div class="legend" style="margin-bottom:10px"><b><i style="background:var(--s1)"></i>Капвложения</b><b><i style="background:var(--s2)"></i>Операционный денежный поток</b></div>' +
             capexChart + '</div>' +
           '<div class="panel"><h3>Капвложения к операционному потоку</h3>' +
             '<p class="sub">Стресс-сигнал исследования: выше 100% два квартала подряд без ускорения выручки. Вертикальная линия — отметка 100%</p>' +
             ratioChart +
-            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') + '</p></div>' +
+            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') +
+              '. Amazon в расчёт не взят: в исследовании приведён прирост капвложений, а не уровень.</p>' +
+            '<p class="note" style="margin-top:8px"><b>Что этот коэффициент не измеряет.</b> Операционный поток компании создаётся всем её бизнесом, а не только ИИ. Поэтому отношение показывает способность компании финансировать стройку собственными силами — и не показывает окупаемость вложений именно в ИИ. Такого публичного показателя сегодня не существует ни у одной из компаний панели.</p></div>' +
         '</div>' +
         '<div class="panel"><h3>Свободный денежный поток после капвложений</h3>' +
           '<p class="sub">Млрд долларов. Отрицательное значение само по себе не приговор — приговором его делает повторение при замедлении облачной выручки</p>' +
-          fcfChart + '</div>' +
+          fcfChart +
+          '<div class="note" style="margin-top:12px">Периоды разной длины, поэтому здесь читается знак и повторяемость, а не величина одной компании против другой. Квартал Oracle с годовым значением не сравнивается.</div></div>' +
         '<h2 class="section">Раскрытия компаний</h2>' +
         '<div class="tablewrap"><table><thead><tr><th>Компания</th><th>Период</th><th class="num">Капвложения</th>' +
           '<th class="num">Операционный поток</th><th class="num">Свободный поток</th><th>Доказанная монетизация</th>' +
           '<th>Что опровергнет позитивный сценарий</th><th>Источник</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<h2 class="section">Тест пяти условий: производительность или ставка на капитализацию</h2>' +
-        '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия не выполняются или не наблюдаемы, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
+        '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия нарушены, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
+          '<div class="note" style="margin-bottom:14px">' + esc(T5.rule) + '</div>' +
           '<ol class="list" style="margin-bottom:14px">' + T5.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol>' +
           '<div class="legend" style="margin-bottom:10px"><b><i class="sq" style="background:var(--ok)"></i>выполняется</b><b><i class="sq" style="background:var(--critical)"></i>не выполняется</b><b><i class="sq" style="background:var(--nodata)"></i>не наблюдаемо публично</b></div>' +
           '<div class="tablewrap compact"><table><thead><tr><th>Компания</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th>Вывод</th></tr></thead><tbody>' + t5rows + '</tbody></table></div>' +
@@ -1979,7 +2060,7 @@ window.VG_ENERGY = {
           '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение на дату среза</th><th>Статус</th></tr></thead><tbody>' +
           items.map(function (i) {
             return '<tr><td><b>' + esc(i.name) + '</b></td><td>' + esc(i.why) + '</td><td>' + esc(i.stress) + '</td>' +
-              '<td>' + esc(i.obs) + ' ' + srcref(i.src) + '</td><td>' + stateEl(i.state) + '</td></tr>';
+              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + refs(i) + '</td><td>' + stateEl(i.state) + '</td></tr>';
           }).join('') + '</tbody></table></div>';
       }).join('');
 
@@ -2028,7 +2109,7 @@ window.VG_ENERGY = {
           s.signals.map(function (x) {
             var mark = x.met === true ? '<span class="st st-stress"><i></i></span>' : x.met === false ? '<span class="st st-ok"><i></i></span>' : '<span class="st st-nodata"><i></i></span>';
             return '<div class="sig"><div class="mark">' + mark + '</div><div><div class="t">' + esc(x.text) + '</div>' +
-              '<div class="n">' + esc(x.note) + ' ' + srcref(x.src) + '</div></div></div>';
+              '<div class="n">' + esc(x.note) + ' ' + refs(x) + '</div></div></div>';
           }).join('') +
         '</div>';
       }).join('');
@@ -2107,7 +2188,8 @@ window.VG_ENERGY = {
     render: function () {
       var rows = Object.keys(M.sources).map(function (code) {
         var s = M.sources[code];
-        return '<tr id="src-' + code + '"><td class="num"><b>' + code + '</b></td><td><b>' + esc(s.org) + '</b><span class="sub">' + esc(s.title) + '</span></td>' +
+        return '<tr id="src-' + code + '"><td class="num"><b>' + code + '</b></td><td><b>' + esc(s.org) + '</b><span class="sub">' + esc(s.title) +
+          (s.generic ? '<br><span style="color:var(--critical)">* ссылка ведёт на общую страницу организации, а не на конкретный документ</span>' : '') + '</span></td>' +
           '<td class="num">' + esc(s.date) + '</td>' +
           '<td><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Открыть</a></td></tr>';
       }).join('');
@@ -2115,13 +2197,12 @@ window.VG_ENERGY = {
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Методические ограничения</h3><ul class="list">' +
             M.limits.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' +
-          '<div class="panel"><h3>Как устроено обновление</h3>' +
-            '<div class="kv">' +
-              '<dt>Слой A</dt><dd>Котировки, капитализация, кредитные спрэды — автоматически, раз в час</dd>' +
-              '<dt>Слой B</dt><dd>Капвложения, потоки, выручка сегментов — по факту подачи отчётности, из машиночитаемых раскрытий</dd>' +
-              '<dt>Слой C</dt><dd>IEA, BIS, Census, Банк России, iKS, связи графа — курируется вручную, с датой и кодом источника</dd>' +
-            '</div>' +
-            '<div class="note" style="margin-top:14px">Полностью автоматическим слой C не будет: эти организации не отдают данные машиночитаемо. Сила терминала не в скорости обновления, а в том, что каждая цифра прослеживается до первоисточника и несёт статус: факт, оценка, прогноз или заявление руководства.</div></div>' +
+          '<div class="panel"><h3>Режим обновления</h3>' +
+            '<p class="sub">Сейчас: <b>' + esc(M.mode.current) + '</b>. Срез данных — ' + esc(M.asOf) + ', сборка — ' + esc(M.builtAt) + '</p>' +
+            '<div class="note" style="margin-bottom:14px">' + esc(M.mode.note) + '</div>' +
+            '<h2 class="section">Планируется</h2>' +
+            '<ul class="list">' + M.mode.planned.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+            '<div class="note" style="margin-top:14px">Сила терминала не в скорости обновления, а в том, что каждая цифра прослеживается до первоисточника и несёт статус: факт, оценка, прогноз, заявление руководства или расчёт терминала.</div></div>' +
         '</div>' +
         '<h2 class="section">Первичные источники</h2>' +
         '<div class="tablewrap"><table><thead><tr><th class="num">Код</th><th>Источник</th><th class="num">Дата</th><th>Ссылка</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
@@ -2155,23 +2236,24 @@ window.VG_ENERGY = {
       host.innerHTML = '<div class="viewhead"><h1>' + esc(v.title) + '</h1><p>' + esc(v.sub) + '</p></div>' + v.render();
       rendered[id] = true;
       if (v.after) v.after(host);
-      bindSrcRefs(host);
     }
     if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
-  function bindSrcRefs(root) {
-    root.querySelectorAll('.src').forEach(function (b) {
-      b.addEventListener('click', function () {
-        show('sources');
-        var row = document.getElementById('src-' + b.dataset.src);
-        if (row) {
-          row.scrollIntoView({ block: 'center' });
-          row.style.background = 'var(--accent-soft)';
-          setTimeout(function () { row.style.background = ''; }, 2200);
-        }
-      });
+  /* один обработчик на документ: ссылки на источники появляются и в блоках,
+     которые собираются после первой отрисовки экрана */
+  function bindSrcRefs() {
+    document.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('.src') : null;
+      if (!b || !b.dataset.src) return;
+      show('sources');
+      var row = document.getElementById('src-' + b.dataset.src);
+      if (row) {
+        row.scrollIntoView({ block: 'center' });
+        row.style.background = 'var(--accent-soft)';
+        setTimeout(function () { row.style.background = ''; }, 2200);
+      }
     });
   }
 
@@ -2215,6 +2297,7 @@ window.VG_ENERGY = {
     document.getElementById('themeBtn').addEventListener('click', function () { theme(true); });
     window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
 
+    bindSrcRefs();
     theme(false);
     show(location.hash.slice(1) || 'pulse');
   }

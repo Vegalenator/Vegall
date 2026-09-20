@@ -59,7 +59,7 @@
       var next = adj[cur] || [];
       for (var i = 0; i < next.length; i++) {
         var e = next[i];
-        if (e.to === start && path.length >= 2) {
+        if (e.to === start && path.length >= 1) {
           var ring = path.concat([e]);
           var ids = ring.map(function (x) { return x.from; });
           var key = ids.slice().sort().join('>');

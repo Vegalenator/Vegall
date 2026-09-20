@@ -26,9 +26,12 @@
   }
   function srcref(code) {
     if (!code) return '';
+    if (Array.isArray(code)) return code.map(srcref).join(' ');
     var s = M.sources[code]; if (!s) return '';
-    return '<button class="src" type="button" data-src="' + code + '" title="' + esc(s.org + ' — ' + s.title + ', ' + s.date) + '">' + code + '</button>';
+    var t = s.org + ' — ' + s.title + ', ' + s.date + (s.generic ? '. Ссылка ведёт на общую страницу организации, прямого документа нет' : '');
+    return '<button class="src' + (s.generic ? ' generic' : '') + '" type="button" data-src="' + code + '" title="' + esc(t) + '">' + code + (s.generic ? '*' : '') + '</button>';
   }
+  function refs(o) { return srcref(o.srcs || o.src); }
   var STATE_LABELS = { ok: 'Норма', watch: 'Наблюдение', stress: 'Стресс-сигнал', nodata: 'Нет публичного ряда' };
   function stateEl(state) {
     return '<span class="st st-' + state + '"><i></i>' + STATE_LABELS[state] + '</span>';
@@ -53,7 +56,8 @@
       var w = Math.abs(v) / span * 100;
       var style = isNeg ? 'right:' + (100 - zero).toFixed(2) + '%;width:' + w.toFixed(2) + '%'
                         : 'left:' + zero.toFixed(2) + '%;width:' + w.toFixed(2) + '%';
-      return '<div class="chartrow"><div class="nm">' + esc(r.name) + '</div>' +
+      return '<div class="chartrow"><div class="nm">' + esc(r.name) +
+        (r.period ? '<span class="sub">' + esc(r.period) + '</span>' : '') + '</div>' +
         '<div class="track div"><div class="zero" style="left:' + zero.toFixed(2) + '%"></div>' +
         '<div class="mark ' + (isNeg ? 'neg' : 'a') + '" style="' + style + '"><span>' + esc(r.label) + '</span></div>' +
         '</div></div>';
@@ -61,7 +65,15 @@
   }
 
   /* --------------------------------------------------- расчёт индексов */
-  var SCORE = { stress: 100, watch: 60, ok: 20 };
+  /* 0 — все наблюдаемые показатели в норме, 100 — все дают стресс-сигнал */
+  var SCORE = { stress: 100, watch: 50, ok: 0 };
+  var MIN_COVERAGE = 0.6;
+
+  function coverage(gid) {
+    var all = IND.filter(function (i) { return !gid || i.g === gid; });
+    var seen = all.filter(function (i) { return i.state !== 'nodata'; });
+    return { seen: seen.length, all: all.length, share: all.length ? seen.length / all.length : 0 };
+  }
   function groupIndex(gid) {
     var items = IND.filter(function (i) { return i.g === gid && i.state !== 'nodata'; });
     if (!items.length) return null;
@@ -77,9 +89,9 @@
     return den ? num / den : 0;
   }
   function tension(v) {
-    if (v < 35) return { label: 'Спокойно', state: 'ok' };
-    if (v < 60) return { label: 'Наблюдение', state: 'watch' };
-    if (v < 80) return { label: 'Напряжение', state: 'watch' };
+    if (v < 25) return { label: 'Спокойно', state: 'ok' };
+    if (v < 50) return { label: 'Наблюдение', state: 'watch' };
+    if (v < 75) return { label: 'Напряжение', state: 'watch' };
     return { label: 'Стресс', state: 'stress' };
   }
 
@@ -93,17 +105,21 @@
     sub: 'Один вопрос вместо десяти: какая доля вложенного капитала уже обслуживается внешним денежным потоком. Индекс собран из панели 28 показателей и их стресс-сигналов.',
     render: function () {
       var v = overallIndex(), t = tension(v);
-      var covered = IND.filter(function (i) { return i.state !== 'nodata'; }).length;
+      var cov = coverage(null);
       var stressed = IND.filter(function (i) { return i.state === 'stress'; });
+      var weakGroups = GROUPS.filter(function (g) { return coverage(g.id).share < MIN_COVERAGE; });
 
       var groupRows = GROUPS.map(function (g) {
         var gv = groupIndex(g.id);
+        var c = coverage(g.id);
+        var weak = c.share < MIN_COVERAGE;
         var st = gv === null ? 'nodata' : tension(gv).state;
-        var gaps = IND.filter(function (i) { return i.g === g.id && i.state === 'nodata'; }).length;
-        return '<div class="tile"><div class="label">' + esc(g.name) + '</div>' +
+        return '<div class="tile' + (weak ? ' weak' : '') + '"><div class="label">' + esc(g.name) + '<span style="color:var(--muted)"> · вес ' + num(g.weight, 1) + '</span></div>' +
           '<div class="value">' + (gv === null ? '—' : Math.round(gv)) + '<small>/100</small></div>' +
           '<div class="bar"><span style="width:' + (gv === null ? 0 : pct(gv)) + '%;background:var(--' + (st === 'stress' ? 'critical' : st === 'watch' ? 'warning' : st === 'ok' ? 'ok' : 'nodata') + ')"></span></div>' +
-          '<div class="note">' + stateEl(st) + (gaps ? ' · пробелов: ' + gaps : '') + '</div></div>';
+          '<div class="note">' + stateEl(st) + '</div>' +
+          '<div class="note">Данные: ' + c.seen + ' из ' + c.all +
+            (weak ? ' · <b style="color:var(--critical)">вывод не обеспечен данными</b>' : '') + '</div></div>';
       }).join('');
 
       var three = [
@@ -123,8 +139,11 @@
             '<h3>Индекс напряжения цикла</h3>' +
             '<div class="figure">' + Math.round(v) + '</div>' +
             '<div class="row" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">' + stateEl(t.state) +
-              '<span class="count" style="color:var(--muted);font-size:12px">' + covered + ' из ' + IND.length + ' показателей имеют наблюдение</span>' + badge('expert') + '</div>' +
-            '<p class="cap">0 — спрос подтверждён и обслуживается потоком. 100 — все наблюдаемые показатели дают стресс-сигнал. Экспертная шкала по панели исследования, а не рыночный индекс: она показывает, где сместилось внимание, а не цену актива.</p>' +
+              '<span class="count" style="color:var(--muted);font-size:12px">' + cov.seen + ' из ' + cov.all + ' показателей имеют наблюдение</span>' + badge('expert') + '</div>' +
+            '<p class="cap">0 — все наблюдаемые показатели в норме. 100 — все дают стресс-сигнал. Норма 0, наблюдение 50, стресс 100; среднее по группе, затем среднее по группам с весами ' +
+              GROUPS.map(function (g) { return esc(g.name.toLowerCase()) + ' ' + num(g.weight, 1); }).join(', ') + '.</p>' +
+            '<div class="note"><b>Чем это не является.</b> Это среднее авторских оценок, а не измеренная степень перегрева рынка. Веса и пороги выбраны экспертно и не проверены на исторических данных: терминал не показывает, предупреждал ли такой индекс о прошлых коррекциях. Показатели без публичного ряда в расчёт не входят, поэтому низкое значение группы может означать не спокойствие, а отсутствие данных — рядом с каждой группой указана достаточность.' +
+              (weakGroups.length ? ' Сейчас данных недостаточно для вывода по группам: ' + weakGroups.map(function (g) { return esc(g.name.toLowerCase()); }).join(', ') + '.' : '') + '</div>' +
           '</div>' +
           '<div class="panel">' +
             '<h3>Сработавшие стресс-сигналы</h3>' +
@@ -132,7 +151,7 @@
             (stressed.length ? stressed.map(function (i) {
               return '<div class="loop" style="border-left-color:var(--critical);margin-bottom:8px">' +
                 '<div class="why"><b>' + esc(i.name) + '</b></div>' +
-                '<div class="why">' + esc(i.obs) + ' ' + srcref(i.src) + '</div></div>';
+                '<div class="why">' + esc(i.obs) + ' ' + refs(i) + '</div></div>';
             }).join('') : '<p class="note">Сработавших сигналов нет.</p>') +
           '</div>' +
         '</div>' +
@@ -168,6 +187,7 @@
           '<div class="graphwrap" id="graphHost"></div>' +
           '<p class="sub" style="margin:0">Наведите курсор на связь или узел, потяните узел мышью, нажмите на узел — он оставит только своё окружение.</p>' +
         '</div>' +
+        '<div class="note"><b>Как читать контур и как его не читать.</b> Стрелка вверх — признак встречного движения, но сама по себе она замкнутого круга не доказывает: контур засчитывается только при наличии обратного пути, и именно его ищет алгоритм. При этом доля в капитале, облачный кредит, подписанный договор и уже совершённый платёж — разные экономические события. Замкнутый контур связей означает взаимную зависимость сторон, а не доказанный возврат одних и тех же денег. Чтобы утверждать второе, нужны суммы, даты, сроки обязательств и доля в выручке получателя; в этой сборке суммы есть не у всех связей.</div>' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Найденные круговые контуры</h3>' +
             '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли</p>' +
@@ -201,9 +221,15 @@
         var cy = g.cycles();
         root.querySelector('#cycles').innerHTML = cy.length ? cy.map(function (c) {
           var path = c.names.concat([c.names[0]]).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join(' → ');
-          var why = c.edges.map(function (e) { return (e.label || window.VG_EDGE_TYPES[e.type].label); }).join(' · ');
+          var why = c.edges.map(function (e) {
+            return window.VG_EDGE_TYPES[e.type].label.toLowerCase() + ': ' + (e.label || '') + (e.amount ? ' (' + e.amount + ')' : '');
+          }).join(' · ');
+          var amounts = c.edges.filter(function (e) { return e.amount; }).length;
+          var basis = c.edges.every(function (e) { return e.inReport === 'yes'; }) ? 'все связи контура описаны в исследовании'
+            : 'часть связей контура — вне исследования, см. таблицу';
           return '<div class="loop" style="margin-bottom:8px"><div class="path">' + path + '</div>' +
-            '<div class="why">' + esc(why) + '</div></div>';
+            '<div class="why">' + esc(why) + '</div>' +
+            '<div class="why" style="color:var(--muted);font-size:11.5px">Сумма указана у ' + amounts + ' из ' + c.edges.length + ' связей · ' + basis + '</div></div>';
         }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
 
         root.querySelector('#edgeTable').innerHTML = edges.map(function (e) {
@@ -233,19 +259,25 @@
         b.innerHTML = block('Деньги приходят от', inc, 'in') + block('Деньги уходят к', out, 'out');
       }
 
+      /* после смены фильтров карточка узла пересобирается по видимым связям */
+      function afterFilter() {
+        refresh();
+        var id = g.filters.focus;
+        showSel(id ? g.index[id] : null, g.neighbours(id));
+      }
       root.querySelectorAll('[data-etype]').forEach(function (btn) {
         btn.addEventListener('click', function () {
           var on = btn.getAttribute('aria-pressed') !== 'true';
           btn.setAttribute('aria-pressed', String(on));
           g.setFilter(btn.dataset.etype, on);
-          refresh();
+          afterFilter();
         });
       });
       root.querySelector('#onlyReport').addEventListener('click', function () {
         var on = this.getAttribute('aria-pressed') !== 'true';
         this.setAttribute('aria-pressed', String(on));
         g.setOnlyReport(on);
-        refresh();
+        afterFilter();
       });
       root.querySelector('#relax').addEventListener('click', function () { g.relax(); });
       refresh();
@@ -302,15 +334,33 @@
     sub: 'Корректный вопрос — не «кто потратил больше», а какая доля прироста капитала уже обслуживается внешней выручкой и денежным потоком. Периоды компаний различаются и указаны в каждой строке.',
     render: function () {
       var capexCo = CO.filter(function (c) { return typeof c.capex === 'number' && typeof c.ocf === 'number'; });
+      var excluded = CO.filter(function (c) {
+        return (c.capexDelta && !c.capex) || (typeof c.capex === 'number' && typeof c.ocf !== 'number');
+      });
 
-      var maxCapex = Math.max.apply(null, capexCo.map(function (c) { return Math.max(c.capex, c.ocf); }));
-      var capexChart = '<div class="chart">' + capexCo.map(function (c) {
-        return '<div class="chartrow"><div class="nm">' + esc(c.name) + '<span class="sub">' + esc(c.period) + '</span></div>' +
-          '<div class="track pair">' +
-            '<div class="mark a" style="width:' + pct(c.capex / maxCapex * 100).toFixed(1) + '%"><span>' + num(c.capex) + '</span></div>' +
-            '<div class="mark b" style="width:' + pct(c.ocf / maxCapex * 100).toFixed(1) + '%"><span>' + num(c.ocf) + '</span></div>' +
-          '</div></div>';
-      }).join('') + '</div>';
+      /* Столбики сравнимы только внутри одинаковой длины периода, поэтому
+         чарт разбит по периодам, а общая шкала считается внутри каждого. */
+      var PERIODS = [
+        { id: 'quarter', label: 'Квартал' },
+        { id: 'half', label: 'Полугодие' },
+        { id: 'year', label: 'Год и 12 месяцев', match: ['year', 'ttm'] }
+      ];
+      var capexChart = PERIODS.map(function (pr) {
+        var list = capexCo.filter(function (c) { return (pr.match || [pr.id]).indexOf(c.periodType) >= 0; });
+        if (!list.length) return '';
+        var mx = Math.max.apply(null, list.map(function (c) { return Math.max(c.capex, c.ocf); }));
+        return '<h2 class="section">' + esc(pr.label) + '</h2><div class="chart">' + list.map(function (c) {
+          return '<div class="chartrow"><div class="nm">' + esc(c.name) + '<span class="sub">' + esc(c.period) + '</span></div>' +
+            '<div class="track pair">' +
+              '<div class="mark a" style="width:' + pct(c.capex / mx * 100).toFixed(1) + '%"><span>' + num(c.capex) + '</span></div>' +
+              '<div class="mark b" style="width:' + pct(c.ocf / mx * 100).toFixed(1) + '%"><span>' + num(c.ocf) + '</span></div>' +
+            '</div></div>';
+        }).join('') + '</div>';
+      }).join('') +
+        (excluded.length ? '<div class="note" style="margin-top:12px"><b>Исключены из сравнения.</b> ' +
+          excluded.map(function (c) {
+            return esc(c.name) + ': ' + esc(c.capexNote || 'операционный денежный поток в исследовании не приведён, сопоставить капвложения с потоком нельзя');
+          }).join('. ') + '</div>' : '');
 
       var ratio = capexCo.map(function (c) {
         return { name: c.name, v: c.capex / c.ocf * 100, label: Math.round(c.capex / c.ocf * 100) + '%' };
@@ -327,18 +377,24 @@
       var fmin = Math.min.apply(null, fcfCo.map(function (c) { return c.fcf; }));
       var fmax = Math.max.apply(null, fcfCo.map(function (c) { return c.fcf; }));
       var fcfChart = divBars(fcfCo.map(function (c) {
-        return { name: c.name, v: c.fcf, label: (c.fcf > 0 ? '+' : '') + num(c.fcf) };
+        return { name: c.name, period: c.period, v: c.fcf, label: (c.fcf > 0 ? '+' : '') + num(c.fcf) };
       }), Math.min(fmin * 1.25, -5), Math.max(fmax * 1.25, 5));
 
       var rows = CO.map(function (c) {
         return '<tr><td><b>' + esc(c.name) + '</b><span class="sub">' + esc(c.role) + ' · ' + esc(c.country) + '</span></td>' +
           '<td>' + esc(c.period) + ' ' + badge(c.kind) + '</td>' +
-          '<td class="num">' + (typeof c.capex === 'number' ? '$' + num(c.capex) : '—') + (c.capexKind ? ' ' + badge(c.capexKind) : '') + '</td>' +
+          '<td class="num">' + (typeof c.capex === 'number' ? '$' + num(c.capex) : c.capexDelta ? '+$' + num(c.capexDelta) + '<span class="sub">прирост, не уровень</span>' : '—') +
+            (c.capexKind ? ' ' + badge(c.capexKind) : '') + '</td>' +
           '<td class="num">' + (typeof c.ocf === 'number' ? '$' + num(c.ocf) : '—') + (c.ocfKind ? ' ' + badge(c.ocfKind) : '') + '</td>' +
           '<td class="num">' + (typeof c.fcf === 'number' ? (c.fcf > 0 ? '+' : '') + '$' + num(c.fcf) : '—') + '</td>' +
           '<td>' + esc(c.proof) + (c.guide ? '<span class="sub">' + esc(c.guide) + '</span>' : '') + '</td>' +
           '<td>' + esc(c.breaks) + '<span class="sub">ограничение: ' + esc(c.limit) + ' ' + '</span></td>' +
-          '<td>' + srcref(c.src) + '</td></tr>';
+          '<td>' + srcref(c.src) + '</td></tr>' +
+          (c.capexNote || c.crossCheck ? '<tr class="rownote"><td colspan="8">' +
+            (c.capexNote ? '<b>Примечание к капвложениям.</b> ' + esc(c.capexNote) + '. ' : '') +
+            (c.crossCheck ? '<br>' + esc(c.crossCheck.label) + ': <b>' + esc(c.crossCheck.value) + '</b>, ' + esc(c.crossCheck.ratio) + ' ' + badge('unverified') +
+              '. ' + esc(c.crossCheck.note) + '.' : '') +
+            '</td></tr>' : '');
       }).join('');
 
       var T5 = window.VG_TEST5;
@@ -365,23 +421,27 @@
       return '' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Капвложения и операционный поток</h3>' +
-            '<p class="sub">Млрд долларов за раскрытый период; периоды компаний различаются</p>' +
+            '<p class="sub">Млрд долларов. Столбики сопоставимы только внутри одной длины периода, поэтому разнесены по блокам. Между блоками сравнивать нельзя</p>' +
             '<div class="legend" style="margin-bottom:10px"><b><i style="background:var(--s1)"></i>Капвложения</b><b><i style="background:var(--s2)"></i>Операционный денежный поток</b></div>' +
             capexChart + '</div>' +
           '<div class="panel"><h3>Капвложения к операционному потоку</h3>' +
             '<p class="sub">Стресс-сигнал исследования: выше 100% два квартала подряд без ускорения выручки. Вертикальная линия — отметка 100%</p>' +
             ratioChart +
-            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') + '</p></div>' +
+            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') +
+              '. Amazon в расчёт не взят: в исследовании приведён прирост капвложений, а не уровень.</p>' +
+            '<p class="note" style="margin-top:8px"><b>Что этот коэффициент не измеряет.</b> Операционный поток компании создаётся всем её бизнесом, а не только ИИ. Поэтому отношение показывает способность компании финансировать стройку собственными силами — и не показывает окупаемость вложений именно в ИИ. Такого публичного показателя сегодня не существует ни у одной из компаний панели.</p></div>' +
         '</div>' +
         '<div class="panel"><h3>Свободный денежный поток после капвложений</h3>' +
           '<p class="sub">Млрд долларов. Отрицательное значение само по себе не приговор — приговором его делает повторение при замедлении облачной выручки</p>' +
-          fcfChart + '</div>' +
+          fcfChart +
+          '<div class="note" style="margin-top:12px">Периоды разной длины, поэтому здесь читается знак и повторяемость, а не величина одной компании против другой. Квартал Oracle с годовым значением не сравнивается.</div></div>' +
         '<h2 class="section">Раскрытия компаний</h2>' +
         '<div class="tablewrap"><table><thead><tr><th>Компания</th><th>Период</th><th class="num">Капвложения</th>' +
           '<th class="num">Операционный поток</th><th class="num">Свободный поток</th><th>Доказанная монетизация</th>' +
           '<th>Что опровергнет позитивный сценарий</th><th>Источник</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
         '<h2 class="section">Тест пяти условий: производительность или ставка на капитализацию</h2>' +
-        '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия не выполняются или не наблюдаемы, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
+        '<div class="panel"><p class="sub">Условия из исследования (стр. 10-11). Если два и более условия нарушены, проект ближе к ставке на будущую капитализацию. Это не приговор — это другой класс риска.</p>' +
+          '<div class="note" style="margin-bottom:14px">' + esc(T5.rule) + '</div>' +
           '<ol class="list" style="margin-bottom:14px">' + T5.questions.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ol>' +
           '<div class="legend" style="margin-bottom:10px"><b><i class="sq" style="background:var(--ok)"></i>выполняется</b><b><i class="sq" style="background:var(--critical)"></i>не выполняется</b><b><i class="sq" style="background:var(--nodata)"></i>не наблюдаемо публично</b></div>' +
           '<div class="tablewrap compact"><table><thead><tr><th>Компания</th><th class="num">1</th><th class="num">2</th><th class="num">3</th><th class="num">4</th><th class="num">5</th><th>Вывод</th></tr></thead><tbody>' + t5rows + '</tbody></table></div>' +
@@ -435,7 +495,7 @@
           '<div class="tablewrap"><table><thead><tr><th>Показатель</th><th>Почему важен</th><th>Стресс-сигнал</th><th>Наблюдение на дату среза</th><th>Статус</th></tr></thead><tbody>' +
           items.map(function (i) {
             return '<tr><td><b>' + esc(i.name) + '</b></td><td>' + esc(i.why) + '</td><td>' + esc(i.stress) + '</td>' +
-              '<td>' + esc(i.obs) + ' ' + srcref(i.src) + '</td><td>' + stateEl(i.state) + '</td></tr>';
+              '<td>' + esc(i.obs) + ' ' + (i.kind ? badge(i.kind) + ' ' : '') + refs(i) + '</td><td>' + stateEl(i.state) + '</td></tr>';
           }).join('') + '</tbody></table></div>';
       }).join('');
 
@@ -484,7 +544,7 @@
           s.signals.map(function (x) {
             var mark = x.met === true ? '<span class="st st-stress"><i></i></span>' : x.met === false ? '<span class="st st-ok"><i></i></span>' : '<span class="st st-nodata"><i></i></span>';
             return '<div class="sig"><div class="mark">' + mark + '</div><div><div class="t">' + esc(x.text) + '</div>' +
-              '<div class="n">' + esc(x.note) + ' ' + srcref(x.src) + '</div></div></div>';
+              '<div class="n">' + esc(x.note) + ' ' + refs(x) + '</div></div></div>';
           }).join('') +
         '</div>';
       }).join('');
@@ -563,7 +623,8 @@
     render: function () {
       var rows = Object.keys(M.sources).map(function (code) {
         var s = M.sources[code];
-        return '<tr id="src-' + code + '"><td class="num"><b>' + code + '</b></td><td><b>' + esc(s.org) + '</b><span class="sub">' + esc(s.title) + '</span></td>' +
+        return '<tr id="src-' + code + '"><td class="num"><b>' + code + '</b></td><td><b>' + esc(s.org) + '</b><span class="sub">' + esc(s.title) +
+          (s.generic ? '<br><span style="color:var(--critical)">* ссылка ведёт на общую страницу организации, а не на конкретный документ</span>' : '') + '</span></td>' +
           '<td class="num">' + esc(s.date) + '</td>' +
           '<td><a href="' + esc(s.url) + '" target="_blank" rel="noopener noreferrer">Открыть</a></td></tr>';
       }).join('');
@@ -571,13 +632,12 @@
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Методические ограничения</h3><ul class="list">' +
             M.limits.map(function (l) { return '<li>' + esc(l) + '</li>'; }).join('') + '</ul></div>' +
-          '<div class="panel"><h3>Как устроено обновление</h3>' +
-            '<div class="kv">' +
-              '<dt>Слой A</dt><dd>Котировки, капитализация, кредитные спрэды — автоматически, раз в час</dd>' +
-              '<dt>Слой B</dt><dd>Капвложения, потоки, выручка сегментов — по факту подачи отчётности, из машиночитаемых раскрытий</dd>' +
-              '<dt>Слой C</dt><dd>IEA, BIS, Census, Банк России, iKS, связи графа — курируется вручную, с датой и кодом источника</dd>' +
-            '</div>' +
-            '<div class="note" style="margin-top:14px">Полностью автоматическим слой C не будет: эти организации не отдают данные машиночитаемо. Сила терминала не в скорости обновления, а в том, что каждая цифра прослеживается до первоисточника и несёт статус: факт, оценка, прогноз или заявление руководства.</div></div>' +
+          '<div class="panel"><h3>Режим обновления</h3>' +
+            '<p class="sub">Сейчас: <b>' + esc(M.mode.current) + '</b>. Срез данных — ' + esc(M.asOf) + ', сборка — ' + esc(M.builtAt) + '</p>' +
+            '<div class="note" style="margin-bottom:14px">' + esc(M.mode.note) + '</div>' +
+            '<h2 class="section">Планируется</h2>' +
+            '<ul class="list">' + M.mode.planned.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>' +
+            '<div class="note" style="margin-top:14px">Сила терминала не в скорости обновления, а в том, что каждая цифра прослеживается до первоисточника и несёт статус: факт, оценка, прогноз, заявление руководства или расчёт терминала.</div></div>' +
         '</div>' +
         '<h2 class="section">Первичные источники</h2>' +
         '<div class="tablewrap"><table><thead><tr><th class="num">Код</th><th>Источник</th><th class="num">Дата</th><th>Ссылка</th></tr></thead><tbody>' + rows + '</tbody></table></div>' +
@@ -611,23 +671,24 @@
       host.innerHTML = '<div class="viewhead"><h1>' + esc(v.title) + '</h1><p>' + esc(v.sub) + '</p></div>' + v.render();
       rendered[id] = true;
       if (v.after) v.after(host);
-      bindSrcRefs(host);
     }
     if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }
 
-  function bindSrcRefs(root) {
-    root.querySelectorAll('.src').forEach(function (b) {
-      b.addEventListener('click', function () {
-        show('sources');
-        var row = document.getElementById('src-' + b.dataset.src);
-        if (row) {
-          row.scrollIntoView({ block: 'center' });
-          row.style.background = 'var(--accent-soft)';
-          setTimeout(function () { row.style.background = ''; }, 2200);
-        }
-      });
+  /* один обработчик на документ: ссылки на источники появляются и в блоках,
+     которые собираются после первой отрисовки экрана */
+  function bindSrcRefs() {
+    document.addEventListener('click', function (ev) {
+      var b = ev.target.closest ? ev.target.closest('.src') : null;
+      if (!b || !b.dataset.src) return;
+      show('sources');
+      var row = document.getElementById('src-' + b.dataset.src);
+      if (row) {
+        row.scrollIntoView({ block: 'center' });
+        row.style.background = 'var(--accent-soft)';
+        setTimeout(function () { row.style.background = ''; }, 2200);
+      }
     });
   }
 
@@ -671,6 +732,7 @@
     document.getElementById('themeBtn').addEventListener('click', function () { theme(true); });
     window.addEventListener('hashchange', function () { show(location.hash.slice(1)); });
 
+    bindSrcRefs();
     theme(false);
     show(location.hash.slice(1) || 'pulse');
   }
