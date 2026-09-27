@@ -63,12 +63,13 @@ body {
 .screen[hidden] { display: none; }
 
 /* титул */
-#title {
-  background:
-    linear-gradient(90deg, rgba(11, 14, 34, 0.97) 0%, rgba(11, 14, 34, 0.88) 40%, rgba(11, 14, 34, 0.15) 62%, rgba(11, 14, 34, 0) 100%),
-    url("art/key.webp") right 22% / 62% auto no-repeat,
-    var(--ink);
-  align-items: flex-start;
+#title { background: var(--ink); align-items: flex-start; }
+#title > * { position: relative; z-index: 2; }
+#title > #title-art, #title > .title-shade { position: absolute; inset: 0; width: 100%; height: 100%; }
+#title > #title-art { z-index: 0; }
+#title > .title-shade {
+  z-index: 1; pointer-events: none;
+  background: linear-gradient(90deg, rgba(11, 14, 34, 0.97) 0%, rgba(11, 14, 34, 0.88) 40%, rgba(11, 14, 34, 0.15) 62%, rgba(11, 14, 34, 0) 100%);
 }
 .eyebrow {
   margin: 0;
@@ -191,6 +192,9 @@ button.music[aria-pressed="true"] { color: var(--amber); box-shadow: inset 0 0 0
   <canvas id="cv" tabindex="0" aria-label="Игровое поле: ночной город, Люма и Нокс"></canvas>
 
   <section id="title" class="screen">
+    <canvas id="title-art" aria-hidden="true"></canvas>
+    <img id="key-art" src="art/key.webp" alt="" hidden>
+    <div class="title-shade" aria-hidden="true"></div>
     <p class="eyebrow">Кооператив на двоих · одна клавиатура</p>
     <h1><span class="l">Свет</span><span class="i">и</span><span class="n">Тень</span></h1>
     <p class="lede">Ночной город после дождя. <b>Последний поезд метро уходит через семь минут.</b> Я меняю мир для тебя, ты меняешь мир для меня.</p>

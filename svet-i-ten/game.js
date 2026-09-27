@@ -1239,13 +1239,173 @@ const Theme = (() => {
   };
   addEventListener('pointerdown', unlock);
   addEventListener('keydown', unlock);
-  return { play, stop, sync() { if (Sound.muted) stop(0.2); else play(); } };
+  return { play, stop, el, sync() { if (Sound.muted) stop(0.2); else play(); } };
 })();
+
+/* Живая заставка: арт двигается под трек. Темп 75 BPM (первая доля на 0,79 с)
+   берётся из позиции самого трека, громкость — из карты, снятой по 0,5 с.
+   Координаты ниже — пиксели исходного арта 1122×1402. */
+const TitleArt = (() => {
+  const cvs = $('title-art'), g = cvs.getContext('2d'), img = $('key-art');
+  const IW = 1122, IH = 1402, BEAT = 60 / 75, PHASE = 0.79;
+  const ENV = '011644361542363474436161117265437237333727544533657668987784765697796556375378668685757545746354535454323777785586667576678596678558556857556855756685866786865685576687786686577567756213333102200766785875786676769697668686668678667879759845858788765786867897787799877697756233222000006469846768888611001120100086748484778567111111100011989696989998434444332210002310000000000000';
+  const still = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let raf = 0, last = 0, W = 0, H = 0, dpr = 1;
+  const drops = Array.from({ length: 140 }, () => drop(true));
+  let sparks = [], wisps = [], rings = [];
+
+  function drop(any) {
+    return { x: Math.random() * (IW + 200) - 60, y: any ? Math.random() * IH : -40 - Math.random() * 200,
+      v: 1300 + Math.random() * 700, l: 26 + Math.random() * 30, a: 0.1 + Math.random() * 0.2 };
+  }
+  function resize() {
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    W = cvs.clientWidth; H = cvs.clientHeight;
+    cvs.width = Math.max(1, Math.round(W * dpr)); cvs.height = Math.max(1, Math.round(H * dpr));
+    if (!raf) frame(performance.now(), true);
+  }
+
+  function music() {
+    const a = Theme.el;
+    if (a.paused) return { pulse: 0, level: 0.3 };
+    const t = a.currentTime, n = (t - PHASE) / BEAT;
+    const k = (n - Math.floor(n)) * BEAT;
+    const level = +(ENV[Math.min(ENV.length - 1, Math.floor(t * 2))] || 4) / 9;
+    const accent = ((Math.floor(n) % 4) + 4) % 4 === 0 ? 1 : 0.62;
+    const fade = Math.min(1, a.volume / 0.8);
+    return { pulse: Math.exp(-k * 5.5) * accent * (0.35 + 0.65 * level) * fade, level: level * fade };
+  }
+
+  function rows(t, x, y, w, h, amp, freq, speed, grow) {
+    for (let yy = y; yy < y + h; yy += 3) {
+      const u = (yy - y) / h, f = grow ? Math.pow(u, 1.4) : Math.sin(Math.PI * u);
+      const off = amp * f * Math.sin(t * speed + yy * freq);
+      g.drawImage(img, x, yy, w, 3, x + off, yy, w, 3);
+    }
+  }
+  function cols(t, x, y, w, h, amp, freq, speed) {
+    for (let xx = x; xx < x + w; xx += 3) {
+      const f = Math.sin(Math.PI * (xx - x) / w);
+      g.drawImage(img, xx, y, 3, h, xx, y + amp * f * Math.sin(t * speed + xx * freq), 3, h);
+    }
+  }
+  function glow(x, y, r, a, col) {
+    if (a <= 0) return;
+    const gr = g.createRadialGradient(x, y, 0, x, y, r);
+    gr.addColorStop(0, `rgba(${col},${a})`); gr.addColorStop(0.45, `rgba(${col},${a * 0.35})`); gr.addColorStop(1, `rgba(${col},0)`);
+    g.fillStyle = gr; g.fillRect(x - r, y - r, r * 2, r * 2);
+  }
+
+  function frame(now, once) {
+    const dt = Math.min(0.05, (now - last) / 1000 || 0); last = now;
+    const t = now / 1000;
+    if (!W || !img.complete || !img.naturalWidth) { if (!once) raf = requestAnimationFrame(frame); return; }
+    const m = still ? { pulse: 0, level: 0.3 } : music(), P = m.pulse, Lv = m.level;
+
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    g.fillStyle = '#0b0e22'; g.fillRect(0, 0, W, H);
+    const iw = W * 0.62, k = iw / IW, ih = IH * k;
+    const x0 = W - iw, y0 = (H - ih) * 0.22;
+    const zoom = still ? 1.03 : 1.035 + Math.sin(t * 0.19) * 0.008 + P * 0.006;
+    const dx = still ? 0 : Math.sin(t * 0.11) * 6;
+    g.translate(x0 + iw / 2 + dx, y0 + ih / 2);
+    g.scale(k * zoom, k * zoom);
+    g.translate(-IW / 2, -IH / 2);
+
+    g.drawImage(img, 0, 0);
+    if (!still) {
+      rows(t, 800, 150, 322, 490, 5 + P * 5, 0.035, 1.6, false);
+      cols(t * 0.8, 800, 150, 322, 490, 4 + P * 3, 0.03, 1.3);
+      rows(t, 760, 690, 215, 220, 3.5 + P * 1.5, 0.045, 2.1, true);
+      rows(t + 1.3, 470, 860, 170, 225, 3.5 + P * 1.5, 0.05, 1.9, true);
+      rows(t + 0.6, 130, 740, 390, 145, 2.2, 0.06, 2.6, true);
+      rows(t + 2.1, 170, 350, 115, 220, 2.2, 0.05, 2.3, false);
+      rows(t + 0.9, 240, 325, 220, 60, 1.5, 0.08, 2.5, false);
+      rows(t + 1.7, 595, 45, 205, 75, 1.4, 0.07, 2.0, false);
+    }
+
+    g.globalCompositeOperation = 'lighter';
+    const fl = f => 0.85 + 0.15 * Math.sin(t * f) * Math.sin(t * f * 2.3 + 1);
+    glow(122, 662, 95 * (1 + P * 0.18), (0.26 + P * 0.4) * fl(9), '255,190,90');
+    glow(88, 222, 80, (0.1 + Lv * 0.1) * fl(3), '255,200,120');
+    glow(155, 425, 45, (0.1 + Lv * 0.08) * fl(4.2), '255,200,120');
+    glow(18, 528, 40, (0.1 + Lv * 0.08) * fl(5), '255,200,120');
+    glow(360, 690, 300, 0.05 + P * 0.16, '255,185,95');
+    glow(935, 470, 150, 0.05 + P * 0.2 + Lv * 0.04, '150,105,240');
+    glow(997, 727, 70, 0.14 + P * 0.5, '255,190,110');
+    glow(985, 855, 70, 0.08 + Lv * 0.1, '255,210,140');
+    [[855, 165, 1.3], [885, 200, 2.1], [1015, 80, 0.7], [1020, 122, 1.7], [262, 160, 2.6], [300, 172, 1.1]]
+      .forEach(([x, y, f]) => glow(x, y, 16, 0.12 + 0.1 * Math.sin(t * f), '255,200,120'));
+
+    if (!still) {
+      if (Math.random() < dt * (7 + P * 45)) {
+        const a = Math.random() * Math.PI * 2, r = 20 + Math.random() * 45;
+        sparks.push({ x: 122 + Math.cos(a) * r, y: 662 + Math.sin(a) * r, vx: (Math.random() - 0.5) * 30, vy: -25 - Math.random() * 50, life: 1.6, max: 1.6, s: 1.2 + Math.random() * 2 });
+      }
+      sparks = sparks.filter(p => (p.life -= dt) > 0);
+      for (const p of sparks) {
+        p.x += p.vx * dt; p.y += p.vy * dt;
+        const a = Math.min(1, p.life / p.max * 1.5) * (0.6 + 0.4 * Math.sin(t * 12 + p.x));
+        g.fillStyle = `rgba(255,214,130,${a})`; g.beginPath(); g.arc(p.x, p.y, p.s, 0, 7); g.fill();
+      }
+    }
+    g.globalCompositeOperation = 'source-over';
+
+    if (!still) {
+      if (Math.random() < dt * (1.5 + P * 4)) wisps.push({ x: 940 + Math.random() * 30, y: 470 + Math.random() * 30, vx: 18 + Math.random() * 30, vy: -20 - Math.random() * 25, r: 14 + Math.random() * 14, life: 4, max: 4, ph: Math.random() * 6 });
+      wisps = wisps.filter(w => (w.life -= dt) > 0);
+      for (const w of wisps) {
+        w.x += (w.vx + Math.sin(t * 1.5 + w.ph) * 14) * dt; w.y += w.vy * dt;
+        const u = w.life / w.max, r = w.r * (2 - u);
+        const gr = g.createRadialGradient(w.x, w.y, 0, w.x, w.y, r);
+        gr.addColorStop(0, `rgba(60,35,95,${0.28 * Math.sin(Math.PI * u)})`); gr.addColorStop(1, 'rgba(60,35,95,0)');
+        g.fillStyle = gr; g.fillRect(w.x - r, w.y - r, r * 2, r * 2);
+      }
+
+      g.strokeStyle = 'rgba(200,210,255,0.22)'; g.lineWidth = 1.6;
+      g.beginPath();
+      for (const d of drops) {
+        d.y += d.v * dt; d.x -= d.v * 0.06 * dt;
+        if (d.y > IH + 40) Object.assign(d, drop(false));
+        g.moveTo(d.x, d.y); g.lineTo(d.x + d.l * 0.06, d.y - d.l);
+      }
+      g.stroke();
+
+      if (Math.random() < dt * (18 + P * 30)) rings.push({ x: Math.random() * IW, y: 1120 + Math.random() * 270, t: 0 });
+      rings = rings.filter(r => (r.t += dt) < 0.7);
+      for (const r of rings) {
+        g.strokeStyle = `rgba(210,220,255,${0.45 * (1 - r.t / 0.7)})`; g.lineWidth = 1.4;
+        g.beginPath(); g.ellipse(r.x, r.y, 3 + r.t * 34, 1 + r.t * 8, 0, 0, 7); g.stroke();
+      }
+    }
+    g.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const fade = g.createLinearGradient(x0 - 30, 0, x0 + iw * 0.22, 0);
+    fade.addColorStop(0, 'rgba(11,14,34,1)'); fade.addColorStop(1, 'rgba(11,14,34,0)');
+    g.fillStyle = fade; g.fillRect(0, 0, x0 + iw * 0.22, H);
+    if (!once) raf = requestAnimationFrame(frame);
+  }
+
+  new ResizeObserver(resize).observe(cvs);
+  img.addEventListener('load', () => { if (!raf) frame(performance.now(), true); });
+  return {
+    start() {
+      if (raf) return;
+      last = performance.now();
+      if (still) { frame(last, true); return; }
+      raf = requestAnimationFrame(frame);
+    },
+    stop() { cancelAnimationFrame(raf); raf = 0; },
+  };
+})();
+
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) TitleArt.stop(); else if (S.mode === 'title') TitleArt.start();
+});
 
 function show(id) {
   ['title', 'intro', 'pause', 'end'].forEach(s => { $(s).hidden = s !== id; });
-  if (id === 'title') { Sound.music(false); Theme.play(); }
-  else { Theme.stop(); if (id !== 'pause') Sound.music(true); }
+  if (id === 'title') { Sound.music(false); Theme.play(); TitleArt.start(); }
+  else { Theme.stop(); TitleArt.stop(); if (id !== 'pause') Sound.music(true); }
 }
 
 function startRun() {
