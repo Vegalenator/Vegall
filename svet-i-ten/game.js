@@ -1306,7 +1306,7 @@ const TitleArt = (() => {
     g.fillStyle = '#0b0e22'; g.fillRect(0, 0, W, H);
     const iw = W * 0.62, k = iw / IW, ih = IH * k;
     const x0 = W - iw, y0 = (H - ih) * 0.22;
-    const zoom = still ? 1.03 : 1.035 + Math.sin(t * 0.19) * 0.008 + P * 0.006;
+    const zoom = still ? 1.03 : 1.035 + Math.sin(t * 0.19) * 0.008;
     const dx = still ? 0 : Math.sin(t * 0.11) * 6;
     g.translate(x0 + iw / 2 + dx, y0 + ih / 2);
     g.scale(k * zoom, k * zoom);
@@ -1314,10 +1314,10 @@ const TitleArt = (() => {
 
     g.drawImage(img, 0, 0);
     if (!still) {
-      rows(t, 800, 150, 322, 490, 5 + P * 5, 0.035, 1.6, false);
-      cols(t * 0.8, 800, 150, 322, 490, 4 + P * 3, 0.03, 1.3);
-      rows(t, 760, 690, 215, 220, 3.5 + P * 1.5, 0.045, 2.1, true);
-      rows(t + 1.3, 470, 860, 170, 225, 3.5 + P * 1.5, 0.05, 1.9, true);
+      rows(t, 800, 150, 322, 490, 6, 0.035, 1.6, false);
+      cols(t * 0.8, 800, 150, 322, 490, 5, 0.03, 1.3);
+      rows(t, 760, 690, 215, 220, 4, 0.045, 2.1, true);
+      rows(t + 1.3, 470, 860, 170, 225, 4, 0.05, 1.9, true);
       rows(t + 0.6, 130, 740, 390, 145, 2.2, 0.06, 2.6, true);
       rows(t + 2.1, 170, 350, 115, 220, 2.2, 0.05, 2.3, false);
       rows(t + 0.9, 240, 325, 220, 60, 1.5, 0.08, 2.5, false);
