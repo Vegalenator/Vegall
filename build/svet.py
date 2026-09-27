@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Собирает «Свет и Тень» в один файл.
 
-  dist/svet-i-ten.html           — самодостаточная страница: скрипты и арт внутри
+  dist/svet-i-ten.html           — самодостаточная страница: скрипты, арт и музыка внутри
   dist/svet-i-ten.artifact.html  — то же без обёртки <html>/<head>/<body>, для публикации
 """
 import base64, os, re
@@ -13,9 +13,9 @@ def read(rel):
     with open(os.path.join(SRC, rel), encoding='utf-8') as f:
         return f.read()
 
-def data_uri(rel):
+def data_uri(rel, mime='image/webp'):
     with open(os.path.join(SRC, rel), 'rb') as f:
-        return 'data:image/webp;base64,' + base64.b64encode(f.read()).decode()
+        return 'data:%s;base64,' % mime + base64.b64encode(f.read()).decode()
 
 def build():
     html = read('index.html')
@@ -25,7 +25,8 @@ def build():
         html = html.replace(tag, '<script>\n' + read(name + '.js') + '\n</script>')
     for img in ('key', 'luma', 'nox'):
         html = html.replace('art/%s.webp' % img, data_uri('art/%s.webp' % img))
-    assert 'art/' not in html and '.js"></script>' not in html, 'остались внешние ссылки'
+    html = html.replace('music/luma-and-nox.mp3', data_uri('music/luma-and-nox.mp3', 'audio/mpeg'))
+    assert 'art/' not in html and 'music/' not in html and '.js"></script>' not in html, 'остались внешние ссылки'
 
     out = os.path.join(ROOT, 'dist')
     os.makedirs(out, exist_ok=True)

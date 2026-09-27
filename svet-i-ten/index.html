@@ -132,6 +132,8 @@ button:hover { transform: translateY(-1px); box-shadow: 0 0 2cqw rgba(242, 194, 
 button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
 button.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px rgba(236, 230, 246, 0.35); }
 button.ghost:hover { box-shadow: inset 0 0 0 1.5px rgba(236, 230, 246, 0.7); }
+button.music { font-size: 1.15cqw; padding: 0.8cqw 1.5cqw; }
+button.music[aria-pressed="true"] { color: var(--amber); box-shadow: inset 0 0 0 1.5px rgba(255, 196, 107, 0.55); }
 .row { display: flex; gap: 1cqw; flex-wrap: wrap; align-items: center; }
 .small { margin: 0; font-size: 1cqw; color: var(--muted); }
 .touch { display: none; margin: 0; font-size: 1.2cqw; color: var(--amber); }
@@ -212,6 +214,7 @@ button.ghost:hover { box-shadow: inset 0 0 0 1.5px rgba(236, 230, 246, 0.7); }
     </div>
     <div class="row">
       <button id="btn-start" type="button">Начать прогулку</button>
+      <button id="btn-music" class="ghost music" type="button" aria-pressed="false">♪ Включить музыку</button>
       <p class="small">Enter — начать · Esc — пауза · R — уровень заново · M — звук</p>
     </div>
     <p class="touch">Для игры нужна клавиатура: двое садятся за один ноутбук.</p>
@@ -251,6 +254,8 @@ button.ghost:hover { box-shadow: inset 0 0 0 1.5px rgba(236, 230, 246, 0.7); }
 </div>
 
 <p id="legend"><b>Люма</b> — A D W, S свет · <b>Нокс</b> — ← → ↑, ↓ тень и щиток · Нокс не может войти в свет, Люма не пролезает сквозь решётки</p>
+
+<audio id="theme" src="music/luma-and-nox.mp3" loop preload="auto"></audio>
 
 <script src="levels.js"></script>
 <script src="game.js"></script>

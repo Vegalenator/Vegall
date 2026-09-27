@@ -539,6 +539,11 @@ const Sound = (() => {
     init,
     sfx(name) { if (ac && SFX[name]) SFX[name](); },
     toggle() { muted = !muted; if (master) master.gain.value = muted ? 0 : 0.85; return muted; },
+    music(on) {
+      if (!ac) return;
+      musicG.gain.cancelScheduledValues(ac.currentTime);
+      musicG.gain.setTargetAtTime(on ? 0.55 : 0, ac.currentTime, 0.4);
+    },
     get muted() { return muted; },
   };
 })();
@@ -1196,8 +1201,51 @@ function loadLevel(i) {
   S.showHint = false;
 }
 
+/* Заставка: авторский трек «Luma and Nox». Браузер разрешает звук только
+   после первого клика или клавиши, поэтому до этого музыка ждёт. */
+const Theme = (() => {
+  const el = $('theme'), btn = $('btn-music'), VOL = 0.8;
+  let want = true, fade = null;
+  el.volume = 0;
+  function fadeTo(v, sec, then) {
+    clearInterval(fade);
+    const from = el.volume, t0 = performance.now();
+    fade = setInterval(() => {
+      const k = Math.min(1, (performance.now() - t0) / (sec * 1000));
+      el.volume = clamp(from + (v - from) * k, 0, 1);
+      if (k >= 1) { clearInterval(fade); if (then) then(); }
+    }, 30);
+  }
+  function label() {
+    const on = !el.paused && want && !Sound.muted;
+    btn.textContent = on ? '♪ Музыка играет' : '♪ Включить музыку';
+    btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+  }
+  el.addEventListener('play', label);
+  el.addEventListener('pause', label);
+  function play() {
+    if (!want || Sound.muted || S.mode !== 'title') { label(); return; }
+    const p = el.play();
+    if (p && p.then) p.then(() => fadeTo(VOL, 1.5)).catch(label); else fadeTo(VOL, 1.5);
+  }
+  function stop(sec) { fadeTo(0, sec === undefined ? 0.9 : sec, () => { el.pause(); label(); }); }
+  btn.addEventListener('click', () => {
+    if (!el.paused && want) { want = false; stop(0.5); }
+    else { want = true; if (Sound.muted) { Sound.toggle(); updateSoundBtn(); } play(); }
+  });
+  const unlock = e => {
+    if (e.target === btn || e.target === $('btn-start') || e.code === 'Enter') return;
+    if (S.mode === 'title' && el.paused) play();
+  };
+  addEventListener('pointerdown', unlock);
+  addEventListener('keydown', unlock);
+  return { play, stop, sync() { if (Sound.muted) stop(0.2); else play(); } };
+})();
+
 function show(id) {
   ['title', 'intro', 'pause', 'end'].forEach(s => { $(s).hidden = s !== id; });
+  if (id === 'title') { Sound.music(false); Theme.play(); }
+  else { Theme.stop(); if (id !== 'pause') Sound.music(true); }
 }
 
 function startRun() {
@@ -1240,7 +1288,7 @@ function finish() {
 }
 
 function onKey(e) {
-  if (e.code === 'KeyM') { Sound.toggle(); updateSoundBtn(); return; }
+  if (e.code === 'KeyM') { Sound.toggle(); updateSoundBtn(); Theme.sync(); return; }
   if (S.mode === 'title') {
     if (e.code === 'Enter' && document.activeElement === document.body) startRun();
     return;
@@ -1278,7 +1326,7 @@ addEventListener('blur', () => { down.clear(); if (S.mode === 'play') { S.mode =
 $('btn-start').addEventListener('click', startRun);
 $('btn-resume').addEventListener('click', resume);
 $('btn-restart').addEventListener('click', restartLevel);
-$('btn-sound').addEventListener('click', () => { Sound.toggle(); updateSoundBtn(); });
+$('btn-sound').addEventListener('click', () => { Sound.toggle(); updateSoundBtn(); Theme.sync(); });
 $('btn-menu').addEventListener('click', () => { S.mode = 'title'; show('title'); });
 $('btn-again').addEventListener('click', startRun);
 $('btn-title').addEventListener('click', () => { S.mode = 'title'; show('title'); });
