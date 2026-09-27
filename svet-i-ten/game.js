@@ -6,7 +6,7 @@
 
 const T = 30, COLS = 32, ROWS = 18, VW = COLS * T, VH = ROWS * T;
 const GRAV = 1400, AFTER = 4, SGRACE = 0.35, SHADOW_T = 2.6, SHADOW_CD = 0.8;
-const STEP = 1 / 120, RUN_TIME = 7 * 60;
+const STEP = 1 / 120, RUN_TIME = 7 * 60, OUTRO = 3.6;
 
 const HERO = {
   luma: { id: 'luma', name: 'Люма', w: 16, h: 30, speed: 180, jump: 560,
@@ -845,8 +845,10 @@ function drawWater(W, t) {
 }
 
 /* ---------- герои ---------- */
+let HERO_A = 1;
 function drawLuma(c, t) {
   ctx.save();
+  ctx.globalAlpha = HERO_A;
   ctx.translate(c.x + c.w / 2, c.y + c.h);
   ctx.scale(c.face, 1);
   const run = c.onGround && Math.abs(c.vx) > 15, ph = c.walkT * 9;
@@ -886,6 +888,7 @@ function drawLuma(c, t) {
   ctx.fillStyle = '#6b4a2a'; ctx.fillRect(6.5, -16, 5, 6);
   ctx.fillStyle = '#ffd98a'; ctx.fillRect(7.5, -15, 3, 4);
   ctx.restore();
+  ctx.globalAlpha = 1;
 }
 
 function drawNox(c, t) {
@@ -895,7 +898,7 @@ function drawNox(c, t) {
   const run = c.onGround && Math.abs(c.vx) > 15, ph = c.walkT * 8;
   const sw = run ? Math.sin(ph) * 3 : 0;
   const sh = c.shadow > 0;
-  if (sh) ctx.globalAlpha = 0.5 + Math.sin(t * 20) * 0.08;
+  ctx.globalAlpha = HERO_A * (sh ? 0.5 + Math.sin(t * 20) * 0.08 : 1);
   const P = sh ? { boot: '#3d2a66', leg: '#3d2a66', coat: '#4a3380', lin: '#6a4fb0', skin: '#6a4fb0', hair: '#2d1f4d', scarf: '#6a4fb0' }
                : { boot: '#15121c', leg: '#231d2e', coat: '#2a2336', lin: '#4b3a70', skin: '#e9c6a8', hair: '#1c1626', scarf: '#4b3a70' };
   ctx.fillStyle = P.leg;
@@ -1066,11 +1069,12 @@ function render(W, t, dt) {
     const gy = groundBelow(W, c.x + c.w / 2, c.y + c.h - 2);
     if (gy - (c.y + c.h) < 80) { ctx.beginPath(); ctx.ellipse(c.x + c.w / 2, gy, 9 - (gy - c.y - c.h) / 12, 2.2, 0, 0, 7); ctx.fill(); }
   }
-  if (!N.dead) {
+  HERO_A = S.mode === 'clear' && !LEVELS[S.level + 1] && W.train && !W.train.gone ? clamp(1 - S.clearT * 2, 0, 1) : 1;
+  if (!N.dead && HERO_A > 0) {
     if (N.shadow > 0 && Math.random() < 0.6) parts.push({ x: N.x + Math.random() * N.w, y: N.y + Math.random() * N.h, vx: (Math.random() - 0.5) * 20, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, kind: 'wisp', r: 3 + Math.random() * 3 });
     drawNox(N, t);
   }
-  if (!L.dead) drawLuma(L, t);
+  if (!L.dead && HERO_A > 0) drawLuma(L, t);
 
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i];
@@ -1102,7 +1106,7 @@ function render(W, t, dt) {
     ctx.beginPath(); ctx.ellipse(r.x, r.y, 1 + r.t * 14, 0.6 + r.t * 3, 0, 0, 7); ctx.stroke();
   }
 
-  drawBubble(L); drawBubble(N);
+  if (HERO_A > 0.5) { drawBubble(L); drawBubble(N); }
   drawPrompt(W, L, t); drawPrompt(W, N, t);
 
   const vg = ctx.createRadialGradient(VW / 2, VH / 2, VH * 0.4, VW / 2, VH / 2, VH * 0.95);
@@ -1149,7 +1153,15 @@ function drawHUD(W, t) {
     ctx.textAlign = 'left'; ctx.globalAlpha = 1;
   }
 
-  if (S.mode === 'clear') {
+  if (S.mode === 'clear' && !LEVELS[S.level + 1]) {
+    const dark = clamp((S.clearT - 1.5) / 1.8, 0, 1);
+    const txt = clamp(S.clearT * 1.5, 0, 1) * (1 - clamp((S.clearT - 1.9) / 0.9, 0, 1));
+    ctx.fillStyle = `rgba(5,6,15,${dark})`; ctx.fillRect(0, 0, VW, VH);
+    ctx.globalAlpha = txt; ctx.textAlign = 'center';
+    ctx.font = '34px "Yeseva One", Georgia, serif'; ctx.fillStyle = '#f5ecd8';
+    ctx.fillText(S.late ? 'Добрались до платформы' : 'Успели', VW / 2, VH / 2 - 6);
+    ctx.textAlign = 'left'; ctx.globalAlpha = 1;
+  } else if (S.mode === 'clear') {
     const a = clamp(S.clearT * 2, 0, 1);
     ctx.fillStyle = `rgba(6,8,22,${0.55 * a})`; ctx.fillRect(0, 0, VW, VH);
     ctx.globalAlpha = a; ctx.textAlign = 'center';
@@ -1175,7 +1187,10 @@ const hooks = {
     Sound.sfx('splash');
     for (let i = 0; i < 16; i++) parts.push({ x, y: 16.3 * T, vx: (Math.random() - 0.5) * 120, vy: -120 - Math.random() * 160, life: 0.7, max: 0.7, kind: 'drop' });
   },
-  clear: () => { Sound.sfx('clear'); S.mode = 'clear'; S.clearT = 0; },
+  clear: () => {
+    Sound.sfx('clear'); S.mode = 'clear'; S.clearT = 0;
+    if (S.level + 1 >= LEVELS.length) Sound.music(false);
+  },
 };
 
 function loadLevel(i) {
@@ -1211,7 +1226,7 @@ const Theme = (() => {
   el.addEventListener('play', label);
   el.addEventListener('pause', label);
   function play() {
-    if (!want || Sound.muted || S.mode !== 'title') { label(); return; }
+    if (!want || Sound.muted || (S.mode !== 'title' && S.mode !== 'end')) { label(); return; }
     const p = el.play();
     if (p && p.then) p.then(() => fadeTo(VOL, 1.5)).catch(label); else fadeTo(VOL, 1.5);
   }
@@ -1222,7 +1237,7 @@ const Theme = (() => {
   });
   const unlock = e => {
     if (e.target === btn || e.target === $('btn-start') || e.code === 'Enter') return;
-    if (S.mode === 'title' && el.paused) play();
+    if ((S.mode === 'title' || S.mode === 'end') && el.paused) play();
   };
   addEventListener('pointerdown', unlock);
   addEventListener('keydown', unlock);
@@ -1392,6 +1407,7 @@ document.addEventListener('visibilitychange', () => {
 function show(id) {
   ['title', 'intro', 'pause', 'end'].forEach(s => { $(s).hidden = s !== id; });
   if (id === 'title') { Sound.music(false); Theme.play(); TitleArt.start(); }
+  else if (id === 'end') { Sound.music(false); Theme.play(); TitleArt.stop(); }
   else { Theme.stop(); TitleArt.stop(); if (id !== 'pause') Sound.music(true); }
 }
 
@@ -1430,8 +1446,10 @@ function finish() {
   try { best = JSON.parse(localStorage.getItem('svet-i-ten-best') || 'null'); } catch (e) { best = null; }
   if (!late && (best === null || left > best)) { best = left; try { localStorage.setItem('svet-i-ten-best', JSON.stringify(best)); } catch (e) { /* без хранилища */ } }
   $('end-best').textContent = best !== null ? `Лучший запас времени: ${fmt(best)}` : '';
+  const end = $('end');
+  end.classList.remove('enter'); void end.offsetWidth; end.classList.add('enter');
   show('end');
-  $('btn-again').focus();
+  $('btn-again').focus({ preventScroll: true });
 }
 
 function onKey(e) {
@@ -1506,7 +1524,9 @@ function frame(now) {
       }
     } else {
       S.clearT += dt;
-      if (S.clearT > 2.2) {
+      const lastLevel = S.level + 1 >= LEVELS.length;
+      if (lastLevel && W.train && !W.train.leaving && S.clearT > 0.9) W.train.leaving = true;
+      if (S.clearT > (lastLevel ? OUTRO : 2.2)) {
         if (S.level + 1 < LEVELS.length) { loadLevel(S.level + 1); S.mode = 'play'; }
         else finish();
       }
@@ -1516,6 +1536,8 @@ function frame(now) {
   else if (S.mode === 'title' || S.mode === 'end') { ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.fillStyle = COL.ink; ctx.fillRect(0, 0, cv.width, cv.height); }
   requestAnimationFrame(frame);
 }
+
+window.SvetGame = { get state() { return S; } };  // для отладки из консоли
 
 new ResizeObserver(resize).observe(cv);
 resize();

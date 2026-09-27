@@ -159,16 +159,48 @@ button.music[aria-pressed="true"] { color: var(--amber); box-shadow: inset 0 0 0
 .help b { color: var(--text); font-weight: 600; }
 
 /* финал */
-#end {
+#end { background: var(--ink); align-items: flex-start; justify-content: flex-end; gap: 1.1cqw; padding-bottom: 3.6cqw; }
+#end > * { position: relative; z-index: 2; }
+#end > .end-scene {
+  position: absolute; z-index: 0; left: 0; top: -10%; width: 100%; aspect-ratio: 4 / 3;
+  overflow: hidden; transform-origin: 40% 40%;
+}
+.end-scene img { display: block; width: 100%; height: 100%; }
+.end-lights { position: absolute; left: 0; top: 0; width: 40.5%; height: 63%; overflow: hidden; mix-blend-mode: screen; }
+.end-lights::before, .end-lights::after {
+  content: ""; position: absolute; top: 0; bottom: 0; width: 22%; left: 100%;
+  background: linear-gradient(90deg, rgba(255, 190, 110, 0), rgba(255, 200, 130, 0.32) 45%, rgba(255, 220, 160, 0.45) 50%, rgba(255, 190, 110, 0) 100%);
+  animation: tunnel 1.7s linear infinite;
+}
+.end-lights::after { animation-delay: -0.85s; opacity: 0.6; }
+@keyframes tunnel { from { left: 100%; } to { left: -25%; } }
+#end > .end-shade {
+  position: absolute; inset: 0; z-index: 1; pointer-events: none;
+  background:
+    linear-gradient(0deg, rgba(8, 10, 26, 0.95) 0%, rgba(8, 10, 26, 0.75) 32%, rgba(8, 10, 26, 0) 60%),
+    linear-gradient(90deg, rgba(8, 10, 26, 0.55) 0%, rgba(8, 10, 26, 0) 45%);
+}
+#end.late {
   background:
     linear-gradient(90deg, rgba(11, 14, 34, 0.98) 0%, rgba(11, 14, 34, 0.9) 42%, rgba(11, 14, 34, 0.25) 66%, rgba(11, 14, 34, 0) 100%),
     url("art/key.webp") right 22% / 62% auto no-repeat,
     var(--ink);
-  align-items: flex-start;
+  justify-content: center; padding-bottom: 4cqw;
 }
-#end h2 { margin: 0; font: 400 5.6cqw/1 var(--display); color: var(--coat); }
-#end.late h2 { color: #b9a2f0; }
-#end-text { margin: 0; max-width: 44cqw; font: 1.75cqw/1.45 var(--hand); color: var(--paper); }
+#end.late > .end-scene, #end.late > .end-shade { display: none; }
+#end.enter { animation: endIn 2.2s ease both; }
+#end.enter > .end-scene { animation: endZoom 16s cubic-bezier(0.2, 0.6, 0.3, 1) both; }
+#end.enter > :not(.end-scene):not(.end-shade) { animation: endText 1.4s ease both; }
+#end.enter > #end-title { animation-delay: 1.6s; }
+#end.enter > #end-text { animation-delay: 2.3s; }
+#end.enter > .stats { animation-delay: 3s; }
+#end.enter > #end-best, #end.enter > .row { animation-delay: 3.5s; }
+@keyframes endIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes endZoom { from { transform: scale(1.09); } to { transform: scale(1); } }
+@keyframes endText { from { opacity: 0; transform: translateY(0.8cqw); } to { opacity: 1; transform: none; } }
+#end h2 { margin: 0; font: 400 4.6cqw/1 var(--display); color: var(--coat); text-shadow: 0 0.3cqw 1.6cqw rgba(0, 0, 0, 0.5); }
+#end.late h2 { color: #b9a2f0; font-size: 5.6cqw; }
+#end-text { margin: 0; max-width: 40cqw; font: 1.6cqw/1.45 var(--hand); color: var(--paper); text-shadow: 0 0.2cqw 1cqw rgba(0, 0, 0, 0.6); }
 .stats { display: flex; gap: 2.4cqw; }
 .stats div { display: flex; flex-direction: column; }
 .stats b { font: 600 3cqw/1 var(--body); font-variant-numeric: tabular-nums; }
@@ -181,6 +213,8 @@ button.music[aria-pressed="true"] { color: var(--amber); box-shadow: inset 0 0 0
 #legend b { color: var(--text); font-weight: 500; }
 
 @media (prefers-reduced-motion: reduce) {
+  .end-lights::before, .end-lights::after { animation: none; display: none; }
+  #end.enter, #end.enter > * { animation-duration: 0.01s !important; animation-delay: 0s !important; }
   #intro p, #intro small { animation: none; }
   button { transition: none; }
 }
@@ -246,6 +280,11 @@ button.music[aria-pressed="true"] { color: var(--amber); box-shadow: inset 0 0 0
   </section>
 
   <section id="end" class="screen" hidden>
+    <div class="end-scene" aria-hidden="true">
+      <img src="art/train.webp" alt="">
+      <div class="end-lights"></div>
+    </div>
+    <div class="end-shade" aria-hidden="true"></div>
     <h2 id="end-title">Двери закрылись</h2>
     <p id="end-text"></p>
     <div class="stats" id="end-stats"></div>
