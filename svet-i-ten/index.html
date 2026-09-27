@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Свет и Тень</title>
+<meta name="description" content="Кооперативная игра на двоих за одной клавиатурой: ночной город после дождя, свет, тень и последний поезд метро.">
+<meta name="theme-color" content="#0b0e22">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Yeseva+One&family=Golos+Text:wght@400;500;600&family=Pangolin&display=swap">
+<style>
+:root {
+  color-scheme: dark;
+  --ink: #0b0e22;
+  --night: #1c1a40;
+  --rain: #8795d6;
+  --amber: #ffc46b;
+  --coat: #f2c230;
+  --plum: #8a6fd1;
+  --paper: #efe4cf;
+  --text: #ece6f6;
+  --muted: rgba(225, 220, 245, 0.62);
+  --display: "Yeseva One", Georgia, "Times New Roman", serif;
+  --body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --hand: Pangolin, "Comic Sans MS", cursive;
+}
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: radial-gradient(120% 90% at 50% 0%, #1a1a3f 0%, var(--ink) 60%) fixed, var(--ink);
+  color: var(--text);
+  font: 15px/1.5 var(--body);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-inline: 16px;
+  padding-block: 16px;
+  min-height: 100%;
+}
+#stage {
+  position: relative;
+  width: min(100%, calc((100dvh - 96px) * 16 / 9));
+  min-width: 0;
+  aspect-ratio: 16 / 9;
+  max-width: 100%;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--ink);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(135, 149, 214, 0.18);
+  container-type: inline-size;
+}
+#cv { display: block; width: 100%; height: 100%; outline: none; }
+
+.screen {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; justify-content: center;
+  padding: 4cqw 5cqw;
+  gap: 1.6cqw;
+}
+.screen[hidden] { display: none; }
+
+/* титул */
+#title {
+  background:
+    linear-gradient(90deg, rgba(11, 14, 34, 0.97) 0%, rgba(11, 14, 34, 0.88) 40%, rgba(11, 14, 34, 0.15) 62%, rgba(11, 14, 34, 0) 100%),
+    url("art/key.webp") right 22% / 62% auto no-repeat,
+    var(--ink);
+  align-items: flex-start;
+}
+.eyebrow {
+  margin: 0;
+  font: 600 1.15cqw/1 var(--body);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+h1 {
+  margin: 0;
+  font: 400 7.4cqw/0.95 var(--display);
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+h1 .l { color: var(--coat); text-shadow: 0 0 2.4cqw rgba(255, 196, 107, 0.45); }
+h1 .i { font-size: 0.5em; color: var(--muted); vertical-align: 0.35em; padding-inline: 0.12em; }
+h1 .n { color: #b9a2f0; text-shadow: 0 0 2.4cqw rgba(138, 111, 209, 0.5); }
+.lede { margin: 0; max-width: 40cqw; font-size: 1.55cqw; color: var(--muted); }
+.lede b { color: var(--text); font-weight: 500; }
+
+.cards { display: flex; gap: 1.4cqw; margin-top: 0.6cqw; }
+.card {
+  display: grid; grid-template-columns: 7.4cqw 1fr; gap: 1.1cqw; align-items: center;
+  width: 22cqw;
+  padding: 0.9cqw 1.2cqw 0.9cqw 0.9cqw;
+  background: var(--paper);
+  color: #231d2e;
+  border-radius: 0.7cqw;
+  box-shadow: 0 1cqw 2.4cqw rgba(0, 0, 0, 0.4);
+  transform: rotate(-1.2deg);
+}
+.card.nox { transform: rotate(1deg); background: #e4def0; }
+.card img {
+  width: 100%; aspect-ratio: 3 / 4; object-fit: cover; object-position: 50% 4%;
+  mix-blend-mode: multiply; border-radius: 0.4cqw;
+}
+.card h2 { margin: 0 0 0.25cqw; font: 400 1.9cqw/1 var(--display); }
+.card.luma h2 { color: #8a5a00; }
+.card.nox h2 { color: #4b3a70; }
+.card p { margin: 0; font-size: 1.05cqw; line-height: 1.4; }
+.card .keys { margin-top: 0.5cqw; font-size: 0.95cqw; color: #4a4258; }
+kbd {
+  display: inline-block; min-width: 1.5em; padding: 0.05em 0.35em; margin-right: 0.15em;
+  font: 600 0.95em/1.35 var(--body); text-align: center;
+  background: #fff; color: #231d2e; border-radius: 0.3em;
+  box-shadow: 0 0.12em 0 rgba(35, 29, 46, 0.35);
+}
+
+button {
+  font: 600 1.45cqw/1 var(--body);
+  padding: 1cqw 2cqw;
+  border-radius: 99px;
+  border: 0;
+  cursor: pointer;
+  background: var(--coat);
+  color: #2a1d05;
+  box-shadow: 0 0 0 0 rgba(242, 194, 48, 0.4);
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+button:hover { transform: translateY(-1px); box-shadow: 0 0 2cqw rgba(242, 194, 48, 0.45); }
+button:focus-visible { outline: 3px solid #fff; outline-offset: 3px; }
+button.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1.5px rgba(236, 230, 246, 0.35); }
+button.ghost:hover { box-shadow: inset 0 0 0 1.5px rgba(236, 230, 246, 0.7); }
+.row { display: flex; gap: 1cqw; flex-wrap: wrap; align-items: center; }
+.small { margin: 0; font-size: 1cqw; color: var(--muted); }
+.touch { display: none; margin: 0; font-size: 1.2cqw; color: var(--amber); }
+@media (pointer: coarse) { .touch { display: block; } }
+
+/* интро */
+#intro { align-items: center; background: #05060f; }
+#intro p {
+  margin: 0; font: 400 3.4cqw/1.2 var(--display); color: var(--paper); text-align: center;
+  animation: intro 3.2s ease both;
+}
+#intro small { display: block; margin-top: 1.4cqw; font: 500 1.2cqw var(--body); color: var(--muted); animation: intro 3.2s 0.4s ease both; }
+@keyframes intro { 0% { opacity: 0; transform: translateY(0.6cqw); } 18%, 80% { opacity: 1; transform: none; } 100% { opacity: 0; } }
+
+/* пауза */
+#pause { align-items: center; background: rgba(8, 10, 28, 0.78); backdrop-filter: blur(3px); text-align: center; }
+#pause h2 { margin: 0; font: 400 4cqw/1 var(--display); }
+.help {
+  display: grid; grid-template-columns: auto auto; gap: 0.5cqw 2cqw; margin: 0.8cqw 0;
+  font-size: 1.15cqw; color: var(--muted); text-align: left;
+}
+.help b { color: var(--text); font-weight: 600; }
+
+/* финал */
+#end {
+  background:
+    linear-gradient(90deg, rgba(11, 14, 34, 0.98) 0%, rgba(11, 14, 34, 0.9) 42%, rgba(11, 14, 34, 0.25) 66%, rgba(11, 14, 34, 0) 100%),
+    url("art/key.webp") right 22% / 62% auto no-repeat,
+    var(--ink);
+  align-items: flex-start;
+}
+#end h2 { margin: 0; font: 400 5.6cqw/1 var(--display); color: var(--coat); }
+#end.late h2 { color: #b9a2f0; }
+#end-text { margin: 0; max-width: 44cqw; font: 1.75cqw/1.45 var(--hand); color: var(--paper); }
+.stats { display: flex; gap: 2.4cqw; }
+.stats div { display: flex; flex-direction: column; }
+.stats b { font: 600 3cqw/1 var(--body); font-variant-numeric: tabular-nums; }
+.stats span { font-size: 1.1cqw; color: var(--muted); }
+
+#legend {
+  margin: 12px 0 0; max-width: 960px; text-align: center;
+  font-size: 13px; color: var(--muted);
+}
+#legend b { color: var(--text); font-weight: 500; }
+
+@media (prefers-reduced-motion: reduce) {
+  #intro p, #intro small { animation: none; }
+  button { transition: none; }
+}
+</style>
+</head>
+<body>
+
+<div id="stage">
+  <canvas id="cv" tabindex="0" aria-label="Игровое поле: ночной город, Люма и Нокс"></canvas>
+
+  <section id="title" class="screen">
+    <p class="eyebrow">Кооператив на двоих · одна клавиатура</p>
+    <h1><span class="l">Свет</span><span class="i">и</span><span class="n">Тень</span></h1>
+    <p class="lede">Ночной город после дождя. <b>Последний поезд метро уходит через семь минут.</b> Я меняю мир для тебя, ты меняешь мир для меня.</p>
+    <div class="cards">
+      <article class="card luma">
+        <img src="art/luma.webp" alt="Люма в жёлтом дождевике">
+        <div>
+          <h2>Люма</h2>
+          <p>Зажигает фонари. В свете проявляются мосты и лестницы.</p>
+          <p class="keys"><kbd>A</kbd><kbd>D</kbd> бег · <kbd>W</kbd> прыжок · <kbd>S</kbd> свет</p>
+        </div>
+      </article>
+      <article class="card nox">
+        <img src="art/nox.webp" alt="Нокс в тёмном пальто с капюшоном">
+        <div>
+          <h2>Нокс</h2>
+          <p>Гасит свет, выключает ток, тенью проходит сквозь решётки. Яркий свет для него стена.</p>
+          <p class="keys"><kbd>←</kbd><kbd>→</kbd> бег · <kbd>↑</kbd> прыжок · <kbd>↓</kbd> тень</p>
+        </div>
+      </article>
+    </div>
+    <div class="row">
+      <button id="btn-start" type="button">Начать прогулку</button>
+      <p class="small">Enter — начать · Esc — пауза · R — уровень заново · M — звук</p>
+    </div>
+    <p class="touch">Для игры нужна клавиатура: двое садятся за один ноутбук.</p>
+  </section>
+
+  <section id="intro" class="screen" hidden>
+    <p>Последний поезд уходит через 7 минут.<small>Люма слева на клавиатуре, Нокс — на стрелках</small></p>
+  </section>
+
+  <section id="pause" class="screen" hidden>
+    <h2>Пауза</h2>
+    <div class="help">
+      <span><b>Люма</b> · A D, W прыжок</span><span>S — зажечь или погасить фонарь</span>
+      <span><b>Нокс</b> · ← →, ↑ прыжок</span><span>↓ — погасить, щиток, или стать тенью</span>
+      <span><b>Вдвоём</b></span><span>можно стоять друг у друга на плечах</span>
+      <span><b>H</b></span><span>показать подсказку уровня</span>
+    </div>
+    <div class="row">
+      <button id="btn-resume" type="button">Продолжить</button>
+      <button id="btn-restart" class="ghost" type="button">Уровень заново</button>
+      <button id="btn-sound" class="ghost" type="button">Выключить звук</button>
+      <button id="btn-menu" class="ghost" type="button">В меню</button>
+    </div>
+  </section>
+
+  <section id="end" class="screen" hidden>
+    <h2 id="end-title">Двери закрылись</h2>
+    <p id="end-text"></p>
+    <div class="stats" id="end-stats"></div>
+    <p class="small" id="end-best"></p>
+    <div class="row">
+      <button id="btn-again" type="button">Ещё раз</button>
+      <button id="btn-title" class="ghost" type="button">В меню</button>
+    </div>
+  </section>
+</div>
+
+<p id="legend"><b>Люма</b> — A D W, S свет · <b>Нокс</b> — ← → ↑, ↓ тень и щиток · Нокс не может войти в свет, Люма не пролезает сквозь решётки</p>
+
+<script src="levels.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
