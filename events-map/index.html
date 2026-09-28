@@ -1,0 +1,631 @@
+<title>Карта событий</title>
+<meta name="description" content="Редакционный календарь событий: заседания, выборы, форумы и публикации данных со статусом даты, повесткой, сценариями и итогами.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Карта событий — лента дней слева, справочная колонка справа.
+   Та же система, что у «Терминала ИИ-цикла»: холодные нейтрали, Golos + Plex Mono.
+   Статус даты кодируется формой (сплошной / пунктир / штриховка / зачёркнуто), а не только цветом. */
+:root {
+  --plane:#eef1f4; --surface:#ffffff; --surface-2:#f6f8fa; --surface-3:#e9edf2;
+  --ink:#0e1319; --ink-2:#4a525d; --muted:#78818c; --grid:#e3e8ed; --rule:#cdd5dd;
+  --accent:#3a5bd9; --accent-soft:#e9eefc; --accent-ink:#2b47b3;
+  --ok:#0c8a3e; --ok-wash:rgba(12,138,62,.10); --ok-line:rgba(12,138,62,.45);
+  --warn:#b26a00; --warn-wash:rgba(242,164,20,.16); --warn-line:rgba(206,140,20,.65);
+  --none:#6c7580; --none-wash:rgba(108,117,128,.10);
+  --bad:#b8322f; --bad-wash:rgba(208,59,59,.10); --bad-line:rgba(208,59,59,.5);
+  --live:#d0452f;
+  --hatch:repeating-linear-gradient(135deg, rgba(108,117,128,.30) 0 2px, transparent 2px 5px);
+  --shadow:0 6px 20px rgba(14,19,25,.10);
+  --ff-ui:'Golos Text','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+  --ff-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Consolas,monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --plane:#0b0d10; --surface:#14171c; --surface-2:#1a1e24; --surface-3:#232930;
+    --ink:#f4f6f8; --ink-2:#c0c7cf; --muted:#8a939d; --grid:#262c34; --rule:#353d46;
+    --accent:#7b95f2; --accent-soft:#1a2340; --accent-ink:#a9bbff;
+    --ok:#4cc27a; --ok-wash:rgba(76,194,122,.12); --ok-line:rgba(76,194,122,.5);
+    --warn:#f2b54a; --warn-wash:rgba(242,181,74,.13); --warn-line:rgba(242,181,74,.6);
+    --none:#9aa3ad; --none-wash:rgba(154,163,173,.12);
+    --bad:#f08a86; --bad-wash:rgba(240,138,134,.12); --bad-line:rgba(240,138,134,.5);
+    --live:#ff7a62;
+    --hatch:repeating-linear-gradient(135deg, rgba(154,163,173,.35) 0 2px, transparent 2px 5px);
+    --shadow:0 6px 22px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"] {
+  --plane:#0b0d10; --surface:#14171c; --surface-2:#1a1e24; --surface-3:#232930;
+  --ink:#f4f6f8; --ink-2:#c0c7cf; --muted:#8a939d; --grid:#262c34; --rule:#353d46;
+  --accent:#7b95f2; --accent-soft:#1a2340; --accent-ink:#a9bbff;
+  --ok:#4cc27a; --ok-wash:rgba(76,194,122,.12); --ok-line:rgba(76,194,122,.5);
+  --warn:#f2b54a; --warn-wash:rgba(242,181,74,.13); --warn-line:rgba(242,181,74,.6);
+  --none:#9aa3ad; --none-wash:rgba(154,163,173,.12);
+  --bad:#f08a86; --bad-wash:rgba(240,138,134,.12); --bad-line:rgba(240,138,134,.5);
+  --live:#ff7a62;
+  --hatch:repeating-linear-gradient(135deg, rgba(154,163,173,.35) 0 2px, transparent 2px 5px);
+  --shadow:0 6px 22px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--ff-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:var(--accent-ink)}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+.mono{font-family:var(--ff-mono);font-variant-numeric:tabular-nums}
+
+/* шапка */
+.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--rule)}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand b{font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
+.brand span{font-family:var(--ff-mono);font-size:11px;color:var(--muted);white-space:nowrap}
+.spacer{flex:1 1 auto}
+.pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--ff-mono);font-size:11px;color:var(--ink-2);padding:4px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--surface-2);white-space:nowrap}
+.pill i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
+.pill.stale i{background:var(--warn)}
+.pill.off i{background:var(--none)}
+.iconbtn{font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:5px 11px;cursor:pointer;white-space:nowrap}
+.iconbtn:hover{background:var(--surface-3);color:var(--ink)}
+
+/* панель управления */
+.controls{display:grid;gap:10px;padding:14px 18px 12px;background:var(--surface);border-bottom:1px solid var(--rule)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--surface-2)}
+.seg button{border:0;background:none;padding:7px 14px;font-size:13px;color:var(--ink-2);cursor:pointer;border-right:1px solid var(--rule);white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
+.seg button em{font-style:normal;font-family:var(--ff-mono);font-size:10.5px;opacity:.75;margin-left:6px}
+.lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:2px}
+.chip{font-size:12.5px;padding:4px 10px;border-radius:3px;border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
+.chip .n{font-family:var(--ff-mono);font-size:10.5px;color:var(--muted)}
+.search{flex:1 1 200px;min-width:0;max-width:320px;font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink)}
+
+/* каркас */
+.shell{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;padding:18px;align-items:start;max-width:1320px;margin:0 auto}
+.aside{display:grid;gap:14px;position:sticky;top:calc(64px + env(safe-area-inset-top,0px))}
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px}
+.panel h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.panel p{margin:0 0 8px;font-size:12.5px;color:var(--ink-2)}
+.panel p:last-child{margin-bottom:0}
+
+/* сводка */
+.summary{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin:0 0 12px;font-size:13px;color:var(--ink-2)}
+.summary b{font-family:var(--ff-mono);font-weight:600;color:var(--ink)}
+.summary .hint{color:var(--muted);font-size:12px}
+
+/* статус даты: форма + цвет */
+.ds{display:inline-flex;align-items:center;gap:6px;font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px 2px 6px;border-radius:2px;border:1px solid;white-space:nowrap;line-height:1.6}
+.ds::before{content:"";width:8px;height:8px;flex:none;border-radius:50%}
+.ds.confirmed{color:var(--ok);border-color:var(--ok-line);background:var(--ok-wash)}
+.ds.confirmed::before{background:var(--ok)}
+.ds.preliminary{color:var(--warn);border-color:var(--warn-line);border-style:dashed;background:var(--warn-wash)}
+.ds.preliminary::before{border:1.5px dashed var(--warn);background:none;width:7px;height:7px}
+.ds.expected{color:var(--none);border-color:var(--rule);background:var(--none-wash)}
+.ds.expected::before{background:var(--hatch);border:1px solid var(--none);border-radius:1px}
+.ds.cancelled{color:var(--bad);border-color:var(--bad-line);background:var(--bad-wash)}
+.ds.cancelled::before{background:none;border-radius:0;height:1.5px;background:var(--bad)}
+.tag{font-size:11px;color:var(--muted);border:1px solid var(--grid);border-radius:2px;padding:0 5px;white-space:nowrap}
+.risk{font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--bad);border:1px solid var(--bad-line);border-radius:2px;padding:1px 6px;white-space:nowrap}
+.live{font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--live);border-radius:2px;padding:2px 6px;white-space:nowrap}
+.await{font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-ink);border:1px dashed var(--accent);border-radius:2px;padding:1px 6px;white-space:nowrap}
+
+/* лента */
+.day{display:grid;grid-template-columns:118px minmax(0,1fr);gap:0 16px;padding:14px 0 6px;border-top:1px solid var(--rule)}
+.day:first-child{border-top:0;padding-top:0}
+.dayhead{position:sticky;top:calc(64px + env(safe-area-inset-top,0px));align-self:start;padding-top:10px}
+.dayhead b{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
+.dayhead span{display:block;font-size:12px;color:var(--ink-2)}
+.dayhead em{display:block;font-style:normal;font-family:var(--ff-mono);font-size:10.5px;color:var(--muted);margin-top:3px}
+.dayhead.nodate b{font-size:15px;line-height:1.25}
+.cards{display:grid;gap:8px;min-width:0}
+
+.card{background:var(--surface);border:1px solid var(--rule);border-radius:4px;min-width:0}
+.card.s-preliminary{border-style:dashed;border-color:var(--warn-line)}
+.card.s-expected{border-style:dashed}
+.card.s-cancelled{opacity:.75}
+.card.s-cancelled .ttl{text-decoration:line-through;text-decoration-color:var(--bad)}
+.card.pinned{box-shadow:inset 3px 0 0 var(--accent)}
+.card.target{outline:2px solid var(--accent);outline-offset:1px}
+.head{display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 14px;cursor:pointer;width:100%;text-align:left;background:none;border:0}
+.head:hover .ttl{color:var(--accent-ink)}
+.time{font-family:var(--ff-mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;line-height:1.3}
+.time small{display:block;font-size:10px;font-weight:400;color:var(--muted);letter-spacing:.02em}
+.time.approx{color:var(--warn)}
+.time.nodate{font-size:11px;font-weight:500;color:var(--none);font-style:italic;line-height:1.35}
+.ttl{font-size:15px;font-weight:600;line-height:1.3;letter-spacing:-.005em;text-wrap:balance}
+.meta{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center;margin-top:6px;font-size:12px;color:var(--ink-2)}
+.meta .where{color:var(--ink-2)}
+.gist{margin-top:6px;font-size:12.5px;color:var(--ink-2)}
+.chev{font-family:var(--ff-mono);font-size:12px;color:var(--muted);padding-top:2px;transition:transform .15s}
+.card[data-open="true"] .chev{transform:rotate(90deg)}
+
+.body{padding:0 14px 14px 100px;display:grid;gap:14px}
+.card[data-open="false"] .body{display:none}
+.sec h4{margin:0 0 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
+.sec p{margin:0;font-size:13px}
+.sec ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}
+.sec li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;font-size:13px}
+.basis{font-family:var(--ff-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding:1px 5px;border-radius:2px;white-space:nowrap}
+.basis.agenda{color:var(--ok);border:1px solid var(--ok-line)}
+.basis.analysis{color:var(--ink-2);border:1px dashed var(--rule)}
+.datebox{display:grid;gap:4px;padding:10px 12px;border-radius:3px;background:var(--surface-2);border:1px solid var(--grid);font-size:12.5px}
+.datebox .src{color:var(--muted);font-size:11.5px}
+.impact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.impact div{min-width:0;padding:8px 10px;background:var(--surface-2);border-radius:3px;font-size:12.5px}
+.impact b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:3px}
+.cp{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:13px}
+.cp .when{font-family:var(--ff-mono);font-size:12px;color:var(--accent-ink)}
+.air{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 12px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 3px 3px 0}
+.air p{font-size:13.5px}
+.air.caution{border-left-color:var(--warn);background:var(--warn-wash)}
+.air.nogo{border-left-color:var(--bad);background:var(--bad-wash)}
+.srcs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.linkbtn{font-size:12px;color:var(--ink-2);background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:4px 10px;cursor:pointer}
+.linkbtn:hover{border-color:var(--accent);color:var(--accent-ink)}
+.linkbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+
+/* итог: ожидали → решили → открыто */
+.outcome{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--rule);border-radius:4px;overflow:hidden}
+.outcome > div{padding:10px 12px;min-width:0;font-size:13px}
+.outcome > div + div{border-left:1px solid var(--rule)}
+.outcome b{display:flex;align-items:center;gap:6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:5px}
+.outcome .decided{background:var(--ok-wash)}
+.outcome .decided b{color:var(--ok)}
+.outcome ul{margin:0;padding-left:16px;display:grid;gap:3px}
+.outnote{font-size:11.5px;color:var(--muted)}
+.pending{padding:10px 12px;border:1px dashed var(--accent);border-radius:4px;font-size:13px;color:var(--ink-2)}
+
+/* справа */
+.legend{display:grid;gap:9px}
+.legend div{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;font-size:12.5px;color:var(--ink-2)}
+.legend .ex{grid-column:2;font-family:var(--ff-mono);font-size:11px;color:var(--muted)}
+.idea{display:grid;gap:10px}
+.idea div{font-size:12.5px;display:grid;gap:3px;padding-top:9px;border-top:1px solid var(--grid)}
+.idea div:first-child{border-top:0;padding-top:0}
+.idea s{color:var(--muted)}
+.idea .was{font-family:var(--ff-mono);font-size:11px;color:var(--muted)}
+.idea button{all:unset;cursor:pointer;font-weight:600;color:var(--ink)}
+.idea button:hover{color:var(--accent-ink)}
+.runlog{display:grid;gap:5px;font-size:12px;color:var(--ink-2)}
+.runlog .mono{font-size:11px;color:var(--muted)}
+
+.empty{padding:28px 20px;text-align:center;color:var(--ink-2);background:var(--surface);border:1px dashed var(--rule);border-radius:4px}
+.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:4px;font-size:13px;z-index:60}
+
+@media (max-width:1020px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .aside{position:static;order:2}
+}
+@media (max-width:640px){
+  .topbar,.controls{padding-left:16px;padding-right:16px}
+  .shell{padding:14px 16px}
+  .day{grid-template-columns:minmax(0,1fr);gap:8px}
+  .dayhead{position:static;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding-top:0}
+  .dayhead b{display:inline;font-size:18px}
+  .dayhead span,.dayhead em{display:inline;margin:0}
+  .head{grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:11px 12px}
+  .body{padding:0 12px 12px}
+  .impact,.outcome{grid-template-columns:minmax(0,1fr)}
+  .outcome > div + div{border-left:0;border-top:1px solid var(--rule)}
+  .seg button{padding:7px 10px}
+  .brand span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<header class="topbar">
+  <div class="brand"><b>Карта событий</b><span>редакционный календарь · время московское</span></div>
+  <div class="spacer"></div>
+  <span class="pill mono" id="clock">—</span>
+  <span class="pill off" id="autorun" title="Статус автоматического заполнения итогов"><i></i>автоитоги: ждём данных</span>
+  <button class="iconbtn" type="button" id="themeBtn">Тема</button>
+</header>
+
+<section class="controls" aria-label="Фильтры">
+  <div class="row">
+    <div class="seg" role="group" aria-label="Горизонт" id="horizons"></div>
+    <input class="search" id="q" type="search" placeholder="Поиск: страна, орган, тема" aria-label="Поиск по событиям">
+  </div>
+  <div class="row" id="cats"><span class="lbl">Тема</span></div>
+  <div class="row" id="stats"><span class="lbl">Дата</span></div>
+</section>
+
+<div class="shell">
+  <main id="main" aria-live="polite">
+    <div class="empty" id="boot"><b>Загружаю события</b>Карточки хранятся в базе терминала и обновляются автоматически. Если список не появился, откройте страницу на claude.ai.</div>
+  </main>
+  <aside class="aside">
+    <section class="panel">
+      <h3>Статус даты</h3>
+      <div class="legend">
+        <div><span class="ds confirmed">подтверждена</span><span>Назначена официальным документом: указом, календарём организатора, решением избиркома.</span><span class="ex">в эфире: «23 октября в 13:30»</span></div>
+        <div><span class="ds preliminary">предварительная</span><span>Дата известна, но не закреплена: практика прошлых лет, агрегаторы, оговорки организатора.</span><span class="ex">в эфире: «ориентировочно…»</span></div>
+        <div><span class="ds expected">без даты</span><span>Событие ожидается в окне («к декабрю», «в октябре»), конкретный день не назначен.</span><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
+        <div><span class="ds cancelled">не состоится</span><span>Отменено или перенесено за пределы горизонта.</span></div>
+      </div>
+    </section>
+    <section class="panel">
+      <h3>Расхождения с перечнем IDEA</h3>
+      <p>Формулировка IDEA и что показала сверка с первоисточником.</p>
+      <div class="idea" id="idea"></div>
+    </section>
+    <section class="panel">
+      <h3>Как пополняется карта</h3>
+      <div class="runlog" id="runlog"><p>После окончания события карточка переходит в статус «ждёт итога». Дважды в день, в 06:47 и 15:47 по Москве, Claude собирает итоги по официальным документам и СМИ и записывает их в формате «ожидали → решили → что осталось открытым». Тот же прогон перепроверяет статусы дат и добавляет новые события из официальных календарей.</p></div>
+    </section>
+  </aside>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const MSK = 'Europe/Moscow';
+  const H = 3600e3, D = 24 * H;
+  const HORIZONS = [
+    { id: 'h72', label: '72 часа', ms: 72 * H },
+    { id: 'w2', label: '2 недели', ms: 14 * D },
+    { id: 'm3', label: '3 месяца', ms: 92 * D },
+    { id: 'hist', label: 'История' },
+  ];
+  const CATS = [
+    { id: 'russia', label: 'Россия' },
+    { id: 'intl', label: 'Международные организации' },
+    { id: 'elections', label: 'Выборы' },
+    { id: 'cb', label: 'Центробанки' },
+    { id: 'business', label: 'Крупный бизнес' },
+    { id: 'stats', label: 'Статистика' },
+  ];
+  const STATUSES = [
+    { id: 'confirmed', label: 'подтверждена' },
+    { id: 'preliminary', label: 'предварительная' },
+    { id: 'expected', label: 'без даты' },
+    { id: 'cancelled', label: 'не состоится' },
+  ];
+  const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.label]));
+  const ST_LABEL = Object.fromEntries(STATUSES.map(s => [s.id, s.label]));
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('em.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('em.' + k, JSON.stringify(v)); } catch (e) {} },
+  };
+  const state = {
+    events: [], meta: null, loaded: false,
+    horizon: store.get('horizon', 'h72'),
+    cats: new Set(store.get('cats', [])),
+    sts: new Set(store.get('sts', [])),
+    pins: new Set(store.get('pins', [])),
+    onlyPins: false,
+    open: new Set(),
+    q: '',
+  };
+
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  /* --------------------------------------------------------- время */
+  const fmt = (opts) => new Intl.DateTimeFormat('ru-RU', { timeZone: MSK, ...opts });
+  const fDay = fmt({ day: 'numeric', month: 'long' });
+  const fWd = fmt({ weekday: 'short' });
+  const fWdLong = fmt({ weekday: 'long' });
+  const fTime = fmt({ hour: '2-digit', minute: '2-digit', hour12: false });
+  const fShort = fmt({ day: 'numeric', month: 'short' });
+  const dayKey = d => { const p = fmt({ year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d); const g = t => p.find(x => x.type === t).value; return `${g('year')}-${g('month')}-${g('day')}`; };
+  const parseDay = s => s ? new Date(s + 'T23:59:59+03:00') : null;
+
+  function times(e) {
+    const s = e.start ? new Date(e.start) : null;
+    let end = e.end ? new Date(e.end) : null;
+    if (s && !end) end = e.allDay ? new Date(dayKey(s) + 'T23:59:59+03:00') : new Date(s.getTime() + 2 * H);
+    const w = parseDay(e.window);
+    return { s, end, w };
+  }
+  function phase(e, now) {
+    const { s, end } = times(e);
+    if (e.dateStatus === 'cancelled') return 'cancelled';
+    if (e.outcome && e.outcome.decided) return 'closed';
+    if (!s) return 'upcoming';
+    if (now < s) return 'upcoming';
+    if (now <= end) return 'live';
+    return 'awaiting';
+  }
+  function relDays(d, now) {
+    const a = parseDay(dayKey(d)).getTime(), b = parseDay(dayKey(now)).getTime();
+    const n = Math.round((a - b) / D);
+    if (n === 0) return 'сегодня';
+    if (n === 1) return 'завтра';
+    if (n === -1) return 'вчера';
+    if (n > 0) return 'через ' + n + ' ' + plural(n, 'день', 'дня', 'дней');
+    return Math.abs(n) + ' ' + plural(Math.abs(n), 'день', 'дня', 'дней') + ' назад';
+  }
+  function plural(n, a, b, c) { n = Math.abs(n) % 100; const m = n % 10; if (n > 10 && n < 20) return c; if (m > 1 && m < 5) return b; if (m === 1) return a; return c; }
+
+  /* ----------------------------------------------- отбор под горизонт */
+  function inHorizon(e, now, hz) {
+    const { s, end, w } = times(e);
+    const ph = phase(e, now);
+    if (hz.id === 'hist') return ph === 'closed' || ph === 'awaiting' || (ph === 'cancelled' && w && w < now);
+    if (ph === 'closed' || ph === 'awaiting') return false;
+    const lim = new Date(now.getTime() + hz.ms);
+    if (s) return end >= now && s <= lim;
+    if (!w || w < now) return false;
+    const slack = hz.id === 'h72' ? 0 : 20 * D;
+    return w.getTime() <= lim.getTime() + slack;
+  }
+  function passFilters(e) {
+    if (state.cats.size && !(e.cats || []).some(c => state.cats.has(c))) return false;
+    if (state.sts.size && !state.sts.has(e.dateStatus)) return false;
+    if (state.onlyPins && !state.pins.has(e.id)) return false;
+    if (state.q) {
+      const hay = [e.title, e.where, e.kind, e.participants, (e.agenda || []).map(a => a.text).join(' ')].join(' ').toLowerCase();
+      if (!state.q.split(/\s+/).every(t => hay.includes(t))) return false;
+    }
+    return true;
+  }
+
+  /* ----------------------------------------------------- «в эфире» */
+  function airLine(e) {
+    const { s } = times(e);
+    const d = s ? fDay.format(s) : '';
+    const t = s && !e.allDay ? fTime.format(s) : '';
+    const when = e.dateWording || (t ? `${d}, ${t} мск` : d);
+    switch (e.dateStatus) {
+      case 'confirmed':
+        return { cls: '', text: `${cap(when)} — ${e.title}${e.where ? ' (' + e.where + ')' : ''}.` + (e.risk ? ` Дата назначена официально, но есть риск переноса.` : '') };
+      case 'preliminary':
+        return { cls: 'caution', text: `Ориентировочно ${d} — ${e.title}. Дата официально не закреплена.` };
+      case 'expected':
+        return { cls: 'caution', text: `${e.title}: ожидается ${e.dateWording || 'позже'}. Конкретная дата пока не назначена.` };
+      case 'cancelled':
+        return { cls: 'nogo', text: `${e.title} в ожидавшиеся сроки не состоятся. ${e.dateWording ? cap(e.dateWording) + '.' : ''}` };
+    }
+    return { cls: '', text: e.title };
+  }
+  const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+
+  /* ---------------------------------------------------------- рендер */
+  function timeCell(e, now) {
+    const { s, w } = times(e);
+    if (!s) return `<div class="time nodate">${esc(e.dateWording || ('до ' + (w ? fShort.format(w) : '—')))}</div>`;
+    const approx = e.dateStatus === 'preliminary';
+    if (e.allDay) return `<div class="time${approx ? ' approx' : ''}">${approx ? '≈ ' : ''}<small>${e.dateWording ? esc(e.dateWording) : 'весь день'}</small></div>`;
+    return `<div class="time${approx ? ' approx' : ''}">${approx ? '≈' : ''}${fTime.format(s)}<small>мск</small></div>`;
+  }
+  function badges(e, now) {
+    const ph = phase(e, now);
+    let h = `<span class="ds ${e.dateStatus}">${ST_LABEL[e.dateStatus]}</span>`;
+    if (ph === 'live') h += `<span class="live">идёт</span>`;
+    if (ph === 'awaiting') h += `<span class="await">ждёт итога</span>`;
+    if (e.risk) h += `<span class="risk">${esc(e.risk)}</span>`;
+    return h;
+  }
+  function list(items) {
+    if (!items || !items.length) return '<p class="outnote">Пока нет данных.</p>';
+    return '<ul>' + items.map(a => `<li><span class="basis ${a.basis}">${a.basis === 'agenda' ? 'повестка' : 'анализ'}</span><span>${esc(a.text)}</span></li>`).join('') + '</ul>';
+  }
+  function sourcesHtml(arr) { return (arr || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(''); }
+
+  function outcomeHtml(e, now) {
+    const o = e.outcome;
+    const ph = phase(e, now);
+    if (o && o.decided) {
+      const open = (o.open || []).length ? '<ul>' + o.open.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '<p>—</p>';
+      const when = o.filledAt ? `Итог записан ${esc(o.filledAt)}${o.filledBy === 'claude' ? ' · собран Claude по источникам' : ''}.` : '';
+      return `<div class="sec"><h4>Итог</h4>
+        <div class="outcome">
+          <div><b>Ожидали</b><p>${esc(o.expected || '—')}</p></div>
+          <div class="decided"><b>Решили</b><p>${esc(o.decided)}</p></div>
+          <div><b>Осталось открытым</b>${open}</div>
+        </div>
+        <p class="outnote" style="margin-top:6px">${when} ${o.sources && o.sources.length ? 'Источники итога: ' : ''}<span class="srcs" style="display:inline-flex">${sourcesHtml(o.sources)}</span></p>
+      </div>`;
+    }
+    if (ph === 'awaiting') {
+      return `<div class="sec"><h4>Итог</h4><div class="pending">Событие завершилось. Итог соберёт ближайший автопрогон (06:47 или 15:47 мск): что ожидали по этой карточке, что решили, что осталось открытым.</div></div>`;
+    }
+    return '';
+  }
+
+  function cardHtml(e, now) {
+    const open = state.open.has(e.id);
+    const ph = phase(e, now);
+    const { s, end } = times(e);
+    const cats = (e.cats || []).map(c => `<span class="tag">${esc(CAT_LABEL[c] || c)}</span>`).join('');
+    const span = s && end && !e.allDay && dayKey(s) !== dayKey(end) ? ` · до ${fShort.format(end)}` : '';
+    const gist = ph === 'closed' && e.outcome ? `<div class="gist"><b>Решили:</b> ${esc(trim(e.outcome.decided, 180))}</div>`
+      : (e.agenda && e.agenda[0] ? `<div class="gist">${esc(trim(e.agenda[0].text, 160))}</div>` : '');
+    const air = airLine(e);
+    const imp = e.impact || {};
+    const cp = e.checkpoint || {};
+    const pinned = state.pins.has(e.id);
+    const dateBox = `<div class="datebox">
+        <div><span class="ds ${e.dateStatus}">${ST_LABEL[e.dateStatus]}</span> ${s ? `<b class="mono">${esc(fDay.format(s))}${e.allDay ? '' : ', ' + fTime.format(s) + ' мск'}${span}</b>` : `<b>${esc(e.dateWording || '')}</b>`}</div>
+        ${e.timeNote ? `<div>${esc(e.timeNote)}</div>` : ''}
+        ${e.dateNote ? `<div>${esc(e.dateNote)}</div>` : ''}
+        ${e.ideaWording ? `<div class="src">IDEA: «${esc(e.ideaWording)}»</div>` : ''}
+        <div class="src">Основание: ${e.dateSource ? `<a href="${esc(e.dateSource.url)}" target="_blank" rel="noopener">${esc(e.dateSource.name)}</a>` : '—'} · сверено ${esc(e.checkedAt || '—')}</div>
+      </div>`;
+    const body = open ? `<div class="body">
+        ${outcomeHtml(e, now)}
+        <div class="air ${air.cls}"><div><h4 class="sec" style="margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Как сказать в эфире</h4><p>${esc(air.text)}</p></div><button class="linkbtn" type="button" data-copy="${esc(e.id)}">Копировать</button></div>
+        <div class="sec"><h4>Что и где · статус даты</h4>${dateBox}</div>
+        <div class="sec"><h4>Что на обсуждении</h4>${e.participants && e.participants !== '—' ? `<p style="margin-bottom:6px"><b>Участники:</b> ${esc(e.participants)}</p>` : ''}${list(e.agenda)}</div>
+        <div class="sec"><h4>Какие решения возможны</h4>${list(e.scenarios)}</div>
+        <div class="sec"><h4>Что изменится</h4><div class="impact">
+          <div><b>Россия</b>${esc(imp.russia || '—')}</div>
+          <div><b>Бизнес</b>${esc(imp.business || '—')}</div>
+          <div><b>Рынки</b>${esc(imp.markets || '—')}</div></div></div>
+        <div class="sec"><h4>Контрольная точка</h4><div class="cp"><span>${esc(cp.what || '—')}</span><span class="when">${esc(cp.when || '')}</span></div></div>
+        <div class="sec"><h4>Источники</h4><div class="srcs">${sourcesHtml(e.sources)}</div></div>
+        <div class="tools"><button class="linkbtn" type="button" data-pin="${esc(e.id)}" aria-pressed="${pinned}">${pinned ? 'Убрать из эфира' : 'Отметить для эфира'}</button><button class="linkbtn" type="button" data-copylink="${esc(e.id)}">Ссылка на карточку</button></div>
+      </div>` : '';
+    return `<article class="card s-${e.dateStatus}${pinned ? ' pinned' : ''}" id="${esc(e.id)}" data-open="${open}">
+      <button class="head" type="button" data-toggle="${esc(e.id)}" aria-expanded="${open}">
+        ${timeCell(e, now)}
+        <div style="min-width:0"><div class="ttl">${esc(e.title)}</div>
+          <div class="meta">${badges(e, now)}<span class="where">${esc(e.kind || '')}${e.where ? ' · ' + esc(e.where) : ''}</span>${cats}</div>
+          ${gist}</div>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>${body}</article>`;
+  }
+  const trim = (s, n) => (s || '').length > n ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
+
+  function render() {
+    const now = new Date();
+    const hz = HORIZONS.find(h => h.id === state.horizon) || HORIZONS[0];
+    const all = state.events.filter(e => inHorizon(e, now, hz));
+    const shown = all.filter(passFilters);
+    renderControls(all, now);
+    renderIdea();
+    renderRun(now);
+    const main = $('#main');
+    if (!state.loaded) return;
+    const awaiting = state.events.filter(e => phase(e, now) === 'awaiting').length;
+    const by = st => shown.filter(e => e.dateStatus === st).length;
+    let html = `<div class="summary"><span>Показано <b>${shown.length}</b> из ${all.length}</span>
+      <span><span class="ds confirmed">подтв.</span> <b>${by('confirmed')}</b></span>
+      <span><span class="ds preliminary">предв.</span> <b>${by('preliminary')}</b></span>
+      <span><span class="ds expected">без даты</span> <b>${by('expected')}</b></span>
+      ${awaiting ? `<span class="hint">ждут итога: <b>${awaiting}</b></span>` : ''}
+      <button class="linkbtn" type="button" id="onlyPins" aria-pressed="${state.onlyPins}">Только отмеченные для эфира · ${state.pins.size}</button></div>`;
+    if (!shown.length) {
+      html += `<div class="empty"><b>${all.length ? 'Под фильтры ничего не подходит' : 'В этом горизонте событий нет'}</b>${all.length ? 'Снимите часть фильтров тем или статусов.' : 'Переключите горизонт или загляните в историю.'}</div>`;
+      main.innerHTML = html; return;
+    }
+    if (hz.id === 'hist') {
+      shown.sort((a, b) => (times(b).s || times(b).w) - (times(a).s || times(a).w));
+    } else {
+      shown.sort((a, b) => ((times(a).s || times(a).w) - (times(b).s || times(b).w)) || a.title.localeCompare(b.title));
+    }
+    const dated = shown.filter(e => times(e).s);
+    const undated = shown.filter(e => !times(e).s);
+    const groups = [];
+    for (const e of dated) {
+      const s = times(e).s;
+      const k = (hz.id !== 'hist' && s < now) ? 'now' : dayKey(s);
+      let g = groups.find(x => x.k === k);
+      if (!g) groups.push(g = { k, d: s, items: [] });
+      g.items.push(e);
+    }
+    html += '<div>';
+    for (const g of groups) {
+      const head = g.k === 'now'
+        ? `<div class="dayhead"><b>Сейчас</b><span>уже идут</span></div>`
+        : `<div class="dayhead"><b>${esc(fDay.format(g.d))}</b><span>${esc(fWdLong.format(g.d))}</span><em>${esc(relDays(g.d, now))}</em></div>`;
+      html += `<section class="day">${head}<div class="cards">${g.items.map(e => cardHtml(e, now)).join('')}</div></section>`;
+    }
+    if (undated.length) {
+      html += `<section class="day"><div class="dayhead nodate"><b>Без назначенной даты</b><span>ожидаются в окне</span><em>день не назначен</em></div><div class="cards">${undated.map(e => cardHtml(e, now)).join('')}</div></section>`;
+    }
+    html += '</div>';
+    main.innerHTML = html;
+  }
+
+  function renderControls(all, now) {
+    const hzEl = $('#horizons');
+    hzEl.innerHTML = HORIZONS.map(h => {
+      const n = state.events.filter(e => inHorizon(e, now, h)).length;
+      return `<button type="button" data-hz="${h.id}" aria-pressed="${state.horizon === h.id}">${h.label}<em>${state.loaded ? n : ''}</em></button>`;
+    }).join('');
+    $('#cats').innerHTML = '<span class="lbl">Тема</span>' + CATS.map(c => {
+      const n = all.filter(e => (e.cats || []).includes(c.id)).length;
+      return `<button class="chip" type="button" data-cat="${c.id}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="n">${n}</span></button>`;
+    }).join('') + (state.cats.size ? `<button class="chip" type="button" data-cat="__clear">Сбросить</button>` : '');
+    $('#stats').innerHTML = '<span class="lbl">Дата</span>' + STATUSES.map(s => {
+      const n = all.filter(e => e.dateStatus === s.id).length;
+      return `<button class="chip" type="button" data-st="${s.id}" aria-pressed="${state.sts.has(s.id)}"><span class="ds ${s.id}" style="border:0;background:none;padding:0">${s.label}</span><span class="n">${n}</span></button>`;
+    }).join('');
+  }
+
+  function renderIdea() {
+    const rows = state.events.filter(e => e.ideaCheck).sort((a, b) => (times(a).s || times(a).w) - (times(b).s || times(b).w));
+    $('#idea').innerHTML = rows.length ? rows.map(e => `<div><button type="button" data-jump="${esc(e.id)}">${esc(e.title)}</button>
+      <span class="was">IDEA: «${esc(e.ideaWording || '')}»</span><span>${esc(e.ideaCheck)}</span><span><span class="ds ${e.dateStatus}">${ST_LABEL[e.dateStatus]}</span></span></div>`).join('')
+      : '<p>Расхождений пока нет.</p>';
+  }
+
+  function renderRun(now) {
+    const pill = $('#autorun');
+    const m = state.meta;
+    if (!m || !m.lastRunAt) { pill.className = 'pill off'; pill.innerHTML = '<i></i>автоитоги: первый прогон впереди'; return; }
+    const last = new Date(m.lastRunAt);
+    const age = (now - last) / H;
+    pill.className = 'pill' + (age > 14 ? ' stale' : '');
+    pill.innerHTML = `<i></i>автоитоги: ${fShort.format(last)}, ${fTime.format(last)}`;
+    pill.title = age > 14 ? 'Последний прогон был больше 14 часов назад' : 'Последний автоматический прогон';
+    const log = (m.log || []).slice(0, 5).map(r => `<div><span class="mono">${esc(r.at)}</span> — ${esc(r.text)}</div>`).join('');
+    $('#runlog').innerHTML = `<p>После окончания события карточка переходит в статус «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итоги по официальным документам и СМИ и записывает их в формате «ожидали → решили → что осталось открытым», перепроверяет статусы дат и добавляет новые события.</p>${log || ''}`;
+  }
+
+  /* ------------------------------------------------------ взаимодействие */
+  function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 1800); }
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); toast('Скопировано'); }
+    catch (e) { toast('Не удалось скопировать — выделите текст вручную'); }
+  }
+  document.addEventListener('click', (ev) => {
+    const b = ev.target.closest('button'); if (!b) return;
+    if (b.dataset.hz) { state.horizon = b.dataset.hz; store.set('horizon', state.horizon); render(); return; }
+    if (b.dataset.cat) {
+      if (b.dataset.cat === '__clear') state.cats.clear();
+      else state.cats.has(b.dataset.cat) ? state.cats.delete(b.dataset.cat) : state.cats.add(b.dataset.cat);
+      store.set('cats', [...state.cats]); render(); return;
+    }
+    if (b.dataset.st) { state.sts.has(b.dataset.st) ? state.sts.delete(b.dataset.st) : state.sts.add(b.dataset.st); store.set('sts', [...state.sts]); render(); return; }
+    if (b.dataset.toggle) { const id = b.dataset.toggle; state.open.has(id) ? state.open.delete(id) : state.open.add(id); render(); return; }
+    if (b.dataset.pin) { const id = b.dataset.pin; state.pins.has(id) ? state.pins.delete(id) : state.pins.add(id); store.set('pins', [...state.pins]); render(); return; }
+    if (b.id === 'onlyPins') { state.onlyPins = !state.onlyPins; render(); return; }
+    if (b.dataset.copy) { const e = state.events.find(x => x.id === b.dataset.copy); if (e) copy(airLine(e).text); return; }
+    if (b.dataset.copylink) { copy(location.href.split('#')[0] + '#' + b.dataset.copylink); return; }
+    if (b.dataset.jump) { jumpTo(b.dataset.jump); return; }
+    if (b.id === 'themeBtn') {
+      const r = document.documentElement; const cur = r.getAttribute('data-theme');
+      const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      r.setAttribute('data-theme', dark ? 'light' : 'dark'); store.set('theme', r.getAttribute('data-theme'));
+    }
+  });
+  let qt; $('#q').addEventListener('input', (ev) => { clearTimeout(qt); qt = setTimeout(() => { state.q = ev.target.value.trim().toLowerCase(); render(); }, 150); });
+
+  function jumpTo(id) {
+    const e = state.events.find(x => x.id === id); if (!e) return;
+    const now = new Date();
+    const hz = HORIZONS.find(h => h.id !== 'hist' && inHorizon(e, now, h)) || HORIZONS[3];
+    state.horizon = hz.id; state.cats.clear(); state.sts.clear(); state.q = ''; $('#q').value = ''; state.onlyPins = false;
+    state.open.add(id); render();
+    const el = document.getElementById(id);
+    if (el) { el.classList.add('target'); el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); setTimeout(() => el.classList.remove('target'), 2200); }
+  }
+
+  /* ----------------------------------------------------------- часы */
+  function tick() { const n = new Date(); $('#clock').textContent = `${fWd.format(n)} ${fShort.format(n)} · ${fTime.format(n)} мск`; }
+  tick(); setInterval(tick, 20e3);
+  setInterval(() => { if (state.loaded) render(); }, 5 * 60e3);
+
+  const t = store.get('theme', null); if (t) document.documentElement.setAttribute('data-theme', t);
+  render();
+
+  /* ----------------------------------------------------------- данные */
+  (async () => {
+    const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    if (!db) {
+      $('#boot').innerHTML = '<b>База событий недоступна в этом просмотре</b>Карточки и итоги хранятся в базе терминала. Откройте страницу по ссылке claude.ai, войдя в аккаунт.';
+      return;
+    }
+    db.collection('events').onSnapshot((snap) => {
+      state.events = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.title);
+      state.loaded = true;
+      if (!state.events.length) { $('#main').innerHTML = '<div class="empty"><b>Карта пока пуста</b>События появятся после первого прогона наполнения.</div>'; renderControls([], new Date()); return; }
+      render();
+      const h = location.hash.slice(1);
+      if (h && !render.jumped) { render.jumped = true; jumpTo(h); }
+    }, (err) => {
+      $('#main').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`;
+    });
+    db.doc('meta/status').onSnapshot((d) => { state.meta = d.exists ? d.data() : null; renderRun(new Date()); }, () => {});
+  })();
+})();
+</script>
