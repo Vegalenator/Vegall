@@ -12,6 +12,8 @@
   --text-primary:#0b0b0b; --text-secondary:#52514e; --text-muted:#84837d;
   --series-1:#2a78d6; --series-1-soft:rgba(42,120,214,.12);
   --good:#0ca30c; --critical:#d03b3b; --warning:#fab219; --flat:#8a6000;
+  --sec-og:#eb6834; --sec-fn:#2a78d6; --sec-mm:#1baf7a; --sec-eu:#eda100;
+  --sec-cn:#e87ba4; --sec-it:#4a3aa7; --sec-tl:#008300; --sec-xx:#84837d;
   --shadow:0 1px 2px rgba(0,0,0,.05), 0 8px 24px rgba(0,0,0,.04);
 }
 @media (prefers-color-scheme: dark){
@@ -21,6 +23,8 @@
     --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8a897f;
     --series-1:#3987e5; --series-1-soft:rgba(57,135,229,.16);
     --good:#0ca30c; --critical:#d03b3b; --warning:#fab219; --flat:#fab219;
+    --sec-og:#d95926; --sec-fn:#3987e5; --sec-mm:#199e70; --sec-eu:#c98500;
+    --sec-cn:#d55181; --sec-it:#9085e9; --sec-tl:#008300; --sec-xx:#8a897f;
     --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
   }
 }
@@ -30,6 +34,8 @@
   --text-primary:#ffffff; --text-secondary:#c3c2b7; --text-muted:#8a897f;
   --series-1:#3987e5; --series-1-soft:rgba(57,135,229,.16);
   --good:#0ca30c; --critical:#d03b3b; --warning:#fab219; --flat:#fab219;
+  --sec-og:#d95926; --sec-fn:#3987e5; --sec-mm:#199e70; --sec-eu:#c98500;
+  --sec-cn:#d55181; --sec-it:#9085e9; --sec-tl:#008300; --sec-xx:#8a897f;
   --shadow:0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.3);
 }
 
@@ -93,8 +99,12 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--text
 .card-head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:4px}
 .card-head .title{font-size:15px;font-weight:600}
 .card-head .title small{display:block;font-weight:400;font-size:12px;color:var(--text-muted);margin-top:2px}
-.controls{display:flex;gap:6px;flex-wrap:wrap}
-#chart{width:100%;height:300px;display:block;touch-action:none}
+.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.lg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-secondary);margin-left:10px}
+.sw{width:16px;height:0;border-top:2px solid var(--series-1);display:inline-block}
+.sw.was{border-top:2px dashed var(--text-muted)}
+#chart,#curve{width:100%;height:300px;display:block;touch-action:none}
+#curve{height:260px}
 .axis{fill:var(--text-muted);font-size:11px;font-variant-numeric:tabular-nums}
 .grid-line{stroke:var(--line);stroke-width:1}
 .zero-line{stroke:var(--line);stroke-width:1;stroke-dasharray:3 3}
@@ -111,6 +121,19 @@ h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--text
 
 /* ---------- таблицы ---------- */
 .tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.duo{display:grid;gap:12px;grid-template-columns:1fr}
+@media (min-width:920px){ .duo{grid-template-columns:1fr 1fr} }
+.duo .card{padding:6px 8px}
+.duo h3{font-size:12.5px;font-weight:600;margin:10px 10px 6px;display:flex;
+        align-items:center;gap:7px;color:var(--text-primary)}
+.duo h3 .dir{font-size:14px}
+.chip{display:inline-block;font-size:10px;line-height:1.5;padding:0 6px;border-radius:5px;
+      font-weight:600;letter-spacing:.02em;white-space:nowrap;vertical-align:1px;
+      color:var(--c);background:color-mix(in srgb, var(--c) 15%, transparent);
+      border:1px solid color-mix(in srgb, var(--c) 32%, transparent)}
+.movers td:first-child{max-width:210px}
+.movers td:first-child b{font-weight:650;margin-right:6px}
+.movers td:first-child i{font-style:normal;color:var(--text-muted);font-size:12px}
 table{border-collapse:collapse;width:100%;font-size:13px}
 th,td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);
       font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -154,8 +177,27 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
 <h2>Валюта и крипта</h2>
 <div class="grid" id="grid-fx"></div>
 
-<h2>Индексы и ставки</h2>
+<h2>Индексы</h2>
 <div class="grid" id="grid-index"></div>
+
+<h2>Долговой рынок</h2>
+<div class="grid" id="grid-debt"></div>
+
+<div class="card">
+  <div class="card-head">
+    <div class="title">Кривая доходности ОФЗ
+      <small id="curve-sub">бескупонная доходность по срокам</small></div>
+    <div class="controls" id="curve-legend"></div>
+  </div>
+  <div class="chart-wrap">
+    <svg id="curve" role="img" aria-label="Кривая бескупонной доходности ОФЗ"></svg>
+    <div class="tip" id="curve-tip"></div>
+  </div>
+  <details class="tableview">
+    <summary>Показать кривую таблицей</summary>
+    <div class="tbl-scroll"><table id="curve-table"></table></div>
+  </details>
+</div>
 
 <h2 id="chart-h">Динамика</h2>
 <div class="card">
@@ -175,15 +217,28 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
   </details>
 </div>
 
-<h2>Голубые фишки</h2>
-<div class="card" style="padding:6px 8px">
-  <div class="tbl-scroll">
-    <table class="tickers">
-      <thead><tr><th>Бумага</th><th>Цена, ₽</th><th>Изм., %</th><th>Оборот, млн ₽</th></tr></thead>
-      <tbody id="tbody-shares"><tr><td colspan="4" style="color:var(--text-muted)">загрузка…</td></tr></tbody>
-    </table>
+<h2>Лидеры дня</h2>
+<div class="duo">
+  <div class="card">
+    <h3><span class="dir up">▲</span> Растут сильнее всех</h3>
+    <div class="tbl-scroll">
+      <table class="movers">
+        <thead><tr><th>Бумага</th><th>Цена, ₽</th><th>Изм., %</th><th>Оборот, млн ₽</th></tr></thead>
+        <tbody id="tbody-up"><tr><td colspan="4" style="color:var(--text-muted)">загрузка…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card">
+    <h3><span class="dir down">▼</span> Падают сильнее всех</h3>
+    <div class="tbl-scroll">
+      <table class="movers">
+        <thead><tr><th>Бумага</th><th>Цена, ₽</th><th>Изм., %</th><th>Оборот, млн ₽</th></tr></thead>
+        <tbody id="tbody-down"><tr><td colspan="4" style="color:var(--text-muted)">загрузка…</td></tr></tbody>
+      </table>
+    </div>
   </div>
 </div>
+<div id="sector-legend" class="notes" style="margin-top:10px"></div>
 
 <h2>Официальный курс ЦБ РФ</h2>
 <div class="card" style="padding:6px 8px">
@@ -207,6 +262,16 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
   Мини-график в плитке — это настоящие дневные закрытия за 45 дней, не украшение; он живёт своим
   периодом, поэтому справа от процента подписано, сколько показатель прошёл за эти 45 дней.
   Дневной процент и полуторамесячный тренд могут смотреть в разные стороны — это не ошибка. Время везде московское; обновление раз в минуту, пока вкладка открыта. У фьючерсов (Brent, золото, газ) история на графике начинается с первого дня торгов конкретным контрактом, а не с начала выбранного периода.</p>
+  <p><b>Про кривую ОФЗ.</b> Это бескупонная доходность Мосбиржи: сколько рынок просит за деньги
+  на разные сроки. Короткий конец ниже ставки овернайт означает, что снижения ключевой ждут в
+  ближайшие месяцы; задранный длинный конец — что инфляцию вдолгую рынок не купил. Пунктиром —
+  та же кривая месяц назад, чтобы видеть, куда она сдвинулась.</p>
+  <p><b>Про лидеров дня.</b> Отбираются из всего основного режима торгов, а не из заданного списка.
+  В выборку попадают только обыкновенные и привилегированные акции и расписки — ПИФы и облигации,
+  которые тоже торгуются в этом режиме, отсеиваются, иначе верх таблицы занимали бы фонды с одной
+  сделкой. Порог оборота — 50 млн ₽ за день. Цветной ярлык показывает отрасль: он взят из состава
+  отраслевых индексов Мосбиржи, то есть обновляется сам. Красного среди отраслей нет намеренно —
+  этот цвет занят падением.</p>
   <p><b>Про Urals.</b> Живой котировки у российской нефти нет: биржевого фьючерса не существует,
   а ежедневные оценки Argus и Platts — платные. В плитке стоит официальная цена мониторинга
   <a href="https://www.economy.gov.ru/" target="_blank" rel="noopener">Минэкономразвития</a> —
@@ -341,6 +406,16 @@ const ICONS = {
     + '<path d="M6.8 9.4h7.4M6.8 12.4h4.6"/>'
     + '<circle cx="16.5" cy="14.3" r="2.5"/>'
     + '<path d="m14.9 16.4-.5 2.9 2.1-1.1 2.1 1.1-.5-2.9"/>',
+  /* сейсмограмма: индекс волатильности */
+  RVI: '<path d="M2.6 12h3.1l2.2-6.4 3.1 12.8 2.6-8.3 1.8 3.9h6"/>',
+  /* кривая доходности: ось и загибающаяся вверх линия */
+  OFZ2: '<path d="M3.6 4.2v15.6h16.8"/>'
+    + '<path d="M3.6 16.4c4.2 0 5.6-7.2 9.8-7.2"/><circle cx="13.4" cy="9.2" r="1.7"/>',
+  OFZ10: '<path d="M3.6 4.2v15.6h16.8"/>'
+    + '<path d="M3.6 17.2c6.7 0 9.1-9.4 16.1-9.4"/><circle cx="19.7" cy="7.8" r="1.7"/>',
+  /* спред: два уровня и расстояние между ними */
+  SPREAD: '<path d="M3.4 7.4h17M3.4 17.2h17"/>'
+    + '<path d="M12 9.6v5.4"/><path d="m9.9 11.4 2.1-2.1 2.1 2.1M9.9 13.2l2.1 2.1 2.1-2.1"/>',
   /* стопка монет и знак процента */
   RUSFAR: '<ellipse cx="7.4" cy="7.3" rx="4.2" ry="1.9"/>'
     + '<path d="M3.2 7.3v8.9c0 1.1 1.9 1.9 4.2 1.9s4.2-.8 4.2-1.9V7.3"/>'
@@ -370,8 +445,32 @@ const TILES = [
   { grid: "index", key: "IMOEX", name: "Индекс МосБиржи",    unit: "",   digits: 2, hint: "рублёвый" },
   { grid: "index", key: "RTSI",  name: "Индекс РТС",         unit: "",   digits: 2, hint: "долларовый" },
   { grid: "index", key: "RGBI",  name: "Индекс гособлигаций",unit: "",   digits: 2, hint: "ОФЗ, RGBI" },
-  { grid: "index", key: "RUSFAR",name: "Ставка RUSFAR",      unit: "%",  digits: 2, hint: "деньги овернайт" }
+  { grid: "index", key: "RVI",   name: "Индекс страха RVI",  unit: "",   digits: 2, hint: "волатильность" },
+  { grid: "debt",  key: "RUSFAR",name: "Ставка RUSFAR",      unit: "%",  digits: 2, hint: "деньги овернайт" },
+  { grid: "debt",  key: "OFZ2",  name: "ОФЗ 2 года",         unit: "%",  digits: 2, hint: "короткий конец" },
+  { grid: "debt",  key: "OFZ10", name: "ОФЗ 10 лет",         unit: "%",  digits: 2, hint: "длинный конец" },
+  { grid: "debt",  key: "SPREAD",name: "Наклон 10 − 2",      unit: " п.п.", digits: 2, hint: "крутизна кривой" }
 ];
+
+/* Отрасли берём из состава секторных индексов Мосбиржи — список обновляется сам.
+   Порядок важен: бумага попадает в первый подошедший сектор, поэтому МТС и Ростелеком
+   становятся телекомом, а не ИТ, хотя числятся и там. Красный в палитре не занят
+   намеренно: он означает падение и спорил бы с колонкой изменения. */
+const SECTORS = [
+  { ix: "MOEXOG", label: "Нефть и газ",  css: "og" },
+  { ix: "MOEXMM", label: "Металлы",      css: "mm" },
+  { ix: "MOEXFN", label: "Финансы",      css: "fn" },
+  { ix: "MOEXEU", label: "Энергетика",   css: "eu" },
+  { ix: "MOEXTL", label: "Телеком",      css: "tl" },
+  { ix: "MOEXCN", label: "Потреб. сектор", css: "cn" },
+  { ix: "MOEXIT", label: "ИТ",           css: "it" },
+  { ix: "MOEXTN", label: "Транспорт",    css: "xx" },
+  { ix: "MOEXCH", label: "Химия",        css: "xx" },
+  { ix: "MOEXRE", label: "Девелопмент",  css: "xx" }
+];
+const SECTOR_OTHER = { label: "Прочее", css: "xx" };
+/* бумага попадает в таблицу лидеров, только если наторговала хотя бы столько */
+const MIN_TURNOVER = 50e6;
 
 /* Urals в открытом доступе онлайн не котируется: биржевого фьючерса нет, а
    оценки Argus и Platts — платные. Поэтому берём официальную цену мониторинга
@@ -385,7 +484,6 @@ const URALS = {
   ]
 };
 
-const SHARES = ["SBER","GAZP","LKOH","ROSN","GMKN","NVTK","PLZL","T","MTSS","MGNT","YDEX","VTBR"];
 
 const CHART_SET = [
   { id: "IMOEX", label: "МосБиржа", title: "Индекс МосБиржи",
@@ -418,7 +516,10 @@ const state = {
   series: [],                     // [{t, v}]
   lastOk: null,
   sparkAt: 0,
-  seq: 0                          // счётчик запросов графика: гасим ответы устаревших кликов
+  seq: 0,                         // счётчик запросов графика: гасим ответы устаревших кликов
+  sectorOf: {},                   // тикер -> отрасль
+  lastShares: null,               // последний ответ по акциям, чтобы перерисовать при приходе отраслей
+  curve: { now: [], was: [] }
 };
 
 /* =========================================================================
@@ -429,7 +530,7 @@ async function loadQuotes() {
 
   const [idx, cur, fut, shr, cbr, coin] = await Promise.all([
     getJSON(ISS + "/engines/stock/markets/index/securities.json?iss.meta=off"
-      + "&securities=IMOEX,RTSI,RGBI,RUSFAR&iss.only=securities,marketdata"
+      + "&securities=IMOEX,RTSI,RGBI,RUSFAR,RVI&iss.only=securities,marketdata"
       + "&securities.columns=SECID,SHORTNAME"
       + "&marketdata.columns=SECID,CURRENTVALUE,LASTVALUE,LASTCHANGEPRC,UPDATETIME", "MOEX индексы"),
     getJSON(ISS + "/engines/currency/markets/selt/boards/CETS/securities.json?iss.meta=off"
@@ -439,9 +540,11 @@ async function loadQuotes() {
       + "&securities=" + [...brent, ...gold, ...gas].join(",") + "&iss.only=securities,marketdata"
       + "&securities.columns=SECID,SHORTNAME,LASTTRADEDATE,ASSETCODE"
       + "&marketdata.columns=SECID,LAST,LASTSETTLEPRICE,LASTTOPREVPRICE,UPDATETIME", "MOEX фьючерсы"),
+    /* весь основной режим торгов: 500 с лишним бумаг, из них выберем живые */
     getJSON(ISS + "/engines/stock/markets/shares/boards/TQBR/securities.json?iss.meta=off"
-      + "&securities=" + SHARES.join(",") + "&iss.only=securities,marketdata"
-      + "&securities.columns=SECID,SHORTNAME&marketdata.columns=SECID,LAST,LASTTOPREVPRICE,VALTODAY,UPDATETIME",
+      + "&iss.only=securities,marketdata"
+      + "&securities.columns=SECID,SHORTNAME,SECTYPE"
+      + "&marketdata.columns=SECID,LAST,LASTTOPREVPRICE,VALTODAY",
       "MOEX акции"),
     getJSON("https://www.cbr-xml-daily.ru/daily_json.js", "ЦБ РФ"),
     getJSON("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin"
@@ -455,7 +558,7 @@ async function loadQuotes() {
   };
 
   if (idx) { const m = merge(idx);
-    for (const id of ["IMOEX", "RTSI", "RGBI"]) {
+    for (const id of ["IMOEX", "RTSI", "RGBI", "RVI"]) {
       const r = m[id]; if (!r) continue;
       put(id, r.CURRENTVALUE ?? r.LASTVALUE, r.LASTCHANGEPRC, r.UPDATETIME, id);
     }
@@ -488,7 +591,8 @@ async function loadQuotes() {
 
   if (Object.keys(q).length) state.lastOk = new Date();
   renderTiles();
-  renderShares(shr);
+  state.lastShares = shr;
+  renderMovers(shr);
   renderCbr(cbr);
   renderStatus();
 }
@@ -558,6 +662,67 @@ async function loadUrals() {
   renderTiles();
 }
 
+/* Состав отраслевых индексов меняется раз в квартал, поэтому тянем раз в сутки
+   и держим в localStorage: иначе каждая загрузка страницы стоила бы семи запросов. */
+async function loadSectors() {
+  const key = "dash.sectors", today = iso(new Date());
+  try {
+    const c = JSON.parse(localStorage.getItem(key) || "null");
+    if (c && c.date === today) { state.sectorOf = revive(c.map); return; }
+  } catch (e) { /* испорченный кэш — просто перезагрузим */ }
+
+  const map = {};
+  await Promise.all(SECTORS.map(async (sec, i) => {
+    const j = await getJSON(ISS + "/statistics/engines/stock/markets/index/analytics/"
+      + sec.ix + ".json?iss.meta=off&limit=100&iss.only=analytics"
+      + "&analytics.columns=ticker", "сектор " + sec.ix);
+    for (const r of rows(j, "analytics")) if (r.ticker && map[r.ticker] == null) map[r.ticker] = i;
+  }));
+  state.sectorOf = revive(map);
+  try { localStorage.setItem(key, JSON.stringify({ date: today, map })); } catch (e) {}
+  renderMoversFromCache();
+}
+const revive = map => Object.fromEntries(
+  Object.entries(map).map(([t, i]) => [t, SECTORS[i] || SECTOR_OTHER]));
+/* отрасли могли приехать позже котировок — тогда просто перерисуем таблицы */
+function renderMoversFromCache() { if (state.lastShares) renderMovers(state.lastShares); }
+
+/* Кривая бескупонной доходности: сегодня и месяц назад.
+   Сама кривая и есть прогноз рынка по ставке — короткий конец ниже овернайта
+   означает, что снижения ждут в ближайшие месяцы. */
+async function loadCurve() {
+  const monthAgo = new Date(); monthAgo.setMonth(monthAgo.getMonth() - 1);
+  const [now, was] = await Promise.all([
+    getJSON(ISS + "/engines/stock/zcyc.json?iss.only=yearyields", "кривая ОФЗ"),
+    getJSON(ISS + "/engines/stock/zcyc.json?iss.only=yearyields&date=" + iso(monthAgo), "кривая месяц назад")
+  ]);
+  const pick = j => rows(j, "yearyields")
+    .filter(r => r.value != null)
+    .map(r => ({ period: r.period, value: r.value, date: r.tradedate }));
+  state.curve = { now: pick(now), was: pick(was) };
+  const at = (arr, y) => { const p = arr.find(r => r.period === y); return p ? p.value : null; };
+  const n = state.curve.now, w = state.curve.was;
+
+  const put = (key, years, name) => {
+    const v = at(n, years); if (v == null) return;
+    const prev = at(w, years);
+    state.quotes[key] = { value: v, ticker: "ОФЗ · " + name,
+      change: prev == null ? null : v - prev, chgUnit: " п.п. за месяц" };
+  };
+  put("OFZ2", 2, "2 года"); put("OFZ10", 10, "10 лет");
+
+  const s10 = at(n, 10), s2 = at(n, 2), p10 = at(w, 10), p2 = at(w, 2);
+  if (s10 != null && s2 != null)
+    state.quotes.SPREAD = {
+      value: s10 - s2,
+      ticker: s10 > s2 ? "кривая растёт" : "кривая перевёрнута",
+      change: (p10 != null && p2 != null) ? (s10 - s2) - (p10 - p2) : null,
+      chgUnit: " п.п. за месяц"
+    };
+  renderTiles();
+  drawCurve();
+}
+
 async function loadSeries() {
   const seq = ++state.seq;
   const inst = CHART_SET.find(c => c.id === state.chartId) || CHART_SET[0];
@@ -582,7 +747,7 @@ async function loadSeries() {
    Отрисовка
    ========================================================================= */
 function renderTiles() {
-  for (const grid of ["oil", "fx", "index"]) {
+  for (const grid of ["oil", "fx", "index", "debt"]) {
     const host = $("#grid-" + grid);
     const html = TILES.filter(t => t.grid === grid).map(t => {
       const q = state.quotes[t.key];
@@ -630,18 +795,46 @@ function sparkSVG(data) {
     + 'stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/></svg>';
 }
 
-function renderShares(j) {
-  const tb = $("#tbody-shares");
-  if (!j) { tb.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted)">нет данных</td></tr>'; return; }
-  const list = Object.values(merge(j))
-    .filter(r => r.LAST != null)
-    .sort((a, b) => (b.VALTODAY || 0) - (a.VALTODAY || 0));
-  if (!list.length) { tb.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted)">торги закрыты</td></tr>'; return; }
-  tb.innerHTML = list.map(r =>
-    "<tr><td>" + r.SECID + "<span>" + (r.SHORTNAME || "") + "</span></td>"
+function renderMovers(j) {
+  const up = $("#tbody-up"), down = $("#tbody-down");
+  if (!j) { up.innerHTML = down.innerHTML = rowMsg("нет данных"); return; }
+  /* 1 и 2 — обыкновенные и привилегированные акции, D — расписка;
+     остальное в этом режиме торгов это ПИФы и БПИФы, им в лидерах дня не место */
+  const live = Object.values(merge(j)).filter(r =>
+    ["1", "2", "D"].includes(r.SECTYPE) &&
+    r.LAST != null && r.LASTTOPREVPRICE != null && (r.VALTODAY || 0) >= MIN_TURNOVER);
+  if (!live.length) { up.innerHTML = down.innerHTML = rowMsg("торги закрыты"); return; }
+
+  const byChange = live.slice().sort((a, b) => b.LASTTOPREVPRICE - a.LASTTOPREVPRICE);
+  up.innerHTML   = byChange.slice(0, 10).map(moverRow).join("");
+  down.innerHTML = byChange.slice(-10).reverse().map(moverRow).join("");
+  renderSectorLegend(byChange.slice(0, 10).concat(byChange.slice(-10)));
+}
+const rowMsg = t => '<tr><td colspan="4" style="color:var(--text-muted)">' + t + "</td></tr>";
+
+function moverRow(r) {
+  const sec = state.sectorOf[r.SECID] || SECTOR_OTHER;
+  return "<tr><td><b>" + r.SECID + "</b><i>" + (r.SHORTNAME || "") + "</i><br>"
+    + '<span class="chip" style="--c:var(--sec-' + sec.css + ')">' + sec.label + "</span></td>"
     + "<td>" + nf(r.LAST, r.LAST < 10 ? 4 : 2) + "</td>"
     + '<td class="' + cls(r.LASTTOPREVPRICE) + '">' + pct(r.LASTTOPREVPRICE) + "</td>"
-    + "<td>" + nf((r.VALTODAY || 0) / 1e6, 0) + "</td></tr>").join("");
+    + "<td>" + nf((r.VALTODAY || 0) / 1e6, 0) + "</td></tr>";
+}
+
+/* под таблицами — какие отрасли вообще попали в двадцатку и сколько раз */
+function renderSectorLegend(rows) {
+  const count = {};
+  for (const r of rows) {
+    const sec = state.sectorOf[r.SECID] || SECTOR_OTHER;
+    (count[sec.label] = count[sec.label] || { sec, n: 0 }).n++;
+  }
+  const list = Object.values(count).sort((a, b) => b.n - a.n);
+  $("#sector-legend").innerHTML = "<p>Отрасли в сегодняшней двадцатке: "
+    + list.map(x => '<span class="chip" style="--c:var(--sec-' + x.sec.css + ')">'
+        + x.sec.label + " · " + x.n + "</span>").join(" ")
+    + ". Отбор: основной режим торгов, оборот от "
+    + nf(MIN_TURNOVER / 1e6, 0) + " млн \u20BD — иначе в лидеры попадала бы неликвидная мелочь "
+    + "с одной сделкой за день.</p>";
 }
 
 function renderCbr(j) {
@@ -767,9 +960,101 @@ function unhover() {
   $("#tip").style.opacity = 0;
 }
 
-/* =========================================================================
-   Управление
-   ========================================================================= */
+/* ---------- кривая ОФЗ: две линии, равномерные сроки по горизонтали ----------
+   Сроки идут неравными шагами (3 месяца … 20 лет), поэтому ставим их через
+   равные промежутки: так читается форма кривой, а не растянутый длинный конец. */
+const TENOR = y => y < 1 ? Math.round(y * 12) + " мес" : y + (y < 5 ? " г" : " л");
+function drawCurve() {
+  const svg = $("#curve"), n = state.curve.now, w = state.curve.was;
+  while (svg.firstChild) svg.removeChild(svg.firstChild);
+  const mk = (t, a) => { const e = document.createElementNS(SVGNS, t);
+    for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+  const W = svg.clientWidth || 900, H = svg.clientHeight || 260;
+  svg.setAttribute("viewBox", "0 0 " + W + " " + H);
+  if (n.length < 2) {
+    const t = mk("text", { x: W / 2, y: H / 2, "text-anchor": "middle", class: "axis" });
+    t.textContent = "кривая недоступна"; svg.appendChild(t); curve.pts = []; return;
+  }
+  const pad = { t: 14, r: 52, b: 26, l: 10 }, iw = W - pad.l - pad.r, ih = H - pad.t - pad.b;
+  const byPeriod = Object.fromEntries(w.map(r => [r.period, r.value]));
+  const all = n.map(r => r.value).concat(w.map(r => r.value));
+  let min = Math.min(...all), max = Math.max(...all);
+  const padV = (max - min) * 0.12 || 0.5; min -= padV; max += padV;
+  const X = i => pad.l + i * iw / (n.length - 1);
+  const Y = v => pad.t + ih - (v - min) / (max - min) * ih;
+
+  for (let i = 0; i <= 4; i++) {
+    const v = min + (max - min) * i / 4, y = Y(v);
+    svg.appendChild(mk("line", { x1: pad.l, x2: pad.l + iw, y1: y, y2: y, class: "grid-line" }));
+    const t = mk("text", { x: pad.l + iw + 8, y: y + 4, class: "axis" });
+    t.textContent = nf(v, 1) + " %"; svg.appendChild(t);
+  }
+  n.forEach((r, i) => {
+    if (i % 2 && i !== n.length - 1) return;                 // подписываем через одну, чтобы не слиплись
+    const t = mk("text", { x: X(i), y: H - 8, class: "axis",
+      "text-anchor": i === 0 ? "start" : i === n.length - 1 ? "end" : "middle" });
+    t.textContent = TENOR(r.period); svg.appendChild(t);
+  });
+
+  const line = arr => arr.map((p, i) => (i ? "L" : "M") + X(i).toFixed(1) + " " + Y(p).toFixed(1)).join(" ");
+  const prev = n.map(r => byPeriod[r.period]).filter(v => v != null);
+  if (prev.length === n.length)
+    svg.appendChild(mk("path", { d: line(prev), fill: "none", stroke: "var(--text-muted)",
+      "stroke-width": 2, "stroke-dasharray": "5 4", "stroke-linejoin": "round" }));
+  svg.appendChild(mk("path", { d: line(n.map(r => r.value)), class: "series" }));
+  n.forEach((r, i) => svg.appendChild(mk("circle",
+    { cx: X(i), cy: Y(r.value), r: 3.2, fill: "var(--series-1)", stroke: "var(--surface-1)", "stroke-width": 2 })));
+
+  curve.pts = n.map((r, i) => ({ x: X(i), y: Y(r.value), r, prev: byPeriod[r.period] }));
+  curve.H = H;
+
+  const short = n[0], long = n[n.length - 1];
+  $("#curve-sub").textContent = "на " + dmy(short.date) + ": "
+    + TENOR(short.period) + " " + nf(short.value, 2) + " % → "
+    + TENOR(long.period) + " " + nf(long.value, 2) + " %";
+  $("#curve-legend").innerHTML =
+    '<span class="lg"><i class="sw now"></i>сегодня</span>'
+    + (prev.length === n.length && w.length
+       ? '<span class="lg"><i class="sw was"></i>' + dmy(w[0].date) + "</span>" : "");
+  renderCurveTable();
+}
+
+function renderCurveTable() {
+  const t = $("#curve-table"), n = state.curve.now;
+  if (!n.length) { t.innerHTML = ""; return; }
+  const byPeriod = Object.fromEntries(state.curve.was.map(r => [r.period, r.value]));
+  t.innerHTML = "<thead><tr><th>Срок</th><th>Сегодня, %</th><th>Месяц назад, %</th>"
+    + "<th>Изменение, п.п.</th></tr></thead><tbody>"
+    + n.map(r => {
+        const p = byPeriod[r.period], d = p == null ? null : r.value - p;
+        return "<tr><td>" + TENOR(r.period) + "</td><td>" + nf(r.value, 2) + "</td>"
+          + "<td>" + (p == null ? "—" : nf(p, 2)) + "</td>"
+          + '<td class="' + cls(d) + '">' + (d == null ? "—" : (d > 0 ? "+" : "") + nf(d, 2)) + "</td></tr>";
+      }).join("") + "</tbody>";
+}
+
+const curve = { pts: [], H: 260 };
+function hoverCurve(ev) {
+  const svg = $("#curve"), tip = $("#curve-tip");
+  if (!curve.pts.length) return;
+  const r = svg.getBoundingClientRect();
+  const sx = (ev.clientX - r.left) * (svg.viewBox.baseVal.width || r.width) / r.width;
+  let best = curve.pts[0];
+  for (const p of curve.pts) if (Math.abs(p.x - sx) < Math.abs(best.x - sx)) best = p;
+  svg.querySelectorAll(".cross,.hpoint").forEach(e => e.remove());
+  const mk = (t, a) => { const e = document.createElementNS(SVGNS, t);
+    for (const k in a) e.setAttribute(k, a[k]); return e; };
+  svg.appendChild(mk("line", { x1: best.x, x2: best.x, y1: 10, y2: curve.H - 26, class: "cross" }));
+  svg.appendChild(mk("circle", { cx: best.x, cy: best.y, r: 4.5, class: "hpoint" }));
+  tip.innerHTML = "<b>" + nf(best.r.value, 2) + " %</b><i>" + TENOR(best.r.period)
+    + (best.prev == null ? "" : " · месяц назад " + nf(best.prev, 2) + " %") + "</i>";
+  tip.style.left = (best.x / (svg.viewBox.baseVal.width || r.width) * r.width) + "px";
+  tip.style.top = (best.y / (svg.viewBox.baseVal.height || r.height) * r.height) + "px";
+  tip.style.opacity = 1;
+}
+
+/* ---------- управление ---------- */
 function buildControls() {
   $("#chart-pick").innerHTML = CHART_SET.map(c =>
     '<button class="ghost" type="button" data-chart="' + c.id + '" aria-pressed="'
@@ -786,13 +1071,13 @@ document.addEventListener("click", e => {
   buildControls(); loadSeries();
 });
 
-$("#refresh").addEventListener("click", () => { loadQuotes(); loadSeries(); });
+$("#refresh").addEventListener("click", () => { loadQuotes(); loadSeries(); loadCurve(); });
 $("#theme").addEventListener("click", () => {
   const dark = document.documentElement.getAttribute("data-theme") !== "light";
   document.documentElement.setAttribute("data-theme", dark ? "light" : "dark");
   localStorage.setItem("dash.theme", dark ? "light" : "dark");
   $("#theme").textContent = dark ? "Тёмная тема" : "Светлая тема";
-  drawChart();
+  drawChart(); drawCurve();
 });
 (function initTheme() {
   const saved = localStorage.getItem("dash.theme") || "dark";
@@ -802,23 +1087,35 @@ $("#theme").addEventListener("click", () => {
 
 const svg = $("#chart");
 svg.addEventListener("pointermove", hover);
+const csvg = $("#curve");
+csvg.addEventListener("pointermove", hoverCurve);
+csvg.addEventListener("pointerleave", () => {
+  csvg.querySelectorAll(".cross,.hpoint").forEach(e => e.remove());
+  $("#curve-tip").style.opacity = 0;
+});
 svg.addEventListener("pointerleave", unhover);
 window.addEventListener("resize", () => { clearTimeout(window.__rz);
-  window.__rz = setTimeout(drawChart, 150); });
+  window.__rz = setTimeout(() => { drawChart(); drawCurve(); }, 150); });
 
 /* автообновление: 60 секунд, и только когда вкладка открыта */
 let timer = null;
 function startTimer() {
   clearInterval(timer);
-  timer = setInterval(() => { if (!document.hidden) { loadQuotes(); loadSparks(); } }, 60000);
+  timer = setInterval(() => {
+    if (document.hidden) return;
+    loadQuotes();
+    if (Date.now() - state.sparkAt >= 600000) { loadSparks(); loadCurve(); }
+  }, 60000);
 }
 document.addEventListener("visibilitychange", () => { if (!document.hidden) loadQuotes(); });
 
 /* поехали */
 buildControls();
+loadSectors();
 loadQuotes().then(loadSparks);
 loadUrals();
 loadSeries();
+loadCurve();
 startTimer();
 </script>
 </body>
