@@ -180,6 +180,24 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
 <h2>Индексы</h2>
 <div class="grid" id="grid-index"></div>
 
+<h2 id="chart-h">Динамика</h2>
+<div class="card">
+  <div class="card-head">
+    <div class="title" id="chart-title">Индекс МосБиржи
+      <small id="chart-sub">дневные закрытия</small></div>
+    <div class="controls" id="chart-pick"></div>
+  </div>
+  <div class="chart-wrap">
+    <svg id="chart" role="img" aria-labelledby="chart-title"></svg>
+    <div class="tip" id="tip"></div>
+  </div>
+  <div class="controls" id="range-pick" style="margin-top:6px"></div>
+  <details class="tableview">
+    <summary>Показать данные графика таблицей</summary>
+    <div class="tbl-scroll"><table id="chart-table"></table></div>
+  </details>
+</div>
+
 <h2>Долговой рынок</h2>
 <div class="grid" id="grid-debt"></div>
 
@@ -196,24 +214,6 @@ details.tableview summary{font-size:12px;color:var(--text-muted);cursor:pointer;
   <details class="tableview">
     <summary>Показать кривую таблицей</summary>
     <div class="tbl-scroll"><table id="curve-table"></table></div>
-  </details>
-</div>
-
-<h2 id="chart-h">Динамика</h2>
-<div class="card">
-  <div class="card-head">
-    <div class="title" id="chart-title">Индекс МосБиржи
-      <small id="chart-sub">дневные закрытия</small></div>
-    <div class="controls" id="chart-pick"></div>
-  </div>
-  <div class="chart-wrap">
-    <svg id="chart" role="img" aria-labelledby="chart-title"></svg>
-    <div class="tip" id="tip"></div>
-  </div>
-  <div class="controls" id="range-pick" style="margin-top:6px"></div>
-  <details class="tableview">
-    <summary>Показать данные графика таблицей</summary>
-    <div class="tbl-scroll"><table id="chart-table"></table></div>
   </details>
 </div>
 
@@ -306,6 +306,10 @@ const MSK = "Europe/Moscow";
 const hhmm = d => d.toLocaleTimeString("ru-RU",
   { hour: "2-digit", minute: "2-digit", timeZone: MSK });
 const dmy  = s => { const [y, m, d] = s.slice(0, 10).split("-"); return d + "." + m + "." + y; };
+/* на недельном графике точки внутри одного дня, поэтому дописываем время */
+const stamp = (s, withTime) => dmy(s) + (withTime ? " " + s.slice(11, 16) : "");
+/* на оси года не нужны — три подписи и без них читаются */
+const axisStamp = (s, withTime) => withTime ? dmy(s).slice(0, 5) + " " + s.slice(11, 16) : dmy(s);
 const iso  = d => d.toISOString().slice(0, 10);
 const daysAgo = n => { const d = new Date(); d.setDate(d.getDate() - n); return iso(d); };
 
@@ -498,6 +502,7 @@ const CHART_SET = [
     path: "/engines/currency/markets/selt/securities/USD000UTSTOM", digits: 2, unit: " ₽" }
 ];
 const RANGES = [
+  { id: "1w", label: "Неделя", days: 8,    interval: 60 },   // часовые свечи
   { id: "1m", label: "1 мес",  days: 31,   interval: 24 },
   { id: "3m", label: "3 мес",  days: 92,   interval: 24 },
   { id: "1y", label: "1 год",  days: 366,  interval: 24 },
@@ -519,7 +524,8 @@ const state = {
   seq: 0,                         // счётчик запросов графика: гасим ответы устаревших кликов
   sectorOf: {},                   // тикер -> отрасль
   lastShares: null,               // последний ответ по акциям, чтобы перерисовать при приходе отраслей
-  curve: { now: [], was: [] }
+  curve: { now: [], was: [] },
+  intraday: false
 };
 
 /* =========================================================================
@@ -736,9 +742,12 @@ async function loadSeries() {
   const j = await getJSON(ISS + path + "/candles.json?iss.meta=off&from=" + daysAgo(rng.days)
     + "&interval=" + rng.interval + "&iss.only=candles&candles.columns=close,end", "график");
   if (seq !== state.seq) return;                            // пока ждали, кликнули другое
+  /* коды интервалов Мосбиржи не упорядочены по длительности: 1 и 10 — минуты,
+     60 — час, а 24 уже сутки, 7 неделя, 31 месяц. Поэтому перечислением. */
+  state.intraday = [1, 10, 60].includes(rng.interval);
   state.series = rows(j, "candles")
     .filter(r => r.close != null)
-    .map(r => ({ t: r.end.slice(0, 10), v: r.close }));
+    .map(r => ({ t: r.end, v: r.close }));
   drawChart();
   renderStatus();
 }
@@ -907,7 +916,7 @@ function drawChart() {
   [0, Math.floor(data.length / 2), data.length - 1].forEach((i, k) => {
     const t = mk("text", { x: X(i), y: H - 8, class: "axis",
       "text-anchor": k === 0 ? "start" : k === 2 ? "end" : "middle" });
-    t.textContent = dmy(data[i].t);
+    t.textContent = axisStamp(data[i].t, state.intraday);
     svg.appendChild(t);
   });
 
@@ -919,7 +928,7 @@ function drawChart() {
   chart.pts = data.map((d, i) => ({ x: X(i), y: Y(d.v), d }));
   chart.inst = inst;
   const first = data[0].v, last = data[data.length - 1].v;
-  $("#chart-sub").textContent = "с " + dmy(data[0].t) + ": "
+  $("#chart-sub").textContent = "с " + stamp(data[0].t, state.intraday) + ": "
     + (last >= first ? "+" : "") + nf((last / first - 1) * 100, 2) + " %"
     + " · " + nf(last, inst.digits) + inst.unit;
   renderChartTable();
@@ -928,9 +937,10 @@ function drawChart() {
 function renderChartTable() {
   const t = $("#chart-table"), inst = chart.inst || CHART_SET[0];
   if (!state.series.length) { t.innerHTML = ""; return; }
-  t.innerHTML = "<thead><tr><th>Дата</th><th>Закрытие" + inst.unit + "</th></tr></thead><tbody>"
+  t.innerHTML = "<thead><tr><th>" + (state.intraday ? "Дата и время" : "Дата")
+    + "</th><th>Закрытие" + inst.unit + "</th></tr></thead><tbody>"
     + state.series.slice().reverse().map(d =>
-        "<tr><td>" + dmy(d.t) + "</td><td>" + nf(d.v, inst.digits) + "</td></tr>").join("")
+        "<tr><td>" + stamp(d.t, state.intraday) + "</td><td>" + nf(d.v, inst.digits) + "</td></tr>").join("")
     + "</tbody>";
 }
 
@@ -950,7 +960,7 @@ function hover(ev) {
   svg.appendChild(mk("circle", { cx: best.x, cy: best.y, r: 4.5, class: "hpoint" }));
 
   const inst = chart.inst || CHART_SET[0];
-  tip.innerHTML = "<b>" + nf(best.d.v, inst.digits) + inst.unit + "</b><i>" + dmy(best.d.t) + "</i>";
+  tip.innerHTML = "<b>" + nf(best.d.v, inst.digits) + inst.unit + "</b><i>" + stamp(best.d.t, state.intraday) + "</i>";
   tip.style.left = (best.x / (svg.viewBox.baseVal.width || r.width) * r.width) + "px";
   tip.style.top  = (best.y / (svg.viewBox.baseVal.height || r.height) * r.height) + "px";
   tip.style.opacity = 1;
