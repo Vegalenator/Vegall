@@ -22,6 +22,8 @@
   --accent:#243f9c;            /* ультрамарин */
   --accent-2:rgba(36,63,156,.08);
   --accent-3:rgba(36,63,156,.16);
+  /* типы событий: пыльная приглушённая гамма, разнесённая по тону */
+  --t-monetary:#5c6fa3; --t-elections:#a96a87; --t-summits:#4e8783; --t-state:#ad7057; --t-data:#83854f; --t-energy:#b08a45; --t-corp:#7b68a3;
   --st-confirmed:#1f7a52;
   --st-preliminary:#a3690f;
   --st-expected:#6d7686;
@@ -41,6 +43,7 @@
     --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
     --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
     --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
+    --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
     --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
     --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
     --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
@@ -51,6 +54,7 @@
   --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
   --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
   --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
+    --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
   --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
   --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
   --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
@@ -135,6 +139,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .s-confirmed{--c:var(--st-confirmed)} .s-preliminary{--c:var(--st-preliminary)} .s-expected{--c:var(--st-expected)} .s-cancelled{--c:var(--st-cancelled)}
 .t{font-size:14.5px;font-weight:500;line-height:1.35;letter-spacing:-.005em;text-wrap:balance}
 .sub{margin-top:4px;font-size:12.5px;color:var(--muted)}
+.ty{display:inline-flex;align-items:center;gap:6px;color:var(--tc);font-weight:500;white-space:nowrap}
+.ty i{width:7px;height:7px;border-radius:2px;background:var(--tc);flex:none}
+.row .ty{font-size:12px}
+.detail::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--tc,transparent);opacity:.85;z-index:3;transition:background .4s var(--ease)}
+.hero .k .ty{margin-right:2px}
+.tlegend{display:grid;gap:8px}
+.tlegend div{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;font-size:13px;align-items:baseline}
+.tlegend span.d{color:var(--ink-2)}
 .gist{margin-top:5px;font-size:12.5px;color:var(--ink-2)}
 .flags{display:inline-flex;gap:6px;margin-left:8px;vertical-align:2px}
 .flag{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;padding:2px 7px;border-radius:999px;white-space:nowrap}
@@ -321,6 +333,27 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   ];
   const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.full]));
   const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
+  const TYPES = [
+    { id: 'monetary', label: 'Денежная политика', d: 'Решения ЦБ, ФРС, ЕЦБ и выступления их глав' },
+    { id: 'elections', label: 'Выборы', d: 'Национальные выборы и референдумы' },
+    { id: 'summits', label: 'Саммиты и форумы', d: 'Встречи лидеров и министров, международные форумы' },
+    { id: 'state', label: 'Власть и бюджет', d: 'Парламенты, правительства, бюджетные сроки' },
+    { id: 'data', label: 'Статистика', d: 'Публикации макроэкономических данных' },
+    { id: 'energy', label: 'Нефть и энергетика', d: 'ОПЕК плюс, энергетические форумы' },
+    { id: 'corp', label: 'Компании', d: 'Корпоративная отчётность' },
+  ];
+  const TY = Object.fromEntries(TYPES.map(t => [t.id, t]));
+  function typeOf(e) {
+    if (e.type && TY[e.type]) return e.type;
+    const k = (e.kind || '').toLowerCase(), c = e.cats || [];
+    if (k.includes('выбор')) return 'elections';
+    if (c.includes('cb')) return 'monetary';
+    if (k.includes('данн')) return 'data';
+    if (k.includes('отчёт')) return 'corp';
+    if (k.includes('саммит') || k.includes('форум')) return 'summits';
+    return 'state';
+  }
+  const tyTag = e => { const t = typeOf(e); return `<span class="ty" style="--tc:var(--t-${t})"><i></i>${TY[t].label}</span>`; };
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem('em.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -467,7 +500,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function rowHtml(e, now, i) {
     const ph = phase(e, now);
     const flags = [ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
-    const subs = [e.kind, e.where].filter(Boolean).map(esc).join(' · ');
+    const subs = tyTag(e) + (e.where ? ' · ' + esc(e.where) : '');
     const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
     const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
     const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms"` : '';
@@ -580,7 +613,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       outcome = `<section>${lab('Итог')}<div class="pending">Событие завершилось. Итог в формате «ожидали → решили → осталось открытым» запишет ближайший автопрогон — в 06:47 или 15:47 мск.</div></section>`;
     }
     const html = `
-      <section class="hero"><div class="k">${esc([e.kind, e.where].filter(Boolean).join(' · '))}</div>
+      <section class="hero"><div class="k">${tyTag(e)} · ${esc([e.kind, e.where].filter(Boolean).join(' · '))}</div>
         <h2 id="drTitle" title="${esc(e.title)}">${esc(e.title)}</h2>
         <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}</div></section>
       ${outcome}
@@ -601,18 +634,20 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const idx = state.order.indexOf(id);
     $('#drPrev').disabled = idx <= 0; $('#drNext').disabled = idx < 0 || idx >= state.order.length - 1;
     const crumb = '';
+    detail.style.setProperty('--tc', `var(--t-${typeOf(e)})`);
     paint(html, foot, crumb, 'e:' + id + ':' + (e.outcome ? 1 : 0), opt.quiet);
     markCurrent();
     if (!opt.quiet) sheetOpen();
   }
   function openHelp() {
-    state.help = true; markCurrent();
+    state.help = true; markCurrent(); detail.style.setProperty('--tc', 'var(--accent)');
     const html = `<section class="hero"><div class="k">Справка</div><h2 id="drTitle">Как читать карту</h2></section>
       <section>${lab('Статус даты')}<div class="legend">
         <div>${stTag('confirmed', true)}<p>Назначена официальным документом: указом, календарём организатора, решением избиркома.</p><span class="ex">в эфире: «23 октября в 13:30»</span></div>
         <div>${stTag('preliminary', true)}<p>Дата известна, но не закреплена: практика прошлых лет, агрегаторы, оговорки организатора. Время помечено знаком ≈.</p><span class="ex">в эфире: «ориентировочно…»</span></div>
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
+      <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
       <section>${lab('Пометки в карточке')}<ul class="items"><li><span class="bs agenda">повестка</span><span>Подтверждено повесткой или документом организатора.</span></li><li><span class="bs analysis">анализ</span><span>Предположение редакции: сценарий, а не факт.</span></li></ul></section>
       <section>${lab('Блоки карточки')}<dl class="kv"><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
