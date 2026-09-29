@@ -294,6 +294,8 @@
 
   var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
                 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+  var MONTHS_IN = ['январе', 'феврале', 'марте', 'апреле', 'мае', 'июне',
+                   'июле', 'августе', 'сентябре', 'октябре', 'ноябре', 'декабре'];
 
   VIEWS.brief = {
     nav: 'Главное', hint: '00',
@@ -305,7 +307,7 @@
         '<p class="sub">Окно по наблюдаемому ритму, а не объявленная дата: точный день компания называет сама</p>' +
         (soon.length ? '<div class="tablewrap compact"><table><tbody>' + soon.map(function (x) {
           return '<tr><td class="num" style="white-space:nowrap">' +
-            (x.it.day ? '≈ ' + x.date.getDate() + ' ' + MONTHS[x.date.getMonth()] : 'в ' + MONTHS[x.date.getMonth()]) +
+            (x.it.day ? '≈ ' + x.date.getDate() + ' ' + MONTHS[x.date.getMonth()] : 'в ' + MONTHS_IN[x.date.getMonth()]) +
             '<span class="sub">' + (x.it.day ? 'через ' + x.left + ' дн.' : 'день не зафиксирован') + '</span></td>' +
             '<td><b>' + esc(x.it.name) + '</b><span class="sub">' + esc(x.it.what) + '</span></td>' +
             '<td class="num">' + srcref(x.it.src) +
