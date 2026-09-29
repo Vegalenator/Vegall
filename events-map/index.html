@@ -191,7 +191,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .blk.cpb .lab.caps{color:var(--accent)}
 .blk.res{background:color-mix(in srgb,var(--st-confirmed) 7%,var(--sheet-2))}
 .blk.res .outcome{background:none;padding:0}
-.who{margin:0 0 12px;font-size:13.5px}.who span{color:var(--muted)}
+.disc{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px 16px;margin:0;font-size:13.5px;line-height:1.5}
+.disc dt{color:var(--muted);font-size:12.5px;padding-top:1px}
+.disc dd{margin:0;min-width:0}
+.dash{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:13.5px;line-height:1.5}
+.dash li{position:relative;padding-left:18px}
+.dash li::before{content:"";position:absolute;left:1px;top:.72em;width:9px;height:1.5px;border-radius:1px;background:var(--tc,var(--accent));opacity:.9}
 .ref{padding:14px 18px 4px;border-top:1px solid var(--hair)}
 .ref + .ref{border-top:1px dashed var(--hair)}
 .ref .kv,.ref .srcs{font-size:12.5px}
@@ -269,6 +274,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .kv{grid-template-columns:minmax(0,1fr)}
   .kv dt{margin-top:6px}
   .items li{grid-template-columns:minmax(0,1fr);gap:2px}
+  .disc{grid-template-columns:minmax(0,1fr);gap:4px}
+  .disc dd + dt{margin-top:8px}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
@@ -609,7 +616,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   }
   function items(arr) {
     if (!arr || !arr.length) return '<p class="small" style="margin:0">Пока нет данных.</p>';
-    return '<ul class="items">' + arr.map(a => `<li><span class="bs ${a.basis}">${a.basis === 'agenda' ? 'повестка' : 'анализ'}</span><span>${esc(a.text)}</span></li>`).join('') + '</ul>';
+    return '<ul class="dash">' + arr.map(a => `<li>${esc(a.text)}</li>`).join('') + '</ul>';
   }
   const links = arr => (arr || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join('');
   const lab = t => `<h3 class="lab caps">${t}</h3>`;
@@ -640,7 +647,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}${navHtml(state.order.indexOf(id))}</div></div>
         ${mapHtml(e)}</section>
       ${outcome}
-      <section class="blk">${lab('Что на обсуждении')}${e.participants && e.participants !== '—' ? `<p class="who"><span>Участники.</span> ${esc(e.participants)}</p>` : ''}${items(e.agenda)}</section>
+      <section class="blk">${lab('Что на обсуждении')}<dl class="disc">${e.participants && e.participants !== '—' ? `<dt>Участники</dt><dd>${esc(e.participants)}</dd>` : ''}<dt>Повестка</dt><dd>${items(e.agenda)}</dd></dl></section>
       <section class="blk">${lab('Какие решения возможны')}${items(e.scenarios)}</section>
       <section class="blk">${lab('Что изменится')}<div class="three">
         <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
@@ -670,8 +677,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
-      <section>${lab('Пометки в карточке')}<ul class="items"><li><span class="bs agenda">повестка</span><span>Подтверждено повесткой или документом организатора.</span></li><li><span class="bs analysis">анализ</span><span>Предположение редакции: сценарий, а не факт.</span></li></ul></section>
-      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
       <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
     paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, 'Справка', 'help', false);
