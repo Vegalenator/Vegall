@@ -23,6 +23,7 @@
   --accent-2:rgba(36,63,156,.08);
   --accent-3:rgba(36,63,156,.16);
   /* типы событий: пыльная приглушённая гамма, разнесённая по тону */
+  --tint:14%; --tint-h:20%; --tint-a:25%;
   --t-monetary:#5c6fa3; --t-elections:#a96a87; --t-summits:#4e8783; --t-state:#ad7057; --t-data:#83854f; --t-energy:#b08a45; --t-corp:#7b68a3;
   --st-confirmed:#1f7a52;
   --st-preliminary:#a3690f;
@@ -43,7 +44,7 @@
     --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
     --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
     --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
-    --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
+    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
     --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
     --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
     --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
@@ -54,7 +55,7 @@
   --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
   --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
   --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
-    --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
+    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
   --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
   --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
   --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
@@ -117,17 +118,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .dh.now .d{font-size:19px;line-height:1.1;color:var(--live)}
 .dh.nodate .d{font-size:17px;line-height:1.15}
 .rows{min-width:0}
-.row{position:relative;display:grid;grid-template-columns:70px minmax(0,1fr) 16px;gap:12px;align-items:start;width:100%;text-align:left;padding:12px 12px 12px 10px;border-radius:8px;transition:background .25s var(--ease)}
-.row + .row{box-shadow:0 -1px 0 var(--hair)}
-.row:hover{background:var(--sheet-2)}
-.row:hover + .row,.row:hover{box-shadow:none}
+.rows{display:grid;gap:5px}
+.row{--tc:var(--muted);position:relative;display:grid;grid-template-columns:70px minmax(0,1fr) 16px;gap:12px;align-items:start;width:100%;text-align:left;padding:12px 12px 12px 12px;border-radius:9px;background:color-mix(in srgb,var(--tc) var(--tint),var(--sheet));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tc) 80%,transparent);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
+.row:hover{background:color-mix(in srgb,var(--tc) var(--tint-h),var(--sheet))}
 .row:hover .go{opacity:1;transform:translateX(0)}
 .row.cancelled .t{text-decoration:line-through;text-decoration-color:var(--st-cancelled);color:var(--ink-2)}
-.row[aria-current="true"]{background:var(--accent-2)}
-.row[aria-current="true"]::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:2px;border-radius:2px;background:var(--accent);animation:barIn .3s var(--ease) both}
+.row[aria-current="true"]{background:color-mix(in srgb,var(--tc) var(--tint-a),var(--sheet));box-shadow:inset 5px 0 0 var(--tc),inset 0 0 0 1px color-mix(in srgb,var(--tc) 60%,transparent)}
 @keyframes barIn{from{transform:scaleY(0)}to{transform:none}}
-.row[aria-current="true"] .go{opacity:1;transform:none;color:var(--accent)}
-.row[aria-current="true"] + .row,.row + .row[aria-current="true"]{box-shadow:none}
+.row[aria-current="true"] .go{opacity:1;transform:none;color:var(--tc)}
 .row.enter{animation:rowIn .45s var(--ease) both}
 @keyframes rowIn{from{opacity:.25;transform:translateY(6px)}to{opacity:1;transform:none}}
 .tm{display:grid;gap:3px;padding-top:1px}
@@ -141,7 +139,6 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .sub{margin-top:4px;font-size:12.5px;color:var(--muted)}
 .ty{display:inline-flex;align-items:center;gap:6px;color:var(--tc);font-weight:500;white-space:nowrap}
 .ty i{width:7px;height:7px;border-radius:2px;background:var(--tc);flex:none}
-.row .ty{font-size:12px}
 .detail::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--tc,transparent);opacity:.85;z-index:3;transition:background .4s var(--ease)}
 .hero .k .ty{margin-right:2px}
 .tlegend{display:grid;gap:8px}
@@ -187,7 +184,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ref{padding:14px 18px 4px;border-top:1px solid var(--hair)}
 .ref + .ref{border-top:1px dashed var(--hair)}
 .ref .kv,.ref .srcs{font-size:12.5px}
-.onair{position:relative;margin-top:8px;padding:18px 20px 20px 22px;border-radius:10px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3)}
+.onair{position:relative;margin:4px 0 8px;padding:18px 20px 20px 22px;border-radius:10px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3)}
 .onair::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:3px;background:var(--accent)}
 .onair-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .onair-h .lab{margin:0;color:var(--accent)}
@@ -238,8 +235,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .detail.open{transform:none}
   .detail.closing{transition:transform .28s var(--ease-in)}
   #drClose{display:grid}
-  .row[aria-current="true"]{background:none}
-  .row[aria-current="true"]::before{display:none}
+  .row[aria-current="true"]{background:color-mix(in srgb,var(--tc) var(--tint),var(--sheet));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tc) 80%,transparent)}
 }
 @media (max-width:720px){
   .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
@@ -500,11 +496,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function rowHtml(e, now, i) {
     const ph = phase(e, now);
     const flags = [ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
-    const subs = tyTag(e) + (e.where ? ' · ' + esc(e.where) : '');
+    const subs = esc(e.where || e.kind || '');
     const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
     const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
-    const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms"` : '';
-    return `<button type="button" class="${cls}" data-open="${esc(e.id)}" aria-current="${state.openId === e.id && !state.help}"${delay}>
+    const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms;"` : '';
+    return `<button type="button" class="${cls}" data-open="${esc(e.id)}" title="${esc(TY[typeOf(e)].label)}" aria-current="${state.openId === e.id && !state.help}" style="--tc:var(--t-${typeOf(e)});${delay ? delay.slice(8, -1) : ''}">
       ${timeCell(e)}
       <div style="min-width:0"><div class="t">${esc(e.title)}${flags ? `<span class="flags">${flags}</span>` : ''}</div><div class="sub">${subs}</div>${gist}</div>
       <span class="go" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -622,6 +618,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       <section class="blk">${lab('Что изменится')}<div class="three">
         <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
       <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${esc(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
+      <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${esc(airText(e))}</p></section>
       <section class="ref">${lab('Дата и основание')}<dl class="kv">
         ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
         ${e.dateNote ? `<dt>Оговорка</dt><dd>${esc(e.dateNote)}</dd>` : ''}
@@ -629,7 +626,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <dt>Основание</dt><dd>${e.dateSource ? `<a href="${esc(e.dateSource.url)}" target="_blank" rel="noopener">${esc(e.dateSource.name)}</a>` : '—'}</dd>
         <dt>Сверено</dt><dd class="mono" style="font-size:12.5px">${esc(e.checkedAt || '—')}</dd></dl></section>
       <section class="ref">${lab('Источники')}<div class="srcs">${links(e.sources)}</div></section>
-      <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${esc(airText(e))}</p></section>`;
+`;
     const foot = '';
     const idx = state.order.indexOf(id);
     $('#drPrev').disabled = idx <= 0; $('#drNext').disabled = idx < 0 || idx >= state.order.length - 1;
