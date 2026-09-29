@@ -24,7 +24,7 @@
   --accent-3:rgba(36,63,156,.16);
   /* типы событий: пыльная приглушённая гамма, разнесённая по тону */
   --tint:14%; --tint-h:20%; --tint-a:25%;
-  --t-monetary:#5c6fa3; --t-elections:#a96a87; --t-summits:#4e8783; --t-state:#ad7057; --t-data:#83854f; --t-energy:#b08a45; --t-corp:#7b68a3;
+  --t-monetary:#5c6fa3; --t-elections:#a96a87; --t-summits:#4e8783; --t-state:#ad7057; --t-data:#83854f; --t-energy:#b08a45; --t-corp:#7b68a3; --t-tech:#5a8a66;
   --st-confirmed:#1f7a52;
   --st-preliminary:#a3690f;
   --st-expected:#6d7686;
@@ -44,7 +44,7 @@
     --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
     --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
     --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
-    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
+    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6; --t-tech:#93c49e;
     --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
     --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
     --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
@@ -55,7 +55,7 @@
   --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
   --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
   --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
-    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6;
+    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6; --t-tech:#93c49e;
   --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
   --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
   --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
@@ -346,6 +346,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     { id: 'elections', label: 'Выборы', full: 'Выборы' },
     { id: 'cb', label: 'ЦБ', full: 'Центробанки' },
     { id: 'business', label: 'CORP', full: 'Крупный бизнес' },
+    { id: 'tech', label: 'TECH', full: 'Технологии и отраслевые события' },
   ];
   const STATUSES = [
     { id: 'confirmed', label: 'Подтверждена', short: 'подтв.' },
@@ -363,6 +364,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     { id: 'data', label: 'Статистика', d: 'Публикации макроэкономических данных' },
     { id: 'energy', label: 'Нефть и энергетика', d: 'ОПЕК плюс, энергетические форумы' },
     { id: 'corp', label: 'Компании', d: 'Корпоративная отчётность' },
+    { id: 'tech', label: 'Технологии и отрасли', d: 'Технологические и отраслевые форумы, конференции, выставки' },
   ];
   const TY = Object.fromEntries(TYPES.map(t => [t.id, t]));
   function typeOf(e) {
