@@ -10,7 +10,8 @@
       IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
       LADDER = window.VG_LADDER, CITES = window.VG_CITES || {},
-      FEEDS = window.VG_FEEDS || { connectors: [], declared: [] };
+      FEEDS = window.VG_FEEDS || { connectors: [], declared: [] },
+      CAL = (window.VG_CALENDAR || { items: [] }).items;
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -269,11 +270,52 @@
     return out;
   }
 
+  /* Ближайшие раскрытия. Месяц берётся из наблюдённого ритма, день — только
+     если он наблюдался. Точную дату компания называет сама, поэтому здесь
+     окно, а не обещание. */
+  function upcoming(days) {
+    var now = new Date(), out = [];
+    CAL.forEach(function (it) {
+      var best = null;
+      for (var add = 0; add <= 13; add++) {
+        var d = new Date(now.getFullYear(), now.getMonth() + add, 1);
+        if (it.months.indexOf(d.getMonth() + 1) < 0) continue;
+        var day = it.day || 15;
+        var cand = new Date(d.getFullYear(), d.getMonth(), day);
+        if (cand >= new Date(now.getFullYear(), now.getMonth(), now.getDate())) { best = cand; break; }
+      }
+      if (!best) return;
+      var left = Math.round((best - now) / 86400000);
+      if (left <= days) out.push({ it: it, date: best, left: left });
+    });
+    out.sort(function (a, b) { return a.date - b.date; });
+    return out;
+  }
+
+  var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
   VIEWS.brief = {
     nav: 'Главное', hint: '00',
     title: 'Главное',
     sub: 'Четыре вопроса перед эфиром: что изменилось, чем это подтверждено, какой вывод допустим и какой вопрос стоит задать собеседнику.',
     render: function () {
+      var soon = upcoming(21);
+      var soonBlock = '<div class="panel"><h3>Ближайшие раскрытия</h3>' +
+        '<p class="sub">Окно по наблюдаемому ритму, а не объявленная дата: точный день компания называет сама</p>' +
+        (soon.length ? '<div class="tablewrap compact"><table><tbody>' + soon.map(function (x) {
+          return '<tr><td class="num" style="white-space:nowrap">' +
+            (x.it.day ? '≈ ' + x.date.getDate() + ' ' + MONTHS[x.date.getMonth()] : 'в ' + MONTHS[x.date.getMonth()]) +
+            '<span class="sub">' + (x.it.day ? 'через ' + x.left + ' дн.' : 'день не зафиксирован') + '</span></td>' +
+            '<td><b>' + esc(x.it.name) + '</b><span class="sub">' + esc(x.it.what) + '</span></td>' +
+            '<td class="num">' + srcref(x.it.src) +
+              (FEEDS.connectors.some(function (c) { return c.source === x.it.src && c.state === 'ok'; })
+                ? '<span class="sub"><span class="cite ok">✓</span> подключено</span>'
+                : '<span class="sub"><span class="cite none">?</span> вручную</span>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+          : '<p class="note">В ближайшие три недели раскрытий по наблюдаемому ритму не ожидается.</p>') +
+        '</div>';
+
       /* ---------- 1. Что изменилось ---------- */
       var rows = changeRows();
       var idx = DIFF.index;
@@ -319,7 +361,7 @@
               return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
             }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
           '</div>' +
-        '</div>';
+        '</div>' + soonBlock;
 
       /* ---------- 2. Чем подтверждено ---------- */
       var stressed = IND.filter(function (i) { return i.state === 'stress'; });

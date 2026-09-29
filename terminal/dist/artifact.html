@@ -1530,6 +1530,244 @@ window.VG_EDITORIAL = {
 
 </script>
 <script>
+/* Календарь ожидаемых раскрытий.
+   Месяцы вычислены от даты, зафиксированной при сверке, с шагом в квартал,
+   полугодие или год. Это РИТМ, а не объявленная дата: компания называет
+   точный день сама. День указан только там, где он наблюдался. */
+window.VG_CALENDAR = {
+ "items": [
+  {
+   "name": "ASML",
+   "src": "S19",
+   "what": "Квартальный пресс-релиз",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": 15,
+   "observed": "2026-07-15",
+   "step": 3
+  },
+  {
+   "name": "TSMC",
+   "src": "S18",
+   "what": "Квартальные результаты",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": null,
+   "observed": "2026-07",
+   "step": 3
+  },
+  {
+   "name": "Alphabet",
+   "src": "S11",
+   "what": "Квартальный отчёт",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": null,
+   "observed": "2026-07",
+   "step": 3
+  },
+  {
+   "name": "Amazon",
+   "src": "S15",
+   "what": "Квартальный отчёт",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": null,
+   "observed": "2026-07",
+   "step": 3
+  },
+  {
+   "name": "Meta",
+   "src": "S16",
+   "what": "Квартальный отчёт",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": null,
+   "observed": "2026-07",
+   "step": 3
+  },
+  {
+   "name": "Microsoft",
+   "src": "S10",
+   "what": "Квартал финансового года",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": 29,
+   "observed": "2026-07-29",
+   "step": 3
+  },
+  {
+   "name": "Яндекс",
+   "src": "S24",
+   "what": "Квартальный отчёт",
+   "months": [
+    1,
+    4,
+    7,
+    10
+   ],
+   "day": 29,
+   "observed": "2026-07-29",
+   "step": 3
+  },
+  {
+   "name": "Alibaba",
+   "src": "S20",
+   "what": "Квартальный отчёт",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "day": null,
+   "observed": "2026-08",
+   "step": 3
+  },
+  {
+   "name": "CoreWeave",
+   "src": "S17",
+   "what": "Форма 10-Q",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "day": 11,
+   "observed": "2026-08-11",
+   "step": 3
+  },
+  {
+   "name": "Nvidia",
+   "src": "S12",
+   "what": "Квартал финансового года",
+   "months": [
+    2,
+    5,
+    8,
+    11
+   ],
+   "day": 26,
+   "observed": "2026-08-26",
+   "step": 3
+  },
+  {
+   "name": "Broadcom",
+   "src": "S13",
+   "what": "Квартал финансового года",
+   "months": [
+    3,
+    6,
+    9,
+    12
+   ],
+   "day": 2,
+   "observed": "2026-09-02",
+   "step": 3
+  },
+  {
+   "name": "Oracle",
+   "src": "S14",
+   "what": "Квартал финансового года",
+   "months": [
+    3,
+    6,
+    9,
+    12
+   ],
+   "day": null,
+   "observed": "2026-06",
+   "step": 3
+  },
+  {
+   "name": "Сбер",
+   "src": "S23",
+   "what": "Результаты по МСФО",
+   "months": [
+    2
+   ],
+   "day": null,
+   "observed": "2026-02",
+   "step": 12
+  },
+  {
+   "name": "BIS",
+   "src": "S2",
+   "what": "Quarterly Review",
+   "months": [
+    3,
+    6,
+    9,
+    12
+   ],
+   "day": null,
+   "observed": "2026-03",
+   "step": 3
+  },
+  {
+   "name": "BIS",
+   "src": "S1",
+   "what": "Annual Economic Report",
+   "months": [
+    6
+   ],
+   "day": 28,
+   "observed": "2026-06-28",
+   "step": 12
+  },
+  {
+   "name": "IMF",
+   "src": "S9",
+   "what": "Global Financial Stability Report",
+   "months": [
+    4,
+    10
+   ],
+   "day": null,
+   "observed": "2026-04",
+   "step": 6
+  },
+  {
+   "name": "Банк России",
+   "src": "S21",
+   "what": "Обзор применения ИИ на финансовом рынке",
+   "months": [
+    11
+   ],
+   "day": 20,
+   "observed": "2025-11-20",
+   "step": 12
+  }
+ ]
+};
+
+</script>
+<script>
 /* Состояние подключений к первоисточникам.
    Пишется скриптом build/connect.py. Руками не правится.
    source_value — что сказал источник, terminal_value — что стоит в данных. */
@@ -3188,7 +3426,8 @@ window.VG_HISTORY = [
       IND = window.VG_INDICATORS, GROUPS = window.VG_GROUPS, SCEN = window.VG_SCENARIOS,
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
       LADDER = window.VG_LADDER, CITES = window.VG_CITES || {},
-      FEEDS = window.VG_FEEDS || { connectors: [], declared: [] };
+      FEEDS = window.VG_FEEDS || { connectors: [], declared: [] },
+      CAL = (window.VG_CALENDAR || { items: [] }).items;
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -3447,11 +3686,52 @@ window.VG_HISTORY = [
     return out;
   }
 
+  /* Ближайшие раскрытия. Месяц берётся из наблюдённого ритма, день — только
+     если он наблюдался. Точную дату компания называет сама, поэтому здесь
+     окно, а не обещание. */
+  function upcoming(days) {
+    var now = new Date(), out = [];
+    CAL.forEach(function (it) {
+      var best = null;
+      for (var add = 0; add <= 13; add++) {
+        var d = new Date(now.getFullYear(), now.getMonth() + add, 1);
+        if (it.months.indexOf(d.getMonth() + 1) < 0) continue;
+        var day = it.day || 15;
+        var cand = new Date(d.getFullYear(), d.getMonth(), day);
+        if (cand >= new Date(now.getFullYear(), now.getMonth(), now.getDate())) { best = cand; break; }
+      }
+      if (!best) return;
+      var left = Math.round((best - now) / 86400000);
+      if (left <= days) out.push({ it: it, date: best, left: left });
+    });
+    out.sort(function (a, b) { return a.date - b.date; });
+    return out;
+  }
+
+  var MONTHS = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+                'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+
   VIEWS.brief = {
     nav: 'Главное', hint: '00',
     title: 'Главное',
     sub: 'Четыре вопроса перед эфиром: что изменилось, чем это подтверждено, какой вывод допустим и какой вопрос стоит задать собеседнику.',
     render: function () {
+      var soon = upcoming(21);
+      var soonBlock = '<div class="panel"><h3>Ближайшие раскрытия</h3>' +
+        '<p class="sub">Окно по наблюдаемому ритму, а не объявленная дата: точный день компания называет сама</p>' +
+        (soon.length ? '<div class="tablewrap compact"><table><tbody>' + soon.map(function (x) {
+          return '<tr><td class="num" style="white-space:nowrap">' +
+            (x.it.day ? '≈ ' + x.date.getDate() + ' ' + MONTHS[x.date.getMonth()] : 'в ' + MONTHS[x.date.getMonth()]) +
+            '<span class="sub">' + (x.it.day ? 'через ' + x.left + ' дн.' : 'день не зафиксирован') + '</span></td>' +
+            '<td><b>' + esc(x.it.name) + '</b><span class="sub">' + esc(x.it.what) + '</span></td>' +
+            '<td class="num">' + srcref(x.it.src) +
+              (FEEDS.connectors.some(function (c) { return c.source === x.it.src && c.state === 'ok'; })
+                ? '<span class="sub"><span class="cite ok">✓</span> подключено</span>'
+                : '<span class="sub"><span class="cite none">?</span> вручную</span>') + '</td></tr>';
+        }).join('') + '</tbody></table></div>'
+          : '<p class="note">В ближайшие три недели раскрытий по наблюдаемому ритму не ожидается.</p>') +
+        '</div>';
+
       /* ---------- 1. Что изменилось ---------- */
       var rows = changeRows();
       var idx = DIFF.index;
@@ -3497,7 +3777,7 @@ window.VG_HISTORY = [
               return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
             }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
           '</div>' +
-        '</div>';
+        '</div>' + soonBlock;
 
       /* ---------- 2. Чем подтверждено ---------- */
       var stressed = IND.filter(function (i) { return i.state === 'stress'; });
