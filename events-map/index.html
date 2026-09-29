@@ -151,25 +151,37 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .scrim{position:fixed;inset:0;z-index:50;background:var(--scrim);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;transition:opacity .3s var(--ease)}
 .scrim.open{opacity:1}
 .detail{position:sticky;top:calc(var(--toph,56px) + 16px);height:calc(100vh - var(--toph,56px) - 32px);display:flex;flex-direction:column;overflow:hidden;padding:0;position:sticky}
-.dtools{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:2px;padding:3px;border-radius:10px;background:var(--glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.dtools{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:2px;padding:3px;border-radius:10px;background:color-mix(in srgb,var(--sheet) 88%,transparent);box-shadow:var(--shadow-sm);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 #drClose{display:none}
-.dr-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:24px 30px 36px;display:grid;gap:26px;align-content:start}
+.dr-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:22px 26px 30px;display:grid;gap:12px;align-content:start}
+.dr-body > .hero{margin-bottom:8px}
 .dr-body.swap > *{animation:secIn .42s var(--ease) both}
 .dr-body.swap > *:nth-child(2){animation-delay:.03s}.dr-body.swap > *:nth-child(3){animation-delay:.06s}.dr-body.swap > *:nth-child(4){animation-delay:.09s}.dr-body.swap > *:nth-child(n+5){animation-delay:.12s}
 @keyframes secIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .hero .k{font-size:12.5px;color:var(--muted)}
-.hero{padding-right:84px}
-.hero h2{margin:6px 0 14px;font-family:var(--ff-display);font-weight:500;font-size:28px;line-height:1.15;letter-spacing:-.015em;text-wrap:balance}
-.when{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
-.when .big{font-family:var(--ff-mono);font-size:16px;font-weight:500;letter-spacing:-.01em}
+.hero{padding-right:74px;min-width:0}
+.hero h2{margin:5px 0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--ff-display);font-weight:500;font-size:22px;line-height:1.15;letter-spacing:-.015em;text-wrap:balance}
+.when{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap}
+.when .st,.when .flag{flex:none}
+.when .big{font-family:var(--ff-mono);font-size:14.5px;white-space:nowrap;font-weight:500;letter-spacing:-.01em}
 .when .big.none{font-family:var(--ff-ui);font-style:italic;font-weight:400;color:var(--st-expected)}
-.lab{margin:0 0 10px;display:flex;align-items:center;gap:10px}
-.lab::after{content:"";flex:1;height:1px;background:var(--hair)}
-.air{position:relative;padding:16px 18px 16px 20px;border-radius:10px;background:var(--accent-2)}
-.air::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--c,var(--accent))}
-.air p{margin:0;font-family:var(--ff-display);font-size:17px;line-height:1.45}
-.air .row2{display:flex;align-items:center;gap:10px;margin-top:10px}
-.air .hint{font-size:12px;color:var(--ink-2);flex:1}
+.lab{margin:0 0 10px}
+.blk{padding:16px 18px;border-radius:10px;background:var(--sheet-2)}
+.blk.cpb{background:var(--accent-2)}
+.blk.cpb .lab{color:var(--accent)}
+.blk.res{background:color-mix(in srgb,var(--st-confirmed) 7%,var(--sheet-2))}
+.blk.res .outcome{background:none;padding:0}
+.who{margin:0 0 12px;font-size:13.5px}.who span{color:var(--muted)}
+.ref{padding:14px 18px 4px;border-top:1px solid var(--hair)}
+.ref + .ref{border-top:1px dashed var(--hair)}
+.ref .kv,.ref .srcs{font-size:12.5px}
+.onair{position:relative;margin-top:8px;padding:18px 20px 20px 22px;border-radius:10px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3)}
+.onair::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:3px;background:var(--accent)}
+.onair-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.onair-h .lab{margin:0;color:var(--accent)}
+.onair-b{display:flex;align-items:center;gap:6px}
+.onair-b .ghost{font-weight:400;font-size:12px}
+.onair p{margin:0;font-family:var(--ff-display);font-size:16.5px;line-height:1.6;color:var(--ink);max-width:62ch}
 .pillbtn{font-size:12px;padding:6px 12px;border-radius:999px;color:var(--accent);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3);transition:background .2s,box-shadow .2s;white-space:nowrap}
 .pillbtn:hover{box-shadow:inset 0 0 0 1px var(--accent)}
 .pillbtn[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:none}
@@ -189,7 +201,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cp{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;font-size:13.5px}
 .cp .w{font-family:var(--ff-mono);font-size:12.5px;color:var(--accent)}
 .srcs{display:flex;flex-direction:column;gap:6px;font-size:13px}
-.outcome{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1.3fr) 20px minmax(0,1fr);align-items:stretch;border-radius:10px;background:var(--sheet-2);padding:16px 14px}
+.outcome{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1.3fr) 20px minmax(0,1fr);align-items:stretch}
 .outcome .arr{display:grid;place-items:center;color:var(--muted)}
 .outcome > div{min-width:0;font-size:13px}
 .outcome b{display:block;margin-bottom:6px}
@@ -407,6 +419,18 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     }
   }
 
+  function airText(e) {
+    if (e.airBrief) return e.airBrief;
+    const a = airLine(e).text;
+    const ag = (e.agenda || [])[0], sc = (e.scenarios || [])[0];
+    return [a, ag ? 'На повестке: ' + ag.text.replace(/\.$/, '') + '.' : '', sc ? 'Чего ждать: ' + sc.text.replace(/\.$/, '') + '.' : ''].filter(Boolean).join(' ');
+  }
+  function fitTitle() {
+    const h = document.getElementById('drTitle'); if (!h) return;
+    let size = 22; h.style.fontSize = size + 'px';
+    while (h.scrollWidth > h.clientWidth + 1 && size > 15) { size -= 0.5; h.style.fontSize = size + 'px'; }
+  }
+
   /* ------------------------------------------------------------ шапка */
   function renderTabs(now) {
     const el = $('#tabs');
@@ -544,9 +568,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const multi = s && end && !e.allDay && dayKey(s) !== dayKey(end) ? ` — ${fShort.format(end)}` : '';
     const whenBig = s ? `<span class="big">${esc(fDay.format(s))}${e.allDay ? '' : ', ' + fTime.format(s) + ' мск'}${multi}</span>` : `<span class="big none">${esc(e.dateWording || '')}</span>`;
     const flag = ph === 'live' ? '<span class="flag live">идёт</span>' : ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '';
+    requestAnimationFrame(fitTitle);
     let outcome = '';
     if (o && o.decided) {
-      outcome = `<section>${lab('Итог')}<div class="outcome">
+      outcome = `<section class="blk res">${lab('Итог')}<div class="outcome">
         <div><b class="caps">Ожидали</b>${esc(o.expected || '—')}</div><div class="arr">→</div>
         <div class="dec"><b class="caps">Решили</b>${esc(o.decided)}</div><div class="arr">→</div>
         <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
@@ -556,23 +581,23 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     }
     const html = `
       <section class="hero"><div class="k">${esc([e.kind, e.where].filter(Boolean).join(' · '))}</div>
-        <h2 id="drTitle">${esc(e.title)}</h2>
+        <h2 id="drTitle" title="${esc(e.title)}">${esc(e.title)}</h2>
         <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}</div></section>
       ${outcome}
-      <section class="air" style="--c:${air.c}"><p>${esc(air.text)}</p><div class="row2"><span class="hint">${esc(air.hint)}</span><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать для эфира</button></div></section>
-      <section>${lab('Дата и основание')}<dl class="kv">
+      <section class="blk">${lab('Что на обсуждении')}${e.participants && e.participants !== '—' ? `<p class="who"><span>Участники.</span> ${esc(e.participants)}</p>` : ''}${items(e.agenda)}</section>
+      <section class="blk">${lab('Какие решения возможны')}${items(e.scenarios)}</section>
+      <section class="blk">${lab('Что изменится')}<div class="three">
+        <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
+      <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${esc(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
+      <section class="ref">${lab('Дата и основание')}<dl class="kv">
         ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
         ${e.dateNote ? `<dt>Оговорка</dt><dd>${esc(e.dateNote)}</dd>` : ''}
         ${e.ideaWording ? `<dt>IDEA</dt><dd>«${esc(e.ideaWording)}»${e.ideaCheck ? '<br><span style="color:var(--ink-2)">' + esc(e.ideaCheck) + '</span>' : ''}</dd>` : ''}
         <dt>Основание</dt><dd>${e.dateSource ? `<a href="${esc(e.dateSource.url)}" target="_blank" rel="noopener">${esc(e.dateSource.name)}</a>` : '—'}</dd>
         <dt>Сверено</dt><dd class="mono" style="font-size:12.5px">${esc(e.checkedAt || '—')}</dd></dl></section>
-      <section>${lab('Что на обсуждении')}${e.participants && e.participants !== '—' ? `<p style="margin:0 0 12px;font-size:13.5px"><span style="color:var(--muted)">Участники.</span> ${esc(e.participants)}</p>` : ''}${items(e.agenda)}</section>
-      <section>${lab('Какие решения возможны')}${items(e.scenarios)}</section>
-      <section>${lab('Что изменится')}<div class="three">
-        <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
-      <section>${lab('Контрольная точка')}<div class="cp"><span>${esc(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
-      <section>${lab('Источники')}<div class="srcs">${links(e.sources)}</div></section>`;
-    const foot = `<button type="button" class="pillbtn" data-copylink="${esc(e.id)}">Ссылка на карточку</button>`;
+      <section class="ref">${lab('Источники')}<div class="srcs">${links(e.sources)}</div></section>
+      <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${esc(airText(e))}</p></section>`;
+    const foot = '';
     const idx = state.order.indexOf(id);
     $('#drPrev').disabled = idx <= 0; $('#drNext').disabled = idx < 0 || idx >= state.order.length - 1;
     const crumb = '';
@@ -589,6 +614,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Пометки в карточке')}<ul class="items"><li><span class="bs agenda">повестка</span><span>Подтверждено повесткой или документом организатора.</span></li><li><span class="bs analysis">анализ</span><span>Предположение редакции: сценарий, а не факт.</span></li></ul></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
       <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
     $('#drPrev').disabled = true; $('#drNext').disabled = true;
@@ -608,7 +634,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     if (d.open) { showEvent(d.open); return; }
     if (d.hz) { if (state.horizon !== d.hz) { state.horizon = d.hz; store.set('horizon', d.hz); state.animate = true; render(); requestAnimationFrame(() => moveInk(true)); } return; }
     if (d.cat) { d.cat === '__clear' ? state.cats.clear() : (state.cats.has(d.cat) ? state.cats.delete(d.cat) : state.cats.add(d.cat)); store.set('cats', [...state.cats]); state.animate = true; render(); return; }
-    if (d.copy) { const e = state.events.find(x => x.id === d.copy); if (e) copy(airLine(e).text); return; }
+    if (d.copy) { const e = state.events.find(x => x.id === d.copy); if (e) copy(airText(e)); return; }
     if (d.copylink) { copy(location.href.split('#')[0] + '#' + d.copylink); return; }
     if (t.id === 'drClose') { sheetClose(); return; }
     if (t.id === 'backBtn') { state.help = false; showEvent(state.openId || state.order[0]); return; }
@@ -635,7 +661,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     else if (ev.key === 'Escape') sheetClose();
   });
   let qt; $('#q').addEventListener('input', ev => { clearTimeout(qt); qt = setTimeout(() => { state.q = ev.target.value.trim().toLowerCase(); state.animate = true; render(); }, 160); });
-  addEventListener('resize', () => { moveInk(false); setTopH(); if (!narrow()) { sheetClose(); } });
+  addEventListener('resize', () => { moveInk(false); fitTitle(); setTopH(); if (!narrow()) { sheetClose(); } });
   function setTopH() { document.documentElement.style.setProperty('--toph', $('.top').offsetHeight + 'px'); }
   setTopH();
 
