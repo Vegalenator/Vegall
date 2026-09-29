@@ -202,6 +202,19 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ref .kv,.ref .srcs{font-size:12.5px}
 .onair{position:relative;margin:4px 0 8px;padding:18px 20px 20px 22px;border-radius:10px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3)}
 .onair::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:3px;background:var(--accent)}
+.says{display:grid;gap:4px}
+.says-empty{margin:0;font-size:13px;color:var(--ink-2)}
+.says-day + .says-day{margin-top:14px}
+.says-h{display:flex;align-items:baseline;gap:8px;font-family:var(--ff-mono);font-size:11.5px;color:var(--ink-2);padding-bottom:6px;border-bottom:1px solid var(--hair);margin-bottom:4px}
+.says-h span{color:var(--muted);font-size:10.5px}
+.say{margin:0;padding:10px 0;display:grid;gap:4px}
+.say + .say{border-top:1px dashed var(--hair)}
+.say figcaption{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;font-size:13px}
+.say figcaption b{font-weight:600}
+.say figcaption span{font-size:12px;color:var(--muted)}
+.say blockquote{margin:0;font-family:var(--ff-display);font-size:15.5px;line-height:1.5;color:var(--ink)}
+.say p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.say-src{font-size:11.5px;justify-self:start}
 .onair-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
 .onair-h .lab.caps{margin:0;color:var(--accent)}
 .onair-b{display:flex;align-items:center;gap:6px}
@@ -481,6 +494,27 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const cap = g ? esc(g.place || e.where || '') : 'онлайн';
     return `<figure class="geo" aria-label="${g ? 'Место: ' + cap : 'Событие проходит онлайн'}"><svg viewBox="0 0 360 142" role="img" aria-hidden="true">${grid}<path class="land" d="${LAND}"/>${mark}</svg><figcaption class="${g ? '' : 'off'}">${cap}</figcaption></figure>`;
   }
+  function statementsHtml(e, ph) {
+    const list = (e.statements || []).filter(x => x && x.text);
+    if (!list.length) {
+      if (ph !== 'live') return '';
+      return `<section class="blk says">${lab('Заявления')}<p class="says-empty">Заявления собираются по итогам каждого дня события: вечерний прогон в 22:47 мск.</p></section>`;
+    }
+    const s0 = times(e).s, days = {};
+    list.forEach(x => (days[x.date || ''] = days[x.date || ''] || []).push(x));
+    const keys = Object.keys(days).sort().reverse();
+    const multi = s0 && e.end && dayKey(s0) !== dayKey(times(e).end);
+    const body = keys.map(k => {
+      const d = k ? new Date(k + 'T12:00:00+03:00') : null;
+      const n = d && s0 && multi ? Math.round((dayStart(d) - dayStart(s0)) / D) + 1 : 0;
+      const head = d ? `${fDay.format(d)}${n > 0 ? ` · день ${n}` : ''}` : 'Без даты';
+      return `<div class="says-day"><div class="says-h">${esc(head)}<span>${days[k].length} ${plural(days[k].length, 'заявление', 'заявления', 'заявлений')}</span></div>${days[k].map(x => `<figure class="say">
+        <figcaption><b>${esc(x.who || '')}</b>${x.role ? `<span>${esc(x.role)}</span>` : ''}</figcaption>
+        ${x.kind === 'quote' ? `<blockquote>«${esc(x.text)}»</blockquote>` : `<p>${esc(x.text)}</p>`}
+        ${x.source ? `<a class="say-src" href="${esc(x.source.url)}" target="_blank" rel="noopener">${esc(x.source.name)}</a>` : ''}</figure>`).join('')}</div>`;
+    }).join('');
+    return `<section class="blk says">${lab('Заявления')}${body}</section>`;
+  }
   function navHtml(idx) {
     const up = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 10l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
     const dn = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
@@ -653,6 +687,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
       <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${esc(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
       <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${esc(airText(e))}</p></section>
+      ${statementsHtml(e, ph)}
       <section class="ref">${lab('Дата и основание')}<dl class="kv">
         ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
         ${e.dateNote ? `<dt>Оговорка</dt><dd>${esc(e.dateNote)}</dd>` : ''}
@@ -677,7 +712,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
-      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
       <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
     paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, 'Справка', 'help', false);
