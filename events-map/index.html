@@ -2,265 +2,359 @@
 <meta name="description" content="Редакционный календарь событий: заседания, выборы, форумы и публикации данных со статусом даты, повесткой, сценариями и итогами.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
 <style>
-/* Карта событий — лента дней слева, справочная колонка справа.
-   Та же система, что у «Терминала ИИ-цикла»: холодные нейтрали, Golos + Plex Mono.
-   Статус даты кодируется формой (сплошной / пунктир / штриховка / зачёркнуто), а не только цветом. */
+/* Карта событий — лист консалтингового отчёта.
+   Слева лента дней на белом листе, справа тихая колонка сверки; подробности —
+   в выезжающей панели поверх размытой подложки. Один акцент (глубокий ультрамарин),
+   статусы — приглушённые и кодируются ещё и формой знака. */
 :root {
-  --plane:#eef1f4; --surface:#ffffff; --surface-2:#f6f8fa; --surface-3:#e9edf2;
-  --ink:#0e1319; --ink-2:#4a525d; --muted:#78818c; --grid:#e3e8ed; --rule:#cdd5dd;
-  --accent:#3a5bd9; --accent-soft:#e9eefc; --accent-ink:#2b47b3;
-  --ok:#0c8a3e; --ok-wash:rgba(12,138,62,.10); --ok-line:rgba(12,138,62,.45);
-  --warn:#b26a00; --warn-wash:rgba(242,164,20,.16); --warn-line:rgba(206,140,20,.65);
-  --none:#6c7580; --none-wash:rgba(108,117,128,.10);
-  --bad:#b8322f; --bad-wash:rgba(208,59,59,.10); --bad-line:rgba(208,59,59,.5);
-  --live:#d0452f;
-  --hatch:repeating-linear-gradient(135deg, rgba(108,117,128,.30) 0 2px, transparent 2px 5px);
-  --shadow:0 6px 20px rgba(14,19,25,.10);
-  --ff-ui:'Golos Text','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
-  --ff-mono:'IBM Plex Mono',ui-monospace,'SF Mono',Consolas,monospace;
+  --ground:#eef0f3;            /* фон вокруг листа */
+  --sheet:#ffffff;             /* лист */
+  --sheet-2:#f6f7f9;           /* тихая подложка внутри листа */
+  --glass:rgba(255,255,255,.72);
+  --scrim:rgba(18,24,38,.28);
+  --ink:#131a26;               /* основной текст */
+  --ink-2:#4b5363;             /* вторичный */
+  --muted:#8a91a0;             /* подписи */
+  --hair:rgba(19,26,38,.09);   /* волосяные линии */
+  --hair-2:rgba(19,26,38,.16);
+  --accent:#243f9c;            /* ультрамарин */
+  --accent-2:rgba(36,63,156,.08);
+  --accent-3:rgba(36,63,156,.16);
+  --st-confirmed:#1f7a52;
+  --st-preliminary:#a3690f;
+  --st-expected:#6d7686;
+  --st-cancelled:#a8423a;
+  --live:#c8412c;
+  --shadow-lg:0 24px 60px -20px rgba(18,24,38,.35), 0 2px 8px rgba(18,24,38,.06);
+  --shadow-sm:0 1px 2px rgba(18,24,38,.05), 0 4px 16px -8px rgba(18,24,38,.10);
+
+  --ff-display:'Source Serif 4', 'PT Serif', Georgia, 'Times New Roman', serif;
+  --ff-ui:'Golos Text', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  --ff-mono:'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-in:cubic-bezier(.4,0,.8,.3);
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --plane:#0b0d10; --surface:#14171c; --surface-2:#1a1e24; --surface-3:#232930;
-    --ink:#f4f6f8; --ink-2:#c0c7cf; --muted:#8a939d; --grid:#262c34; --rule:#353d46;
-    --accent:#7b95f2; --accent-soft:#1a2340; --accent-ink:#a9bbff;
-    --ok:#4cc27a; --ok-wash:rgba(76,194,122,.12); --ok-line:rgba(76,194,122,.5);
-    --warn:#f2b54a; --warn-wash:rgba(242,181,74,.13); --warn-line:rgba(242,181,74,.6);
-    --none:#9aa3ad; --none-wash:rgba(154,163,173,.12);
-    --bad:#f08a86; --bad-wash:rgba(240,138,134,.12); --bad-line:rgba(240,138,134,.5);
-    --live:#ff7a62;
-    --hatch:repeating-linear-gradient(135deg, rgba(154,163,173,.35) 0 2px, transparent 2px 5px);
-    --shadow:0 6px 22px rgba(0,0,0,.5);
+    --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
+    --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
+    --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
+    --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
+    --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"] {
-  --plane:#0b0d10; --surface:#14171c; --surface-2:#1a1e24; --surface-3:#232930;
-  --ink:#f4f6f8; --ink-2:#c0c7cf; --muted:#8a939d; --grid:#262c34; --rule:#353d46;
-  --accent:#7b95f2; --accent-soft:#1a2340; --accent-ink:#a9bbff;
-  --ok:#4cc27a; --ok-wash:rgba(76,194,122,.12); --ok-line:rgba(76,194,122,.5);
-  --warn:#f2b54a; --warn-wash:rgba(242,181,74,.13); --warn-line:rgba(242,181,74,.6);
-  --none:#9aa3ad; --none-wash:rgba(154,163,173,.12);
-  --bad:#f08a86; --bad-wash:rgba(240,138,134,.12); --bad-line:rgba(240,138,134,.5);
-  --live:#ff7a62;
-  --hatch:repeating-linear-gradient(135deg, rgba(154,163,173,.35) 0 2px, transparent 2px 5px);
-  --shadow:0 6px 22px rgba(0,0,0,.5);
+  --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
+  --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
+  --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
+  --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
+  --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-body{margin:0;background:var(--plane);color:var(--ink);font-family:var(--ff-ui);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-a{color:var(--accent-ink)}
-button{font:inherit;color:inherit}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:2px}
+html{scroll-padding-top:140px}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ff-ui);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body.locked{overflow:hidden}
+a{color:var(--accent);text-decoration-color:var(--accent-3);text-underline-offset:3px}
+a:hover{text-decoration-color:currentColor}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
 .mono{font-family:var(--ff-mono);font-variant-numeric:tabular-nums}
+.caps{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:500}
 
-/* шапка */
-.topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 18px;background:var(--surface);border-bottom:1px solid var(--rule)}
-.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
-.brand b{font-size:15px;font-weight:700;letter-spacing:-.01em;white-space:nowrap}
-.brand span{font-family:var(--ff-mono);font-size:11px;color:var(--muted);white-space:nowrap}
-.spacer{flex:1 1 auto}
-.pill{display:inline-flex;align-items:center;gap:7px;font-family:var(--ff-mono);font-size:11px;color:var(--ink-2);padding:4px 9px;border:1px solid var(--rule);border-radius:3px;background:var(--surface-2);white-space:nowrap}
-.pill i{width:7px;height:7px;border-radius:50%;background:var(--ok);display:inline-block}
-.pill.stale i{background:var(--warn)}
-.pill.off i{background:var(--none)}
-.iconbtn{font-size:12px;color:var(--ink-2);background:var(--surface-2);border:1px solid var(--rule);border-radius:3px;padding:5px 11px;cursor:pointer;white-space:nowrap}
-.iconbtn:hover{background:var(--surface-3);color:var(--ink)}
+/* ------------------------------------------------------- шапка из стекла */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-bottom:1px solid var(--hair)}
+.top-in{max-width:1280px;margin:0 auto;padding:14px 28px 0;display:grid;gap:12px}
+.bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.mark{display:flex;align-items:baseline;gap:14px;min-width:0}
+.mark h1{margin:0;font-family:var(--ff-display);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1}
+.mark .caps{white-space:nowrap}
+.grow{flex:1 1 auto}
+.status{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--ink-2)}
+.status .dot{width:6px;height:6px;border-radius:50%;background:var(--st-confirmed);display:inline-block;margin-right:7px;box-shadow:0 0 0 3px color-mix(in srgb, var(--st-confirmed) 18%, transparent)}
+.status .dot.stale{background:var(--st-preliminary);box-shadow:0 0 0 3px color-mix(in srgb, var(--st-preliminary) 18%, transparent)}
+.status .dot.off{background:var(--muted);box-shadow:none}
+.ghost{font-size:12px;color:var(--ink-2);padding:6px 10px;border-radius:6px;transition:background .2s,color .2s}
+.ghost:hover{background:var(--accent-2);color:var(--ink)}
 
-/* панель управления */
-.controls{display:grid;gap:10px;padding:14px 18px 12px;background:var(--surface);border-bottom:1px solid var(--rule)}
-.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-.seg{display:inline-flex;border:1px solid var(--rule);border-radius:4px;overflow:hidden;background:var(--surface-2)}
-.seg button{border:0;background:none;padding:7px 14px;font-size:13px;color:var(--ink-2);cursor:pointer;border-right:1px solid var(--rule);white-space:nowrap}
-.seg button:last-child{border-right:0}
-.seg button[aria-pressed="true"]{background:var(--accent);color:#fff;font-weight:600}
-.seg button em{font-style:normal;font-family:var(--ff-mono);font-size:10.5px;opacity:.75;margin-left:6px}
-.lbl{font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:2px}
-.chip{font-size:12.5px;padding:4px 10px;border-radius:3px;border:1px solid var(--rule);background:var(--surface);color:var(--ink-2);cursor:pointer;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--ink)}
-.chip .n{font-family:var(--ff-mono);font-size:10.5px;color:var(--muted)}
-.search{flex:1 1 200px;min-width:0;max-width:320px;font:inherit;font-size:13px;padding:5px 10px;border:1px solid var(--rule);border-radius:3px;background:var(--surface);color:var(--ink)}
+.nav{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
+.tabs{position:relative;display:flex;gap:26px}
+.tabs button{padding:8px 0 12px;font-size:14px;color:var(--ink-2);transition:color .2s;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:500}
+.tabs button sup{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:4px;vertical-align:super}
+.tabs .ink{position:absolute;bottom:-1px;height:2px;background:var(--accent);border-radius:2px;transition:left .35s var(--ease),width .35s var(--ease)}
+.search{margin-left:auto;margin-bottom:8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--hair-2);padding:4px 2px;min-width:0;flex:0 1 260px;transition:border-color .2s}
+.search:focus-within{border-color:var(--accent)}
+.search svg{flex:none;color:var(--muted)}
+.search input{border:0;background:none;font:inherit;font-size:13px;color:var(--ink);width:100%;min-width:0;outline:none}
 
-/* каркас */
-.shell{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:18px;padding:18px;align-items:start;max-width:1320px;margin:0 auto}
-.aside{display:grid;gap:14px;position:sticky;top:calc(64px + env(safe-area-inset-top,0px))}
-.panel{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:14px 16px}
-.panel h3{margin:0 0 8px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
-.panel p{margin:0 0 8px;font-size:12.5px;color:var(--ink-2)}
-.panel p:last-child{margin-bottom:0}
+/* --------------------------------------------------------------- каркас */
+.wrap{max-width:1280px;margin:0 auto;padding:26px 28px 80px;display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:28px;align-items:start}
+.sheet{background:var(--sheet);border-radius:10px;box-shadow:var(--shadow-sm);min-width:0}
 
-/* сводка */
-.summary{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:baseline;margin:0 0 12px;font-size:13px;color:var(--ink-2)}
-.summary b{font-family:var(--ff-mono);font-weight:600;color:var(--ink)}
-.summary .hint{color:var(--muted);font-size:12px}
+/* ---- сводка: статусы как счётчики и одновременно фильтры */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr)) auto;border-bottom:1px solid var(--hair)}
+.kpi{position:relative;display:grid;gap:4px;padding:18px 22px 16px;text-align:left;transition:background .25s}
+.kpi + .kpi{border-left:1px solid var(--hair)}
+.kpi:hover{background:var(--sheet-2)}
+.kpi .n{font-family:var(--ff-display);font-size:34px;font-weight:400;line-height:1;letter-spacing:-.02em;font-variant-numeric:lining-nums tabular-nums}
+.kpi .l{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--ink-2)}
+.kpi::after{content:"";position:absolute;left:22px;right:22px;bottom:-1px;height:2px;background:var(--c,var(--accent));transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease)}
+.kpi[aria-pressed="true"]::after{transform:scaleX(1)}
+.kpi[aria-pressed="true"] .n{color:var(--c)}
+.kpis.filtered .kpi[aria-pressed="false"] .n{color:var(--muted)}
+.kpi.await{--c:var(--accent)}
+.kpi-side{display:grid;align-content:center;gap:6px;padding:14px 22px;border-left:1px solid var(--hair);font-size:12px;color:var(--ink-2);min-width:150px}
+.kpi-side b{font-family:var(--ff-display);font-size:20px;font-weight:400;color:var(--ink)}
 
-/* статус даты: форма + цвет */
-.ds{display:inline-flex;align-items:center;gap:6px;font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;padding:2px 7px 2px 6px;border-radius:2px;border:1px solid;white-space:nowrap;line-height:1.6}
-.ds::before{content:"";width:8px;height:8px;flex:none;border-radius:50%}
-.ds.confirmed{color:var(--ok);border-color:var(--ok-line);background:var(--ok-wash)}
-.ds.confirmed::before{background:var(--ok)}
-.ds.preliminary{color:var(--warn);border-color:var(--warn-line);border-style:dashed;background:var(--warn-wash)}
-.ds.preliminary::before{border:1.5px dashed var(--warn);background:none;width:7px;height:7px}
-.ds.expected{color:var(--none);border-color:var(--rule);background:var(--none-wash)}
-.ds.expected::before{background:var(--hatch);border:1px solid var(--none);border-radius:1px}
-.ds.cancelled{color:var(--bad);border-color:var(--bad-line);background:var(--bad-wash)}
-.ds.cancelled::before{background:none;border-radius:0;height:1.5px;background:var(--bad)}
-.tag{font-size:11px;color:var(--muted);border:1px solid var(--grid);border-radius:2px;padding:0 5px;white-space:nowrap}
-.risk{font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--bad);border:1px solid var(--bad-line);border-radius:2px;padding:1px 6px;white-space:nowrap}
-.live{font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:#fff;background:var(--live);border-radius:2px;padding:2px 6px;white-space:nowrap}
-.await{font-family:var(--ff-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em;color:var(--accent-ink);border:1px dashed var(--accent);border-radius:2px;padding:1px 6px;white-space:nowrap}
+/* ---- темы */
+.topics{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:14px 22px;border-bottom:1px solid var(--hair)}
+.topics .caps{margin-right:8px}
+.tgl{font-size:12.5px;color:var(--ink-2);padding:5px 11px;border-radius:999px;transition:background .25s,color .25s,box-shadow .25s}
+.tgl:hover{color:var(--ink);background:var(--sheet-2)}
+.tgl[aria-pressed="true"]{color:var(--accent);background:var(--accent-2);box-shadow:inset 0 0 0 1px var(--accent-3)}
+.tgl .c{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:5px}
+.tgl.clear{color:var(--muted)}
+.tgl.pinbtn{margin-left:auto}
+@media (max-width:720px){.tgl.pinbtn{margin-left:0}}
 
-/* лента */
-.day{display:grid;grid-template-columns:118px minmax(0,1fr);gap:0 16px;padding:14px 0 6px;border-top:1px solid var(--rule)}
-.day:first-child{border-top:0;padding-top:0}
-.dayhead{position:sticky;top:calc(64px + env(safe-area-inset-top,0px));align-self:start;padding-top:10px}
-.dayhead b{display:block;font-size:22px;font-weight:600;letter-spacing:-.02em;line-height:1.1}
-.dayhead span{display:block;font-size:12px;color:var(--ink-2)}
-.dayhead em{display:block;font-style:normal;font-family:var(--ff-mono);font-size:10.5px;color:var(--muted);margin-top:3px}
-.dayhead.nodate b{font-size:15px;line-height:1.25}
-.cards{display:grid;gap:8px;min-width:0}
+/* ---- шкала горизонта */
+.ruler{padding:16px 22px 10px;border-bottom:1px solid var(--hair)}
+.ruler svg{display:block;max-width:100%;height:auto;overflow:visible}
+.ruler .axis{stroke:var(--hair-2);stroke-width:1}
+.ruler .tick{stroke:var(--hair);stroke-width:1}
+.ruler .tlab{font-family:var(--ff-mono);font-size:9.5px;fill:var(--muted)}
+.ruler .nowl{stroke:var(--live);stroke-width:1.2}
+.ruler .nowt{font-family:var(--ff-mono);font-size:9.5px;fill:var(--live)}
+.ruler .m{cursor:pointer;transition:transform .2s var(--ease)}
+.ruler .m:hover{transform:scale(1.35)}
+.ruler .win{fill:url(#hatch);stroke:var(--st-expected);stroke-width:.8;stroke-dasharray:2 2;opacity:.7}
+.ruler .cap{font-size:11.5px;color:var(--muted);margin-top:6px;display:flex;gap:14px;flex-wrap:wrap}
 
-.card{background:var(--surface);border:1px solid var(--rule);border-radius:4px;min-width:0}
-.card.s-preliminary{border-style:dashed;border-color:var(--warn-line)}
-.card.s-expected{border-style:dashed}
-.card.s-cancelled{opacity:.75}
-.card.s-cancelled .ttl{text-decoration:line-through;text-decoration-color:var(--bad)}
-.card.pinned{box-shadow:inset 3px 0 0 var(--accent)}
-.card.target{outline:2px solid var(--accent);outline-offset:1px}
-.head{display:grid;grid-template-columns:74px minmax(0,1fr) auto;gap:12px;align-items:start;padding:12px 14px;cursor:pointer;width:100%;text-align:left;background:none;border:0}
-.head:hover .ttl{color:var(--accent-ink)}
-.time{font-family:var(--ff-mono);font-variant-numeric:tabular-nums;font-size:15px;font-weight:600;line-height:1.3}
-.time small{display:block;font-size:10px;font-weight:400;color:var(--muted);letter-spacing:.02em}
-.time.approx{color:var(--warn)}
-.time.nodate{font-size:11px;font-weight:500;color:var(--none);font-style:italic;line-height:1.35}
-.ttl{font-size:15px;font-weight:600;line-height:1.3;letter-spacing:-.005em;text-wrap:balance}
-.meta{display:flex;flex-wrap:wrap;gap:5px 8px;align-items:center;margin-top:6px;font-size:12px;color:var(--ink-2)}
-.meta .where{color:var(--ink-2)}
-.gist{margin-top:6px;font-size:12.5px;color:var(--ink-2)}
-.chev{font-family:var(--ff-mono);font-size:12px;color:var(--muted);padding-top:2px;transition:transform .15s}
-.card[data-open="true"] .chev{transform:rotate(90deg)}
+/* ---- лента */
+.feed{padding:4px 0 10px}
+.day{display:grid;grid-template-columns:112px minmax(0,1fr);gap:0 8px;padding:18px 22px 8px}
+.day + .day{border-top:1px solid var(--hair)}
+.dh{position:sticky;top:150px;align-self:start;padding-top:8px}
+.dh .d{font-family:var(--ff-display);font-size:40px;line-height:.9;font-weight:400;letter-spacing:-.03em}
+.dh .mw{margin-top:6px}
+.dh .rel{font-size:12px;color:var(--ink-2);margin-top:2px}
+.dh.now .d{font-size:22px;line-height:1.1;color:var(--live)}
+.dh.nodate .d{font-size:20px;line-height:1.15}
+.rows{min-width:0}
+.row{display:grid;grid-template-columns:78px minmax(0,1fr) 20px;gap:14px;align-items:start;width:100%;text-align:left;padding:12px 12px 12px 10px;border-radius:8px;transition:background .25s var(--ease)}
+.row + .row{box-shadow:0 -1px 0 var(--hair)}
+.row:hover{background:var(--sheet-2)}
+.row:hover + .row,.row:hover{box-shadow:none}
+.row:hover .go{opacity:1;transform:translateX(0)}
+.row.cancelled .t{text-decoration:line-through;text-decoration-color:var(--st-cancelled);color:var(--ink-2)}
+.row.pinned .t::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--accent);margin:0 8px 2px 0;vertical-align:middle}
+.row.enter{animation:rowIn .45s var(--ease) both}
+@keyframes rowIn{from{opacity:.25;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tm{display:grid;gap:3px;padding-top:1px}
+.tm .h{font-family:var(--ff-mono);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tm .h.approx{color:var(--st-preliminary)}
+.tm .h.none{font-family:var(--ff-ui);font-size:12px;font-weight:400;font-style:italic;color:var(--st-expected);line-height:1.3}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;color:var(--c);white-space:nowrap}
+.st svg{flex:none}
+.s-confirmed{--c:var(--st-confirmed)} .s-preliminary{--c:var(--st-preliminary)} .s-expected{--c:var(--st-expected)} .s-cancelled{--c:var(--st-cancelled)}
+.t{font-size:15px;font-weight:500;line-height:1.35;letter-spacing:-.005em;text-wrap:balance}
+.sub{margin-top:4px;font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:0 10px}
+.sub span + span::before{content:"·";margin-right:10px;color:var(--hair-2)}
+.gist{margin-top:6px;font-size:13px;color:var(--ink-2);max-width:68ch}
+.flags{display:inline-flex;gap:6px;margin-left:8px;vertical-align:2px}
+.flag{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.flag.live{color:#fff;background:var(--live);animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--live) 40%,transparent)}50%{box-shadow:0 0 0 5px transparent}}
+.flag.await{color:var(--accent);background:var(--accent-2)}
+.flag.risk{color:var(--st-cancelled);background:color-mix(in srgb,var(--st-cancelled) 10%,transparent)}
+.go{color:var(--muted);opacity:0;transform:translateX(-4px);transition:opacity .25s,transform .25s var(--ease);padding-top:2px}
 
-.body{padding:0 14px 14px 100px;display:grid;gap:14px}
-.card[data-open="false"] .body{display:none}
-.sec h4{margin:0 0 6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600}
-.sec p{margin:0;font-size:13px}
-.sec ul{margin:0;padding:0;list-style:none;display:grid;gap:5px}
-.sec li{display:grid;grid-template-columns:auto 1fr;gap:8px;align-items:baseline;font-size:13px}
-.basis{font-family:var(--ff-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;padding:1px 5px;border-radius:2px;white-space:nowrap}
-.basis.agenda{color:var(--ok);border:1px solid var(--ok-line)}
-.basis.analysis{color:var(--ink-2);border:1px dashed var(--rule)}
-.datebox{display:grid;gap:4px;padding:10px 12px;border-radius:3px;background:var(--surface-2);border:1px solid var(--grid);font-size:12.5px}
-.datebox .src{color:var(--muted);font-size:11.5px}
-.impact{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
-.impact div{min-width:0;padding:8px 10px;background:var(--surface-2);border-radius:3px;font-size:12.5px}
-.impact b{display:block;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;margin-bottom:3px}
-.cp{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;font-size:13px}
-.cp .when{font-family:var(--ff-mono);font-size:12px;color:var(--accent-ink)}
-.air{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:start;padding:10px 12px;border-left:3px solid var(--accent);background:var(--accent-soft);border-radius:0 3px 3px 0}
-.air p{font-size:13.5px}
-.air.caution{border-left-color:var(--warn);background:var(--warn-wash)}
-.air.nogo{border-left-color:var(--bad);background:var(--bad-wash)}
-.srcs{display:flex;flex-wrap:wrap;gap:4px 12px;font-size:12px}
-.tools{display:flex;flex-wrap:wrap;gap:8px}
-.linkbtn{font-size:12px;color:var(--ink-2);background:var(--surface);border:1px solid var(--rule);border-radius:3px;padding:4px 10px;cursor:pointer}
-.linkbtn:hover{border-color:var(--accent);color:var(--accent-ink)}
-.linkbtn[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink)}
+.empty{padding:56px 24px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;font-family:var(--ff-display);font-weight:500;font-size:20px;color:var(--ink);margin-bottom:6px}
 
-/* итог: ожидали → решили → открыто */
-.outcome{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid var(--rule);border-radius:4px;overflow:hidden}
-.outcome > div{padding:10px 12px;min-width:0;font-size:13px}
-.outcome > div + div{border-left:1px solid var(--rule)}
-.outcome b{display:flex;align-items:center;gap:6px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin-bottom:5px}
-.outcome .decided{background:var(--ok-wash)}
-.outcome .decided b{color:var(--ok)}
-.outcome ul{margin:0;padding-left:16px;display:grid;gap:3px}
-.outnote{font-size:11.5px;color:var(--muted)}
-.pending{padding:10px 12px;border:1px dashed var(--accent);border-radius:4px;font-size:13px;color:var(--ink-2)}
+/* ------------------------------------------------------ правая колонка */
+.side{display:grid;gap:22px;position:sticky;top:150px}
+.note{padding:0 4px}
+.note h2{margin:0 0 4px;font-family:var(--ff-display);font-weight:500;font-size:17px;letter-spacing:-.005em}
+.note > p{margin:0 0 12px;font-size:12.5px;color:var(--ink-2)}
+.idea{display:grid}
+.idea button{display:grid;gap:4px;text-align:left;padding:12px 0;border-top:1px solid var(--hair);transition:padding .25s var(--ease)}
+.idea button:hover{padding-left:6px}
+.idea button:hover .c{color:var(--accent)}
+.idea .c{font-weight:500;font-size:13px;transition:color .2s}
+.idea .was{font-size:12px;color:var(--muted);text-decoration:line-through;text-decoration-color:var(--hair-2)}
+.idea .is{font-size:12.5px;color:var(--ink-2)}
+.runcard{padding:16px 18px;border-radius:10px;background:var(--glass);border:1px solid var(--hair);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+.runcard .caps{display:block;margin-bottom:6px}
+.runcard p{margin:0;font-size:12.5px;color:var(--ink-2)}
+.runcard .log{margin-top:10px;display:grid;gap:6px;font-size:12px;color:var(--ink-2)}
+.runcard .log span{display:block;font-family:var(--ff-mono);font-size:10.5px;color:var(--muted)}
 
-/* справа */
-.legend{display:grid;gap:9px}
-.legend div{display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:baseline;font-size:12.5px;color:var(--ink-2)}
-.legend .ex{grid-column:2;font-family:var(--ff-mono);font-size:11px;color:var(--muted)}
-.idea{display:grid;gap:10px}
-.idea div{font-size:12.5px;display:grid;gap:3px;padding-top:9px;border-top:1px solid var(--grid)}
-.idea div:first-child{border-top:0;padding-top:0}
-.idea s{color:var(--muted)}
-.idea .was{font-family:var(--ff-mono);font-size:11px;color:var(--muted)}
-.idea button{all:unset;cursor:pointer;font-weight:600;color:var(--ink)}
-.idea button:hover{color:var(--accent-ink)}
-.runlog{display:grid;gap:5px;font-size:12px;color:var(--ink-2)}
-.runlog .mono{font-size:11px;color:var(--muted)}
+/* ------------------------------------------------------------- панель */
+.scrim{position:fixed;inset:0;z-index:50;background:var(--scrim);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;transition:opacity .3s var(--ease)}
+.scrim.open{opacity:1}
+.drawer{position:fixed;z-index:51;top:0;right:0;bottom:0;width:min(640px,100vw);background:var(--sheet);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;transform:translateX(104%);transition:transform .42s var(--ease);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.drawer.open{transform:none}
+.drawer.closing{transition:transform .28s var(--ease-in)}
+.dr-top{display:flex;align-items:center;gap:8px;padding:14px 22px;border-bottom:1px solid var(--hair);background:var(--glass);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.dr-top .caps{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.icon{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;color:var(--ink-2);transition:background .2s,color .2s}
+.icon:hover{background:var(--accent-2);color:var(--ink)}
+.icon:disabled{opacity:.3;cursor:default;background:none}
+.dr-body{overflow-y:auto;overscroll-behavior:contain;padding:26px 30px 40px;display:grid;gap:28px}
+.dr-body > *{animation:secIn .5s var(--ease) both}
+.dr-body > *:nth-child(2){animation-delay:.04s}.dr-body > *:nth-child(3){animation-delay:.08s}.dr-body > *:nth-child(4){animation-delay:.12s}.dr-body > *:nth-child(5){animation-delay:.16s}.dr-body > *:nth-child(n+6){animation-delay:.2s}
+@keyframes secIn{from{opacity:.2;transform:translateY(10px)}to{opacity:1;transform:none}}
+.hero .k{font-size:12.5px;color:var(--muted)}
+.hero h2{margin:6px 0 14px;font-family:var(--ff-display);font-weight:500;font-size:28px;line-height:1.15;letter-spacing:-.015em;text-wrap:balance}
+.when{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.when .big{font-family:var(--ff-mono);font-size:16px;font-weight:500;letter-spacing:-.01em}
+.when .big.none{font-family:var(--ff-ui);font-style:italic;font-weight:400;color:var(--st-expected)}
+.lab{margin:0 0 10px;display:flex;align-items:center;gap:10px}
+.lab::after{content:"";flex:1;height:1px;background:var(--hair)}
+.air{position:relative;padding:16px 18px 16px 20px;border-radius:10px;background:var(--accent-2)}
+.air::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:3px;border-radius:3px;background:var(--c,var(--accent))}
+.air p{margin:0;font-family:var(--ff-display);font-size:17px;line-height:1.45}
+.air .row2{display:flex;align-items:center;gap:10px;margin-top:10px}
+.air .hint{font-size:12px;color:var(--ink-2);flex:1}
+.pillbtn{font-size:12px;padding:6px 12px;border-radius:999px;color:var(--accent);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3);transition:background .2s,box-shadow .2s;white-space:nowrap}
+.pillbtn:hover{box-shadow:inset 0 0 0 1px var(--accent)}
+.pillbtn[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:none}
+.kv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;font-size:13px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;color:var(--ink)}
+.items{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.items li{display:grid;grid-template-columns:74px minmax(0,1fr);gap:12px;align-items:baseline;font-size:13.5px}
+.bs{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;white-space:nowrap}
+.bs.agenda{color:var(--st-confirmed)}
+.bs.analysis{color:var(--muted)}
+.bs.analysis::after{content:" ~"}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.three > div{padding:2px 16px 2px 0;font-size:13px;min-width:0}
+.three > div + div{padding-left:16px;border-left:1px solid var(--hair)}
+.three b{display:block;margin-bottom:5px}
+.cp{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;font-size:13.5px}
+.cp .w{font-family:var(--ff-mono);font-size:12.5px;color:var(--accent)}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.outcome{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1.3fr) 20px minmax(0,1fr);align-items:stretch;border-radius:10px;background:var(--sheet-2);padding:16px 14px}
+.outcome .arr{display:grid;place-items:center;color:var(--muted)}
+.outcome > div{min-width:0;font-size:13px}
+.outcome b{display:block;margin-bottom:6px}
+.outcome .dec{color:var(--ink)}
+.outcome .dec b{color:var(--st-confirmed)}
+.outcome ul{margin:0;padding-left:15px;display:grid;gap:4px}
+.small{font-size:11.5px;color:var(--muted);margin-top:8px}
+.pending{padding:14px 16px;border-radius:10px;border:1px dashed var(--accent-3);font-size:13px;color:var(--ink-2)}
+.dr-foot{display:flex;gap:8px;flex-wrap:wrap;padding:14px 22px;border-top:1px solid var(--hair)}
 
-.empty{padding:28px 20px;text-align:center;color:var(--ink-2);background:var(--surface);border:1px dashed var(--rule);border-radius:4px}
-.empty b{display:block;color:var(--ink);font-size:15px;margin-bottom:4px}
-.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--surface);padding:8px 14px;border-radius:4px;font-size:13px;z-index:60}
+.legend{display:grid;gap:14px}
+.legend div{display:grid;gap:3px}
+.legend p{margin:0;font-size:13px;color:var(--ink-2)}
+.legend .ex{font-family:var(--ff-mono);font-size:11.5px;color:var(--muted)}
 
-@media (max-width:1020px){
-  .shell{grid-template-columns:minmax(0,1fr)}
-  .aside{position:static;order:2}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:70;transform:translate(-50%,12px);opacity:0;background:var(--ink);color:var(--sheet);padding:9px 16px;border-radius:999px;font-size:13px;transition:opacity .25s,transform .35s var(--ease);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:1060px){
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  .side{position:static;grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
 }
-@media (max-width:640px){
-  .topbar,.controls{padding-left:16px;padding-right:16px}
-  .shell{padding:14px 16px}
-  .day{grid-template-columns:minmax(0,1fr);gap:8px}
-  .dayhead{position:static;display:flex;gap:10px;align-items:baseline;flex-wrap:wrap;padding-top:0}
-  .dayhead b{display:inline;font-size:18px}
-  .dayhead span,.dayhead em{display:inline;margin:0}
-  .head{grid-template-columns:62px minmax(0,1fr) auto;gap:10px;padding:11px 12px}
-  .body{padding:0 12px 12px}
-  .impact,.outcome{grid-template-columns:minmax(0,1fr)}
-  .outcome > div + div{border-left:0;border-top:1px solid var(--rule)}
-  .seg button{padding:7px 10px}
-  .brand span{display:none}
+@media (max-width:720px){
+  .top-in{padding:12px 16px 0}
+  .wrap{padding:16px 16px 60px;gap:20px}
+  .mark .caps{display:none}
+  .status .clock{display:none}
+  .search{flex:1 1 100%;margin-left:0}
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(3){border-left:0}
+  .kpi:nth-child(n+3){border-top:1px solid var(--hair)}
+  .kpi-side{grid-column:1/-1;border-left:0;border-top:1px solid var(--hair);display:flex;gap:16px;align-items:baseline;flex-wrap:wrap}
+  .kpi{padding:14px 16px}
+  .kpi .n{font-size:28px}
+  .topics,.ruler{padding-left:16px;padding-right:16px}
+  .day{grid-template-columns:minmax(0,1fr);padding:14px 10px 6px}
+  .dh{position:static;display:flex;align-items:baseline;gap:10px;padding:0 6px 6px}
+  .dh .d{font-size:28px}
+  .dh .mw,.dh .rel{margin:0}
+  .row{grid-template-columns:62px minmax(0,1fr) 14px;gap:10px;padding:11px 6px}
+  .dr-body{padding:20px 18px 32px}
+  .hero h2{font-size:23px}
+  .three,.outcome{grid-template-columns:minmax(0,1fr)}
+  .three > div + div{border-left:0;padding-left:0;padding-top:10px;margin-top:10px;border-top:1px solid var(--hair)}
+  .outcome .arr{transform:rotate(90deg);padding:4px 0}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .kv dt{margin-top:6px}
+  .items li{grid-template-columns:minmax(0,1fr);gap:2px}
 }
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
 </style>
 
-<header class="topbar">
-  <div class="brand"><b>Карта событий</b><span>редакционный календарь · время московское</span></div>
-  <div class="spacer"></div>
-  <span class="pill mono" id="clock">—</span>
-  <span class="pill off" id="autorun" title="Статус автоматического заполнения итогов"><i></i>автоитоги: ждём данных</span>
-  <button class="iconbtn" type="button" id="themeBtn">Тема</button>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.4" height="4" fill="var(--st-expected)" opacity=".55"/></pattern>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="top-in">
+    <div class="bar">
+      <div class="mark"><h1>Карта событий</h1><span class="caps">редакционный календарь · время московское</span></div>
+      <div class="grow"></div>
+      <div class="status">
+        <span class="clock mono" id="clock">—</span>
+        <span id="autorun"><i class="dot off"></i>автоитоги</span>
+        <button class="ghost" type="button" id="helpBtn">Как читать</button>
+        <button class="ghost" type="button" id="themeBtn" aria-label="Сменить тему">Тема</button>
+      </div>
+    </div>
+    <nav class="nav" aria-label="Горизонт">
+      <div class="tabs" role="tablist" id="tabs"></div>
+      <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Страна, орган, тема" aria-label="Поиск по событиям"></label>
+    </nav>
+  </div>
 </header>
 
-<section class="controls" aria-label="Фильтры">
-  <div class="row">
-    <div class="seg" role="group" aria-label="Горизонт" id="horizons"></div>
-    <input class="search" id="q" type="search" placeholder="Поиск: страна, орган, тема" aria-label="Поиск по событиям">
-  </div>
-  <div class="row" id="cats"><span class="lbl">Тема</span></div>
-  <div class="row" id="stats"><span class="lbl">Дата</span></div>
-</section>
-
-<div class="shell">
-  <main id="main" aria-live="polite">
-    <div class="empty" id="boot"><b>Загружаю события</b>Карточки хранятся в базе терминала и обновляются автоматически. Если список не появился, откройте страницу на claude.ai.</div>
+<div class="wrap">
+  <main class="sheet" id="sheet">
+    <div class="kpis" id="kpis"></div>
+    <div class="topics" id="topics"></div>
+    <div class="ruler" id="ruler"></div>
+    <div class="feed" id="feed" aria-live="polite">
+      <div class="empty"><b>Загружаю события</b>Карточки хранятся в базе терминала и обновляются автоматически.</div>
+    </div>
   </main>
-  <aside class="aside">
-    <section class="panel">
-      <h3>Статус даты</h3>
-      <div class="legend">
-        <div><span class="ds confirmed">подтверждена</span><span>Назначена официальным документом: указом, календарём организатора, решением избиркома.</span><span class="ex">в эфире: «23 октября в 13:30»</span></div>
-        <div><span class="ds preliminary">предварительная</span><span>Дата известна, но не закреплена: практика прошлых лет, агрегаторы, оговорки организатора.</span><span class="ex">в эфире: «ориентировочно…»</span></div>
-        <div><span class="ds expected">без даты</span><span>Событие ожидается в окне («к декабрю», «в октябре»), конкретный день не назначен.</span><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
-        <div><span class="ds cancelled">не состоится</span><span>Отменено или перенесено за пределы горизонта.</span></div>
-      </div>
-    </section>
-    <section class="panel">
-      <h3>Расхождения с перечнем IDEA</h3>
-      <p>Формулировка IDEA и что показала сверка с первоисточником.</p>
+  <aside class="side">
+    <section class="note">
+      <h2>Сверка с перечнем IDEA</h2>
+      <p>Где формулировка International IDEA расходится с первоисточником.</p>
       <div class="idea" id="idea"></div>
     </section>
-    <section class="panel">
-      <h3>Как пополняется карта</h3>
-      <div class="runlog" id="runlog"><p>После окончания события карточка переходит в статус «ждёт итога». Дважды в день, в 06:47 и 15:47 по Москве, Claude собирает итоги по официальным документам и СМИ и записывает их в формате «ожидали → решили → что осталось открытым». Тот же прогон перепроверяет статусы дат и добавляет новые события из официальных календарей.</p></div>
+    <section class="runcard" id="runcard">
+      <span class="caps">Автоматические итоги</span>
+      <p>Дважды в день, в 06:47 и 15:47 мск, Claude подводит итоги прошедших событий по официальным документам и СМИ, перепроверяет статусы дат и добавляет новые события.</p>
+      <div class="log" id="runlog"></div>
     </section>
   </aside>
 </div>
-<div class="toast" id="toast" hidden></div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="drawer" id="drawer" role="dialog" aria-modal="true" aria-labelledby="drTitle" hidden>
+  <div class="dr-top">
+    <span class="caps" id="drCrumb">Событие</span>
+    <button class="icon" type="button" id="drPrev" aria-label="Предыдущее событие"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="icon" type="button" id="drNext" aria-label="Следующее событие"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="icon" type="button" id="drClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+  </div>
+  <div class="dr-body" id="drBody"></div>
+  <div class="dr-foot" id="drFoot"></div>
+</aside>
+<div class="toast" id="toast" role="status"></div>
 
 <script>
 (() => {
@@ -281,13 +375,13 @@ button{font:inherit;color:inherit}
     { id: 'stats', label: 'Статистика' },
   ];
   const STATUSES = [
-    { id: 'confirmed', label: 'подтверждена' },
-    { id: 'preliminary', label: 'предварительная' },
-    { id: 'expected', label: 'без даты' },
-    { id: 'cancelled', label: 'не состоится' },
+    { id: 'confirmed', label: 'Подтверждена', short: 'подтв.' },
+    { id: 'preliminary', label: 'Предварительная', short: 'предв.' },
+    { id: 'expected', label: 'Без даты', short: 'без даты' },
+    { id: 'cancelled', label: 'Не состоится', short: 'отменено' },
   ];
   const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.label]));
-  const ST_LABEL = Object.fromEntries(STATUSES.map(s => [s.id, s.label]));
+  const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
 
   const store = {
     get(k, d) { try { const v = localStorage.getItem('em.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
@@ -299,66 +393,62 @@ button{font:inherit;color:inherit}
     cats: new Set(store.get('cats', [])),
     sts: new Set(store.get('sts', [])),
     pins: new Set(store.get('pins', [])),
-    onlyPins: false,
-    open: new Set(),
-    q: '',
+    onlyPins: false, q: '', openId: null, order: [], animate: true,
   };
-
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  /* --------------------------------------------------------- время */
-  const fmt = (opts) => new Intl.DateTimeFormat('ru-RU', { timeZone: MSK, ...opts });
+  /* ------------------------------------------------------------ время */
+  const fmt = o => new Intl.DateTimeFormat('ru-RU', { timeZone: MSK, ...o });
   const fDay = fmt({ day: 'numeric', month: 'long' });
+  const fNum = fmt({ day: 'numeric' });
+  const fMon = fmt({ month: 'long' });
+  const fMonS = fmt({ month: 'short' });
   const fWd = fmt({ weekday: 'short' });
   const fWdLong = fmt({ weekday: 'long' });
   const fTime = fmt({ hour: '2-digit', minute: '2-digit', hour12: false });
   const fShort = fmt({ day: 'numeric', month: 'short' });
+  const fHour = fmt({ hour: '2-digit', hour12: false });
   const dayKey = d => { const p = fmt({ year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d); const g = t => p.find(x => x.type === t).value; return `${g('year')}-${g('month')}-${g('day')}`; };
   const parseDay = s => s ? new Date(s + 'T23:59:59+03:00') : null;
+  const dayStart = d => new Date(dayKey(d) + 'T00:00:00+03:00');
 
   function times(e) {
     const s = e.start ? new Date(e.start) : null;
     let end = e.end ? new Date(e.end) : null;
     if (s && !end) end = e.allDay ? new Date(dayKey(s) + 'T23:59:59+03:00') : new Date(s.getTime() + 2 * H);
-    const w = parseDay(e.window);
-    return { s, end, w };
+    return { s, end, w: parseDay(e.window) };
   }
+  const when = e => { const t = times(e); return (t.s || t.w || new Date(8.64e15)).getTime(); };
   function phase(e, now) {
     const { s, end } = times(e);
     if (e.dateStatus === 'cancelled') return 'cancelled';
     if (e.outcome && e.outcome.decided) return 'closed';
-    if (!s) return 'upcoming';
-    if (now < s) return 'upcoming';
+    if (!s || now < s) return 'upcoming';
     if (now <= end) return 'live';
     return 'awaiting';
   }
-  function relDays(d, now) {
-    const a = parseDay(dayKey(d)).getTime(), b = parseDay(dayKey(now)).getTime();
-    const n = Math.round((a - b) / D);
-    if (n === 0) return 'сегодня';
-    if (n === 1) return 'завтра';
-    if (n === -1) return 'вчера';
-    if (n > 0) return 'через ' + n + ' ' + plural(n, 'день', 'дня', 'дней');
-    return Math.abs(n) + ' ' + plural(Math.abs(n), 'день', 'дня', 'дней') + ' назад';
-  }
   function plural(n, a, b, c) { n = Math.abs(n) % 100; const m = n % 10; if (n > 10 && n < 20) return c; if (m > 1 && m < 5) return b; if (m === 1) return a; return c; }
+  function relDays(d, now) {
+    const n = Math.round((dayStart(d) - dayStart(now)) / D);
+    if (n === 0) return 'сегодня'; if (n === 1) return 'завтра'; if (n === -1) return 'вчера';
+    return n > 0 ? `через ${n} ${plural(n, 'день', 'дня', 'дней')}` : `${-n} ${plural(n, 'день', 'дня', 'дней')} назад`;
+  }
 
-  /* ----------------------------------------------- отбор под горизонт */
+  /* ---------------------------------------------------------- отбор */
   function inHorizon(e, now, hz) {
     const { s, end, w } = times(e);
     const ph = phase(e, now);
     if (hz.id === 'hist') return ph === 'closed' || ph === 'awaiting' || (ph === 'cancelled' && w && w < now);
     if (ph === 'closed' || ph === 'awaiting') return false;
-    const lim = new Date(now.getTime() + hz.ms);
-    if (s) return end >= now && s <= lim;
+    const lim = now.getTime() + hz.ms;
+    if (s) return end >= now && s.getTime() <= lim;
     if (!w || w < now) return false;
-    const slack = hz.id === 'h72' ? 0 : 20 * D;
-    return w.getTime() <= lim.getTime() + slack;
+    return w.getTime() <= lim + (hz.id === 'h72' ? 0 : 20 * D);
   }
-  function passFilters(e) {
+  function passTopic(e) {
     if (state.cats.size && !(e.cats || []).some(c => state.cats.has(c))) return false;
-    if (state.sts.size && !state.sts.has(e.dateStatus)) return false;
     if (state.onlyPins && !state.pins.has(e.id)) return false;
     if (state.q) {
       const hay = [e.title, e.where, e.kind, e.participants, (e.agenda || []).map(a => a.text).join(' ')].join(' ').toLowerCase();
@@ -366,266 +456,338 @@ button{font:inherit;color:inherit}
     }
     return true;
   }
+  const passStatus = e => !state.sts.size || state.sts.has(e.dateStatus);
 
-  /* ----------------------------------------------------- «в эфире» */
+  /* ------------------------------------------------------- знаки статуса */
+  function glyph(st, size = 10) {
+    const s = size, r = s / 2 - 1, c = s / 2;
+    if (st === 'confirmed') return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="currentColor"/></svg>`;
+    if (st === 'preliminary') return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r - .3}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 1.6"/></svg>`;
+    if (st === 'expected') return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><rect x="1" y="1" width="${s - 2}" height="${s - 2}" rx="1.5" fill="url(#hatch)" stroke="currentColor" stroke-width="1"/></svg>`;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r - .3}" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M${c - r * .7} ${c + r * .7}L${c + r * .7} ${c - r * .7}" stroke="currentColor" stroke-width="1.3"/></svg>`;
+  }
+  const stTag = (st, long) => `<span class="st s-${st}">${glyph(st)}${long ? ST[st].label : ST[st].short}</span>`;
+
+  /* -------------------------------------------------------- «в эфире» */
+  const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
   function airLine(e) {
     const { s } = times(e);
     const d = s ? fDay.format(s) : '';
     const t = s && !e.allDay ? fTime.format(s) : '';
-    const when = e.dateWording || (t ? `${d}, ${t} мск` : d);
+    const w = e.dateWording || (t ? `${d}, в ${t} по Москве` : d);
     switch (e.dateStatus) {
-      case 'confirmed':
-        return { cls: '', text: `${cap(when)} — ${e.title}${e.where ? ' (' + e.where + ')' : ''}.` + (e.risk ? ` Дата назначена официально, но есть риск переноса.` : '') };
-      case 'preliminary':
-        return { cls: 'caution', text: `Ориентировочно ${d} — ${e.title}. Дата официально не закреплена.` };
-      case 'expected':
-        return { cls: 'caution', text: `${e.title}: ожидается ${e.dateWording || 'позже'}. Конкретная дата пока не назначена.` };
-      case 'cancelled':
-        return { cls: 'nogo', text: `${e.title} в ожидавшиеся сроки не состоятся. ${e.dateWording ? cap(e.dateWording) + '.' : ''}` };
+      case 'confirmed': return { c: 'var(--st-confirmed)', hint: e.risk ? 'Дата назначена, но есть риск переноса — оговорите это.' : 'Дату можно называть уверенно.', text: `${cap(w)} — ${e.title}.` };
+      case 'preliminary': return { c: 'var(--st-preliminary)', hint: 'Не называйте число без оговорки.', text: `Ориентировочно ${d} — ${e.title}. Дата официально не закреплена.` };
+      case 'expected': return { c: 'var(--st-expected)', hint: 'Конкретного дня нет — говорите об окне.', text: `${e.title}: ожидается ${e.dateWording || 'позже'}, конкретная дата пока не назначена.` };
+      default: return { c: 'var(--st-cancelled)', hint: 'Событие в ожидавшиеся сроки не состоится.', text: `${e.title} в ожидавшиеся сроки не состоятся.` };
     }
-    return { cls: '', text: e.title };
   }
-  const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
 
-  /* ---------------------------------------------------------- рендер */
-  function timeCell(e, now) {
+  /* ------------------------------------------------------------ шапка */
+  function renderTabs(now) {
+    const el = $('#tabs');
+    el.innerHTML = HORIZONS.map(h => {
+      const n = state.loaded ? state.events.filter(e => inHorizon(e, now, h)).length : '';
+      return `<button type="button" role="tab" data-hz="${h.id}" aria-selected="${state.horizon === h.id}">${h.label}<sup>${n}</sup></button>`;
+    }).join('') + '<span class="ink" id="ink"></span>';
+    moveInk(false);
+  }
+  function moveInk(anim = true) {
+    const act = $('#tabs [aria-selected="true"]'), ink = $('#ink');
+    if (!act || !ink) return;
+    if (!anim) ink.style.transition = 'none';
+    ink.style.left = act.offsetLeft + 'px'; ink.style.width = act.offsetWidth + 'px';
+    if (!anim) requestAnimationFrame(() => ink.style.transition = '');
+  }
+
+  /* ------------------------------------------------------ сводка/фильтры */
+  function renderKpis(pool, now) {
+    const box = $('#kpis');
+    box.classList.toggle('filtered', state.sts.size > 0);
+    const n = st => pool.filter(e => e.dateStatus === st).length;
+    const awaiting = state.events.filter(e => phase(e, now) === 'awaiting').length;
+    box.innerHTML = STATUSES.map(s => `<button type="button" class="kpi s-${s.id}" data-st="${s.id}" aria-pressed="${state.sts.has(s.id)}">
+        <span class="n">${n(s.id)}</span><span class="l" style="color:var(--c)">${glyph(s.id)}<span style="color:var(--ink-2)">${s.label}</span></span></button>`).join('')
+      + `<div class="kpi-side"><span class="caps">В горизонте</span><span><b>${pool.length}</b> ${plural(pool.length, 'событие', 'события', 'событий')}</span>${awaiting ? `<span>ждут итога: <b style="font-size:15px">${awaiting}</b></span>` : ''}</div>`;
+  }
+  function renderTopics(pool) {
+    $('#topics').innerHTML = '<span class="caps">Тема</span>' + CATS.map(c => {
+      const n = pool.filter(e => (e.cats || []).includes(c.id)).length;
+      return `<button type="button" class="tgl" data-cat="${c.id}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="c">${n}</span></button>`;
+    }).join('')
+      + (state.cats.size ? `<button type="button" class="tgl clear" data-cat="__clear">сбросить</button>` : '')
+      + `<button type="button" class="tgl pinbtn" id="onlyPins" aria-pressed="${state.onlyPins}">Отмечено для эфира<span class="c">${state.pins.size}</span></button>`;
+  }
+
+  /* ------------------------------------------------------- шкала горизонта */
+  function renderRuler(list, now, hz) {
+    const box = $('#ruler');
+    if (hz.id === 'hist' || !list.length) { box.hidden = true; return; }
+    box.hidden = false; rulerArgs = [list, now, hz];
+    const cs = getComputedStyle(box);
+    const W = Math.max(280, Math.round(box.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight))) || 1000, PADL = 4, PADR = 4, ROWH = 11, t0 = now.getTime(), t1 = t0 + hz.ms;
+    const x = t => PADL + (Math.min(Math.max(t, t0), t1) - t0) / (t1 - t0) * (W - PADL - PADR);
+    const ticks = [];
+    if (hz.id === 'h72') { for (let t = dayStart(now).getTime() + 6 * H; t <= t1; t += 6 * H) if (t >= t0) ticks.push({ t, lab: fHour.format(new Date(t)) === '00' ? fShort.format(new Date(t)) : fHour.format(new Date(t)) + ':00', major: fHour.format(new Date(t)) === '00' }); }
+    else if (hz.id === 'w2') { for (let t = dayStart(now).getTime() + D; t <= t1; t += D) ticks.push({ t, lab: fNum.format(new Date(t)), major: fWd.format(new Date(t)).startsWith('пн') }); }
+    else { const d = dayStart(now); for (let t = d.getTime() + D; t <= t1; t += D) { const dd = new Date(t); if (fNum.format(dd) === '1') ticks.push({ t, lab: fMonS.format(dd).replace('.', ''), major: true }); else if (fWd.format(dd).startsWith('пн')) ticks.push({ t, lab: '', major: false }); } }
+    const dated = list.filter(e => times(e).s).sort((a, b) => when(a) - when(b));
+    const lanes = []; const marks = [];
+    for (const e of dated) {
+      const cx = x(Math.max(times(e).s.getTime(), t0));
+      let lane = lanes.findIndex(v => cx - v > 12); if (lane < 0) { lane = lanes.length; lanes.push(-1e9); }
+      lanes[lane] = cx; marks.push({ e, cx, lane });
+    }
+    const undated = list.filter(e => !times(e).s && times(e).w);
+    const nL = Math.max(1, Math.min(lanes.length, 6));
+    const top = 6, axisY = top + nL * ROWH + 4, h = axisY + 20 + (undated.length ? 12 : 0);
+    let svg = `<svg viewBox="0 0 ${W} ${h}" width="${W}" height="${h}" role="img" aria-label="Распределение событий по горизонту">`;
+    let lastLab = -1e9; for (const k of ticks) { const tx = x(k.t); svg += `<line class="tick" x1="${tx}" x2="${tx}" y1="${top - 2}" y2="${axisY + (k.major ? 5 : 3)}"/>`; if (k.lab && tx - lastLab >= 50 && tx < W - 30) { svg += `<text class="tlab" x="${tx + 3}" y="${axisY + 14}">${esc(k.lab)}</text>`; lastLab = tx; } }
+    svg += `<line class="axis" x1="${PADL}" x2="${W - PADR}" y1="${axisY}" y2="${axisY}"/>`;
+    svg += `<line class="nowl" x1="${PADL}" x2="${PADL}" y1="${top - 4}" y2="${axisY + 5}"/><text class="nowt" x="${PADL + 3}" y="${top + 2}">сейчас</text>`;
+    for (const u of undated) { const wx = x(times(u).w.getTime()); svg += `<g class="m" data-open="${esc(u.id)}" style="transform-origin:${wx}px ${axisY + 26}px"><title>${esc(u.title)} — ${esc(u.dateWording || 'без даты')}</title><rect class="win" x="${PADL}" y="${axisY + 22}" width="${Math.max(6, wx - PADL)}" height="5" rx="1"/></g>`; }
+    for (const m of marks) {
+      const cy = top + 4 + Math.min(m.lane, nL - 1) * ROWH, st = m.e.dateStatus;
+      const col = `var(--st-${st})`;
+      const shape = st === 'confirmed' ? `<circle cx="${m.cx}" cy="${cy}" r="4" fill="${col}"/>`
+        : st === 'preliminary' ? `<circle cx="${m.cx}" cy="${cy}" r="3.6" fill="var(--sheet)" stroke="${col}" stroke-width="1.4" stroke-dasharray="2 1.5"/>`
+        : `<circle cx="${m.cx}" cy="${cy}" r="3.6" fill="none" stroke="${col}" stroke-width="1.3"/>`;
+      svg += `<g class="m" data-open="${esc(m.e.id)}" style="transform-origin:${m.cx}px ${cy}px"><title>${esc(fShort.format(times(m.e).s))} — ${esc(m.e.title)}</title>${shape}</g>`;
+    }
+    svg += '</svg>';
+    box.innerHTML = svg + `<div class="cap"><span>Шкала: от текущего момента до конца горизонта; точка — событие, штриховка — окно без назначенной даты.</span></div>`;
+  }
+  let rulerArgs = null;
+  function redrawRuler() { if (rulerArgs) renderRuler(...rulerArgs); }
+
+  /* ------------------------------------------------------------- лента */
+  function timeCell(e) {
     const { s, w } = times(e);
-    if (!s) return `<div class="time nodate">${esc(e.dateWording || ('до ' + (w ? fShort.format(w) : '—')))}</div>`;
-    const approx = e.dateStatus === 'preliminary';
-    if (e.allDay) return `<div class="time${approx ? ' approx' : ''}">${approx ? '≈ ' : ''}<small>${e.dateWording ? esc(e.dateWording) : 'весь день'}</small></div>`;
-    return `<div class="time${approx ? ' approx' : ''}">${approx ? '≈' : ''}${fTime.format(s)}<small>мск</small></div>`;
+    if (!s) return `<div class="tm"><span class="h none">${esc(e.dateWording || ('до ' + fShort.format(w)))}</span>${stTag(e.dateStatus)}</div>`;
+    const ap = e.dateStatus === 'preliminary';
+    const h = e.allDay ? (ap ? '≈ весь день' : 'весь день') : (ap ? '≈' : '') + fTime.format(s);
+    return `<div class="tm"><span class="h${ap ? ' approx' : ''}${e.allDay ? ' allday' : ''}" style="${e.allDay ? 'font-size:12px' : ''}">${h}</span>${stTag(e.dateStatus)}</div>`;
   }
-  function badges(e, now) {
+  function rowHtml(e, now, i) {
     const ph = phase(e, now);
-    let h = `<span class="ds ${e.dateStatus}">${ST_LABEL[e.dateStatus]}</span>`;
-    if (ph === 'live') h += `<span class="live">идёт</span>`;
-    if (ph === 'awaiting') h += `<span class="await">ждёт итога</span>`;
-    if (e.risk) h += `<span class="risk">${esc(e.risk)}</span>`;
-    return h;
-  }
-  function list(items) {
-    if (!items || !items.length) return '<p class="outnote">Пока нет данных.</p>';
-    return '<ul>' + items.map(a => `<li><span class="basis ${a.basis}">${a.basis === 'agenda' ? 'повестка' : 'анализ'}</span><span>${esc(a.text)}</span></li>`).join('') + '</ul>';
-  }
-  function sourcesHtml(arr) { return (arr || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(''); }
-
-  function outcomeHtml(e, now) {
-    const o = e.outcome;
-    const ph = phase(e, now);
-    if (o && o.decided) {
-      const open = (o.open || []).length ? '<ul>' + o.open.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '<p>—</p>';
-      const when = o.filledAt ? `Итог записан ${esc(o.filledAt)}${o.filledBy === 'claude' ? ' · собран Claude по источникам' : ''}.` : '';
-      return `<div class="sec"><h4>Итог</h4>
-        <div class="outcome">
-          <div><b>Ожидали</b><p>${esc(o.expected || '—')}</p></div>
-          <div class="decided"><b>Решили</b><p>${esc(o.decided)}</p></div>
-          <div><b>Осталось открытым</b>${open}</div>
-        </div>
-        <p class="outnote" style="margin-top:6px">${when} ${o.sources && o.sources.length ? 'Источники итога: ' : ''}<span class="srcs" style="display:inline-flex">${sourcesHtml(o.sources)}</span></p>
-      </div>`;
-    }
-    if (ph === 'awaiting') {
-      return `<div class="sec"><h4>Итог</h4><div class="pending">Событие завершилось. Итог соберёт ближайший автопрогон (06:47 или 15:47 мск): что ожидали по этой карточке, что решили, что осталось открытым.</div></div>`;
-    }
-    return '';
-  }
-
-  function cardHtml(e, now) {
-    const open = state.open.has(e.id);
-    const ph = phase(e, now);
-    const { s, end } = times(e);
-    const cats = (e.cats || []).map(c => `<span class="tag">${esc(CAT_LABEL[c] || c)}</span>`).join('');
-    const span = s && end && !e.allDay && dayKey(s) !== dayKey(end) ? ` · до ${fShort.format(end)}` : '';
-    const gist = ph === 'closed' && e.outcome ? `<div class="gist"><b>Решили:</b> ${esc(trim(e.outcome.decided, 180))}</div>`
-      : (e.agenda && e.agenda[0] ? `<div class="gist">${esc(trim(e.agenda[0].text, 160))}</div>` : '');
-    const air = airLine(e);
-    const imp = e.impact || {};
-    const cp = e.checkpoint || {};
-    const pinned = state.pins.has(e.id);
-    const dateBox = `<div class="datebox">
-        <div><span class="ds ${e.dateStatus}">${ST_LABEL[e.dateStatus]}</span> ${s ? `<b class="mono">${esc(fDay.format(s))}${e.allDay ? '' : ', ' + fTime.format(s) + ' мск'}${span}</b>` : `<b>${esc(e.dateWording || '')}</b>`}</div>
-        ${e.timeNote ? `<div>${esc(e.timeNote)}</div>` : ''}
-        ${e.dateNote ? `<div>${esc(e.dateNote)}</div>` : ''}
-        ${e.ideaWording ? `<div class="src">IDEA: «${esc(e.ideaWording)}»</div>` : ''}
-        <div class="src">Основание: ${e.dateSource ? `<a href="${esc(e.dateSource.url)}" target="_blank" rel="noopener">${esc(e.dateSource.name)}</a>` : '—'} · сверено ${esc(e.checkedAt || '—')}</div>
-      </div>`;
-    const body = open ? `<div class="body">
-        ${outcomeHtml(e, now)}
-        <div class="air ${air.cls}"><div><h4 class="sec" style="margin:0 0 4px;font-size:10.5px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted)">Как сказать в эфире</h4><p>${esc(air.text)}</p></div><button class="linkbtn" type="button" data-copy="${esc(e.id)}">Копировать</button></div>
-        <div class="sec"><h4>Что и где · статус даты</h4>${dateBox}</div>
-        <div class="sec"><h4>Что на обсуждении</h4>${e.participants && e.participants !== '—' ? `<p style="margin-bottom:6px"><b>Участники:</b> ${esc(e.participants)}</p>` : ''}${list(e.agenda)}</div>
-        <div class="sec"><h4>Какие решения возможны</h4>${list(e.scenarios)}</div>
-        <div class="sec"><h4>Что изменится</h4><div class="impact">
-          <div><b>Россия</b>${esc(imp.russia || '—')}</div>
-          <div><b>Бизнес</b>${esc(imp.business || '—')}</div>
-          <div><b>Рынки</b>${esc(imp.markets || '—')}</div></div></div>
-        <div class="sec"><h4>Контрольная точка</h4><div class="cp"><span>${esc(cp.what || '—')}</span><span class="when">${esc(cp.when || '')}</span></div></div>
-        <div class="sec"><h4>Источники</h4><div class="srcs">${sourcesHtml(e.sources)}</div></div>
-        <div class="tools"><button class="linkbtn" type="button" data-pin="${esc(e.id)}" aria-pressed="${pinned}">${pinned ? 'Убрать из эфира' : 'Отметить для эфира'}</button><button class="linkbtn" type="button" data-copylink="${esc(e.id)}">Ссылка на карточку</button></div>
-      </div>` : '';
-    return `<article class="card s-${e.dateStatus}${pinned ? ' pinned' : ''}" id="${esc(e.id)}" data-open="${open}">
-      <button class="head" type="button" data-toggle="${esc(e.id)}" aria-expanded="${open}">
-        ${timeCell(e, now)}
-        <div style="min-width:0"><div class="ttl">${esc(e.title)}</div>
-          <div class="meta">${badges(e, now)}<span class="where">${esc(e.kind || '')}${e.where ? ' · ' + esc(e.where) : ''}</span>${cats}</div>
-          ${gist}</div>
-        <span class="chev" aria-hidden="true">›</span>
-      </button>${body}</article>`;
+    const flags = [ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
+    const subs = [e.kind, e.where, (e.cats || []).map(c => CAT_LABEL[c]).filter(Boolean).slice(0, 2).join(', ')].filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
+    const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
+    const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.pins.has(e.id) ? 'pinned' : '', state.animate ? 'enter' : ''].join(' ');
+    const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms"` : '';
+    return `<button type="button" class="${cls}" data-open="${esc(e.id)}"${delay}>
+      ${timeCell(e)}
+      <div style="min-width:0"><div class="t">${esc(e.title)}${flags ? `<span class="flags">${flags}</span>` : ''}</div><div class="sub">${subs}</div>${gist}</div>
+      <span class="go" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>`;
   }
   const trim = (s, n) => (s || '').length > n ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
 
   function render() {
     const now = new Date();
     const hz = HORIZONS.find(h => h.id === state.horizon) || HORIZONS[0];
-    const all = state.events.filter(e => inHorizon(e, now, hz));
-    const shown = all.filter(passFilters);
-    renderControls(all, now);
-    renderIdea();
-    renderRun(now);
-    const main = $('#main');
+    renderTabs(now);
+    renderIdea(); renderRun(now);
     if (!state.loaded) return;
-    const awaiting = state.events.filter(e => phase(e, now) === 'awaiting').length;
-    const by = st => shown.filter(e => e.dateStatus === st).length;
-    let html = `<div class="summary"><span>Показано <b>${shown.length}</b> из ${all.length}</span>
-      <span><span class="ds confirmed">подтв.</span> <b>${by('confirmed')}</b></span>
-      <span><span class="ds preliminary">предв.</span> <b>${by('preliminary')}</b></span>
-      <span><span class="ds expected">без даты</span> <b>${by('expected')}</b></span>
-      ${awaiting ? `<span class="hint">ждут итога: <b>${awaiting}</b></span>` : ''}
-      <button class="linkbtn" type="button" id="onlyPins" aria-pressed="${state.onlyPins}">Только отмеченные для эфира · ${state.pins.size}</button></div>`;
+    const pool = state.events.filter(e => inHorizon(e, now, hz) && passTopic(e));
+    const shown = pool.filter(passStatus);
+    renderKpis(pool, now);
+    renderTopics(state.events.filter(e => inHorizon(e, now, hz)));
+    renderRuler(shown, now, hz);
+    const feed = $('#feed');
     if (!shown.length) {
-      html += `<div class="empty"><b>${all.length ? 'Под фильтры ничего не подходит' : 'В этом горизонте событий нет'}</b>${all.length ? 'Снимите часть фильтров тем или статусов.' : 'Переключите горизонт или загляните в историю.'}</div>`;
-      main.innerHTML = html; return;
+      feed.innerHTML = `<div class="empty"><b>${pool.length ? 'Под выбранные фильтры ничего не подходит' : 'В этом горизонте событий нет'}</b>${pool.length ? 'Снимите часть фильтров — статусы сверху или темы.' : 'Переключите горизонт или откройте историю.'}</div>`;
+      state.order = []; return;
     }
-    if (hz.id === 'hist') {
-      shown.sort((a, b) => (times(b).s || times(b).w) - (times(a).s || times(a).w));
-    } else {
-      shown.sort((a, b) => ((times(a).s || times(a).w) - (times(b).s || times(b).w)) || a.title.localeCompare(b.title));
-    }
-    const dated = shown.filter(e => times(e).s);
-    const undated = shown.filter(e => !times(e).s);
+    shown.sort((a, b) => hz.id === 'hist' ? when(b) - when(a) : (when(a) - when(b)) || a.title.localeCompare(b.title));
+    const dated = shown.filter(e => times(e).s), undated = shown.filter(e => !times(e).s);
     const groups = [];
     for (const e of dated) {
-      const s = times(e).s;
-      const k = (hz.id !== 'hist' && s < now) ? 'now' : dayKey(s);
-      let g = groups.find(x => x.k === k);
-      if (!g) groups.push(g = { k, d: s, items: [] });
+      const s = times(e).s, k = hz.id !== 'hist' && s < now ? 'now' : dayKey(s);
+      let g = groups.find(x => x.k === k); if (!g) groups.push(g = { k, d: s, items: [] });
       g.items.push(e);
     }
-    html += '<div>';
+    let i = 0, html = '';
     for (const g of groups) {
-      const head = g.k === 'now'
-        ? `<div class="dayhead"><b>Сейчас</b><span>уже идут</span></div>`
-        : `<div class="dayhead"><b>${esc(fDay.format(g.d))}</b><span>${esc(fWdLong.format(g.d))}</span><em>${esc(relDays(g.d, now))}</em></div>`;
-      html += `<section class="day">${head}<div class="cards">${g.items.map(e => cardHtml(e, now)).join('')}</div></section>`;
+      const head = g.k === 'now' ? `<div class="dh now"><div class="d">Сейчас</div><div class="caps mw">уже идут</div></div>`
+        : `<div class="dh"><div class="d">${fNum.format(g.d)}</div><div class="caps mw">${esc(fMon.format(g.d).slice(0, 3))} · ${esc(fWd.format(g.d))}</div><div class="rel">${esc(relDays(g.d, now))}</div></div>`;
+      html += `<section class="day">${head}<div class="rows">${g.items.map(e => rowHtml(e, now, i++)).join('')}</div></section>`;
     }
-    if (undated.length) {
-      html += `<section class="day"><div class="dayhead nodate"><b>Без назначенной даты</b><span>ожидаются в окне</span><em>день не назначен</em></div><div class="cards">${undated.map(e => cardHtml(e, now)).join('')}</div></section>`;
-    }
-    html += '</div>';
-    main.innerHTML = html;
-  }
-
-  function renderControls(all, now) {
-    const hzEl = $('#horizons');
-    hzEl.innerHTML = HORIZONS.map(h => {
-      const n = state.events.filter(e => inHorizon(e, now, h)).length;
-      return `<button type="button" data-hz="${h.id}" aria-pressed="${state.horizon === h.id}">${h.label}<em>${state.loaded ? n : ''}</em></button>`;
-    }).join('');
-    $('#cats').innerHTML = '<span class="lbl">Тема</span>' + CATS.map(c => {
-      const n = all.filter(e => (e.cats || []).includes(c.id)).length;
-      return `<button class="chip" type="button" data-cat="${c.id}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="n">${n}</span></button>`;
-    }).join('') + (state.cats.size ? `<button class="chip" type="button" data-cat="__clear">Сбросить</button>` : '');
-    $('#stats').innerHTML = '<span class="lbl">Дата</span>' + STATUSES.map(s => {
-      const n = all.filter(e => e.dateStatus === s.id).length;
-      return `<button class="chip" type="button" data-st="${s.id}" aria-pressed="${state.sts.has(s.id)}"><span class="ds ${s.id}" style="border:0;background:none;padding:0">${s.label}</span><span class="n">${n}</span></button>`;
-    }).join('');
+    if (undated.length) html += `<section class="day"><div class="dh nodate"><div class="d">Без даты</div><div class="caps mw">окно известно</div><div class="rel">день не назначен</div></div><div class="rows">${undated.map(e => rowHtml(e, now, i++)).join('')}</div></section>`;
+    feed.innerHTML = html;
+    state.order = [...groups.flatMap(g => g.items), ...undated].map(e => e.id);
+    state.animate = false;
   }
 
   function renderIdea() {
-    const rows = state.events.filter(e => e.ideaCheck).sort((a, b) => (times(a).s || times(a).w) - (times(b).s || times(b).w));
-    $('#idea').innerHTML = rows.length ? rows.map(e => `<div><button type="button" data-jump="${esc(e.id)}">${esc(e.title)}</button>
-      <span class="was">IDEA: «${esc(e.ideaWording || '')}»</span><span>${esc(e.ideaCheck)}</span><span><span class="ds ${e.dateStatus}">${ST_LABEL[e.dateStatus]}</span></span></div>`).join('')
-      : '<p>Расхождений пока нет.</p>';
+    const rows = state.events.filter(e => e.ideaCheck).sort((a, b) => when(a) - when(b));
+    $('#idea').innerHTML = rows.length ? rows.map(e => `<button type="button" data-open="${esc(e.id)}">
+        <span class="c">${esc(e.where || e.title)}</span>
+        <span class="was">IDEA: ${esc(e.ideaWording || '')}</span>
+        <span class="is">${stTag(e.dateStatus)}&nbsp; ${esc(trim(cap((e.ideaCheck.match(/,\s*но\s+(.*)$/) || [0, e.ideaCheck])[1]), 150))}</span></button>`).join('')
+      : '<p class="small">Расхождений нет.</p>';
+  }
+  function renderRun(now) {
+    const m = state.meta, dot = m && m.lastRunAt ? ((now - new Date(m.lastRunAt)) / H > 14 ? 'stale' : '') : 'off';
+    $('#autorun').innerHTML = `<i class="dot ${dot}"></i>${m && m.lastRunAt ? 'обновлено ' + fShort.format(new Date(m.lastRunAt)) + ', ' + fTime.format(new Date(m.lastRunAt)) : 'автоитоги: ждём прогона'}`;
+    $('#runlog').innerHTML = (m && m.log || []).slice(0, 3).map(r => `<div><span>${esc(r.at)}</span>${esc(trim(r.text, 190))}</div>`).join('');
   }
 
-  function renderRun(now) {
-    const pill = $('#autorun');
-    const m = state.meta;
-    if (!m || !m.lastRunAt) { pill.className = 'pill off'; pill.innerHTML = '<i></i>автоитоги: первый прогон впереди'; return; }
-    const last = new Date(m.lastRunAt);
-    const age = (now - last) / H;
-    pill.className = 'pill' + (age > 14 ? ' stale' : '');
-    pill.innerHTML = `<i></i>автоитоги: ${fShort.format(last)}, ${fTime.format(last)}`;
-    pill.title = age > 14 ? 'Последний прогон был больше 14 часов назад' : 'Последний автоматический прогон';
-    const log = (m.log || []).slice(0, 5).map(r => `<div><span class="mono">${esc(r.at)}</span> — ${esc(r.text)}</div>`).join('');
-    $('#runlog').innerHTML = `<p>После окончания события карточка переходит в статус «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итоги по официальным документам и СМИ и записывает их в формате «ожидали → решили → что осталось открытым», перепроверяет статусы дат и добавляет новые события.</p>${log || ''}`;
+  /* ------------------------------------------------------------ панель */
+  const drawer = $('#drawer'), scrim = $('#scrim');
+  let lastFocus = null, closeT = null;
+  function openDrawer(html, foot, crumb) {
+    clearTimeout(closeT);
+    $('#drBody').innerHTML = html; $('#drFoot').innerHTML = foot || ''; $('#drFoot').hidden = !foot;
+    $('#drCrumb').textContent = crumb || '';
+    $('#drBody').scrollTop = 0;
+    if (drawer.hidden) {
+      lastFocus = document.activeElement;
+      drawer.hidden = false; scrim.hidden = false; drawer.classList.remove('closing');
+      document.body.classList.add('locked');
+      requestAnimationFrame(() => requestAnimationFrame(() => { drawer.classList.add('open'); scrim.classList.add('open'); }));
+      setTimeout(() => $('#drClose').focus({ preventScroll: true }), 60);
+    }
+  }
+  function closeDrawer() {
+    if (drawer.hidden) return;
+    drawer.classList.add('closing'); drawer.classList.remove('open'); scrim.classList.remove('open');
+    document.body.classList.remove('locked');
+    state.openId = null;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    closeT = setTimeout(() => { drawer.hidden = true; scrim.hidden = true; }, reduced() ? 0 : 300);
+    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  function items(arr) {
+    if (!arr || !arr.length) return '<p class="small" style="margin:0">Пока нет данных.</p>';
+    return '<ul class="items">' + arr.map(a => `<li><span class="bs ${a.basis}">${a.basis === 'agenda' ? 'повестка' : 'анализ'}</span><span>${esc(a.text)}</span></li>`).join('') + '</ul>';
+  }
+  const links = arr => (arr || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join('');
+  const lab = t => `<h3 class="lab caps">${t}</h3>`;
+
+  function openEvent(id) {
+    const e = state.events.find(x => x.id === id); if (!e) return;
+    state.openId = id;
+    try { history.replaceState(null, '', '#' + id); } catch (err) {}
+    const now = new Date(), ph = phase(e, now), { s, end } = times(e);
+    const air = airLine(e), imp = e.impact || {}, cp = e.checkpoint || {}, o = e.outcome;
+    const multi = s && end && !e.allDay && dayKey(s) !== dayKey(end) ? ` — ${fShort.format(end)}` : '';
+    const whenBig = s ? `<span class="big">${esc(fDay.format(s))}${e.allDay ? '' : ', ' + fTime.format(s) + ' мск'}${multi}</span>` : `<span class="big none">${esc(e.dateWording || '')}</span>`;
+    const flag = ph === 'live' ? '<span class="flag live">идёт</span>' : ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '';
+    let outcome = '';
+    if (o && o.decided) {
+      outcome = `<section>${lab('Итог')}<div class="outcome">
+        <div><b class="caps">Ожидали</b>${esc(o.expected || '—')}</div><div class="arr">→</div>
+        <div class="dec"><b class="caps">Решили</b>${esc(o.decided)}</div><div class="arr">→</div>
+        <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
+        <div class="small">${o.filledAt ? 'Записано ' + esc(String(o.filledAt).slice(0, 16).replace('T', ' ')) + (o.filledBy === 'claude' ? ' · собрано Claude по источникам' : '') + '. ' : ''}${(o.sources || []).length ? 'Источники: ' + (o.sources || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(', ') : ''}</div></section>`;
+    } else if (ph === 'awaiting') {
+      outcome = `<section>${lab('Итог')}<div class="pending">Событие завершилось. Итог в формате «ожидали → решили → осталось открытым» запишет ближайший автопрогон — в 06:47 или 15:47 мск.</div></section>`;
+    }
+    const html = `
+      <section class="hero"><div class="k">${esc([e.kind, e.where].filter(Boolean).join(' · '))}</div>
+        <h2 id="drTitle">${esc(e.title)}</h2>
+        <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}</div></section>
+      ${outcome}
+      <section class="air" style="--c:${air.c}"><p>${esc(air.text)}</p><div class="row2"><span class="hint">${esc(air.hint)}</span><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать для эфира</button></div></section>
+      <section>${lab('Дата и основание')}<dl class="kv">
+        ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
+        ${e.dateNote ? `<dt>Оговорка</dt><dd>${esc(e.dateNote)}</dd>` : ''}
+        ${e.ideaWording ? `<dt>IDEA</dt><dd>«${esc(e.ideaWording)}»${e.ideaCheck ? '<br><span style="color:var(--ink-2)">' + esc(e.ideaCheck) + '</span>' : ''}</dd>` : ''}
+        <dt>Основание</dt><dd>${e.dateSource ? `<a href="${esc(e.dateSource.url)}" target="_blank" rel="noopener">${esc(e.dateSource.name)}</a>` : '—'}</dd>
+        <dt>Сверено</dt><dd class="mono" style="font-size:12.5px">${esc(e.checkedAt || '—')}</dd></dl></section>
+      <section>${lab('Что на обсуждении')}${e.participants && e.participants !== '—' ? `<p style="margin:0 0 12px;font-size:13.5px"><span style="color:var(--muted)">Участники.</span> ${esc(e.participants)}</p>` : ''}${items(e.agenda)}</section>
+      <section>${lab('Какие решения возможны')}${items(e.scenarios)}</section>
+      <section>${lab('Что изменится')}<div class="three">
+        <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
+      <section>${lab('Контрольная точка')}<div class="cp"><span>${esc(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
+      <section>${lab('Источники')}<div class="srcs">${links(e.sources)}</div></section>`;
+    const pinned = state.pins.has(e.id);
+    const foot = `<button type="button" class="pillbtn" data-pin="${esc(e.id)}" aria-pressed="${pinned}">${pinned ? 'Отмечено для эфира' : 'Отметить для эфира'}</button><button type="button" class="pillbtn" data-copylink="${esc(e.id)}">Ссылка на карточку</button>`;
+    const idx = state.order.indexOf(id);
+    $('#drPrev').disabled = idx <= 0; $('#drNext').disabled = idx < 0 || idx >= state.order.length - 1;
+    const crumb = s ? `${fWdLong.format(s)}, ${relDays(s, now)}` : 'дата не назначена';
+    openDrawer(html, foot, crumb);
+  }
+  function openHelp() {
+    state.openId = null;
+    const html = `<section class="hero"><div class="k">Справка</div><h2 id="drTitle">Как читать карту</h2></section>
+      <section>${lab('Статус даты')}<div class="legend">
+        <div>${stTag('confirmed', true)}<p>Назначена официальным документом: указом, календарём организатора, решением избиркома.</p><span class="ex">в эфире: «23 октября в 13:30»</span></div>
+        <div>${stTag('preliminary', true)}<p>Дата известна, но не закреплена: практика прошлых лет, агрегаторы, оговорки организатора. Время помечено знаком ≈.</p><span class="ex">в эфире: «ориентировочно…»</span></div>
+        <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
+        <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
+      <section>${lab('Пометки в карточке')}<ul class="items"><li><span class="bs agenda">повестка</span><span>Подтверждено повесткой или документом организатора.</span></li><li><span class="bs analysis">анализ</span><span>Предположение редакции: сценарий, а не факт.</span></li></ul></section>
+      <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
+      <section>${lab('Управление')}<dl class="kv"><dt>Статусы</dt><dd>Плашки-счётчики сверху работают как фильтры</dd><dt>Шкала</dt><dd>Нажмите на точку — откроется карточка</dd><dt>Клавиши</dt><dd>← → — соседнее событие, Esc — закрыть панель</dd></dl></section>`;
+    $('#drPrev').disabled = true; $('#drNext').disabled = true;
+    openDrawer(html, '', 'Справка');
   }
 
   /* ------------------------------------------------------ взаимодействие */
-  function toast(t) { const el = $('#toast'); el.textContent = t; el.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => el.hidden = true, 1800); }
-  async function copy(text) {
-    try { await navigator.clipboard.writeText(text); toast('Скопировано'); }
-    catch (e) { toast('Не удалось скопировать — выделите текст вручную'); }
-  }
-  document.addEventListener('click', (ev) => {
-    const b = ev.target.closest('button'); if (!b) return;
-    if (b.dataset.hz) { state.horizon = b.dataset.hz; store.set('horizon', state.horizon); render(); return; }
-    if (b.dataset.cat) {
-      if (b.dataset.cat === '__clear') state.cats.clear();
-      else state.cats.has(b.dataset.cat) ? state.cats.delete(b.dataset.cat) : state.cats.add(b.dataset.cat);
-      store.set('cats', [...state.cats]); render(); return;
-    }
-    if (b.dataset.st) { state.sts.has(b.dataset.st) ? state.sts.delete(b.dataset.st) : state.sts.add(b.dataset.st); store.set('sts', [...state.sts]); render(); return; }
-    if (b.dataset.toggle) { const id = b.dataset.toggle; state.open.has(id) ? state.open.delete(id) : state.open.add(id); render(); return; }
-    if (b.dataset.pin) { const id = b.dataset.pin; state.pins.has(id) ? state.pins.delete(id) : state.pins.add(id); store.set('pins', [...state.pins]); render(); return; }
-    if (b.id === 'onlyPins') { state.onlyPins = !state.onlyPins; render(); return; }
-    if (b.dataset.copy) { const e = state.events.find(x => x.id === b.dataset.copy); if (e) copy(airLine(e).text); return; }
-    if (b.dataset.copylink) { copy(location.href.split('#')[0] + '#' + b.dataset.copylink); return; }
-    if (b.dataset.jump) { jumpTo(b.dataset.jump); return; }
-    if (b.id === 'themeBtn') {
-      const r = document.documentElement; const cur = r.getAttribute('data-theme');
+  const toastEl = $('#toast');
+  function toast(t) { toastEl.textContent = t; toastEl.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove('on'), 1800); }
+  async function copy(text) { try { await navigator.clipboard.writeText(text); toast('Скопировано'); } catch (e) { toast('Не удалось скопировать — выделите текст вручную'); } }
+
+  document.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-open],[data-hz],[data-cat],[data-st],[data-pin],[data-copy],[data-copylink],button');
+    if (!t) return;
+    const d = t.dataset;
+    if (d.open) { openEvent(d.open); return; }
+    if (d.hz) { if (state.horizon !== d.hz) { state.horizon = d.hz; store.set('horizon', d.hz); state.animate = true; render(); requestAnimationFrame(() => moveInk(true)); } return; }
+    if (d.cat) { d.cat === '__clear' ? state.cats.clear() : (state.cats.has(d.cat) ? state.cats.delete(d.cat) : state.cats.add(d.cat)); store.set('cats', [...state.cats]); state.animate = true; render(); return; }
+    if (d.st) { state.sts.has(d.st) ? state.sts.delete(d.st) : state.sts.add(d.st); store.set('sts', [...state.sts]); state.animate = true; render(); return; }
+    if (d.pin) { state.pins.has(d.pin) ? state.pins.delete(d.pin) : state.pins.add(d.pin); store.set('pins', [...state.pins]); render(); openEvent(d.pin); return; }
+    if (d.copy) { const e = state.events.find(x => x.id === d.copy); if (e) copy(airLine(e).text); return; }
+    if (d.copylink) { copy(location.href.split('#')[0] + '#' + d.copylink); return; }
+    if (t.id === 'onlyPins') { state.onlyPins = !state.onlyPins; state.animate = true; render(); return; }
+    if (t.id === 'drClose') { closeDrawer(); return; }
+    if (t.id === 'drPrev' || t.id === 'drNext') { step(t.id === 'drNext' ? 1 : -1); return; }
+    if (t.id === 'helpBtn') { openHelp(); return; }
+    if (t.id === 'themeBtn') {
+      const r = document.documentElement, cur = r.getAttribute('data-theme');
       const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
       r.setAttribute('data-theme', dark ? 'light' : 'dark'); store.set('theme', r.getAttribute('data-theme'));
     }
   });
-  let qt; $('#q').addEventListener('input', (ev) => { clearTimeout(qt); qt = setTimeout(() => { state.q = ev.target.value.trim().toLowerCase(); render(); }, 150); });
+  scrim.addEventListener('click', closeDrawer);
+  function step(dir) { if (!state.openId) return; const i = state.order.indexOf(state.openId) + dir; if (i >= 0 && i < state.order.length) openEvent(state.order[i]); }
+  document.addEventListener('keydown', ev => {
+    if (drawer.hidden) return;
+    if (ev.key === 'Escape') { ev.preventDefault(); closeDrawer(); }
+    else if (ev.key === 'ArrowRight') step(1);
+    else if (ev.key === 'ArrowLeft') step(-1);
+    else if (ev.key === 'Tab') {
+      const f = [...drawer.querySelectorAll('button:not([disabled]),a[href]')]; if (!f.length) return;
+      if (ev.shiftKey && document.activeElement === f[0]) { ev.preventDefault(); f[f.length - 1].focus(); }
+      else if (!ev.shiftKey && document.activeElement === f[f.length - 1]) { ev.preventDefault(); f[0].focus(); }
+    }
+  });
+  let qt; $('#q').addEventListener('input', ev => { clearTimeout(qt); qt = setTimeout(() => { state.q = ev.target.value.trim().toLowerCase(); state.animate = true; render(); }, 160); });
+  let rt; addEventListener('resize', () => { moveInk(false); clearTimeout(rt); rt = setTimeout(redrawRuler, 120); });
 
-  function jumpTo(id) {
-    const e = state.events.find(x => x.id === id); if (!e) return;
-    const now = new Date();
-    const hz = HORIZONS.find(h => h.id !== 'hist' && inHorizon(e, now, h)) || HORIZONS[3];
-    state.horizon = hz.id; state.cats.clear(); state.sts.clear(); state.q = ''; $('#q').value = ''; state.onlyPins = false;
-    state.open.add(id); render();
-    const el = document.getElementById(id);
-    if (el) { el.classList.add('target'); el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); setTimeout(() => el.classList.remove('target'), 2200); }
-  }
-
-  /* ----------------------------------------------------------- часы */
-  function tick() { const n = new Date(); $('#clock').textContent = `${fWd.format(n)} ${fShort.format(n)} · ${fTime.format(n)} мск`; }
+  /* ---------------------------------------------------------- старт */
+  function tick() { const n = new Date(); $('#clock').textContent = `${fWd.format(n)}, ${fShort.format(n)} · ${fTime.format(n)} мск`; }
   tick(); setInterval(tick, 20e3);
-  setInterval(() => { if (state.loaded) render(); }, 5 * 60e3);
-
-  const t = store.get('theme', null); if (t) document.documentElement.setAttribute('data-theme', t);
+  setInterval(() => { if (state.loaded && drawer.hidden) render(); }, 5 * 60e3);
+  const th = store.get('theme', null); if (th) document.documentElement.setAttribute('data-theme', th);
   render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => moveInk(false));
 
-  /* ----------------------------------------------------------- данные */
   (async () => {
     const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
-    if (!db) {
-      $('#boot').innerHTML = '<b>База событий недоступна в этом просмотре</b>Карточки и итоги хранятся в базе терминала. Откройте страницу по ссылке claude.ai, войдя в аккаунт.';
-      return;
-    }
-    db.collection('events').onSnapshot((snap) => {
+    if (!db) { $('#feed').innerHTML = '<div class="empty"><b>База событий недоступна в этом просмотре</b>Карточки и итоги хранятся в базе терминала. Откройте страницу по ссылке claude.ai, войдя в аккаунт.</div>'; return; }
+    db.collection('events').onSnapshot(snap => {
+      const first = !state.loaded;
       state.events = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.title);
-      state.loaded = true;
-      if (!state.events.length) { $('#main').innerHTML = '<div class="empty"><b>Карта пока пуста</b>События появятся после первого прогона наполнения.</div>'; renderControls([], new Date()); return; }
+      state.loaded = true; if (first) state.animate = true;
+      if (!state.events.length) { $('#feed').innerHTML = '<div class="empty"><b>Карта пока пуста</b>События появятся после первого прогона наполнения.</div>'; return; }
       render();
+      if (state.openId && !drawer.hidden) openEvent(state.openId);
       const h = location.hash.slice(1);
-      if (h && !render.jumped) { render.jumped = true; jumpTo(h); }
-    }, (err) => {
-      $('#main').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`;
-    });
-    db.doc('meta/status').onSnapshot((d) => { state.meta = d.exists ? d.data() : null; renderRun(new Date()); }, () => {});
+      if (first && h && state.events.some(e => e.id === h)) openEvent(h);
+    }, err => { $('#feed').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`; });
+    db.doc('meta/status').onSnapshot(d => { state.meta = d.exists ? d.data() : null; renderRun(new Date()); }, () => {});
   })();
 })();
 </script>
