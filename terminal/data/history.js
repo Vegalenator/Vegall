@@ -935,7 +935,7 @@ window.VG_HISTORY = [
  },
  {
   "asOf": "2026-09-06",
-  "builtAt": "2026-09-20",
+  "builtAt": "2026-09-29",
   "label": "календарь раскрытий",
   "method": 2,
   "index": {

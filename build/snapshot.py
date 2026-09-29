@@ -10,6 +10,7 @@
 устойчивому идентификатору; для ранних сборок, где идентификаторов ещё не было,
 работает сопоставление по названию.
 """
+import datetime
 import json
 import pathlib
 import re
@@ -19,6 +20,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 DATA = ROOT / "terminal" / "data"
 HISTORY = DATA / "history.js"
+TODAY = datetime.date.today().isoformat()
 FILES = ["meta", "layers", "companies", "network", "indicators", "scenarios", "russia", "citations"]
 
 NODE_TEMPLATE = """
@@ -110,6 +112,14 @@ def main() -> None:
         del args[i:i + 2]
     label = args[0] if args else "обновление данных"
 
+    if not rev:
+        # дата сборки не должна отставать от данных: её ставит снимок, а не человек
+        meta = DATA / "meta.js"
+        txt = meta.read_text(encoding="utf-8")
+        txt2 = re.sub(r"builtAt: '[\d-]+'", f"builtAt: '{TODAY}'", txt, count=1)
+        if txt2 != txt:
+            meta.write_text(txt2, encoding="utf-8")
+            print(f"дата сборки обновлена: {TODAY}")
     snap = make(rev, label)
     if rev:
         snap["rev"] = subprocess.run(["git", "rev-parse", "--short", rev], cwd=ROOT,
