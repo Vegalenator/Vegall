@@ -57,7 +57,7 @@
   color-scheme:dark;
 }
 *{box-sizing:border-box}
-html{scroll-padding-top:var(--toph,110px)}
+html{scroll-padding-top:var(--toph,56px)}
 body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ff-ui);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
 body.locked{overflow:hidden}
 a{color:var(--accent);text-decoration-color:var(--accent-3);text-underline-offset:3px}
@@ -69,26 +69,22 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* ------------------------------------------------------- шапка из стекла */
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-bottom:1px solid var(--hair)}
-.top-in{max-width:1440px;margin:0 auto;padding:14px 28px 0;display:grid;gap:12px}
-.bar{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
-.mark{display:flex;align-items:baseline;gap:14px;min-width:0}
-.mark h1{margin:0;font-family:var(--ff-display);font-weight:500;font-size:24px;letter-spacing:-.01em;line-height:1}
-.mark .caps{white-space:nowrap}
+.top-in{max-width:1440px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:28px;min-height:54px}
+.mark{margin:0;font-family:var(--ff-display);font-weight:500;font-size:19px;letter-spacing:-.01em;line-height:1;white-space:nowrap}
 .grow{flex:1 1 auto}
-.status{display:flex;align-items:center;gap:16px;font-size:12px;color:var(--ink-2)}
+.status{display:flex;align-items:center;gap:12px;white-space:nowrap;font-size:12px;color:var(--ink-2)}
 .status .dot{width:6px;height:6px;border-radius:50%;background:var(--st-confirmed);display:inline-block;margin-right:7px;box-shadow:0 0 0 3px color-mix(in srgb, var(--st-confirmed) 18%, transparent)}
 .status .dot.stale{background:var(--st-preliminary);box-shadow:0 0 0 3px color-mix(in srgb, var(--st-preliminary) 18%, transparent)}
 .status .dot.off{background:var(--muted);box-shadow:none}
-.ghost{font-size:12px;color:var(--ink-2);padding:6px 10px;border-radius:6px;transition:background .2s,color .2s}
+.ghost{display:grid;place-items:center;min-width:28px;height:28px;font-size:13px;font-weight:500;color:var(--ink-2);padding:0 6px;border-radius:6px;transition:background .2s,color .2s}
 .ghost:hover{background:var(--accent-2);color:var(--ink)}
 
-.nav{display:flex;align-items:flex-end;gap:24px;flex-wrap:wrap}
-.tabs{position:relative;display:flex;gap:26px}
-.tabs button{padding:8px 0 12px;font-size:14px;color:var(--ink-2);transition:color .2s;white-space:nowrap}
+.tabs{position:relative;display:flex;gap:22px;align-self:stretch}
+.tabs button{padding:0;height:100%;font-size:14px;color:var(--ink-2);transition:color .2s;white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ink);font-weight:500}
 .tabs button sup{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:4px;vertical-align:super}
 .tabs .ink{position:absolute;bottom:-1px;height:2px;background:var(--accent);border-radius:2px;transition:left .35s var(--ease),width .35s var(--ease)}
-.search{margin-left:auto;margin-bottom:8px;display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--hair-2);padding:4px 2px;min-width:0;flex:0 1 260px;transition:border-color .2s}
+.search{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--hair-2);padding:4px 2px;min-width:0;flex:0 1 200px;min-width:130px;transition:border-color .2s}
 .search:focus-within{border-color:var(--accent)}
 .search svg{flex:none;color:var(--muted)}
 .search input{border:0;background:none;font:inherit;font-size:13px;color:var(--ink);width:100%;min-width:0;outline:none}
@@ -98,9 +94,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .sheet{background:var(--sheet);border-radius:10px;box-shadow:var(--shadow-sm);min-width:0}
 
 /* ---- темы */
-.topics{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;padding:14px 22px;border-bottom:1px solid var(--hair)}
+.topics{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--hair)}
 .topics .caps{margin-right:8px}
-.tgl{font-size:12.5px;color:var(--ink-2);padding:5px 11px;border-radius:999px;transition:background .25s,color .25s,box-shadow .25s}
+.tgl{flex:none;white-space:nowrap;font-size:12.5px;color:var(--ink-2);padding:5px 11px;border-radius:999px;transition:background .25s,color .25s,box-shadow .25s}
 .tgl:hover{color:var(--ink);background:var(--sheet-2)}
 .tgl[aria-pressed="true"]{color:var(--accent);background:var(--accent-2);box-shadow:inset 0 0 0 1px var(--accent-3)}
 .tgl .c{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:5px}
@@ -110,7 +106,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .feed{padding:4px 0 10px}
 .day{display:grid;grid-template-columns:78px minmax(0,1fr);gap:0 6px;padding:16px 14px 6px 20px}
 .day + .day{border-top:1px solid var(--hair)}
-.dh{position:sticky;top:calc(var(--toph,110px) + 12px);align-self:start;padding-top:8px}
+.dh{position:sticky;top:calc(var(--toph,56px) + 10px);align-self:start;padding-top:8px}
 .dh .d{font-family:var(--ff-display);font-size:34px;line-height:.9;font-weight:400;letter-spacing:-.03em}
 .dh .mw{margin-top:6px}
 .dh .rel{font-size:12px;color:var(--ink-2);margin-top:2px}
@@ -154,18 +150,15 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 /* ------------------------------------------------------------- панель */
 .scrim{position:fixed;inset:0;z-index:50;background:var(--scrim);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;transition:opacity .3s var(--ease)}
 .scrim.open{opacity:1}
-.detail{position:sticky;top:calc(var(--toph,110px) + 22px);height:calc(100vh - var(--toph,110px) - 44px);display:flex;flex-direction:column;overflow:hidden;padding:0}
-.dr-top{display:flex;align-items:center;gap:6px;padding:10px 14px 10px 26px;border-bottom:1px solid var(--hair)}
-.dr-top .caps{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.detail{position:sticky;top:calc(var(--toph,56px) + 16px);height:calc(100vh - var(--toph,56px) - 32px);display:flex;flex-direction:column;overflow:hidden;padding:0;position:sticky}
+.dtools{position:absolute;top:14px;right:14px;z-index:2;display:flex;gap:2px;padding:3px;border-radius:10px;background:var(--glass);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
 #drClose{display:none}
-.icon{width:32px;height:32px;display:grid;place-items:center;border-radius:8px;color:var(--ink-2);transition:background .2s,color .2s}
-.icon:hover{background:var(--accent-2);color:var(--ink)}
-.icon:disabled{opacity:.3;cursor:default;background:none}
 .dr-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:24px 30px 36px;display:grid;gap:26px;align-content:start}
 .dr-body.swap > *{animation:secIn .42s var(--ease) both}
 .dr-body.swap > *:nth-child(2){animation-delay:.03s}.dr-body.swap > *:nth-child(3){animation-delay:.06s}.dr-body.swap > *:nth-child(4){animation-delay:.09s}.dr-body.swap > *:nth-child(n+5){animation-delay:.12s}
 @keyframes secIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .hero .k{font-size:12.5px;color:var(--muted)}
+.hero{padding-right:84px}
 .hero h2{margin:6px 0 14px;font-family:var(--ff-display);font-weight:500;font-size:28px;line-height:1.15;letter-spacing:-.015em;text-wrap:balance}
 .when{display:flex;align-items:center;gap:14px;flex-wrap:wrap}
 .when .big{font-family:var(--ff-mono);font-size:16px;font-weight:500;letter-spacing:-.01em}
@@ -225,11 +218,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .row[aria-current="true"]::before{display:none}
 }
 @media (max-width:720px){
-  .top-in{padding:12px 16px 0}
+  .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
+  .tabs{order:5;flex:1 1 100%;height:40px;overflow-x:auto;scrollbar-width:none}
+  .search{flex:1 1 120px}
+  .autorun .lbl{display:none}
   .wrap{padding:16px 16px 60px;gap:20px}
-  .mark .caps{display:none}
   .status .clock{display:none}
-  .search{flex:1 1 100%;margin-left:0}
   .topics{padding-left:16px;padding-right:16px}
   .day{grid-template-columns:minmax(0,1fr);padding:14px 10px 6px}
   .dh{position:static;display:flex;align-items:baseline;gap:10px;padding:0 6px 6px}
@@ -256,20 +250,16 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 <header class="top">
   <div class="top-in">
-    <div class="bar">
-      <div class="mark"><h1>Карта событий</h1><span class="caps">редакционный календарь · время московское</span></div>
-      <div class="grow"></div>
-      <div class="status">
-        <span class="clock mono" id="clock">—</span>
-        <span id="autorun"><i class="dot off"></i>автоитоги</span>
-        <button class="ghost" type="button" id="helpBtn">Как читать</button>
-        <button class="ghost" type="button" id="themeBtn" aria-label="Сменить тему">Тема</button>
-      </div>
+    <h1 class="mark" title="Редакционный календарь · время московское">Карта событий</h1>
+    <nav class="tabs" role="tablist" id="tabs" aria-label="Горизонт"></nav>
+    <div class="grow"></div>
+    <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Поиск" aria-label="Поиск по событиям"></label>
+    <div class="status">
+      <span class="clock mono" id="clock">—</span>
+      <span id="autorun" class="autorun"><i class="dot off"></i><span class="lbl">автоитоги</span></span>
+      <button class="ghost" type="button" id="helpBtn" title="Как читать карту" aria-label="Как читать карту">?</button>
+      <button class="ghost" type="button" id="themeBtn" title="Сменить тему" aria-label="Сменить тему"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 2.5a5.5 5.5 0 010 11z" fill="currentColor"/></svg></button>
     </div>
-    <nav class="nav" aria-label="Горизонт">
-      <div class="tabs" role="tablist" id="tabs"></div>
-      <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Страна, орган, тема" aria-label="Поиск по событиям"></label>
-    </nav>
   </div>
 </header>
 
@@ -281,8 +271,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     </div>
   </main>
   <aside class="sheet detail" id="detail" aria-labelledby="drTitle">
-    <div class="dr-top">
-      <span class="caps" id="drCrumb">Событие</span>
+    <div class="dtools">
       <button class="icon" type="button" id="drPrev" aria-label="Предыдущее событие" title="Предыдущее (↑)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 10l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="icon" type="button" id="drNext" aria-label="Следующее событие" title="Следующее (↓)"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
       <button class="icon" type="button" id="drClose" aria-label="Закрыть"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
@@ -301,15 +290,16 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   const HORIZONS = [
     { id: 'h72', label: '72 часа', ms: 72 * H },
     { id: 'w2', label: '2 недели', ms: 14 * D },
+    { id: 'm1', label: '1 месяц', ms: 31 * D },
     { id: 'm3', label: '3 месяца', ms: 92 * D },
     { id: 'hist', label: 'История' },
   ];
   const CATS = [
-    { id: 'russia', label: 'Россия' },
-    { id: 'intl', label: 'Международные организации' },
-    { id: 'elections', label: 'Выборы' },
-    { id: 'cb', label: 'Центробанки' },
-    { id: 'business', label: 'Крупный бизнес' },
+    { id: 'russia', label: 'RUS', full: 'Россия' },
+    { id: 'intl', label: 'INT', full: 'Международные организации' },
+    { id: 'elections', label: 'Выборы', full: 'Выборы' },
+    { id: 'cb', label: 'ЦБ', full: 'Центробанки' },
+    { id: 'business', label: 'CORP', full: 'Крупный бизнес' },
   ];
   const STATUSES = [
     { id: 'confirmed', label: 'Подтверждена', short: 'подтв.' },
@@ -317,7 +307,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     { id: 'expected', label: 'Без даты', short: 'без даты' },
     { id: 'cancelled', label: 'Не состоится', short: 'отменено' },
   ];
-  const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.label]));
+  const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.full]));
   const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
 
   const store = {
@@ -435,9 +425,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   }
 
   function renderTopics(pool) {
-    $('#topics').innerHTML = '<span class="caps">Тема</span>' + CATS.map(c => {
+    $('#topics').innerHTML = CATS.map(c => {
       const n = pool.filter(e => (e.cats || []).includes(c.id)).length;
-      return `<button type="button" class="tgl" data-cat="${c.id}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="c">${n}</span></button>`;
+      return `<button type="button" class="tgl" data-cat="${c.id}" title="${c.full}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="c">${n}</span></button>`;
     }).join('')
       + (state.cats.size ? `<button type="button" class="tgl clear" data-cat="__clear">сбросить</button>` : '');
   }
@@ -453,7 +443,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function rowHtml(e, now, i) {
     const ph = phase(e, now);
     const flags = [ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
-    const subs = [e.kind, e.where, (e.cats || []).map(c => CAT_LABEL[c]).filter(Boolean).slice(0, 2).join(', ')].filter(Boolean).map(esc).join(' · ');
+    const subs = [e.kind, e.where].filter(Boolean).map(esc).join(' · ');
     const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
     const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
     const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms"` : '';
@@ -505,8 +495,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function renderRun(now) {
     const m = state.meta, dot = m && m.lastRunAt ? ((now - new Date(m.lastRunAt)) / H > 14 ? 'stale' : '') : 'off';
     const el = $('#autorun');
-    el.innerHTML = `<i class="dot ${dot}"></i>${m && m.lastRunAt ? 'итоги обновлены ' + fShort.format(new Date(m.lastRunAt)) + ', ' + fTime.format(new Date(m.lastRunAt)) : 'автоитоги: ждём прогона'}`;
-    el.title = (m && m.log && m.log[0]) ? m.log[0].text : 'Автоматические итоги: 06:47 и 15:47 мск';
+    el.innerHTML = `<i class="dot ${dot}"></i>${m && m.lastRunAt ? '<span class="lbl">итоги </span>' + (dayKey(new Date(m.lastRunAt)) === dayKey(now) ? '' : fShort.format(new Date(m.lastRunAt)) + ', ') + fTime.format(new Date(m.lastRunAt)) : 'автоитоги: ждём прогона'}`;
+    el.title = 'Последнее обновление итогов' + (m && m.lastRunAt ? ': ' + fDay.format(new Date(m.lastRunAt)) + ', ' + fTime.format(new Date(m.lastRunAt)) : '') + '. Автопрогоны в 06:47 и 15:47 мск' + ((m && m.log && m.log[0]) ? '\n' + m.log[0].text : '');
   }
 
   /* --------------------------------------------------- карточка справа */
@@ -517,11 +507,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const body = $('#drBody');
     const same = key === shownKey;
     body.innerHTML = html; $('#drFoot').innerHTML = foot || ''; $('#drFoot').hidden = !foot;
-    $('#drCrumb').textContent = crumb || '';
     if (!same) { body.scrollTop = 0; body.classList.remove('swap'); void body.offsetWidth; body.classList.add('swap'); }
     shownKey = key;
   }
-  function showEmptyDetail() { shownKey = null; $('#drBody').innerHTML = '<div class="empty"><b>Карточка события</b>Выберите событие в списке слева.</div>'; $('#drFoot').hidden = true; $('#drCrumb').textContent = ''; }
+  function showEmptyDetail() { shownKey = null; $('#drBody').innerHTML = '<div class="empty"><b>Карточка события</b>Выберите событие в списке слева.</div>'; $('#drFoot').hidden = true; }
   function sheetOpen() {
     if (!narrow()) return;
     clearTimeout(closeT);
@@ -586,7 +575,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const foot = `<button type="button" class="pillbtn" data-copylink="${esc(e.id)}">Ссылка на карточку</button>`;
     const idx = state.order.indexOf(id);
     $('#drPrev').disabled = idx <= 0; $('#drNext').disabled = idx < 0 || idx >= state.order.length - 1;
-    const crumb = s ? `${fWdLong.format(s)}, ${relDays(s, now)}` : 'дата не назначена';
+    const crumb = '';
     paint(html, foot, crumb, 'e:' + id + ':' + (e.outcome ? 1 : 0), opt.quiet);
     markCurrent();
     if (!opt.quiet) sheetOpen();
@@ -651,7 +640,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   setTopH();
 
   /* ---------------------------------------------------------- старт */
-  function tick() { const n = new Date(); $('#clock').textContent = `${fWd.format(n)}, ${fShort.format(n)} · ${fTime.format(n)} мск`; }
+  function tick() { const n = new Date(); $('#clock').textContent = `${fWd.format(n)} ${fShort.format(n).replace('.', '')} · ${fTime.format(n)} мск`; }
   tick(); setInterval(tick, 20e3);
   setInterval(() => { if (state.loaded) render(); }, 5 * 60e3);
   const th = store.get('theme', null); if (th) document.documentElement.setAttribute('data-theme', th);
