@@ -68,6 +68,7 @@ python3 build/atlas.py     # atlas/atlas.artifact.html → atlas/index.html
 ```bash
 node svet-i-ten/test/solve.js   # бот проходит все уровни на том же движке
 python3 build/svet.py           # однофайловые сборки в dist/
+# build/svet-atlas.html — пересобрать атласы героев из концепт-артов (открыть через локальный сервер)
 ```
 
 Правила мира, уровни и планы — в `svet-i-ten/DESIGN.md`. Уровни описаны данными в `svet-i-ten/levels.js`.

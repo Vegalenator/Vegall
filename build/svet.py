@@ -23,7 +23,7 @@ def build():
         tag = '<script src="%s.js"></script>' % name
         assert tag in html, tag
         html = html.replace(tag, '<script>\n' + read(name + '.js') + '\n</script>')
-    for img in ('key', 'luma', 'nox', 'train'):
+    for img in ('key', 'luma', 'nox', 'train', 'hero-luma', 'hero-nox'):
         html = html.replace('art/%s.webp' % img, data_uri('art/%s.webp' % img))
     html = html.replace('music/luma-and-nox.mp3', data_uri('music/luma-and-nox.mp3', 'audio/mpeg'))
     assert 'art/' not in html and 'music/' not in html and '.js"></script>' not in html, 'остались внешние ссылки'

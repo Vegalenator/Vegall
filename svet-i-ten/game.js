@@ -1258,7 +1258,6 @@ function drawWater(W, t) {
    в суставах, одежда, волосы, шарф и фонарик — на пружинах, которые отстают
    от движения. Всё это только картинка: хитбоксы и физика прежние. */
 let HERO_A = 1;
-const HS = 1.24;
 
 function spring(o, key, target, k, damp, dt) {
   const v = key + 'V';
@@ -1290,258 +1289,115 @@ function animOf(c, dt) {
   return a;
 }
 
-const sg = (x, y, a, l) => [x + Math.sin(a) * l, y + Math.cos(a) * l];
-function stroke2(pts, w, col) {
-  ctx.strokeStyle = col; ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-  ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
-  ctx.stroke();
-}
-function limb(x, y, a1, l1, a2, l2, w, col) {
-  const k = sg(x, y, a1, l1), f = sg(k[0], k[1], a2, l2);
-  stroke2([[x, y], k, f], w, col);
-  return { k, f };
-}
 function dot(x, y, r, col) { ctx.fillStyle = col; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); }
-function poly(pts, col) {
-  ctx.fillStyle = col; ctx.beginPath(); ctx.moveTo(pts[0][0], pts[0][1]);
-  for (let i = 1; i < pts.length; i++) ctx.lineTo(pts[i][0], pts[i][1]);
-  ctx.closePath(); ctx.fill();
-}
 
-/* Поза: углы от вертикали (0 — вниз, плюс — вперёд). */
-function pose(c, a, t) {
-  const ph = a.ph, run = c.onGround && Math.abs(c.vx) > 12;
-  const P = { bob: 0, lean: 0 };
-  if (!c.onGround) {
-    const up = c.vy < 0;
-    P.legF = up ? [0.85, 1.25] : [0.4, 0.35];
-    P.legB = up ? [-0.25, 0.9] : [-0.3, 0.2];
-    P.armF = up ? [1.0, 0.1] : [1.6, -0.1];
-    P.armB = up ? [-0.8, 0.5] : [-1.3, 0.3];
-    P.lean = up ? 0.08 : -0.04;
-  } else if (run) {
-    const s = Math.sin(ph), cF = Math.cos(ph), cB = -cF;
-    P.legF = [s * 0.62, s * 0.62 - (cF > 0 ? cF * 1.1 : 0) - 0.12];
-    P.legB = [-s * 0.62, -s * 0.62 - (cB > 0 ? cB * 1.1 : 0) - 0.12];
-    P.armF = [-s * 0.7, -s * 0.7 + 0.75];
-    P.armB = [s * 0.7, s * 0.7 + 0.75];
-    P.bob = Math.abs(Math.cos(ph)) * 1.3;
-    P.lean = 0.1;
-  } else {
-    const br = Math.sin(t * 2.1 + (c.id === 'nox' ? 1.3 : 0));
-    P.legF = [0.1, 0.05]; P.legB = [-0.12, -0.08];
-    P.armF = [0.12 + br * 0.03, 0.25]; P.armB = [-0.1 - br * 0.03, 0.2];
-    P.bob = br * 0.35;
+/* Герои — вырезки из концепт-артов, собранные как перекладная кукла:
+   бёдра и голени поворачиваются в суставах, полы плаща и дождевика,
+   волосы колышутся полосками. Координаты — пиксели атласа (build/svet-atlas.html).
+   Рост подобран так, что плечи на рисунке совпадают с верхом хитбокса. */
+const SPR = {
+  luma: { id: 'spr-luma', W: 62, H: 184, ax: 35.2, sc: 38 / 184,
+    hip: [[26, 94.3], [41, 94.3]], knee: [[23.9, 129.8], [47.8, 129.8]],
+    hem: [80, 112, 5, 0.9], hair: [38, 22, 46], lamp: [14, 73] },
+  nox: { id: 'spr-nox', W: 105, H: 232, ax: 53.7, sc: 47 / 232,
+    hip: [[51, 151.2], [67.9, 151.2]], hem: [118, 232, 10, 1.6], hair: [26, 40, 64] },
+};
+const visualExtra = c => SPR[c.id].sc * SPR[c.id].H - c.h;
+
+function sprImg(key, shadow) {
+  const D = SPR[key];
+  if (!D.img) {
+    const el = document.getElementById(D.id);
+    if (!el || !el.complete || !el.naturalWidth) return null;
+    D.img = el;
   }
-  return P;
+  if (!shadow) return D.img;
+  if (!D.shade) {
+    const c = document.createElement('canvas'); c.width = D.img.naturalWidth; c.height = D.img.naturalHeight;
+    const g = c.getContext('2d');
+    g.drawImage(D.img, 0, 0);
+    g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(95,65,170,0.8)'; g.fillRect(0, 0, c.width, c.height);
+    D.shade = c;
+  }
+  return D.shade;
 }
 
-function boot(f, dark, sole, cuff) {
-  const [x, y] = f;
-  ctx.fillStyle = dark;
-  ctx.beginPath(); ctx.moveTo(x - 2.2, y - 3.8); ctx.lineTo(x + 1.6, y - 3.8); ctx.quadraticCurveTo(x + 4.6, y - 2.6, x + 4.4, y - 0.4);
-  ctx.lineTo(x - 2.6, y - 0.4); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = sole; ctx.fillRect(x - 2.7, y - 0.9, 7.2, 1.1);
-  if (cuff) { ctx.fillStyle = cuff; ctx.fillRect(x - 2.4, y - 4.6, 4.4, 1.2); }
+/* Углы ног: [бедро, голень относительно бедра]. Минус — стопа вперёд. */
+function legPose(c, a) {
+  if (!c.onGround) return c.vy < 0 ? { L: [-0.45, 0.85], R: [-0.1, 0.55] } : { L: [-0.2, 0.25], R: [0.15, 0.15] };
+  if (Math.abs(c.vx) > 12) {
+    const s = Math.sin(a.ph), k = Math.cos(a.ph);
+    return { L: [-s * 0.34, Math.max(0, k) * 0.75], R: [s * 0.34, Math.max(0, -k) * 0.75] };
+  }
+  return { L: [0, 0], R: [0, 0] };
 }
 
-function drawLuma(c, t, dt) {
-  const a = animOf(c, dt), P = pose(c, a, t);
+function drawHero(c, t, dt) {
+  const key = c.id, D = SPR[key], img = sprImg(key, c.shadow > 0);
+  if (!img) return;
+  const a = animOf(c, dt), P = legPose(c, a), W = D.W, H = D.H;
+  const run = c.onGround && Math.abs(c.vx) > 12;
+  const bob = run ? Math.abs(Math.cos(a.ph)) * 5 : Math.sin(t * 2.1 + (key === 'nox' ? 1.3 : 0)) * 1.1;
   ctx.save();
-  ctx.globalAlpha = HERO_A;
-  ctx.translate(c.x + c.w / 2, c.y + c.h);
-  ctx.scale(c.face * HS * (1 + a.land * 0.07), HS * (1 - a.land * 0.09));
-  ctx.translate(0, -P.bob);
-  const hip = [0, -12.6], sh = [0.6 + P.lean * 6, -22.6];
-  const cl = a.cloth || 0, lf = a.lift || 0, hr = a.hair || 0;
+  ctx.globalAlpha = HERO_A * (c.shadow > 0 ? 0.62 + Math.sin(t * 20) * 0.07 : 1);
+  ctx.translate(c.x + c.w / 2, c.y + c.h - (c.standOn ? 3 : 0));
+  ctx.scale(c.face * D.sc * (1 + a.land * 0.06), D.sc * (1 - a.land * 0.08));
+  ctx.translate(-D.ax, -H - bob);
+  const part = i => ctx.drawImage(img, i * W, 0, W, H, 0, 0, W, H);
+  const rot = (p, ang, fn) => { ctx.save(); ctx.translate(p[0], p[1]); ctx.rotate(ang); ctx.translate(-p[0], -p[1]); fn(); ctx.restore(); };
 
-  // задняя рука
-  const armB = limb(sh[0] - 1.6, sh[1] + 1, P.armB[0], 4.6, P.armB[1], 4.4, 3.1, '#d9a21e');
-  dot(armB.f[0], armB.f[1], 1.25, '#e8b594');
-  // капюшон и задняя масса волос
-  dot(-2.6 + P.lean * 4, -23.4, 4.2, '#e0a91f');
-  // ноги
-  const legB = limb(hip[0] - 1, hip[1], P.legB[0], 6.3, P.legB[1], 6.3, 3.1, '#2a1c1d');
-  const legF = limb(hip[0] + 1, hip[1], P.legF[0], 6.3, P.legF[1], 6.3, 3.3, '#3a2624');
-  for (const L of [legB, legF]) {
-    const s = sg(L.k[0], L.k[1], 0, 0);
-    stroke2([sg(L.f[0], L.f[1], Math.PI, 4.6), sg(L.f[0], L.f[1], Math.PI, 3.2)], 3.6, '#e9dfcb');
-  }
-  boot(legB.f, '#4e3121', '#241510', '#5c3a26');
-  boot(legF.f, '#6a4128', '#2d1d14', '#7a4d30');
-  dot(legF.k[0] + 0.3, legF.k[1] + 1.8, 0.9, '#c79a6c');
-  // шорты
-  poly([[-4.6, -15], [4.8, -15], [5.2, -11.2], [0.6, -10.6], [-5, -11.4]], '#3f4250');
-  // дождевик
-  const wv = Math.sin(t * 4.3) * 0.5 * (0.4 + cl);
-  const backHem = [-7.2 - cl * 3.6, -9.4 - lf * 2.4 + wv], frontHem = [7.4 + cl * 0.6, -9.8 - lf * 1.2];
-  const coat = [[sh[0] - 4.8, sh[1]], [sh[0] + 4.4, sh[1]], [frontHem[0] - 0.6, -15], frontHem,
-    [3.4, -9.2 + wv * 0.4], [-1.5, -8.8 - lf], backHem, [-6.2 - cl * 1.2, -16]];
-  poly(coat, '#f2c230');
-  poly([[sh[0] - 4.8, sh[1]], [sh[0] - 1.2, sh[1]], [-2, -9], backHem, [-6.2 - cl * 1.2, -16]], '#d99d1a');
-  ctx.strokeStyle = 'rgba(255,248,214,0.55)'; ctx.lineWidth = 0.7; ctx.lineCap = 'round';
-  ctx.beginPath(); ctx.moveTo(sh[0] + 2.4, sh[1] + 2); ctx.lineTo(4.4, -12.5); ctx.moveTo(-3.6, -20); ctx.lineTo(-4.8, -14); ctx.stroke();
-  poly([[sh[0] + 1.2, sh[1] + 0.4], [sh[0] + 3.4, sh[1] + 0.4], [4.2, -13.4], [2.6, -13.2]], '#8c8c96');
-  poly([[sh[0] + 1.8, sh[1] + 0.6], [sh[0] + 3, sh[1] + 0.6], [3.2, -16.5], [2.4, -16.5]], '#efe8da');
-  for (let i = 0; i < 3; i++) dot(4.9, -20 + i * 3, 0.45, '#8a6414');
-  ctx.strokeStyle = '#c28a14'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(-1.5, -13.5); ctx.lineTo(1.8, -13.5); ctx.stroke();
-  // ремень сумки и сумка
-  ctx.strokeStyle = '#4b2e1c'; ctx.lineWidth = 1.1;
-  ctx.beginPath(); ctx.moveTo(sh[0] + 3.2, sh[1] + 0.5); ctx.lineTo(-3, -13.6); ctx.stroke();
-  ctx.save(); ctx.translate(-3.2, -13.6); ctx.rotate((a.bag || 0) * 0.6 + Math.sin(a.ph) * 0.12);
-  ctx.fillStyle = '#5a3822'; ctx.beginPath(); ctx.moveTo(-3, 0); ctx.lineTo(2.6, 0); ctx.lineTo(2.2, 4.4); ctx.lineTo(-2.6, 4.4); ctx.closePath(); ctx.fill();
-  ctx.fillStyle = '#6e4a2c'; ctx.fillRect(-3, 0, 5.6, 1.4);
-  dot(1.6, 3.2, 0.9, '#c9a45a');
-  ctx.restore();
-  // голова
-  const hx = sh[0] + 0.4, hy = -28.4;
-  const hs = hr * 2.4, bounce = Math.sin(a.ph * 2) * 0.5;
-  ctx.fillStyle = '#4a2b1b';
-  for (const [x, y, r] of [[-4.6, -27, 3.4], [-5.4 - hs * 0.5, -24.2 + bounce, 2.8], [-3.8 - hs * 0.8, -22.4 + bounce, 2.2], [-2.4, -31.6, 3], [-6.2 - hs, -26.2, 2.2]])
-    { ctx.beginPath(); ctx.arc(hx + x, hy + 28.4 + y, r, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#e8b594'; ctx.fillRect(hx - 1.4, hy + 4, 2.6, 2);
-  dot(hx, hy, 5.3, '#f3c9a8');
-  ctx.fillStyle = 'rgba(0,0,0,0.08)'; ctx.beginPath(); ctx.arc(hx - 1.2, hy + 0.6, 4.6, Math.PI * 0.5, Math.PI * 1.3); ctx.fill();
-  dot(hx + 2.4, hy + 2.1, 1.3, 'rgba(240,120,110,0.45)');
-  const blink = (t % 4.2) < 0.12;
-  if (blink) { ctx.strokeStyle = '#2a1a12'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(hx + 2, hy + 0.2); ctx.lineTo(hx + 4.2, hy + 0.4); ctx.stroke(); }
-  else {
-    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(hx + 3.1, hy + 0.1, 1.35, 1.75, 0, 0, 7); ctx.fill();
-    dot(hx + 3.4, hy + 0.3, 1.1, '#6b3d1f'); dot(hx + 3.5, hy + 0.4, 0.55, '#1d110a'); dot(hx + 3.8, hy - 0.4, 0.4, '#fff');
-    ctx.strokeStyle = '#3a2214'; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.moveTo(hx + 1.6, hy - 1.6); ctx.quadraticCurveTo(hx + 3, hy - 2.3, hx + 4.5, hy - 1.7); ctx.stroke();
-  }
-  ctx.strokeStyle = '#8a3a2a'; ctx.lineWidth = 0.55; ctx.beginPath(); ctx.arc(hx + 3.4, hy + 2.6, 0.9, 0.2, 2.2); ctx.stroke();
-  // чёлка и кудри сверху
-  ctx.fillStyle = '#4a2b1b';
-  ctx.beginPath(); ctx.arc(hx - 0.4, hy - 1.8, 5.6, Math.PI * 0.95, Math.PI * 1.9); ctx.fill();
-  poly([[hx - 2, hy - 5.8], [hx + 5.4, hy - 3.8], [hx + 5.3, hy - 1.6], [hx + 4, hy - 2.8], [hx + 3, hy - 1.8], [hx + 1.8, hy - 3.2], [hx - 0.4, hy - 2]], '#4a2b1b');
-  ctx.strokeStyle = '#6a4028'; ctx.lineWidth = 0.7;
-  ctx.beginPath(); ctx.arc(hx - 1, hy - 3.6, 3, Math.PI * 1.1, Math.PI * 1.7); ctx.stroke();
-  const fl = Math.sin(t * 3.1) * 0.6 - hs * 0.5;
-  ctx.strokeStyle = '#4a2b1b'; ctx.lineWidth = 0.9;
-  ctx.beginPath(); ctx.moveTo(hx - 3, hy - 5); ctx.quadraticCurveTo(hx - 6, hy - 8 + fl, hx - 8 - hs, hy - 6 + fl); ctx.stroke();
-  ctx.beginPath(); ctx.moveTo(hx + 1, hy - 5.4); ctx.quadraticCurveTo(hx + 2, hy - 8.4 + fl * 0.5, hx + 0.2, hy - 9 + fl * 0.5); ctx.stroke();
-  // передняя рука с фонариком
-  const lampArm = c.onGround ? [0.55 + Math.sin(a.ph) * 0.12, -0.35] : P.armF;
-  const armF = limb(sh[0] + 1.4, sh[1] + 1, lampArm[0], 4.6, lampArm[1], 4.4, 3.4, '#f2c230');
-  stroke2([sg(armF.k[0], armF.k[1], lampArm[1], 3.2), sg(armF.k[0], armF.k[1], lampArm[1], 4)], 3.9, '#f7d35a');
-  const hand = armF.f;
-  dot(hand[0], hand[1], 1.3, '#f0c09c');
-  ctx.save(); ctx.translate(hand[0], hand[1]); ctx.rotate((a.lamp || 0) * 0.9 + Math.sin(t * 2.4) * 0.05);
-  ctx.strokeStyle = '#3b2a1a'; ctx.lineWidth = 0.6; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 1.6); ctx.stroke();
-  ctx.fillStyle = '#5a4128'; ctx.fillRect(-2.2, 1.4, 4.4, 1.2); ctx.fillRect(-2.2, 7, 4.4, 1.1);
-  ctx.fillStyle = '#ffd98a'; ctx.fillRect(-1.8, 2.6, 3.6, 4.4);
-  dot(0, 4.8, 1.3, '#fff6d8');
-  ctx.strokeStyle = '#5a4128'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.moveTo(0, 2.6); ctx.lineTo(0, 7); ctx.stroke();
-  ctx.restore();
-  const m = ctx.getTransform();
-  const lx = hand[0], ly = hand[1] + 5;
-  c.lantern = [(m.a * lx + m.c * ly + m.e) / K, (m.b * lx + m.d * ly + m.f) / K];
-  ctx.restore();
-  ctx.globalAlpha = 1;
-}
-
-function drawNox(c, t, dt) {
-  const a = animOf(c, dt), P = pose(c, a, t);
-  const sh0 = c.shadow > 0;
-  const C = sh0
-    ? { boot: '#3a2860', leg: '#3a2860', coat: '#4a3380', coatD: '#3b2868', lin: '#7a5cc8', skin: '#6a4fb0', hair: '#2d1f4d', hairL: '#4a3478', scarf: '#6a4fb0', glove: '#3a2860', shirt: '#4a3380', metal: '#7a5cc8' }
-    : { boot: '#15121c', leg: '#221c2c', coat: '#2c2539', coatD: '#211b2c', lin: '#5b4591', skin: '#e9c6a8', hair: '#1c1626', hairL: '#3d2c5e', scarf: '#4b3a70', glove: '#18141f', shirt: '#2f2a3c', metal: '#8a86a0' };
-  ctx.save();
-  ctx.globalAlpha = HERO_A * (sh0 ? 0.55 + Math.sin(t * 20) * 0.07 : 1);
-  ctx.translate(c.x + c.w / 2, c.y + c.h);
-  ctx.scale(c.face * HS * (1 + a.land * 0.06), HS * (1 - a.land * 0.08));
-  ctx.translate(0, -P.bob);
-  const hip = [0, -15.4], sh = [0.4 + P.lean * 7, -28.2];
-  const cl = a.cloth || 0, lf = a.lift || 0, hr = a.hair || 0;
-  const wind = Math.sin(t * 3.2) * 0.6 + Math.sin(t * 5.1) * 0.3;
-
-  // хвост шарфа
-  const sa = 0.9 + cl * 0.9 + wind * 0.15 - lf * 0.4;
-  const s1 = sg(sh[0] - 2.4, sh[1] - 0.6, -sa, 4.2), s2 = sg(s1[0], s1[1], -sa - 0.35 - wind * 0.2, 3.8);
-  stroke2([[sh[0] - 2.4, sh[1] - 0.6], s1, s2], 2.6, C.scarf);
-  // задняя пола плаща с подкладкой
-  const wv = Math.sin(t * 3.7) * 0.7 * (0.3 + cl);
-  const tail = [];
-  const n = 5;
-  for (let i = 0; i <= n; i++) {
-    const u = i / n;
-    const x = -2.4 - u * (4.6 + cl * 4.2);
-    const y = -6.2 - lf * 3 * u * u + Math.sin(t * 4 + i * 1.3) * 0.7 * (0.3 + cl) + (i % 2 ? 1 : 0) - u * u * cl * 1.5;
-    tail.push([x, y]);
-  }
-  poly([[sh[0] - 3.4, sh[1] + 1], [-5 - cl * 0.8, -18], ...tail.slice().reverse(), [-1, -8]], C.lin);
-  poly([[sh[0] - 3.4, sh[1] + 1], [-4.6, -18], [tail[n][0] + 1.6, tail[n][1] - 1.2 + wv], [-2, -9]], C.coatD);
-  // задняя рука
-  const armB = limb(sh[0] - 1.8, sh[1] + 1.2, P.armB[0], 6, P.armB[1], 5.6, 3.3, C.coatD);
-  dot(armB.f[0], armB.f[1], 1.4, C.glove);
-  // ноги
-  const legB = limb(hip[0] - 1, hip[1], P.legB[0], 7.8, P.legB[1], 7.8, 3.3, '#1a1522');
-  const legF = limb(hip[0] + 1, hip[1], P.legF[0], 7.8, P.legF[1], 7.8, 3.5, C.leg);
-  for (const L of [legB, legF]) {
-    stroke2([sg(L.f[0], L.f[1], Math.PI + (L === legF ? P.legF[1] : P.legB[1]) * 0.2, 5.4), sg(L.f[0], L.f[1], Math.PI, 1)], 3.9, C.boot);
-    ctx.strokeStyle = C.metal; ctx.lineWidth = 0.45; ctx.beginPath();
-    ctx.moveTo(L.f[0] - 1.8, L.f[1] - 3.2); ctx.lineTo(L.f[0] + 1.8, L.f[1] - 3.4); ctx.stroke();
-  }
-  boot(legB.f, '#110e17', '#050408', null);
-  boot(legF.f, C.boot, '#07060a', null);
-  // плащ спереди
-  const fr = [7.2 + cl * 0.5, -7.2 - lf * 1.5];
-  poly([[sh[0] - 4.6, sh[1] + 0.4], [sh[0] + 4.6, sh[1] + 0.4], [6.2, -17], fr, [3.6, -6.2 + wv * 0.3], [1.2, -7.8], [-1, -6], [-3.2, -8.2]], C.coat);
-  poly([[sh[0] + 0.2, sh[1] + 0.8], [sh[0] + 2.8, sh[1] + 0.8], [3.2, -16.2], [0.6, -16.2]], C.shirt);
-  ctx.strokeStyle = sh0 ? C.lin : '#3d3352'; ctx.lineWidth = 0.6;
-  ctx.beginPath(); ctx.moveTo(sh[0] + 3, sh[1] + 1); ctx.lineTo(5.6, -8.4); ctx.moveTo(-2.4, -15); ctx.lineTo(-2.8, -8.6); ctx.stroke();
-  // ремни
-  ctx.fillStyle = '#16121d'; ctx.fillRect(-4.4, -17.2, 10, 1.9);
-  ctx.strokeStyle = C.metal; ctx.lineWidth = 0.6; ctx.strokeRect(1.4, -17.4, 2.2, 2.3);
-  ctx.strokeStyle = '#16121d'; ctx.lineWidth = 1.3;
-  ctx.beginPath(); ctx.moveTo(sh[0] + 3.4, sh[1] + 0.6); ctx.lineTo(-3.6, -17); ctx.stroke();
-  ctx.strokeStyle = C.metal; ctx.lineWidth = 0.5; ctx.strokeRect(0, -24.2, 1.6, 1.6);
-  // накидка на плечах
-  const cp = cl * 1.6 + wind * 0.3;
-  poly([[sh[0] - 5.4, sh[1] - 0.4], [sh[0] + 5, sh[1] - 0.4], [sh[0] + 6.2, sh[1] + 5.4], [sh[0] + 1, sh[1] + 6.6], [sh[0] - 6.4 - cp, sh[1] + 5.8 - lf]], C.coatD);
-  ctx.strokeStyle = sh0 ? C.lin : 'rgba(150,130,200,0.35)'; ctx.lineWidth = 0.5;
-  ctx.beginPath(); ctx.arc(sh[0] - 2.6, sh[1] + 3.2, 1.1, 0, 7); ctx.stroke();
-  // передняя рука: в покое — в кармане
-  const inPocket = c.onGround && Math.abs(c.vx) < 12 && a.idle > 0.6;
-  const armFa = inPocket ? [0.35, -0.55] : P.armF;
-  const armF = limb(sh[0] + 1.6, sh[1] + 1.4, armFa[0], 6, armFa[1], 5.6, 3.5, C.coat);
-  if (!inPocket) dot(armF.f[0], armF.f[1], 1.5, C.glove);
-  stroke2([sg(armF.k[0], armF.k[1], armFa[1], 3.8), sg(armF.k[0], armF.k[1], armFa[1], 4.6)], 3.9, C.coatD);
-  // капюшон, шарф, голова
-  dot(sh[0] - 2.4, sh[1] - 4.4, 5.2, sh0 ? C.coatD : '#1d1828');
-  ctx.fillStyle = C.scarf; ctx.beginPath(); ctx.ellipse(sh[0] + 0.2, sh[1] - 0.8, 4.8, 2.2, 0, 0, 7); ctx.fill();
-  const hx = sh[0] + 0.6, hy = -33.6;
-  dot(hx, hy, 5, C.skin);
-  if (!sh0) {
-    ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.beginPath(); ctx.arc(hx - 1, hy + 0.5, 4.4, Math.PI * 0.5, Math.PI * 1.3); ctx.fill();
-    if ((t + 1.7) % 5 < 0.12) { ctx.strokeStyle = '#1d1420'; ctx.lineWidth = 0.7; ctx.beginPath(); ctx.moveTo(hx + 1.8, hy + 0.2); ctx.lineTo(hx + 4, hy + 0.3); ctx.stroke(); }
-    else {
-      ctx.fillStyle = '#f4eee8'; ctx.beginPath(); ctx.ellipse(hx + 3, hy + 0.3, 1.3, 1, 0, 0, 7); ctx.fill();
-      dot(hx + 3.3, hy + 0.4, 0.8, '#2a1c2e'); dot(hx + 3.5, hy + 0.1, 0.3, '#fff');
-      ctx.strokeStyle = '#1d1420'; ctx.lineWidth = 0.8; ctx.beginPath(); ctx.moveTo(hx + 1.6, hy - 0.7); ctx.lineTo(hx + 4.4, hy - 0.5); ctx.stroke();
-      ctx.lineWidth = 0.9; ctx.beginPath(); ctx.moveTo(hx + 1.4, hy - 2.2); ctx.lineTo(hx + 4.4, hy - 2.1); ctx.stroke();
+  if (key === 'luma') {
+    for (const [side, ti, si] of [[1, 3, 4], [0, 1, 2]]) {
+      const ang = side ? P.R : P.L;
+      rot(D.hip[side], ang[0], () => { rot(D.knee[side], ang[1], () => part(si)); part(ti); });
     }
-    ctx.strokeStyle = '#8a4a3a'; ctx.lineWidth = 0.5; ctx.beginPath(); ctx.arc(hx + 3, hy + 2.3, 0.9, 0.3, 1.9); ctx.stroke();
+  } else {
+    for (const [side, i] of [[1, 2], [0, 1]]) {
+      const ang = side ? P.R : P.L;
+      rot(D.hip[side], ang[0] * 0.75 + ang[1] * 0.3, () => part(i));
+    }
   }
-  // волосы
-  const hs = hr * 2.2, fl = Math.sin(t * 2.7) * 0.5;
-  ctx.fillStyle = C.hair;
-  ctx.beginPath(); ctx.arc(hx - 0.6, hy - 1.8, 5.4, Math.PI * 0.8, Math.PI * 1.93); ctx.fill();
-  poly([[hx - 4.8, hy - 3], [hx - 8 - hs, hy - 1 + fl], [hx - 5, hy - 0.6], [hx - 7.2 - hs * 0.8, hy + 2.6 + fl], [hx - 3.6, hy + 1.4], [hx - 3, hy - 2]], C.hair);
-  poly([[hx - 1.2, hy - 6.6], [hx + 5.2, hy - 4], [hx + 4.4, hy - 3], [hx + 5.1, hy - 1.2], [hx + 3.2, hy - 2.8], [hx + 2.2, hy - 2.2], [hx + 1.2, hy - 3.8]], C.hair);
-  poly([[hx - 2, hy - 6], [hx - 1 - hs * 0.5, hy - 9.4 + fl], [hx + 1.2, hy - 6.4]], C.hair);
-  ctx.strokeStyle = C.hairL; ctx.lineWidth = 0.6;
-  ctx.beginPath(); ctx.arc(hx - 1, hy - 3.4, 3.4, Math.PI * 1.15, Math.PI * 1.75); ctx.stroke();
+
+  // туловище полосками: полы колышутся и отстают, пряди волос сбоку развеваются
+  const cl = a.cloth || 0, hr = a.hair || 0;
+  const [h0, h1, amp, wav] = D.hem, [hy, hl, hx] = D.hair, B = 2.6;
+  for (let y = 0; y < H; y += 2) {
+    if (y < hy) {
+      const v = 1 - y / hy, h = (Math.sin(t * 2.6 + y * 0.3) * 0.9 - hr * 3) * v;
+      ctx.drawImage(img, 0, y, hl, B, h, y, hl, B);
+      ctx.drawImage(img, hl, y, hx - hl, B, hl, y, hx - hl, B);
+      ctx.drawImage(img, hx, y, W - hx, B, hx + h * 0.8, y, W - hx, B);
+    } else {
+      let off = 0;
+      if (y > h0) {
+        const u = Math.min(1, (y - h0) / (h1 - h0));
+        off = -cl * Math.pow(u, 1.4) * amp + Math.sin(t * 4 + y * 0.18) * u * (0.35 + cl) * wav;
+      }
+      ctx.drawImage(img, 0, y, W, B, off, y, W, B);
+    }
+  }
+
+  if (key === 'luma' && c.shadow <= 0) {
+    const [lx, ly] = D.lamp;
+    ctx.save(); ctx.translate(lx, ly); ctx.rotate((a.lamp || 0) * 0.8 + Math.sin(t * 2.4) * 0.06); ctx.scale(1.7, 1.7);
+    ctx.strokeStyle = '#3b2a1a'; ctx.lineWidth = 1.4; ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, 5); ctx.stroke();
+    ctx.fillStyle = '#5a4128'; ctx.fillRect(-5.5, 4, 11, 3.2); ctx.fillRect(-5.5, 19, 11, 3);
+    ctx.fillStyle = '#ffd98a'; ctx.fillRect(-4.5, 7, 9, 12);
+    dot(0, 13, 2.8, '#fff6d8');
+    ctx.fillStyle = '#5a4128'; ctx.fillRect(-0.6, 7, 1.2, 12);
+    ctx.restore();
+    const m = ctx.getTransform(), px = lx, py = ly + 22;
+    c.lantern = [(m.a * px + m.c * py + m.e) / K, (m.b * px + m.d * py + m.f) / K];
+  }
   ctx.restore();
   ctx.globalAlpha = 1;
   if (c.blocked > 0) {
-    const [cx, cy] = [c.x + c.w / 2 + c.face * 10, c.y + c.h / 2];
+    const cx = c.x + c.w / 2 + c.face * 10, cy = c.y + c.h / 2;
     ctx.strokeStyle = `rgba(190,160,255,${c.blocked * 3})`; ctx.lineWidth = 1.5;
     ctx.beginPath(); ctx.arc(cx, cy, 10 + (0.25 - c.blocked) * 30, -0.8, 0.8); ctx.stroke();
   }
 }
+const drawLuma = drawHero, drawNox = drawHero;
 
 function wrap(text, maxW) {
   const words = text.split(' '), lines = [];
@@ -1565,7 +1421,7 @@ function drawBubble(c) {
   const lines = wrap(s.text, 190);
   const w = Math.max(...lines.map(l => ctx.measureText(l).width)) + 18, h = lines.length * 17 + 10;
   const hx = c.x + c.w / 2;
-  let x = clamp(hx - w / 2, 6, VW - w - 6), y = c.y - h - 16;
+  let x = clamp(hx - w / 2, 6, VW - w - 6), y = c.y - visualExtra(c) - h - 14;
   if (y < 6) y = 6;
   ctx.globalAlpha = a;
   ctx.fillStyle = c.id === 'luma' ? '#fbf2dc' : '#e7e0f5';
@@ -1590,7 +1446,7 @@ function drawPrompt(W, c, t) {
   const key = c.id === 'luma' ? 'S' : '↓';
   ctx.font = '600 11px "Golos Text", sans-serif';
   const tw = ctx.measureText(label).width;
-  const w = tw + 28, x = c.x + c.w / 2 - w / 2, y = c.y - 26 + Math.sin(t * 4) * 1.5;
+  const w = tw + 28, x = c.x + c.w / 2 - w / 2, y = c.y - visualExtra(c) - 24 + Math.sin(t * 4) * 1.5;
   ctx.fillStyle = 'rgba(12,14,34,0.8)'; roundRect(x, y, w, 17, 5); ctx.fill();
   ctx.fillStyle = c.id === 'luma' ? COL.luma : '#b9a2f0'; roundRect(x + 3, y + 3, 13, 11, 3); ctx.fill();
   ctx.fillStyle = '#10122a'; ctx.textBaseline = 'middle'; ctx.textAlign = 'center';
@@ -1682,11 +1538,9 @@ function render(W, t, dt) {
     if (gy - (c.y + c.h) < 80) { ctx.beginPath(); ctx.ellipse(c.x + c.w / 2, gy, 9 - (gy - c.y - c.h) / 12, 2.2, 0, 0, 7); ctx.fill(); }
   }
   HERO_A = S.mode === 'clear' && !LEVELS[S.level + 1] && W.train && !W.train.gone ? clamp(1 - S.clearT * 2, 0, 1) : 1;
-  if (!N.dead && HERO_A > 0) {
-    if (N.shadow > 0 && Math.random() < 0.6) parts.push({ x: N.x + Math.random() * N.w, y: N.y + Math.random() * N.h, vx: (Math.random() - 0.5) * 20, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, kind: 'wisp', r: 3 + Math.random() * 3 });
-    drawNox(N, t, dt);
-  }
-  if (!L.dead && HERO_A > 0) drawLuma(L, t, dt);
+  if (!N.dead && N.shadow > 0 && Math.random() < 0.6) parts.push({ x: N.x + Math.random() * N.w, y: N.y + Math.random() * N.h, vx: (Math.random() - 0.5) * 20, vy: -20 - Math.random() * 20, life: 0.7, max: 0.7, kind: 'wisp', r: 3 + Math.random() * 3 });
+  // тот, кто стоит на плечах, рисуется позади: голова нижнего остаётся видна
+  for (const h of L.standOn === N ? [L, N] : [N, L]) if (!h.dead && HERO_A > 0) drawHero(h, t, dt);
 
   for (let i = parts.length - 1; i >= 0; i--) {
     const p = parts[i];
