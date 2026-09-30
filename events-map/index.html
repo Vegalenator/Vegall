@@ -74,7 +74,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
 /* ------------------------------------------------------- шапка из стекла */
 .top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-bottom:1px solid var(--hair)}
-.top-in{max-width:1440px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:28px;min-height:54px}
+.top-in{max-width:1440px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:22px;min-height:54px}
 .mark{margin:0;font-family:var(--ff-display);font-weight:500;font-size:19px;letter-spacing:-.01em;line-height:1;white-space:nowrap}
 .grow{flex:1 1 auto}
 .status{display:flex;align-items:center;gap:12px;white-space:nowrap;font-size:12px;color:var(--ink-2)}
@@ -84,7 +84,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .ghost{display:grid;place-items:center;min-width:28px;height:28px;font-size:13px;font-weight:500;color:var(--ink-2);padding:0 6px;border-radius:6px;transition:background .2s,color .2s}
 .ghost:hover{background:var(--accent-2);color:var(--ink)}
 
-.tabs{position:relative;display:flex;gap:22px;align-self:stretch}
+.tabs{position:relative;display:flex;gap:20px;align-self:stretch}
 .tabs button{padding:0;height:100%;font-size:14px;color:var(--ink-2);transition:color .2s;white-space:nowrap}
 .tabs button[aria-selected="true"]{color:var(--ink);font-weight:500}
 .tabs button sup{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:4px;vertical-align:super}
@@ -197,6 +197,25 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .wl{color:inherit;text-decoration:underline dotted;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--tc,var(--accent)) 70%,transparent);text-underline-offset:3px;transition:color .2s,text-decoration-color .2s}
 .wl:hover{color:var(--accent);text-decoration-style:solid;text-decoration-color:var(--accent)}
 .say figcaption b .wl{text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent)}
+.chgbtn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:0 10px}
+.chgbtn b{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--st-preliminary);color:#fff;font-size:10.5px;font-weight:600;display:inline-grid;place-items:center;font-family:var(--ff-mono)}
+.chgbtn[aria-pressed="true"]{background:var(--accent-2);color:var(--ink)}
+.flag.chg{color:var(--st-preliminary);background:color-mix(in srgb,var(--st-preliminary) 13%,transparent)}
+.flag.new{color:var(--accent);background:var(--accent-2)}
+.clog{display:grid}
+.citem{display:grid;grid-template-columns:64px minmax(0,1fr);gap:2px 12px;padding:11px 0;border-top:1px dashed var(--hair)}
+.citem:first-child{border-top:0;padding-top:2px}
+.citem .ct{font-family:var(--ff-mono);font-size:12px;white-space:nowrap;color:var(--ink-2);padding-top:2px}
+.citem .ck{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.citem .ck button{font-weight:600;font-size:13.5px;text-align:left;color:var(--ink)}
+.citem .ck button:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.kchip{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap;color:var(--kc);background:color-mix(in srgb,var(--kc) 12%,transparent)}
+.citem .cd{grid-column:2;font-size:13.5px;line-height:1.5;color:var(--ink)}
+.citem .cd s{color:var(--muted);text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.citem .cn{grid-column:2;font-size:12.5px;color:var(--ink-2)}
+.citem .cn a{font-size:12px}
+.cday{font-family:var(--ff-mono);font-size:11.5px;color:var(--ink-2);padding:6px 0;border-bottom:1px solid var(--hair);margin:10px 0 2px}
+.cday:first-child{margin-top:0}
 .briefbtn{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px;border-radius:999px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:transform .2s var(--ease),box-shadow .2s,background .2s}
 .briefbtn:hover{transform:translateY(-1px);box-shadow:0 6px 16px -6px var(--accent)}
 .briefbtn[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
@@ -276,7 +295,19 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:70;transform:translate(-50%,12px);opacity:0;background:var(--ink);color:var(--sheet);padding:9px 16px;border-radius:999px;font-size:13px;transition:opacity .25s,transform .35s var(--ease);pointer-events:none}
 .toast.on{opacity:1;transform:translate(-50%,0)}
 
+@media (max-width:1560px){
+  .status .clock{display:none}
+  .autorun .lbl{display:none}
+}
+@media (max-width:1300px){
+  .top-in{gap:18px}
+  .tabs{gap:16px}
+  .chgbtn span,.briefbtn span{display:none}
+  .briefbtn{padding:0 9px}
+  .search{flex-basis:160px;min-width:110px}
+}
 @media (max-width:1100px){
+  .tabs button sup{display:none}
   .wrap{grid-template-columns:minmax(0,1fr)}
   .detail{position:fixed;z-index:51;top:0;right:0;bottom:0;left:auto;width:min(640px,100vw);height:auto;border-radius:0;box-shadow:var(--shadow-lg);transform:translateX(104%);transition:transform .42s var(--ease);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
   .detail.open{transform:none}
@@ -284,7 +315,14 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   #drClose{display:grid}
   .row[aria-current="true"]{background:color-mix(in srgb,var(--tc) var(--tint),var(--sheet));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tc) 80%,transparent)}
 }
+@media (max-width:1000px){
+  .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
+  .tabs{order:5;flex:1 1 100%;height:40px;overflow-x:auto;scrollbar-width:none}
+  .tabs button sup{display:inline}
+  .search{flex:1 1 120px}
+}
 @media (max-width:720px){
+  .chgbtn span{display:none}
   .briefbtn span{display:none}
   .briefbtn{padding:0 9px}
   .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
@@ -328,6 +366,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     <div class="status">
       <span class="clock mono" id="clock">—</span>
       <span id="autorun" class="autorun"><i class="dot off"></i><span class="lbl">автоитоги</span></span>
+      <button class="ghost chgbtn" type="button" id="chgBtn" title="Лента изменений: переносы, смена статуса, новые события"><span>Изменения</span><b id="chgCount" hidden></b></button>
       <button class="briefbtn" type="button" id="briefBtn" title="Бриф к эфиру: главное на сегодня одним текстом"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v7M5 6.5a3 3 0 006 0V4a3 3 0 00-6 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Бриф к эфиру</span></button>
       <button class="ghost" type="button" id="helpBtn" title="Как читать карту" aria-label="Как читать карту">?</button>
       <button class="ghost" type="button" id="themeBtn" title="Сменить тему" aria-label="Сменить тему"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 2.5a5.5 5.5 0 010 11z" fill="currentColor"/></svg></button>
@@ -609,7 +648,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   }
   function rowHtml(e, now, i) {
     const ph = phase(e, now);
-    const flags = [ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
+    const flags = [rowChangeFlag(e), ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
     const subs = esc(e.where || e.kind || '');
     const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
     const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
@@ -663,7 +702,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const m = state.meta, dot = m && m.lastRunAt ? ((now - new Date(m.lastRunAt)) / H > 14 ? 'stale' : '') : 'off';
     const el = $('#autorun');
     el.innerHTML = `<i class="dot ${dot}"></i>${m && m.lastRunAt ? '<span class="lbl">итоги </span>' + (dayKey(new Date(m.lastRunAt)) === dayKey(now) ? '' : fShort.format(new Date(m.lastRunAt)) + ', ') + fTime.format(new Date(m.lastRunAt)) : 'автоитоги: ждём прогона'}`;
-    el.title = 'Последнее обновление итогов' + (m && m.lastRunAt ? ': ' + fDay.format(new Date(m.lastRunAt)) + ', ' + fTime.format(new Date(m.lastRunAt)) : '') + '. Автопрогоны в 06:47 и 15:47 мск' + ((m && m.log && m.log[0]) ? '\n' + m.log[0].text : '');
+    el.title = 'Последнее обновление итогов' + (m && m.lastRunAt ? ': ' + fDay.format(new Date(m.lastRunAt)) + ', ' + fTime.format(new Date(m.lastRunAt)) : '') + '. Автопрогоны в 06:47, 15:47 и 22:47 мск' + ((m && m.log && m.log[0]) ? '\n' + m.log[0].text : '');
   }
 
   /* --------------------------------------------------- карточка справа */
@@ -704,7 +743,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
   function showEvent(id, opt = {}) {
     const e = state.events.find(x => x.id === id); if (!e) { showEmptyDetail(); return; }
-    state.openId = id; state.help = false; state.pane = ''; const bb = $('#briefBtn'); if (bb) bb.setAttribute('aria-pressed', 'false');
+    state.openId = id; state.help = false; state.pane = ''; const bb = $('#briefBtn'); if (bb) bb.setAttribute('aria-pressed', 'false'); const cb = $('#chgBtn'); if (cb) cb.setAttribute('aria-pressed', 'false');
     if (!opt.quiet) { try { history.replaceState(null, '', '#' + id); } catch (err) {} }
     const now = new Date(), ph = phase(e, now), { s, end } = times(e);
     const air = airLine(e), imp = e.impact || {}, cp = e.checkpoint || {}, o = e.outcome;
@@ -736,6 +775,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${wl(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
       <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${wl(airText(e))}</p></section>
       ${statementsHtml(e, ph)}
+      ${(e.changes || []).length ? `<section class="ref">${lab('История изменений')}<div class="clog">${[...e.changes].filter(c => c && c.at).sort((a, b) => new Date(b.at) - new Date(a.at)).map(c => changeItem(e, c, false)).join('')}</div></section>` : ''}
       <section class="ref">${lab('Дата и основание')}<dl class="kv">
         ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
         ${e.dateNote ? `<dt>Оговорка</dt><dd>${esc(e.dateNote)}</dd>` : ''}
@@ -751,6 +791,73 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     markCurrent();
     if (!opt.quiet) sheetOpen();
   }
+  /* ------------------------------------------------------ изменения */
+  const KIND = {
+    new: { l: 'новое событие', c: 'var(--accent)' }, date: { l: 'перенос даты', c: 'var(--st-cancelled)' }, time: { l: 'время', c: 'var(--st-preliminary)' },
+    status: { l: 'статус даты', c: 'var(--st-preliminary)' }, cancel: { l: 'отмена', c: 'var(--st-cancelled)' }, agenda: { l: 'повестка', c: 'var(--ink-2)' },
+    outcome: { l: 'итог', c: 'var(--st-confirmed)' }, other: { l: 'уточнение', c: 'var(--ink-2)' },
+  };
+  const BIG = new Set(['date', 'time', 'status', 'cancel']);
+  /* снимок дат для отметки «с прошлого визита»: хранится только в этом браузере */
+  const snapKey = e => [e.start || '', e.end || '', e.window || '', e.dateStatus || ''].join('|');
+  let localDiffs = store.get('diffs', {});
+  function diffSinceVisit() {
+    const prev = store.get('snap', null), now = Date.now(), snap = {};
+    state.events.forEach(e => {
+      snap[e.id] = snapKey(e);
+      if (prev && prev[e.id] !== undefined && prev[e.id] !== snap[e.id]) localDiffs[e.id] = { at: new Date().toISOString(), from: prev[e.id], to: snap[e.id] };
+    });
+    Object.keys(localDiffs).forEach(id => { if (now - new Date(localDiffs[id].at) > 48 * H) delete localDiffs[id]; });
+    store.set('snap', snap); store.set('diffs', localDiffs);
+  }
+  function describeSnap(v) {
+    const [st, , w, ds] = String(v || '').split('|');
+    const d = st ? new Date(st) : (w ? parseDay(w) : null);
+    return (d ? (st ? fDay.format(d) + (st.includes('T00:00:00') ? '' : ', ' + fTime.format(d)) : 'до ' + fDay.format(d)) : '—') + (ds && ST[ds] ? ' · ' + ST[ds].label.toLowerCase() : '');
+  }
+  function allChanges(days) {
+    const lim = Date.now() - days * D, out = [];
+    state.events.forEach(e => (e.changes || []).forEach(c => { if (c && c.at && new Date(c.at) >= lim) out.push({ e, c }); }));
+    Object.entries(localDiffs).forEach(([id, d]) => { const e = state.events.find(x => x.id === id); if (e && !(e.changes || []).some(c => BIG.has(c.kind) && Math.abs(new Date(c.at) - new Date(d.at)) < 36 * H)) out.push({ e, c: { at: d.at, kind: 'other', from: describeSnap(d.from), to: describeSnap(d.to), note: 'Замечено с вашего прошлого визита', local: true } }); });
+    return out.sort((a, b) => new Date(b.c.at) - new Date(a.c.at));
+  }
+  function rowChangeFlag(e) {
+    const lim = Date.now() - 48 * H, recent = (e.changes || []).filter(c => c && c.at && new Date(c.at) >= lim);
+    if (recent.some(c => BIG.has(c.kind)) || localDiffs[e.id]) {
+      const c = recent.find(c => BIG.has(c.kind));
+      return `<span class="flag chg" title="${esc(c ? (KIND[c.kind] || KIND.other).l + (c.from || c.to ? ': ' + (c.from || '') + ' → ' + (c.to || '') : '') : 'Дата или статус изменились с вашего прошлого визита')}">изменено</span>`;
+    }
+    if (recent.some(c => c.kind === 'new')) return '<span class="flag new">новое</span>';
+    return '';
+  }
+  function changeItem(e, c, withTitle) {
+    const k = KIND[c.kind] || KIND.other, t = new Date(c.at);
+    const diff = (c.from || c.to) ? `<div class="cd">${c.from ? `<s>${esc(c.from)}</s> → ` : ''}<b>${esc(c.to || '')}</b></div>` : '';
+    const note = (c.note || c.source) ? `<div class="cn">${c.note ? wl(c.note) : ''}${c.source && c.source.url ? ` <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.name || 'источник')}</a>` : ''}</div>` : '';
+    return `<div class="citem" style="--tc:var(--t-${typeOf(e)})"><span class="ct">${withTitle ? fTime.format(t) : fShort.format(t)}</span>
+      <div class="ck"><span class="kchip" style="--kc:${k.c}">${k.l}</span>${withTitle ? `<button type="button" data-open="${esc(e.id)}">${esc(e.title)}</button>` : ''}</div>${diff}${note}</div>`;
+  }
+  function renderChgCount() {
+    const n = allChanges(1).length, b = $('#chgCount');
+    if (!b) return; b.hidden = !n; b.textContent = n;
+  }
+  function openChanges() {
+    state.help = true; state.pane = 'changes'; markCurrent();
+    $('#briefBtn').setAttribute('aria-pressed', 'false'); $('#chgBtn').setAttribute('aria-pressed', 'true');
+    detail.style.setProperty('--tc', 'var(--st-preliminary)');
+    try { history.replaceState(null, '', '#changes'); } catch (err) {}
+    wikiUsed = new Set();
+    const list = allChanges(14), groups = [];
+    list.forEach(x => { const k = dayKey(new Date(x.c.at)); let g = groups.find(y => y.k === k); if (!g) groups.push(g = { k, items: [] }); g.items.push(x); });
+    const body = groups.map(g => { const d = new Date(g.k + 'T12:00:00+03:00'); return `<div class="cday">${esc(fDay.format(d))} · ${esc(relDays(d, new Date()))}</div><div class="clog">${g.items.map(x => changeItem(x.e, x.c, true)).join('')}</div>`; }).join('');
+    const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Лента изменений</h2>
+        <div class="when"><span class="big">за 14 дней</span>${navHtml(null)}</div>
+        <div class="brief-meta"><span>Переносы, смена статуса и времени, отмены, новые события, итоги. Изменения дат — главная защита от устаревшей даты в эфире.</span></div></div></section>
+      <section class="blk">${body || '<p class="small" style="margin:0">Изменений за две недели нет.</p>'}</section>`;
+    paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, '', 'changes:' + list.length, false);
+    sheetOpen();
+  }
+
   /* ------------------------------------------------------ бриф к эфиру */
   const todayKey = () => dayKey(new Date());
   function autoBrief(now) {
@@ -797,7 +904,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     return out.join('\n');
   }
   function openBrief() {
-    state.help = true; state.pane = 'brief'; markCurrent();
+    state.help = true; state.pane = 'brief'; markCurrent(); $('#chgBtn').setAttribute('aria-pressed', 'false');
     detail.style.setProperty('--tc', 'var(--accent)');
     try { history.replaceState(null, '', '#brief'); } catch (err) {}
     $('#briefBtn').setAttribute('aria-pressed', 'true');
@@ -821,7 +928,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     sheetOpen();
   }
   function openHelp() {
-    state.help = true; state.pane = 'help'; $('#briefBtn').setAttribute('aria-pressed', 'false'); markCurrent(); detail.style.setProperty('--tc', 'var(--accent)');
+    state.help = true; state.pane = 'help'; $('#briefBtn').setAttribute('aria-pressed', 'false'); $('#chgBtn').setAttribute('aria-pressed', 'false'); markCurrent(); detail.style.setProperty('--tc', 'var(--accent)');
     const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Как читать карту</h2><div class="when">${navHtml(null)}</div></div></section>
       <section>${lab('Статус даты')}<div class="legend">
         <div>${stTag('confirmed', true)}<p>Назначена официальным документом: указом, календарём организатора, решением избиркома.</p><span class="ex">в эфире: «23 октября в 13:30»</span></div>
@@ -829,7 +936,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
-      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Бриф к эфиру</dt><dd>Кнопка в шапке: главное на сегодня, итоги за сутки, заявления дня и что ждать завтра — одним текстом, который копируется целиком. В 16:43 мск Claude собирает выверенный бриф; до этого бриф собирается автоматически из карточек.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Изменения</dt><dd>Метка «изменено» на строке — за двое суток у события сдвинулась дата, время или статус либо это замечено с вашего прошлого визита; «новое» — событие только что добавлено. Кнопка «Изменения» в шапке открывает ленту за 14 дней, в карточке — «История изменений».</dd><dt>Бриф к эфиру</dt><dd>Кнопка в шапке: главное на сегодня, итоги за сутки, заявления дня и что ждать завтра — одним текстом, который копируется целиком. В 16:43 мск Claude собирает выверенный бриф; до этого бриф собирается автоматически из карточек.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
       <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
     paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, 'Справка', 'help', false);
@@ -855,6 +962,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     if (t.id === 'drPrev' || t.id === 'drNext') { step(t.id === 'drNext' ? 1 : -1); return; }
     if (t.id === 'helpBtn') { openHelp(); return; }
     if (t.id === 'briefBtn') { if (state.pane === 'brief') { state.help = false; state.pane = ''; showEvent(state.openId || state.order[0]); } else openBrief(); return; }
+    if (t.id === 'chgBtn') { if (state.pane === 'changes') { state.help = false; state.pane = ''; showEvent(state.openId || state.order[0]); } else openChanges(); return; }
     if (t.id === 'copyBrief') { copy(briefText(currentBrief(new Date()))); return; }
     if (t.id === 'themeBtn') {
       const r = document.documentElement, cur = r.getAttribute('data-theme');
@@ -882,7 +990,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   setTopH();
 
   /* ---------------------------------------------------------- старт */
-  function tick() { const n = new Date(); $('#clock').textContent = `${fWd.format(n)} ${fShort.format(n).replace('.', '')} · ${fTime.format(n)} мск`; }
+  function tick() { const n = new Date(); const c = $('#clock'); c.textContent = `${fTime.format(n)} мск`; c.title = `${fWd.format(n)}, ${fShort.format(n).replace('.', '')}`; }
   tick(); setInterval(tick, 20e3);
   setInterval(() => { if (state.loaded) render(); }, 5 * 60e3);
   const th = store.get('theme', null); if (th) document.documentElement.setAttribute('data-theme', th);
@@ -904,8 +1012,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         if (hz && hz.id !== state.horizon) state.horizon = hz.id;
         state.cats.clear(); state.openId = h;
       }
-      render();
+      if (first) diffSinceVisit();
+      render(); renderChgCount();
       if (first && h === 'brief') openBrief();
+      if (first && h === 'changes') openChanges();
+      if (!first && state.pane === 'changes') openChanges();
     }, err => { $('#feed').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`; });
     db.doc('meta/links').onSnapshot(d => { const ex = d.exists ? (d.data().entries || []).map(x => [x.terms, x.url]).filter(x => Array.isArray(x[0]) && typeof x[1] === 'string' && /^https:\/\/[a-z]{2,3}\.wikipedia\.org\/wiki\//.test(x[1])) : []; buildWiki(ex); if (state.openId && !state.help) showEvent(state.openId, { quiet: true }); }, () => {});
     db.collection('briefs').onSnapshot(snap => { state.briefs = {}; snap.docs.forEach(d => { state.briefs[d.id] = { date: d.id, ...d.data() }; }); if (state.pane === 'brief') openBrief(); }, () => {});
