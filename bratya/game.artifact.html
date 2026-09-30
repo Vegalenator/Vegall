@@ -1,4 +1,4 @@
-<title>Братья против Хаоса</title>
+<title>Кир и Гур против Хаоса</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@500;700&family=Nunito:wght@600;800&display=swap">
@@ -151,9 +151,8 @@ kbd{font:700 .8rem var(--f-display);background:var(--text);color:var(--line);pad
 <section id="setup" class="overlay" aria-label="Настройка игры">
   <div class="sheet">
     <header class="brand">
-      <p class="eyebrow">Семейная игра · сделано специально для двух братьев</p>
-      <h1><span class="k">Братья</span> против <span class="c">Хаоса</span></h1>
-      <p class="lede">На дом волнами лезут ожившие носки, злые будильники, армия брокколи и Домашка. Стреляют оба брата, но вылечить себя сам никто не может: только брат брата. Выстоять можно только вдвоём, а в конце придёт сам Главный Босс.</p>
+      <h1><span class="k">Кир</span> и <span class="g">Гур</span> против <span class="c">Хаоса</span></h1>
+      <p class="lede">На дом волнами лезут ожившие носки, злые будильники, армия брокколи и Домашка. Стреляют оба брата, но вылечить себя сам никто не может: только брат брата. Выстоять можно только вдвоём, а каждую пятую волну приходит Няня с пультом.</p>
     </header>
 
     <div class="heroes">
@@ -311,15 +310,15 @@ const store = {
 const LOOK = {
   kir:  { body: '#3ea2ff', pants: '#26305a', hair: '#6b4428', skin: '#f2c490', gun: true },
   gur:  { body: '#b66dff', pants: '#4a2d7a', hair: '#d9a441', skin: '#f6cf9f', hat: true },
-  boss: { body: '#6b7c93', pants: '#2b2f3a', hair: '#3b2b22', skin: '#e9b98a', stache: true, glasses: true, tie: true }
+  boss: { body: '#d95f8c', pants: '#f2c490', hair: '#8a4b2a', skin: '#f0c29a', dress: true, apron: true, bun: true, lips: true }
 };
 const P = {
   kir:  { name: 'Кирилл', photo: null },
   gur:  { name: 'Гурий', photo: null },
-  boss: { name: 'Папа', photo: null }
+  boss: { name: 'Няня', photo: null }
 };
 for (const id of ['kir', 'gur', 'boss']) {
-  const n = store.get('bph-name-' + id); if (n) P[id].name = n === 'Гури' ? 'Гурий' : n;
+  const n = store.get('bph-name-' + id); if (n) P[id].name = n === 'Гури' ? 'Гурий' : n === 'Папа' ? 'Няня' : n;
   const d = store.get('bph-photo-' + id);
   if (d) { const im = new Image(); im.onload = () => { P[id].photo = im; drawPreview(id); }; im.src = d; }
 }
@@ -424,7 +423,7 @@ function recrop(id, save) {
 for (const id of ['kir', 'gur', 'boss']) {
   const inp = $('#name-' + id);
   inp.value = P[id].name;
-  inp.addEventListener('input', () => { P[id].name = inp.value.trim() || { kir: 'Кирилл', gur: 'Гурий', boss: 'Папа' }[id]; store.set('bph-name-' + id, P[id].name); drawPreview(id); syncNames(); });
+  inp.addEventListener('input', () => { P[id].name = inp.value.trim() || { kir: 'Кирилл', gur: 'Гурий', boss: 'Няня' }[id]; store.set('bph-name-' + id, P[id].name); drawPreview(id); syncNames(); });
   $('#file-' + id).addEventListener('change', e => { loadFile(id, e.target.files[0]); e.target.value = ''; });
   $('#zoom-' + id).addEventListener('input', e => { if (crop[id]) { crop[id].zoom = +e.target.value; recrop(id, false); } });
   $('#zoom-' + id).addEventListener('change', () => recrop(id, true));
@@ -484,6 +483,12 @@ function drawHero(g, x, y, o) {
   // руки и тело
   box(g, -18, -31, 6, 16, shade(o.body, .8)); box(g, 12, -31, 6, 16, shade(o.body, .8));
   box(g, -13, -33, 26, 22, o.body);
+  if (o.dress) {
+    g.fillStyle = o.body; g.strokeStyle = '#0b0e18'; g.lineWidth = 2;
+    g.beginPath(); g.moveTo(-13, -14); g.lineTo(13, -14); g.lineTo(17, -4); g.lineTo(-17, -4); g.closePath(); g.fill(); g.stroke();
+    g.fillStyle = '#fff'; for (let i = -12; i <= 10; i += 7) g.fillRect(i, -9, 3, 3);
+  }
+  if (o.apron) { box(g, -8, -26, 16, 20, '#fff6ea', '#0b0e18', 1.5); g.fillStyle = '#ff9fbf'; g.fillRect(-4, -20, 8, 4); }
   g.fillStyle = 'rgba(0,0,0,.18)'; g.fillRect(7, -32, 5, 20);
   if (o.tie) { g.fillStyle = '#d23a4a'; g.fillRect(-2, -32, 4, 14); }
   if (o.hat) { g.fillStyle = '#ffd84a'; g.fillRect(-4, -26, 3, 3); g.fillRect(3, -20, 3, 3); }
@@ -512,10 +517,13 @@ function drawHero(g, x, y, o) {
     g.fillStyle = '#fff'; g.fillRect(hx + 8, hy + 16, 9, 8); g.fillRect(hx + 23, hy + 16, 9, 8);
     g.fillStyle = '#1a1a2e'; g.fillRect(hx + 11 + lx, hy + 18, 4, 5); g.fillRect(hx + 26 + lx, hy + 18, 4, 5);
     if (o.glasses) { g.strokeStyle = '#1a1a2e'; g.lineWidth = 2; g.strokeRect(hx + 6, hy + 14, 13, 12); g.strokeRect(hx + 21, hy + 14, 13, 12); g.beginPath(); g.moveTo(hx + 19, hy + 19); g.lineTo(hx + 21, hy + 19); g.stroke(); }
-    g.fillStyle = '#8a3a3a'; g.fillRect(hx + 14, hy + 31, 12, 3);
+    if (o.bun) { g.fillStyle = o.hair; g.fillRect(hx, hy, 6, 30); g.fillRect(hx + hs - 6, hy, 6, 30); g.fillStyle = '#ff9fbf'; g.fillRect(hx + 4, hy + 31, 3, 3); g.fillRect(hx + hs - 7, hy + 31, 3, 3); }
+    g.fillStyle = o.lips ? '#d23a4a' : '#8a3a3a'; g.fillRect(hx + 14, hy + 31, 12, 3);
+    if (o.lips) { g.fillStyle = 'rgba(255,120,150,.45)'; g.fillRect(hx + 6, hy + 26, 6, 4); g.fillRect(hx + 28, hy + 26, 6, 4); }
     if (o.stache) { g.fillStyle = o.hair; g.fillRect(hx + 9, hy + 27, 22, 4); g.fillRect(hx + 7, hy + 29, 4, 3); g.fillRect(hx + 29, hy + 29, 4, 3); }
   }
   g.strokeStyle = '#0b0e18'; g.lineWidth = 2; g.strokeRect(hx, hy, hs, hs);
+  if (o.bun) { box(g, hx + 12, hy - 20, 20, 16, o.hair); g.fillStyle = '#ff9fbf'; g.fillRect(hx + 12, hy - 8, 20, 4); }
   // шляпа волшебника
   if (o.hat) {
     g.fillStyle = '#7b3fd1';
@@ -669,7 +677,7 @@ const WAVE_TITLES = {
   1: 'Нашествие носков', 2: 'Будильники проснулись', 3: 'Армия брокколи', 4: 'Домашка атакует',
   6: 'Режим сна', 7: 'Носки-мутанты', 8: 'Понедельник', 9: 'Контрольная по всему'
 };
-const SAY_BOSS = ['Пора спать!', 'Уроки сделали?', 'Выключай планшет!', 'Кто не доел брокколи?', 'Пять минут и спать!', 'Где пульт?!', 'Зубы почистили?'];
+const SAY_BOSS = ['Пора спать!', 'Уроки сделали?', 'Выключай планшет!', 'Кто не доел брокколи?', 'Пять минут и спать!', 'Где пульт?!', 'Зубы почистили?', 'Руки мыть — и в кровать!', 'Мама сказала: в девять спать!', 'Кто разбросал носки?!'];
 const SAY_GURI = ['Эй!', 'Щекотно!', 'Не толкайся!', 'Я волшебник!', 'Ну блин!', 'Сам такой!', 'Бе-бе-бе!', 'Не поймаешь!'];
 const SAY_KIR = ['Ауч!', 'Ну всё, держись!', 'Лечи меня!', 'Это было больно!'];
 
@@ -1128,7 +1136,7 @@ function updateBoss(e, dt) {
     const want = pl ? 170 : 0;
     if (l > want) { e.x += dx / l * e.sp * dt; e.y += dy / l * e.sp * dt; e.walk += dt * 8; }
   }
-  e.x = clamp(e.x, -20, W + 20); e.y = clamp(e.y, 40, H + 10);
+  e.x = clamp(e.x, -20, W + 20); e.y = clamp(e.y, 225, H + 10); // крупная — не заходит под панели сверху
   if (e.x > 40 && e.x < W - 40 && e.y > 60 && e.y < H - 20) pushOutHouse(e);
   e.throwT -= dt; e.shoutT -= dt; e.chargeT -= dt;
   const hard = e.hp < e.maxhp * .5;
