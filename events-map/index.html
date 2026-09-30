@@ -194,6 +194,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .disc{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px 16px;margin:0;font-size:13.5px;line-height:1.5}
 .disc dt{color:var(--muted);font-size:12.5px;padding-top:1px}
 .disc dd{margin:0;min-width:0}
+.wl{color:inherit;text-decoration:underline dotted;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--tc,var(--accent)) 70%,transparent);text-underline-offset:3px;transition:color .2s,text-decoration-color .2s}
+.wl:hover{color:var(--accent);text-decoration-style:solid;text-decoration-color:var(--accent)}
+.say figcaption b .wl{text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent)}
 .dash{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:13.5px;line-height:1.5}
 .dash li{position:relative;padding-left:18px}
 .dash li::before{content:"";position:absolute;left:1px;top:.72em;width:9px;height:1.5px;border-radius:1px;background:var(--tc,var(--accent));opacity:.9}
@@ -496,6 +499,30 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const cap = g ? esc(g.place || e.where || '') : 'онлайн';
     return `<figure class="geo" aria-label="${g ? 'Место: ' + cap : 'Событие проходит онлайн'}"><svg viewBox="0 0 360 142" role="img" aria-hidden="true">${grid}<path class="land" d="${LAND}"/>${mark}</svg><figcaption class="${g ? '' : 'off'}">${cap}</figcaption></figure>`;
   }
+  const WIKI = [[["АТЭС"], "https://ru.wikipedia.org/wiki/Азиатско-Тихоокеанское_экономическое_сотрудничество"], [["G20", "«Большой двадцатки»", "«Большая двадцатка»", "Большой двадцатки", "Большая двадцатка"], "https://ru.wikipedia.org/wiki/Большая_двадцатка"], [["БРИКС плюс", "БРИКС+", "БРИКС"], "https://ru.wikipedia.org/wiki/БРИКС"], [["СНГ"], "https://ru.wikipedia.org/wiki/Содружество_Независимых_Государств"], [["ЕАЭС"], "https://ru.wikipedia.org/wiki/Евразийский_экономический_союз"], [["ШОС"], "https://ru.wikipedia.org/wiki/Шанхайская_организация_сотрудничества"], [["ОПЕК плюс", "ОПЕК+", "ОПЕК"], "https://ru.wikipedia.org/wiki/Организация_стран_—_экспортёров_нефти"], [["Международного валютного фонда", "Международный валютный фонд", "МВФ"], "https://ru.wikipedia.org/wiki/Международный_валютный_фонд"], [["Всемирного банка", "Всемирный банк"], "https://ru.wikipedia.org/wiki/Всемирный_банк"], [["Совета Безопасности ООН", "Совет Безопасности ООН"], "https://ru.wikipedia.org/wiki/Совет_Безопасности_ООН"], [["климатическая конференция ООН", "Климатическая конференция ООН", "климатической конференции ООН", "COP31"], "https://ru.wikipedia.org/wiki/Рамочная_конвенция_ООН_об_изменении_климата"], [["ООН"], "https://ru.wikipedia.org/wiki/Организация_Объединённых_Наций"], [["Совета ЕС", "Совет ЕС"], "https://ru.wikipedia.org/wiki/Совет_Европейского_союза"], [["Европейского совета", "Европейский совет", "Евросовета", "Евросовет"], "https://ru.wikipedia.org/wiki/Европейский_совет"], [["Европейского союза", "Европейский союз", "Евросоюза", "Евросоюзе", "Евросоюз", "ЕС"], "https://ru.wikipedia.org/wiki/Европейский_союз"], [["Европейского парламента", "Европарламента", "Европарламенте", "Европарламент"], "https://ru.wikipedia.org/wiki/Европейский_парламент"], [["Европейской комиссии", "Европейская комиссия", "Еврокомиссии", "Еврокомиссия"], "https://ru.wikipedia.org/wiki/Европейская_комиссия"], [["Европейского центрального банка", "Европейский центральный банк", "Европейского центробанка", "Европейский центробанк", "ЕЦБ"], "https://ru.wikipedia.org/wiki/Европейский_центральный_банк"], [["Федеральной резервной системы", "Федеральная резервная система", "ФРС"], "https://ru.wikipedia.org/wiki/Федеральная_резервная_система"], [["Банком России", "Банку России", "Банка России", "Банк России", "ЦБ"], "https://ru.wikipedia.org/wiki/Банк_России"], [["Банка Англии", "Банк Англии"], "https://ru.wikipedia.org/wiki/Банк_Англии"], [["Банка Японии", "Банк Японии"], "https://ru.wikipedia.org/wiki/Банк_Японии"], [["Росстату", "Росстата", "Росстат"], "https://ru.wikipedia.org/wiki/Федеральная_служба_государственной_статистики"], [["Минфином", "Минфина", "Минфин"], "https://ru.wikipedia.org/wiki/Министерство_финансов_Российской_Федерации"], [["Государственной думы", "Государственная дума", "Госдумы", "Госдуму", "Госдуме", "Госдума"], "https://ru.wikipedia.org/wiki/Государственная_дума"], [["Конгресса США", "Конгресс США"], "https://ru.wikipedia.org/wiki/Конгресс_США"], [["Палаты представителей", "Палата представителей"], "https://ru.wikipedia.org/wiki/Палата_представителей_США"], [["Сената США", "Сенат США"], "https://ru.wikipedia.org/wiki/Сенат_США"], [["НАТО"], "https://ru.wikipedia.org/wiki/НАТО"], [["«Валдая»", "«Валдай»", "Валдая", "Валдай"], "https://ru.wikipedia.org/wiki/Валдай_(дискуссионный_клуб)"], [["Российская энергетическая неделя", "Российской энергетической недели", "Российскую энергетическую неделю"], "https://ru.wikipedia.org/wiki/Российская_энергетическая_неделя"], [["Сбербанка", "Сбербанк", "Сбером", "Сбера", "Сбер"], "https://ru.wikipedia.org/wiki/Сбербанк_России"], [["ВТБ"], "https://ru.wikipedia.org/wiki/Банк_ВТБ"], [["JPMorgan Chase", "JPMorgan"], "https://ru.wikipedia.org/wiki/JPMorgan_Chase"], [["Nvidia"], "https://ru.wikipedia.org/wiki/Nvidia"], [["TSMC"], "https://ru.wikipedia.org/wiki/TSMC"], [["Tesla"], "https://ru.wikipedia.org/wiki/Tesla"], [["Apple"], "https://ru.wikipedia.org/wiki/Apple"], [["Microsoft"], "https://ru.wikipedia.org/wiki/Microsoft"], [["Яндекса", "Яндекс"], "https://ru.wikipedia.org/wiki/Яндекс"], [["«Сколково»", "Сколково"], "https://ru.wikipedia.org/wiki/Сколково_(инновационный_центр)"], [["Кнессета", "Кнессет"], "https://ru.wikipedia.org/wiki/Кнессет"], [["Сейма", "Сейм"], "https://ru.wikipedia.org/wiki/Сейм_Латвии"], [["«Единой России»", "«Единую Россию»", "«Единая Россия»"], "https://ru.wikipedia.org/wiki/Единая_Россия"], [["«Турецкого потока»", "«Турецкому потоку»", "«Турецкий поток»"], "https://ru.wikipedia.org/wiki/Турецкий_поток"], [["Республики Сербской", "Республике Сербской", "Республика Сербская"], "https://ru.wikipedia.org/wiki/Республика_Сербская"], [["ОФЗ"], "https://ru.wikipedia.org/wiki/Облигации_федерального_займа"], [["ключевой ставки", "ключевой ставке", "ключевую ставку", "ключевая ставка", "Ключевая ставка"], "https://ru.wikipedia.org/wiki/Ключевая_ставка_в_России"], [["цифрового рубля", "цифровом рубле", "цифровой рубль"], "https://ru.wikipedia.org/wiki/Цифровой_рубль"], [["GigaChat"], "https://ru.wikipedia.org/wiki/ГигаЧат"], [["Бюро статистики труда", "BLS"], "https://ru.wikipedia.org/wiki/Федеральное_бюро_статистики_труда_США"], [["Росатома", "Росатом"], "https://ru.wikipedia.org/wiki/Росатом"], [["Ростеха", "Ростех"], "https://ru.wikipedia.org/wiki/Ростех"], [["«Итоги года с Владимиром Путиным»", "прямой линии", "прямая линия"], "https://ru.wikipedia.org/wiki/Прямая_линия_с_Владимиром_Путиным"], [["Web Summit"], "https://ru.wikipedia.org/wiki/Web_Summit"], [["Владимира Путина", "Владимир Путин", "Путиным", "Путину", "Путина", "Путин"], "https://ru.wikipedia.org/wiki/Путин,_Владимир_Владимирович"], [["Сергеем Лавровым", "Сергей Лавров", "Лавровым", "Лаврову", "Лаврова", "Лавров"], "https://ru.wikipedia.org/wiki/Лавров,_Сергей_Викторович"], [["Эльвира Набиуллина", "Набиуллиной", "Набиуллину", "Набиуллина"], "https://ru.wikipedia.org/wiki/Набиуллина,_Эльвира_Сахипзадовна"], [["Антон Силуанов", "Силуановым", "Силуанову", "Силуанова", "Силуанов"], "https://ru.wikipedia.org/wiki/Силуанов,_Антон_Германович"], [["Михаил Мишустин", "Мишустиным", "Мишустину", "Мишустина", "Мишустин"], "https://ru.wikipedia.org/wiki/Мишустин,_Михаил_Владимирович"], [["Вячеслава Володина", "Вячеслав Володин", "Володиным", "Володина", "Володин"], "https://ru.wikipedia.org/wiki/Володин,_Вячеслав_Викторович"], [["Сергей Собянин", "Собяниным", "Собянина", "Собянин"], "https://ru.wikipedia.org/wiki/Собянин,_Сергей_Семёнович"], [["Германа Грефа", "Герман Греф", "Грефом", "Грефу", "Грефа", "Греф"], "https://ru.wikipedia.org/wiki/Греф,_Герман_Оскарович"], [["Кристин Лагард", "Лагард"], "https://ru.wikipedia.org/wiki/Лагард,_Кристин"], [["Каи Каллас", "Кая Каллас", "Каллас"], "https://ru.wikipedia.org/wiki/Каллас,_Кая"], [["Дональд Трамп", "Трампом", "Трампу", "Трампа", "Трамп"], "https://ru.wikipedia.org/wiki/Трамп,_Дональд"], [["Даниэль Ортега", "Ортеги", "Ортега"], "https://ru.wikipedia.org/wiki/Ортега,_Даниэль"], [["Адама Бэрроу", "Бэрроу"], "https://ru.wikipedia.org/wiki/Бэрроу,_Адама"], [["Дженсена Хуанга", "Дженсен Хуанг", "Хуанга", "Хуанг"], "https://ru.wikipedia.org/wiki/Хуанг,_Дженсен"], [["Фёдор Лукьянов", "Лукьянова", "Лукьянов"], "https://ru.wikipedia.org/wiki/Лукьянов,_Фёдор_Александрович"], [["Тимофей Бордачёв", "Бордачёва", "Бордачёв"], "https://ru.wikipedia.org/wiki/Бордачев,_Тимофей_Вячеславович"], [["Андрей Быстрицкий", "Быстрицкого", "Быстрицкий"], "https://ru.wikipedia.org/wiki/Быстрицкий,_Андрей_Георгиевич"], [["Дмитрий Песков", "Пескова", "Песков"], "https://ru.wikipedia.org/wiki/Песков,_Дмитрий_Сергеевич"], [["Максим Орешкин", "Орешкина", "Орешкин"], "https://ru.wikipedia.org/wiki/Орешкин,_Максим_Станиславович"], [["Василий Небензя", "Небензя"], "https://ru.wikipedia.org/wiki/Небензя,_Василий_Алексеевич"]];
+  let wikiRe = null, wikiMap = null;
+  function buildWiki(extra) {
+    wikiMap = new Map();
+    [...WIKI, ...(extra || [])].forEach(([terms, url]) => (terms || []).forEach(t => { if (t && !wikiMap.has(t)) wikiMap.set(t, url); }));
+    const alts = [...wikiMap.keys()].sort((a, b) => b.length - a.length).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    try { wikiRe = new RegExp('(?<![\\p{L}\\p{N}])(' + alts.join('|') + ')(?![\\p{L}\\p{N}])', 'gu'); } catch (err) { wikiRe = null; }
+  }
+  buildWiki();
+  let wikiUsed = new Set();
+  /* текст → HTML со ссылками на Википедию; ссылка — только на первое упоминание в карточке */
+  function wl(text) {
+    const src = String(text ?? '');
+    if (!wikiRe) return esc(src);
+    let out = '', last = 0;
+    for (const m of src.matchAll(wikiRe)) {
+      const url = wikiMap.get(m[1]);
+      out += esc(src.slice(last, m.index));
+      if (url && !wikiUsed.has(url)) { wikiUsed.add(url); out += `<a class="wl" href="${esc(url)}" target="_blank" rel="noopener" title="Википедия">${esc(m[1])}</a>`; }
+      else out += esc(m[1]);
+      last = m.index + m[1].length;
+    }
+    return out + esc(src.slice(last));
+  }
   function statementsHtml(e, ph) {
     const list = (e.statements || []).filter(x => x && x.text);
     if (!list.length) {
@@ -511,8 +538,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       const n = d && s0 && multi ? Math.round((dayStart(d) - dayStart(s0)) / D) + 1 : 0;
       const head = d ? `${fDay.format(d)}${n > 0 ? ` · день ${n}` : ''}` : 'Без даты';
       return `<div class="says-day"><div class="says-h">${esc(head)}<span>${days[k].length} ${plural(days[k].length, 'заявление', 'заявления', 'заявлений')}</span></div>${days[k].map(x => `<figure class="say">
-        <figcaption><b>${esc(x.who || '')}</b>${x.role ? `<span>${esc(x.role)}</span>` : ''}</figcaption>
-        ${x.kind === 'quote' ? `<blockquote>«${esc(x.text)}»</blockquote>` : `<p>${esc(x.text)}</p>`}
+        <figcaption><b>${wl(x.who || '')}</b>${x.role ? `<span>${wl(x.role)}</span>` : ''}</figcaption>
+        ${x.kind === 'quote' ? `<blockquote>«${wl(x.text)}»</blockquote>` : `<p>${wl(x.text)}</p>`}
         ${x.source ? `<a class="say-src" href="${esc(x.source.url)}" target="_blank" rel="noopener">${esc(x.source.name)}</a>` : ''}</figure>`).join('')}</div>`;
     }).join('');
     return `<section class="blk says">${lab('Заявления')}${body}</section>`;
@@ -652,7 +679,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   }
   function items(arr) {
     if (!arr || !arr.length) return '<p class="small" style="margin:0">Пока нет данных.</p>';
-    return '<ul class="dash">' + arr.map(a => `<li>${esc(a.text)}</li>`).join('') + '</ul>';
+    return '<ul class="dash">' + arr.map(a => `<li>${wl(a.text)}</li>`).join('') + '</ul>';
   }
   const links = arr => (arr || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join('');
   const lab = t => `<h3 class="lab caps">${t}</h3>`;
@@ -667,12 +694,13 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const whenBig = s ? `<span class="big">${esc(fDay.format(s))}${e.allDay ? '' : ', ' + fTime.format(s) + ' мск'}${multi}</span>` : `<span class="big none">${esc(e.dateWording || '')}</span>`;
     const flag = ph === 'live' ? '<span class="flag live">идёт</span>' : ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '';
     requestAnimationFrame(fitTitle);
+    wikiUsed = new Set();
     let outcome = '';
     if (o && o.decided) {
       outcome = `<section class="blk res">${lab('Итог')}<div class="outcome">
-        <div><b class="caps">Ожидали</b>${esc(o.expected || '—')}</div><div class="arr">→</div>
-        <div class="dec"><b class="caps">Решили</b>${esc(o.decided)}</div><div class="arr">→</div>
-        <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${esc(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
+        <div><b class="caps">Ожидали</b>${wl(o.expected || '—')}</div><div class="arr">→</div>
+        <div class="dec"><b class="caps">Решили</b>${wl(o.decided)}</div><div class="arr">→</div>
+        <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${wl(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
         <div class="small">${o.filledAt ? 'Записано ' + esc(String(o.filledAt).slice(0, 16).replace('T', ' ')) + (o.filledBy === 'claude' ? ' · собрано Claude по источникам' : '') + '. ' : ''}${(o.sources || []).length ? 'Источники: ' + (o.sources || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(', ') : ''}</div></section>`;
     } else if (ph === 'awaiting') {
       outcome = `<section>${lab('Итог')}<div class="pending">Событие завершилось. Итог в формате «ожидали → решили → осталось открытым» запишет ближайший автопрогон — в 06:47 или 15:47 мск.</div></section>`;
@@ -683,12 +711,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}${navHtml(state.order.indexOf(id))}</div></div>
         ${mapHtml(e)}</section>
       ${outcome}
-      <section class="blk">${lab('Что на обсуждении')}<dl class="disc">${e.participants && e.participants !== '—' ? `<dt>Участники</dt><dd>${esc(e.participants)}</dd>` : ''}<dt>Повестка</dt><dd>${items(e.agenda)}</dd></dl></section>
+      <section class="blk">${lab('Что на обсуждении')}<dl class="disc">${e.participants && e.participants !== '—' ? `<dt>Участники</dt><dd>${wl(e.participants)}</dd>` : ''}<dt>Повестка</dt><dd>${items(e.agenda)}</dd></dl></section>
       <section class="blk">${lab('Какие решения возможны')}${items(e.scenarios)}</section>
       <section class="blk">${lab('Что изменится')}<div class="three">
-        <div><b class="caps">Россия</b>${esc(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${esc(imp.business || '—')}</div><div><b class="caps">Рынки</b>${esc(imp.markets || '—')}</div></div></section>
-      <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${esc(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
-      <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${esc(airText(e))}</p></section>
+        <div><b class="caps">Россия</b>${wl(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${wl(imp.business || '—')}</div><div><b class="caps">Рынки</b>${wl(imp.markets || '—')}</div></div></section>
+      <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${wl(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
+      <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${wl(airText(e))}</p></section>
       ${statementsHtml(e, ph)}
       <section class="ref">${lab('Дата и основание')}<dl class="kv">
         ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
@@ -714,7 +742,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
-      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
       <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
     paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, 'Справка', 'help', false);
@@ -789,6 +817,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       }
       render();
     }, err => { $('#feed').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`; });
+    db.doc('meta/links').onSnapshot(d => { const ex = d.exists ? (d.data().entries || []).map(x => [x.terms, x.url]).filter(x => Array.isArray(x[0]) && typeof x[1] === 'string' && /^https:\/\/[a-z]{2,3}\.wikipedia\.org\/wiki\//.test(x[1])) : []; buildWiki(ex); if (state.openId && !state.help) showEvent(state.openId, { quiet: true }); }, () => {});
     db.doc('meta/status').onSnapshot(d => { state.meta = d.exists ? d.data() : null; renderRun(new Date()); }, () => {});
   })();
 })();
