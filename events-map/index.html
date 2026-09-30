@@ -197,6 +197,21 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .wl{color:inherit;text-decoration:underline dotted;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--tc,var(--accent)) 70%,transparent);text-underline-offset:3px;transition:color .2s,text-decoration-color .2s}
 .wl:hover{color:var(--accent);text-decoration-style:solid;text-decoration-color:var(--accent)}
 .say figcaption b .wl{text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent)}
+.briefbtn{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px;border-radius:999px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:transform .2s var(--ease),box-shadow .2s,background .2s}
+.briefbtn:hover{transform:translateY(-1px);box-shadow:0 6px 16px -6px var(--accent)}
+.briefbtn[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.brief-meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--muted);margin-top:4px}
+.brief-meta .src{padding:2px 8px;border-radius:999px;background:var(--accent-2);color:var(--accent);font-weight:500}
+.brief-lead{margin:0;font-family:var(--ff-display);font-size:17px;line-height:1.55;color:var(--ink)}
+.bitem{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:12px 0;border-top:1px solid var(--hair)}
+.bitem:first-of-type{border-top:0;padding-top:4px}
+.bitem .num{font-family:var(--ff-display);font-size:20px;line-height:1.1;color:var(--tc,var(--accent))}
+.bitem .bt{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.bitem .bt button{font-weight:600;font-size:14px;text-align:left;color:var(--ink)}
+.bitem .bt button:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.bitem .bt .tm2{font-family:var(--ff-mono);font-size:12px;color:var(--ink-2)}
+.bitem p{grid-column:2;margin:2px 0 0;font-family:var(--ff-display);font-size:15.5px;line-height:1.55;color:var(--ink)}
+.bitem .who{grid-column:2;font-size:12.5px;color:var(--ink-2)}
 .dash{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:13.5px;line-height:1.5}
 .dash li{position:relative;padding-left:18px}
 .dash li::before{content:"";position:absolute;left:1px;top:.72em;width:9px;height:1.5px;border-radius:1px;background:var(--tc,var(--accent));opacity:.9}
@@ -270,6 +285,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   .row[aria-current="true"]{background:color-mix(in srgb,var(--tc) var(--tint),var(--sheet));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tc) 80%,transparent)}
 }
 @media (max-width:720px){
+  .briefbtn span{display:none}
+  .briefbtn{padding:0 9px}
   .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
   .tabs{order:5;flex:1 1 100%;height:40px;overflow-x:auto;scrollbar-width:none}
   .search{flex:1 1 120px}
@@ -311,6 +328,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     <div class="status">
       <span class="clock mono" id="clock">—</span>
       <span id="autorun" class="autorun"><i class="dot off"></i><span class="lbl">автоитоги</span></span>
+      <button class="briefbtn" type="button" id="briefBtn" title="Бриф к эфиру: главное на сегодня одним текстом"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v7M5 6.5a3 3 0 006 0V4a3 3 0 00-6 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Бриф к эфиру</span></button>
       <button class="ghost" type="button" id="helpBtn" title="Как читать карту" aria-label="Как читать карту">?</button>
       <button class="ghost" type="button" id="themeBtn" title="Сменить тему" aria-label="Сменить тему"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 2.5a5.5 5.5 0 010 11z" fill="currentColor"/></svg></button>
     </div>
@@ -390,7 +408,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     events: [], meta: null, loaded: false,
     horizon: store.get('horizon', 'h72'),
     cats: new Set(store.get('cats', [])),
-    q: '', openId: null, order: [], animate: true, help: false,
+    q: '', openId: null, order: [], animate: true, help: false, pane: '', briefs: {},
   };
   const $ = s => document.querySelector(s);
   const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
@@ -686,7 +704,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 
   function showEvent(id, opt = {}) {
     const e = state.events.find(x => x.id === id); if (!e) { showEmptyDetail(); return; }
-    state.openId = id; state.help = false;
+    state.openId = id; state.help = false; state.pane = ''; const bb = $('#briefBtn'); if (bb) bb.setAttribute('aria-pressed', 'false');
     if (!opt.quiet) { try { history.replaceState(null, '', '#' + id); } catch (err) {} }
     const now = new Date(), ph = phase(e, now), { s, end } = times(e);
     const air = airLine(e), imp = e.impact || {}, cp = e.checkpoint || {}, o = e.outcome;
@@ -733,8 +751,77 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     markCurrent();
     if (!opt.quiet) sheetOpen();
   }
+  /* ------------------------------------------------------ бриф к эфиру */
+  const todayKey = () => dayKey(new Date());
+  function autoBrief(now) {
+    const H24 = now.getTime() + 24 * H, tomorrowEnd = dayStart(new Date(now.getTime() + 2 * D)).getTime() - 1;
+    const imp = e => ({ monetary: 0, state: 1, summits: 2, elections: 2, data: 3, energy: 3, tech: 4, corp: 4 }[typeOf(e)] ?? 5);
+    const upcoming = state.events.filter(e => { const t = times(e); if (!t.s || e.dateStatus === 'cancelled') return false; const ph = phase(e, now); return ph === 'live' || (ph === 'upcoming' && t.s.getTime() <= H24); })
+      .sort((a, b) => (phase(b, now) === 'live') - (phase(a, now) === 'live') || imp(a) - imp(b) || when(a) - when(b)).slice(0, 5);
+    const outcomes = state.events.filter(e => e.outcome && e.outcome.decided && !e.outcome.backfilled && (now - new Date(e.outcome.filledAt || 0)) < 36 * H)
+      .sort((a, b) => imp(a) - imp(b)).slice(0, 4);
+    const sayDays = new Set([todayKey(), dayKey(new Date(now.getTime() - D))]);
+    const says = [];
+    state.events.forEach(e => (e.statements || []).forEach(x => { if (sayDays.has(x.date)) says.push({ e, x }); }));
+    says.sort((a, b) => (b.x.date || '').localeCompare(a.x.date || '') || (b.x.kind === 'quote') - (a.x.kind === 'quote'));
+    const upIds = new Set(upcoming.map(e => e.id));
+    const tomorrow = state.events.filter(e => { const t = times(e); return t.s && !upIds.has(e.id) && e.dateStatus !== 'cancelled' && t.s.getTime() > H24 && t.s.getTime() <= tomorrowEnd; })
+      .sort((a, b) => imp(a) - imp(b) || when(a) - when(b)).slice(0, 4);
+    const tm = e => { const t = times(e); if (!t.s) return e.dateWording || ''; if (phase(e, now) === 'live') return 'идёт'; return (dayKey(t.s) === todayKey() ? 'сегодня' : fDay.format(t.s)) + (e.allDay ? '' : ', ' + fTime.format(t.s)); };
+    return {
+      date: todayKey(), auto: true,
+      sections: [
+        { title: 'Главное на сегодня', items: upcoming.map(e => ({ eventId: e.id, time: tm(e), title: e.title, text: airText(e) })) },
+        { title: 'Итоги за сутки', items: outcomes.map(e => ({ eventId: e.id, title: e.title, text: e.outcome.decided })) },
+        { title: 'Заявления дня', items: says.slice(0, 5).map(({ e, x }) => ({ eventId: e.id, title: e.title, quote: x.kind === 'quote', text: x.text, who: [x.who, x.role].filter(Boolean).join(', ') })) },
+        { title: 'Что ждать завтра', items: tomorrow.map(e => ({ eventId: e.id, time: tm(e), title: e.title, text: airText(e) })) },
+      ].filter(sec => sec.items.length),
+    };
+  }
+  function currentBrief(now) {
+    const b = state.briefs[todayKey()];
+    return b && Array.isArray(b.sections) && b.sections.length ? b : autoBrief(now);
+  }
+  function briefText(b) {
+    const out = [];
+    const d = new Date(b.date + 'T12:00:00+03:00');
+    out.push(`БРИФ К ЭФИРУ — ${fWdLong.format(d)}, ${fDay.format(d)}`);
+    if (b.lead) out.push('', b.lead);
+    b.sections.forEach(sec => {
+      out.push('', sec.title.toUpperCase());
+      sec.items.forEach((it, i) => {
+        out.push(`${i + 1}. ${it.title}${it.time ? ' — ' + it.time : ''}`);
+        out.push(it.quote ? `«${it.text}»${it.who ? ' — ' + it.who : ''}` : it.text + (it.who ? ' — ' + it.who : ''));
+      });
+    });
+    return out.join('\n');
+  }
+  function openBrief() {
+    state.help = true; state.pane = 'brief'; markCurrent();
+    detail.style.setProperty('--tc', 'var(--accent)');
+    try { history.replaceState(null, '', '#brief'); } catch (err) {}
+    $('#briefBtn').setAttribute('aria-pressed', 'true');
+    const now = new Date(), b = currentBrief(now), d = new Date(b.date + 'T12:00:00+03:00');
+    wikiUsed = new Set();
+    const gen = b.auto ? '<span class="src">собран автоматически из карточек</span><span>выверенный бриф Claude появится в 16:43</span>'
+      : `<span class="src">собран Claude</span><span>${b.generatedAt ? esc(fTime.format(new Date(b.generatedAt))) + ' мск' : ''}</span>`;
+    const secs = b.sections.map(sec => `<section class="blk${sec.title === 'Главное на сегодня' ? ' cpb' : ''}">${lab(esc(sec.title))}${sec.items.map((it, i) => {
+      const ev = state.events.find(x => x.id === it.eventId);
+      const tc = ev ? `--tc:var(--t-${typeOf(ev)})` : '';
+      return `<div class="bitem" style="${tc}"><span class="num">${i + 1}</span><div class="bt">${ev ? `<button type="button" data-open="${esc(ev.id)}">${esc(it.title)}</button>` : `<b>${esc(it.title)}</b>`}${it.time ? `<span class="tm2">${esc(it.time)}</span>` : ''}</div>
+        <p>${it.quote ? '«' + wl(it.text) + '»' : wl(it.text)}</p>${it.who ? `<span class="who">${wl(it.who)}</span>` : ''}</div>`;
+    }).join('')}</section>`).join('');
+    const empty = b.sections.length ? '' : '<div class="pending">На ближайшие сутки в карте нет событий. Загляните в горизонт «2 недели».</div>';
+    const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Бриф к эфиру</h2>
+        <div class="when"><span class="big">${esc(fWdLong.format(d))}, ${esc(fDay.format(d))}</span>${navHtml(null)}</div>
+        <div class="brief-meta">${gen}</div></div></section>
+      ${b.lead ? `<p class="brief-lead">${wl(b.lead)}</p>` : ''}${secs}${empty}`;
+    const foot = `<button type="button" class="pillbtn" id="copyBrief">Копировать весь бриф</button><button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`;
+    paint(html, foot, '', 'brief:' + b.date + ':' + (b.auto ? 'a' : b.generatedAt), false);
+    sheetOpen();
+  }
   function openHelp() {
-    state.help = true; markCurrent(); detail.style.setProperty('--tc', 'var(--accent)');
+    state.help = true; state.pane = 'help'; $('#briefBtn').setAttribute('aria-pressed', 'false'); markCurrent(); detail.style.setProperty('--tc', 'var(--accent)');
     const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Как читать карту</h2><div class="when">${navHtml(null)}</div></div></section>
       <section>${lab('Статус даты')}<div class="legend">
         <div>${stTag('confirmed', true)}<p>Назначена официальным документом: указом, календарём организатора, решением избиркома.</p><span class="ex">в эфире: «23 октября в 13:30»</span></div>
@@ -742,7 +829,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
-      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Бриф к эфиру</dt><dd>Кнопка в шапке: главное на сегодня, итоги за сутки, заявления дня и что ждать завтра — одним текстом, который копируется целиком. В 16:43 мск Claude собирает выверенный бриф; до этого бриф собирается автоматически из карточек.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
       <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
     paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, 'Справка', 'help', false);
@@ -767,6 +854,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     if (t.id === 'backBtn') { state.help = false; showEvent(state.openId || state.order[0]); return; }
     if (t.id === 'drPrev' || t.id === 'drNext') { step(t.id === 'drNext' ? 1 : -1); return; }
     if (t.id === 'helpBtn') { openHelp(); return; }
+    if (t.id === 'briefBtn') { if (state.pane === 'brief') { state.help = false; state.pane = ''; showEvent(state.openId || state.order[0]); } else openBrief(); return; }
+    if (t.id === 'copyBrief') { copy(briefText(currentBrief(new Date()))); return; }
     if (t.id === 'themeBtn') {
       const r = document.documentElement, cur = r.getAttribute('data-theme');
       const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
@@ -816,8 +905,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         state.cats.clear(); state.openId = h;
       }
       render();
+      if (first && h === 'brief') openBrief();
     }, err => { $('#feed').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`; });
     db.doc('meta/links').onSnapshot(d => { const ex = d.exists ? (d.data().entries || []).map(x => [x.terms, x.url]).filter(x => Array.isArray(x[0]) && typeof x[1] === 'string' && /^https:\/\/[a-z]{2,3}\.wikipedia\.org\/wiki\//.test(x[1])) : []; buildWiki(ex); if (state.openId && !state.help) showEvent(state.openId, { quiet: true }); }, () => {});
+    db.collection('briefs').onSnapshot(snap => { state.briefs = {}; snap.docs.forEach(d => { state.briefs[d.id] = { date: d.id, ...d.data() }; }); if (state.pane === 'brief') openBrief(); }, () => {});
     db.doc('meta/status').onSnapshot(d => { state.meta = d.exists ? d.data() : null; renderRun(new Date()); }, () => {});
   })();
 })();
