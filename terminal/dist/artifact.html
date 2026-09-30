@@ -4845,7 +4845,7 @@ window.VG_HISTORY = [
             (pinned ? '<button type="button" class="lc-close" data-close aria-label="Закрыть">×</button>' : '') + '</div>' +
           (d && d.headline ? '<p class="lc-headline">' + esc(d.headline) + '</p>' : '') +
           '<div class="lc-sec">Как идут деньги</div><ul class="lc-flow">' + flow + '</ul>' +
-          (d ? '<p class="lc-mech">' + esc(d.mechanism) + '</p>' : '<p class="lc-mech">Контур найден автоматически, отдельного разбора пока нет — ниже общие риски кругового финансирования из исследования.</p>') +
+          (d ? '<p class="lc-mech">' + esc(d.mechanism) + '</p>' : '<p class="lc-mech">Контур найден автоматически, разбор пока не написан — ниже общие риски кругового финансирования из исследования.</p>') +
           (d && d.evidence ? '<div class="lc-evidence"><div class="lc-sec">Что видно в отчётности</div>' + esc(d.evidence) + ' ' + citeref(d.cite) + '</div>' : '') +
           '<div class="lc-sec">Чем опасно</div><ul class="lc-risks">' + risks + '</ul>' +
           '<div class="lc-sec">Сигнал тревоги по исследованию</div><p class="lc-signal">' + esc(gen.signal) + '</p>' +
