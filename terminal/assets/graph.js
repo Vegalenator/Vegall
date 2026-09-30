@@ -13,6 +13,18 @@
   var RANKS = 6;
   var SVGNS = 'http://www.w3.org/2000/svg';
 
+  /* Контрольная точка дуги. Встречные связи между двумя узлами изгибаются
+     в разные стороны, поэтому пара противоположных стрелок сама образует
+     замкнутое кольцо — его и обводит режим контуров. */
+  function ctrl(a, b, circular) {
+    var up = b.y < a.y - 2;
+    var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var bend = (up ? 34 : 14) * (circular ? 1.6 : 1);
+    return { x: mx + (dy / len) * bend, y: my - (dx / len) * bend };
+  }
+
   function el(name, attrs) {
     var n = document.createElementNS(SVGNS, name);
     for (var k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) n.setAttribute(k, attrs[k]);
@@ -38,6 +50,14 @@
     this.filters = { types: {}, onlyReport: false, focus: null };
     Object.keys(opts.edgeTypes).forEach(function (k) { self.filters.types[k] = true; });
     this.onSelect = opts.onSelect || function () {};
+    this.loopInfo = opts.loopInfo || null;      // function(loop) -> html карточки
+    /* порядок контуров: сначала самые доказанные — номер на карте и в списке совпадает */
+    this.loopRank = opts.loopRank || function (c) {
+      return c.edges.every(function (e) { return e.inReport === 'yes'; }) ? 0 : 1;
+    };
+    this.loopMode = false;
+    this.pinned = null;                         // номер закреплённого контура
+    this.loops = [];
     this.build();
   }
 
@@ -76,8 +96,9 @@
     svg.appendChild(defs);
 
     this.root = el('g');
-    this.gBands = el('g'); this.gEdges = el('g'); this.gNodes = el('g');
+    this.gBands = el('g'); this.gLoops = el('g'); this.gEdges = el('g'); this.gNodes = el('g');
     this.root.appendChild(this.gBands);
+    this.root.appendChild(this.gLoops);
     this.root.appendChild(this.gEdges);
     this.root.appendChild(this.gNodes);
     svg.appendChild(this.root);
@@ -87,6 +108,13 @@
     this.tip.className = 'tip';
     this.tip.hidden = true;
     wrap.appendChild(this.tip);
+
+    this.card = document.createElement('div');
+    this.card.className = 'tip loopcard';
+    this.card.hidden = true;
+    this.card.setAttribute('role', 'dialog');
+    this.card.setAttribute('aria-live', 'polite');
+    wrap.appendChild(this.card);
 
     this.W = 1280; this.H = 660;
     this.svg.setAttribute('viewBox', '0 0 ' + this.W + ' ' + this.H);
@@ -178,19 +206,45 @@
     this.gEdges.innerHTML = '';
     this.gNodes.innerHTML = '';
     this.edgeEls = [];
+    this.loops = this.cycles().map(function (c) {
+      c.key = global.VGM.cycleKey(c.edges);
+      c.rank = self.loopRank(c);
+      return c;
+    }).sort(function (a, b) {
+      return a.rank - b.rank || (a.key < b.key ? -1 : 1);
+    });
+    this.loops.forEach(function (c, i) { c.n = i + 1; });
+    var loopOf = new Map(), nodeInLoop = {};
+    this.loops.forEach(function (c) {
+      c.edges.forEach(function (e) {
+        if (!loopOf.has(e)) loopOf.set(e, []);
+        loopOf.get(e).push(c.n);
+        nodeInLoop[e.from] = 1; nodeInLoop[e.to] = 1;
+      });
+    });
+
     this.visibleEdges().forEach(function (e) {
-      var p = el('path', { class: 'gedge ge-' + e.type + (e.circular ? ' circ' : ''),
+      var ln = loopOf.get(e) || [];
+      var p = el('path', { class: 'gedge ge-' + e.type + (e.circular ? ' circ' : '') + (ln.length ? ' inloop' : ''),
+                           'data-loops': ln.join(' ') || null,
                            'marker-end': 'url(#arw-' + e.type + ')',
                            'stroke-width': e.weight ? 1 + e.weight * 0.6 : 1.4,
                            'stroke-dasharray': e.type === 'debt' ? '5 4' : null });
-      p.addEventListener('mouseenter', function (ev) { self.showTip(ev, self.edgeTip(e)); });
-      p.addEventListener('mouseleave', function () { self.hideTip(); });
+      /* в режиме контуров связь контура открывает карточку контура, а не связи */
+      p.addEventListener('mouseenter', function (ev) {
+        if (self.loopMode && ln.length) self.showLoop(ln[0], ev);
+        else self.showTip(ev, self.edgeTip(e));
+      });
+      p.addEventListener('mouseleave', function () { self.hideTip(); self.leaveLoop(); });
+      p.addEventListener('click', function (ev) {
+        if (self.loopMode && ln.length) { ev.stopPropagation(); self.pinLoop(ln[0]); }
+      });
       self.gEdges.appendChild(p);
       self.edgeEls.push({ e: e, el: p });
     });
     this.nodeEls = [];
     this.nodes.forEach(function (n) {
-      var g = el('g', { class: 'gnode', tabindex: 0, role: 'button', 'aria-label': n.name });
+      var g = el('g', { class: 'gnode' + (nodeInLoop[n.id] ? ' inloop' : ''), tabindex: 0, role: 'button', 'aria-label': n.name });
       var c = el('circle', { r: n.r, class: 'nd nd-' + n.layer });
       var t1 = el('text', { class: 'graph-node-label', 'text-anchor': 'middle' });
       t1.textContent = n.name;
@@ -204,20 +258,143 @@
       self.gNodes.appendChild(g);
       self.nodeEls.push({ n: n, g: g, c: c, t: t1 });
     });
+    this.renderLoops();
     this.position();
     this.applyFocus();
+  };
+
+  /* ---------------------------------------------- круговые контуры --- */
+  Graph.prototype.renderLoops = function () {
+    var self = this;
+    this.gLoops.innerHTML = '';
+    this.loopEls = this.loops.map(function (c) {
+      var g = el('g', { class: 'gloop', tabindex: -1, role: 'button', 'data-n': c.n,
+                        'aria-label': 'Круговой контур ' + c.n + ': ' + c.names.concat([c.names[0]]).join(' → ') });
+      var halo = el('path', { class: 'loop-halo' });
+      var badge = el('g', { class: 'loop-badge' });
+      badge.appendChild(el('circle', { r: 11 }));
+      var t = el('text', { 'text-anchor': 'middle', dy: '0.35em' });
+      t.textContent = c.n;
+      badge.appendChild(t);
+      g.appendChild(halo); g.appendChild(badge);
+      g.addEventListener('mouseenter', function (ev) { self.showLoop(c.n, ev); });
+      g.addEventListener('mouseleave', function () { self.leaveLoop(); });
+      g.addEventListener('click', function (ev) { ev.stopPropagation(); self.pinLoop(c.n); });
+      g.addEventListener('focus', function () { self.showLoop(c.n); });
+      g.addEventListener('blur', function () { self.leaveLoop(); });
+      g.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); self.pinLoop(c.n); }
+        if (ev.key === 'Escape') { self.unpin(); }
+      });
+      self.gLoops.appendChild(g);
+      return { c: c, g: g, halo: halo, badge: badge };
+    });
+    this.gLoops.querySelectorAll('.gloop').forEach(function (g) {
+      g.setAttribute('tabindex', self.loopMode ? 0 : -1);
+    });
+  };
+
+  /* обводка проходит через центры узлов по тем же дугам, что и стрелки */
+  Graph.prototype.positionLoops = function () {
+    if (!this.loopEls) return;
+    this.loopEls.forEach(function (o) {
+      var ring = o.c.edges, first = ring[0].s;
+      var d = 'M' + first.x.toFixed(1) + ',' + first.y.toFixed(1);
+      var sx = 0, sy = 0, k = 0;
+      ring.forEach(function (e) {
+        var q = ctrl(e.s, e.t, e.circular);
+        d += ' Q' + q.x.toFixed(1) + ',' + q.y.toFixed(1) + ' ' + e.t.x.toFixed(1) + ',' + e.t.y.toFixed(1);
+        sx += e.s.x + q.x; sy += e.s.y + q.y; k += 2;
+      });
+      o.halo.setAttribute('d', d + ' Z');
+      o.cx = sx / k; o.cy = sy / k;
+      o.badge.setAttribute('transform', 'translate(' + o.cx.toFixed(1) + ',' + o.cy.toFixed(1) + ')');
+    });
+  };
+
+  Graph.prototype.setLoopMode = function (on) {
+    this.loopMode = !!on;
+    this.svg.classList.toggle('loops-on', this.loopMode);
+    this.gLoops.querySelectorAll('.gloop').forEach(function (g) {
+      g.setAttribute('tabindex', on ? 0 : -1);
+    });
+    if (!on) { this.pinned = null; this.clearLoop(); }
+  };
+
+  Graph.prototype.loopByN = function (n) {
+    return (this.loopEls || []).filter(function (o) { return o.c.n === n; })[0] || null;
+  };
+
+  Graph.prototype.markLoop = function (n) {
+    this.svg.classList.toggle('loop-focus', !!n);
+    (this.loopEls || []).forEach(function (o) { o.g.classList.toggle('active', o.c.n === n); });
+    this.edgeEls.forEach(function (o) {
+      var ls = (o.el.getAttribute('data-loops') || '').split(' ');
+      o.el.classList.toggle('hot', !!n && ls.indexOf(String(n)) >= 0);
+    });
+  };
+
+  /* карточка: у курсора при наведении, у значка контура при фокусе и закреплении */
+  Graph.prototype.showLoop = function (n, ev) {
+    if (!this.loopMode && !this.forceShow) return;
+    if (this.pinned && this.pinned !== n) return;
+    var o = this.loopByN(n); if (!o || !this.loopInfo) return;
+    this.hideTip();
+    this.markLoop(n);
+    this.card.innerHTML = this.loopInfo(o.c, this.pinned === n);
+    this.card.hidden = false;
+    this.card.classList.toggle('pinned', this.pinned === n);
+    var host = this.host.getBoundingClientRect();
+    var x, y;
+    if (ev && ev.clientX !== undefined && this.pinned !== n) {
+      x = ev.clientX - host.left + 16; y = ev.clientY - host.top + 12;
+    } else {
+      var r = this.svg.getBoundingClientRect();
+      x = (o.cx / this.W) * r.width + (r.left - host.left) + 18;
+      y = (o.cy / this.H) * r.height + (r.top - host.top) - 20;
+    }
+    var w = this.card.offsetWidth, h = this.card.offsetHeight;
+    if (x + w + 8 > host.width) x = Math.max(8, x - w - 36);
+    if (y + h + 8 > host.height) y = Math.max(8, host.height - h - 8);
+    this.card.style.left = x + 'px';
+    this.card.style.top = Math.max(8, y) + 'px';
+  };
+
+  Graph.prototype.leaveLoop = function () {
+    if (this.pinned) return;
+    this.clearLoop();
+  };
+
+  Graph.prototype.clearLoop = function () {
+    this.card.hidden = true;
+    this.card.classList.remove('pinned');
+    this.markLoop(null);
+  };
+
+  Graph.prototype.pinLoop = function (n) {
+    if (this.pinned === n) { this.unpin(); return; }
+    this.pinned = n;
+    this.showLoop(n);
+  };
+
+  Graph.prototype.unpin = function () {
+    this.pinned = null;
+    this.clearLoop();
+  };
+
+  /* подсветка контура извне: из списка контуров рядом с графом */
+  Graph.prototype.highlightLoop = function (n) {
+    if (this.pinned) return;
+    if (n) { this.forceShow = true; this.showLoop(n); this.forceShow = false; }
+    else this.clearLoop();
   };
 
   Graph.prototype.position = function () {
     if (!this.edgeEls) return;
     this.edgeEls.forEach(function (o) {
       var a = o.e.s, b = o.e.t;
-      var up = b.y < a.y - 2;                       // движение против потока
-      var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      var dx = b.x - a.x, dy = b.y - a.y;
-      var len = Math.sqrt(dx * dx + dy * dy) || 1;
-      var bend = (up ? 34 : 14) * (o.e.circular ? 1.6 : 1);
-      var cx = mx + (dy / len) * bend, cy = my - (dx / len) * bend;
+      var q = ctrl(a, b, o.e.circular);
+      var cx = q.x, cy = q.y;
       // укоротить концы до края круга, оставив место под стрелку
       var d1 = Math.sqrt((cx - a.x) * (cx - a.x) + (cy - a.y) * (cy - a.y)) || 1;
       var d2 = Math.sqrt((b.x - cx) * (b.x - cx) + (b.y - cy) * (b.y - cy)) || 1;
@@ -231,6 +408,7 @@
       o.g.setAttribute('transform', 'translate(' + o.n.x.toFixed(1) + ',' + o.n.y.toFixed(1) + ')');
       o.t.setAttribute('y', o.n.row ? o.n.r + 14 : -o.n.r - 7);
     });
+    this.positionLoops();
   };
 
   Graph.prototype.nodeTip = function (n) {
@@ -296,13 +474,17 @@
 
   Graph.prototype.setFilter = function (type, on) {
     this.filters.types[type] = on;
+    this.pinned = null; this.clearLoop();
     this.render();
     this.layout();
+    this.setLoopMode(this.loopMode);
   };
   Graph.prototype.setOnlyReport = function (on) {
     this.filters.onlyReport = on;
+    this.pinned = null; this.clearLoop();
     this.render();
     this.layout();
+    this.setLoopMode(this.loopMode);
   };
   Graph.prototype.relax = function () { this.layout(); };
 
@@ -327,6 +509,17 @@
       var p = toSvg(ev);
       drag.x = p.x; drag.y = p.y; drag.ty = p.y;
       self.position();
+    });
+    this.svg.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (t.closest && (t.closest('.gloop') || t.closest('.gnode') || t.closest('.gedge'))) return;
+      if (self.pinned) self.unpin();
+    });
+    this.host.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && self.pinned) self.unpin();
+    });
+    this.card.addEventListener('click', function (ev) {
+      if (ev.target.closest && ev.target.closest('[data-close]')) self.unpin();
     });
     this.svg.addEventListener('pointerup', function () { drag = null; self.svg.classList.remove('dragging'); });
     this.svg.addEventListener('pointercancel', function () { drag = null; self.svg.classList.remove('dragging'); });

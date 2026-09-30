@@ -501,10 +501,24 @@
 
       return '' +
         '<div class="panel" style="display:grid;gap:12px">' +
-          '<div class="controls">' + chips +
+          '<div class="controls">' +
+            '<button class="chip loopchip" type="button" role="switch" aria-pressed="false" id="loopMode" title="Подсветить замкнутые финансовые круги: деньги, вернувшиеся к тому, кто их дал">' +
+              '<i class="ring" aria-hidden="true"></i>Круговые контуры<b class="count" id="loopCount"></b></button>' +
+            '<span class="ctl-sep" aria-hidden="true"></span>' +
+            chips +
             '<button class="chip" type="button" role="switch" aria-pressed="false" id="onlyReport">Только связи из исследования</button>' +
             '<button class="iconbtn" type="button" id="relax">Перестроить</button>' +
             '<span class="count" style="color:var(--muted);font-size:12px" id="graphStat"></span>' +
+          '</div>' +
+          '<div class="loopbanner" id="loopBanner" hidden>' +
+            '<div class="lb-head"><i class="ring" aria-hidden="true"></i><b>Режим круговых контуров</b>' +
+              '<span id="loopBannerCount"></span></div>' +
+            '<p class="lb-quote">«' + esc(window.VG_LOOP_RISKS.generic.thesis) + '»<span>' + esc(window.VG_LOOP_RISKS.generic.thesisSrc) + '</span></p>' +
+            '<div class="legend">' +
+              '<b><i class="sq" style="background:var(--critical);opacity:.35"></i>Красная обводка — замкнутый круг: деньги возвращаются к тому, кто их дал</b>' +
+              '<b><i style="background:var(--ink-2)"></i>Бегущий пунктир — направление денег по кругу</b>' +
+              '<b>Наведите на круг, чтобы увидеть риски; щелчок закрепляет карточку</b>' +
+            '</div>' +
           '</div>' +
           '<div class="graphwrap" id="graphHost"></div>' +
           '<p class="sub" style="margin:0">Наведите курсор на связь или узел, потяните узел мышью, нажмите на узел — он оставит только своё окружение.</p>' +
@@ -512,7 +526,7 @@
         '<div class="note"><b>Как читать контур и как его не читать.</b> Стрелка вверх — признак встречного движения, но сама по себе она замкнутого круга не доказывает: контур засчитывается только при наличии обратного пути, и именно его ищет алгоритм. При этом доля в капитале, облачный кредит, подписанный договор и уже совершённый платёж — разные экономические события. Замкнутый контур связей означает взаимную зависимость сторон, а не доказанный возврат одних и тех же денег. Чтобы утверждать второе, нужны суммы, даты, сроки обязательств и доля в выручке получателя; в этой сборке суммы есть не у всех связей.</div>' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Найденные круговые контуры</h3>' +
-            '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли</p>' +
+            '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли. Наведите на карточку — контур подсветится на карте; щелчок откроет разбор рисков</p>' +
             '<div id="cycles"></div></div>' +
           '<div class="panel"><h3 id="selTitle">Выбранный узел</h3>' +
             '<p class="sub" id="selSub">Нажмите на узел графа, чтобы увидеть все его денежные связи</p>' +
@@ -525,11 +539,64 @@
     },
     after: function (root) {
       var host = root.querySelector('#graphHost');
+      var LR = window.VG_LOOP_RISKS;
+      function loopData(c) { return LR.loops[c.key] || null; }
+
+      /* карточка риска кругового контура */
+      function loopCard(c, pinned) {
+        var d = loopData(c), gen = LR.generic;
+        var flow = c.edges.map(function (e) {
+          var t = window.VG_EDGE_TYPES[e.type].label.toLowerCase();
+          return '<li><b>' + esc(e.s.name) + ' → ' + esc(e.t.name) + '</b> · ' + esc(t) +
+            (e.amount ? ', <b>' + esc(e.amount) + '</b>' : '') +
+            (e.back ? '<span class="k"> встречно: ' + esc(e.back) + '</span>' : '') + '</li>';
+        }).join('');
+        var risks = (d ? d.risks : gen.risks).map(function (r) {
+          return '<li><b>' + esc(r.h) + '.</b> ' + esc(r.t) + '</li>';
+        }).join('');
+        return '' +
+          '<div class="lc-head"><span class="lc-n">' + c.n + '</span>' +
+            '<div><div class="lc-kicker">Круговой контур' + (d ? ' · ' + esc(d.kind) : '') + '</div>' +
+            '<b class="lc-title">' + esc(d ? d.title : c.names.join(' ↔ ')) + '</b></div>' +
+            (pinned ? '<button type="button" class="lc-close" data-close aria-label="Закрыть">×</button>' : '') + '</div>' +
+          (d && d.headline ? '<p class="lc-headline">' + esc(d.headline) + '</p>' : '') +
+          '<div class="lc-sec">Как идут деньги</div><ul class="lc-flow">' + flow + '</ul>' +
+          (d ? '<p class="lc-mech">' + esc(d.mechanism) + '</p>' : '<p class="lc-mech">Контур найден автоматически, отдельного разбора пока нет — ниже общие риски кругового финансирования из исследования.</p>') +
+          (d && d.evidence ? '<div class="lc-evidence"><div class="lc-sec">Что видно в отчётности</div>' + esc(d.evidence) + ' ' + citeref(d.cite) + '</div>' : '') +
+          '<div class="lc-sec">Чем опасно</div><ul class="lc-risks">' + risks + '</ul>' +
+          '<div class="lc-sec">Сигнал тревоги по исследованию</div><p class="lc-signal">' + esc(gen.signal) + '</p>' +
+          (d && d.watch ? '<div class="lc-sec">Что проверять</div><p class="lc-watch">' + esc(d.watch) + '</p>' : '') +
+          '<p class="lc-basis">' + esc(d ? d.basis : 'Основание связей — в таблице под графом.') + (d && !d.evidence ? ' ' + citeref(d.cite) : '') + '</p>' +
+          '<p class="lc-foot">Контур связей означает взаимную зависимость сторон, а не доказанный возврат одних и тех же денег.' +
+            (pinned ? '' : ' Щелчок закрепит карточку.') + '</p>';
+      }
+
       var g = new window.VGGraph({
         host: host, nodes: window.VG_NODES, edges: window.VG_EDGES, edgeTypes: window.VG_EDGE_TYPES,
-        onSelect: function (node, edges) { showSel(node, edges); }
+        onSelect: function (node, edges) { showSel(node, edges); },
+        loopInfo: loopCard,
+        /* 0 — все связи из исследования; 1 — есть сверенное свидетельство в отчётности;
+           2 — механизм описан, но по отчётам не подтверждён */
+        loopRank: function (c) {
+          if (c.edges.every(function (e) { return e.inReport === 'yes'; })) return 0;
+          var d = LR.loops[window.VGM.cycleKey(c.edges)];
+          return d && d.evidence ? 1 : 2;
+        }
       });
       window.__vgGraph = g;
+
+      /* режим контуров: переключатель запоминается в браузере зрителя */
+      var loopBtn = root.querySelector('#loopMode'), banner = root.querySelector('#loopBanner');
+      function setLoops(on) {
+        loopBtn.setAttribute('aria-pressed', String(on));
+        banner.hidden = !on;
+        g.setLoopMode(on);
+        try { localStorage.setItem('vg-loops', on ? '1' : '0'); } catch (e) {}
+      }
+      loopBtn.addEventListener('click', function () { setLoops(loopBtn.getAttribute('aria-pressed') !== 'true'); });
+      var saved = null;
+      try { saved = localStorage.getItem('vg-loops'); } catch (e) {}
+      setLoops(saved === '1');
 
       function nodeName(id) { return (g.index[id] || {}).name || id; }
       function refMark(e) {
@@ -540,8 +607,13 @@
       function refresh() {
         var edges = g.visibleEdges();
         root.querySelector('#graphStat').textContent = 'узлов ' + window.VG_NODES.length + ' · связей ' + edges.length;
-        var cy = g.cycles();
+        var cy = g.loops;
+        root.querySelector('#loopCount').textContent = cy.length ? ' ' + cy.length : '';
+        root.querySelector('#loopBannerCount').textContent = cy.length
+          ? 'Найдено замкнутых кругов: ' + cy.length
+          : 'При текущих фильтрах замкнутых кругов нет';
         root.querySelector('#cycles').innerHTML = cy.length ? cy.map(function (c) {
+          var d = loopData(c);
           var path = c.names.concat([c.names[0]]).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join(' → ');
           var why = c.edges.map(function (e) {
             return window.VG_EDGE_TYPES[e.type].label.toLowerCase() + ': ' + (e.label || '') + (e.amount ? ' (' + e.amount + ')' : '');
@@ -549,10 +621,32 @@
           var amounts = c.edges.filter(function (e) { return e.amount; }).length;
           var basis = c.edges.every(function (e) { return e.inReport === 'yes'; }) ? 'все связи контура описаны в исследовании'
             : 'часть связей контура — вне исследования, см. таблицу';
-          return '<div class="loop" style="margin-bottom:8px"><div class="path">' + path + '</div>' +
+          return '<div class="loop loopitem" tabindex="0" role="button" data-n="' + c.n + '" style="margin-bottom:8px">' +
+            '<div class="li-head"><span class="lc-n">' + c.n + '</span><div>' +
+              (d ? '<div class="lc-kicker">' + esc(d.kind) + '</div>' : '') +
+              '<div class="path">' + path + '</div></div></div>' +
+            (d && d.headline ? '<div class="why li-risk">' + esc(d.headline) + '</div>' : '') +
             '<div class="why">' + esc(why) + '</div>' +
             '<div class="why" style="color:var(--muted);font-size:11.5px">Сумма указана у ' + amounts + ' из ' + c.edges.length + ' связей · ' + basis + '</div></div>';
         }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
+
+        root.querySelectorAll('.loopitem').forEach(function (item) {
+          var n = +item.dataset.n;
+          item.addEventListener('mouseenter', function () { g.highlightLoop(n); });
+          item.addEventListener('mouseleave', function () { g.highlightLoop(null); });
+          item.addEventListener('focus', function () { g.highlightLoop(n); });
+          item.addEventListener('blur', function () { g.highlightLoop(null); });
+          function open() {
+            if (loopBtn.getAttribute('aria-pressed') !== 'true') setLoops(true);
+            host.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            g.pinned = null;
+            g.pinLoop(n);
+          }
+          item.addEventListener('click', open);
+          item.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); }
+          });
+        });
 
         root.querySelector('#edgeTable').innerHTML = edges.map(function (e) {
           return '<tr><td>' + esc(nodeName(e.from)) + '</td><td>' + esc(nodeName(e.to)) + '</td>' +

@@ -94,6 +94,13 @@ window.VG_CITES = {
     loc: 'Страница политики ЕС, новость от 30.07.2026',
     quote: 'EU launches AI Gigafactories call to boost Europe’s computing capacity and unlock more than €30 billion in investment. The EU has launched a call for tenders to establish up to seven AI Gigafactories across Europe.' },
 
+  'googl-equity-gain': { src: 'S11', status: 'verified', checked: '2026-09-30',
+    loc: 'Пресс-релиз за II кв. 2026: сводка результатов и таблица консолидированных показателей; сверено по копии документа, полученной 20.09.2026',
+    quote: 'Other income reflected a net gain of $98.0 billion, primarily the result of net unrealized gains on our equity securities. Operating income $40,770; Other income (expense), net $97,983. Non-marketable securities 68,687 → 131,461.' },
+  'msft-equity-gain': { src: 'S10', status: 'verified', checked: '2026-09-30',
+    loc: 'Материалы к отчёту за IV кв. 2026 ф.г., комментарий финансового директора; сверено по копии документа, полученной 20.09.2026',
+    quote: 'When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic noted earlier.' },
+
   /* ---------------- подтверждено частично ---------------- */
   'cbr-permanent': { src: 'S21', status: 'partial', checked: '2026-09-20',
     loc: 'Доклад Банка России, раздел 2.1, рис. 6',

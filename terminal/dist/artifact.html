@@ -95,6 +95,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 
 body {
   margin: 0;
@@ -505,6 +506,89 @@ tr.rownote td b { color: var(--ink); }
 .quote { font-size: 12px; color: var(--ink-2); border-left: 2px solid var(--rule); padding-left: 10px; margin: 5px 0 0; }
 .quote em { font-style: normal; color: var(--muted); display: block; font-size: 11px; margin-bottom: 3px; }
 
+/* ------------------------------------------------ круговые контуры
+   Красный здесь — сигнал риска, а не категория: он всегда идёт вместе
+   с подписью и номером контура, никогда не несёт смысл в одиночку. */
+.ring { display: inline-block; width: 11px; height: 11px; border-radius: 50%; border: 2px solid var(--critical); flex: none; box-sizing: border-box; }
+.loopchip { font-weight: 600; }
+.loopchip[aria-pressed="false"] { opacity: 1; }
+.loopchip[aria-pressed="true"] { background: var(--critical-wash); border-color: var(--critical); color: var(--ink); }
+.loopchip .count { font-weight: 600; color: var(--critical); }
+.ctl-sep { width: 1px; align-self: stretch; background: var(--rule); margin: 2px 4px; }
+
+.loopbanner {
+  display: grid; gap: 8px; padding: 12px 14px; border-radius: 4px;
+  border: 1px solid rgba(208, 59, 59, .35); background: var(--critical-wash);
+}
+.lb-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.lb-head span { margin-left: auto; color: var(--ink-2); font-size: 12px; font-family: var(--ff-mono); }
+.lb-quote { margin: 0; font-size: 13px; color: var(--ink); max-width: 110ch; }
+.lb-quote span { display: block; margin-top: 4px; font-size: 11.5px; color: var(--muted); }
+
+.loop-halo {
+  fill: var(--critical); fill-opacity: 0; stroke: var(--critical); stroke-opacity: 0;
+  stroke-width: 1.6; stroke-dasharray: 6 4; stroke-linejoin: round;
+  pointer-events: none; transition: fill-opacity .2s, stroke-opacity .2s;
+}
+.loops-on .loop-halo { fill-opacity: .08; stroke-opacity: .8; pointer-events: visiblePainted; cursor: pointer; }
+.gloop.active .loop-halo { fill-opacity: .18; stroke-opacity: 1; stroke-dasharray: none; stroke-width: 2.6; }
+.loop-badge { opacity: 0; pointer-events: none; transition: opacity .2s; }
+.loops-on .loop-badge, .gloop.active .loop-badge { opacity: 1; pointer-events: auto; cursor: pointer; }
+.loop-badge circle { fill: var(--critical); stroke: var(--surface); stroke-width: 2.5; }
+.loop-badge text { fill: #ffffff; font-family: var(--ff-mono); font-size: 11.5px; font-weight: 600; pointer-events: none; }
+.gloop { outline: none; }
+.gloop:focus-visible .loop-badge circle { stroke: var(--accent); stroke-width: 3.5; }
+
+.loops-on .gedge:not(.inloop) { opacity: .07; }
+.loops-on .gnode:not(.inloop) { opacity: .3; }
+.loops-on .gedge.inloop, .gedge.hot { stroke-width: 3.2; stroke-dasharray: 7 5; animation: vg-flow 1.1s linear infinite; }
+.loop-focus .gloop:not(.active) { opacity: .3; }
+.loop-focus.loops-on .gedge.inloop:not(.hot) { opacity: .2; }
+@keyframes vg-flow { to { stroke-dashoffset: -24; } }
+@media (prefers-reduced-motion: reduce) {
+  .gedge.inloop, .gedge.hot { animation: none !important; }
+}
+
+.loopcard {
+  width: min(400px, calc(100% - 16px)); max-width: 400px; padding: 14px 16px 12px;
+  border-color: rgba(208, 59, 59, .45); border-top: 3px solid var(--critical);
+  max-height: min(560px, calc(100% - 16px)); overflow-y: auto; z-index: 25;
+}
+.loopcard.pinned { pointer-events: auto; }
+.lc-head { display: flex; gap: 10px; align-items: flex-start; }
+.lc-n {
+  flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--critical);
+  color: #ffffff; font-family: var(--ff-mono); font-size: 11.5px; font-weight: 600;
+  line-height: 22px; text-align: center;
+}
+.lc-kicker { font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; color: #a32e2e; }
+:root[data-theme="dark"] .lc-kicker { color: #f08a8a; }
+@media (prefers-color-scheme: dark) { :root:where(:not([data-theme="light"])) .lc-kicker { color: #f08a8a; } }
+.lc-title { display: block; font-size: 15px; margin: 1px 0 0; }
+.lc-close {
+  margin-left: auto; font: inherit; font-size: 18px; line-height: 1; padding: 2px 8px;
+  background: none; border: 1px solid var(--rule); border-radius: 3px; color: var(--ink-2); cursor: pointer;
+}
+.lc-close:hover { color: var(--ink); border-color: var(--ink-2); }
+.lc-headline { margin: 10px 0 0; font-size: 13px; font-weight: 600; }
+.lc-sec { margin-top: 10px; font-size: 10.5px; text-transform: uppercase; letter-spacing: .06em; font-weight: 600; color: var(--muted); }
+.lc-flow, .lc-risks { margin: 4px 0 0; padding-left: 16px; display: grid; gap: 5px; font-size: 12.5px; }
+.lc-flow .k { display: block; }
+.lc-mech, .lc-signal, .lc-watch { margin: 6px 0 0; font-size: 12.5px; color: var(--ink-2); }
+.lc-signal { color: var(--ink); }
+.lc-evidence { margin-top: 10px; padding: 8px 10px; background: var(--surface-2); border-left: 2px solid var(--critical); font-size: 12.5px; }
+.lc-evidence .lc-sec { margin-top: 0; margin-bottom: 3px; }
+.lc-basis { margin: 10px 0 0; font-size: 11.5px; color: var(--muted); }
+.lc-foot { margin: 8px 0 0; padding-top: 8px; border-top: 1px solid var(--grid); font-size: 11px; color: var(--muted); }
+
+.loopitem { cursor: pointer; border-left-color: var(--critical); transition: background .15s, border-color .15s; }
+.loopitem:hover, .loopitem:focus-visible { background: var(--critical-wash); border-color: var(--critical); outline: none; }
+.li-head { display: flex; gap: 10px; align-items: flex-start; }
+.li-risk { color: var(--ink); font-weight: 500; }
+/* в карточке контура жирный — строчный: правило подсказки делает его блочным */
+.loopcard b { display: inline; font-size: inherit; margin: 0; }
+.loopcard .lc-title { display: block; font-size: 15px; }
+
 </style>
 <header class="topbar">
   <div class="brand">
@@ -527,7 +611,7 @@ tr.rownote td b { color: var(--ink); }
 window.VG_META = {
   title: 'Терминал ИИ-цикла',
   asOf: '2026-09-06',              // дата среза исследования
-  builtAt: '2026-09-29',           // дата сборки терминала
+  builtAt: '2026-09-30',           // дата сборки терминала
   basis: 'Глубокое исследование «ИИ как инвестиционный и финансовый цикл», 6 сентября 2026',
   // Типы утверждений — бейдж рядом с каждой цифрой
   kinds: {
@@ -1027,6 +1111,98 @@ window.VG_LAYER_LABELS = {
   dc: 'ЦОД и охлаждение', energy: 'Энергетика', capital: 'Капитал', demand: 'Спрос'
 };
 
+/* =========================================================================
+   Круговые контуры: чем опасны.
+   Ключ — участники контура через « + » в алфавитном порядке идентификаторов,
+   так же, как их пишет модуль расчётов (VGM.cycleKey). Контур, найденный
+   автоматически без разбора, получает общий текст из generic.
+
+   Каждый риск опирается на исследование или на сверенный первоисточник.
+   Где связь описана вне исследования или источник недоступен — это сказано
+   прямо, в поле basis.
+   ========================================================================= */
+window.VG_LOOP_RISKS = {
+  generic: {
+    thesis: 'Поставщик процессоров финансирует облако, облако покупает процессоры и мощности, разработчик модели заключает многолетний договор с облаком, а финансовый результат инвесторов временно растёт из-за переоценки долей друг в друге. Пока конечный внешний клиент оплачивает полезный результат, цепочка устойчива; если конечная монетизация замедлится, многократный учёт одного ожидания усилит падение.',
+    thesisSrc: 'Исследование, тезис 8, стр. 3',
+    signal: 'Переоценка долей заменяет операционную прибыль; внешний клиент не растёт',
+    signalSrc: 'Исследование, таблица признаков перегрева, стр. 14',
+    risks: [
+      { h: 'Многократный учёт одного ожидания', t: 'Одни и те же будущие доходы попадают в выручку поставщика, в договоры облака и в оценку инвестора. На подъёме это выглядит как рост во всех звеньях сразу, на спаде усиливает падение.' },
+      { h: 'Переоценка вместо операционной прибыли', t: 'Рост оценки доли в партнёре попадает в прибыль инвестора, хотя внешний клиент за это ничего не заплатил.' },
+      { h: 'Разворот через капитал и заказы', t: 'Падение оценок ухудшает доступ к капиталу у облачных посредников и разработчиков моделей, затем сокращаются заказы на серверы, память, сети, строительство и энергетику.' }
+    ]
+  },
+
+  loops: {
+    'crwv + nvda': {
+      title: 'Nvidia ↔ CoreWeave',
+      kind: 'Поставщик финансирует своего покупателя',
+      mechanism: 'Nvidia вложила $2 млрд в капитал CoreWeave, а CoreWeave закупает только ускорители Nvidia. Часть денег, пришедших в CoreWeave как инвестиция, возвращается в Nvidia как выручка. Исследование называет это примером одновременно стратегической поддержки и круговой связи.',
+      headline: 'Продажи Nvidia в CoreWeave частично оплачены деньгами самой Nvidia',
+      risks: [
+        { h: 'Спрос, оплаченный самим продавцом', t: 'Выручка Nvidia от CoreWeave реальна по бухгалтерии, но частично профинансирована её же вложением. Такие продажи не доказывают внешнего спроса на вычисления.' },
+        { h: 'Концентрация с обеих сторон', t: '72% квартальной выручки CoreWeave дают три клиента, все установленные процессоры — Nvidia. Потеря одного крупного клиента бьёт по CoreWeave, а через сокращение закупок — по Nvidia.' },
+        { h: 'Жизнь на рефинансировании', t: 'Денежные капвложения CoreWeave за полугодие почти вчетверо выше операционного потока. Если капитал подорожает, закупки ускорителей сократятся раньше, чем изменится конечный спрос.' },
+        { h: 'Залог стареет быстрее долга', t: 'Долг специализированных облаков обеспечен ускорителями и договорами. Ускорители морально стареют быстрее, чем гасится кредит: при коррекции залоговый дисконт усиливает шок.' }
+      ],
+      watch: 'Рост запасов и дебиторской задолженности Nvidia при снижении загрузки облаков; расширение кредитных спрэдов специализированных облаков.',
+      cite: ['crwv-10q'],
+      basis: 'Обе связи описаны в исследовании (стр. 6, 10, 14, 19). Первоисточник — форма 10-Q CoreWeave — из среды сборки недоступен, цифры контура взяты из исследования.'
+    },
+
+    'msft + openai': {
+      title: 'Microsoft ↔ OpenAI',
+      kind: 'Облако финансирует своего клиента',
+      mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик по многолетнему договору покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
+      headline: 'Microsoft сам выделяет влияние вложений в OpenAI на свою прибыль',
+      evidence: 'Отчёт Microsoft за IV кв. 2026 ф.г.: «When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic». Компания отдельно корректирует прочие доходы на эффект вложений в OpenAI, а прибыль от переоценки вложения в Anthropic называет прямо.',
+      risks: [
+        { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, выглядит как спрос, но не приносит денег извне цепочки. Поэтому исследование требует отдельно смотреть на внешнюю облачную выручку и внешнее потребление токенов.' },
+        { h: 'Прибыль от переоценки вместо операций', t: 'Рост оценки разработчика попадает в прочие доходы инвестора. Сам факт, что Microsoft выделяет эффект вложений в OpenAI отдельной поправкой, показывает: в отчётности он заметен.' },
+        { h: 'Зависимость в обе стороны', t: 'Облако строит мощности под крупного клиента, разработчик зависит от одного облака и его капитала. Исследование отмечает у Microsoft зависимость от внешних моделей и спроса, у разработчиков — от облака.' },
+        { h: 'Договор без внешней монетизации', t: 'Многолетний договор подтверждает намерение платить, но не общеэкономический спрос. Если разработчик не найдёт платящих клиентов, обязательство перед облаком придётся финансировать новым капиталом — в том числе от самого облака.' }
+      ],
+      watch: 'Рост облачной выручки при стагнации внешнего потребления токенов; доля прочих доходов и переоценки в прибыли инвестора.',
+      cite: ['msft-equity-gain'],
+      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Microsoft и OpenAI — корпоративное раскрытие вне исследования. Влияние вложений на прочие доходы сверено по отчёту Microsoft.'
+    },
+
+    'anthropic + googl': {
+      title: 'Alphabet ↔ Anthropic',
+      kind: 'Облако финансирует своего клиента',
+      mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
+      headline: 'У Alphabet переоценка долей во II кв. 2026 более чем вдвое превысила операционную прибыль',
+      evidence: 'Отчёт Alphabet за II кв. 2026: прочий доход $98,0 млрд, «primarily the result of net unrealized gains on our equity securities», при операционной прибыли $40,8 млрд. Вложения в непубличные компании на балансе за год выросли с $68,7 до $131,5 млрд. Какие именно доли переоценены, релиз не раскрывает — долю Anthropic в этой сумме по отчёту установить нельзя.',
+      risks: [
+        { h: 'Прибыль от переоценки больше операционной', t: 'Прочий доход Alphabet, в основном переоценка долей, более чем вдвое превысил операционную прибыль. Исследование называет именно это сигналом тревоги для круговых связей: переоценка долей заменяет операционную прибыль.' },
+        { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, не приносит денег извне цепочки и не доказывает спроса конечного клиента.' },
+        { h: 'Один разработчик — два контура', t: 'Anthropic связан контурами одновременно с Alphabet и Amazon. Если ожидаемая выручка одного разработчика закладывается в планы двух облаков и в оценку двух инвесторов, это и есть многократный учёт одного ожидания, о котором предупреждает исследование.' },
+        { h: 'Разворот бьёт дважды', t: 'При замедлении монетизации переоценка идёт в обратную сторону: снижение оценки разработчика бьёт по прочим доходам инвестора одновременно с сокращением облачных заказов.' }
+      ],
+      watch: 'Доля нереализованной переоценки в прибыли; рост непубличных вложений на балансе быстрее облачной выручки.',
+      cite: ['googl-equity-gain'],
+      basis: 'Механизм описан в исследовании (тезис 8; стр. 14 — со ссылкой на отчёт Alphabet). Связь Alphabet и Anthropic — корпоративное раскрытие вне исследования. Масштаб переоценки сверен по отчёту Alphabet.'
+    },
+
+    'amzn + anthropic': {
+      title: 'Amazon ↔ Anthropic',
+      kind: 'Облако финансирует своего клиента',
+      mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
+      headline: 'Тот же механизм, что у Alphabet, но проверить его по отчёту Amazon пока нельзя',
+      risks: [
+        { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, не приносит денег извне цепочки и не доказывает спроса конечного клиента.' },
+        { h: 'Один разработчик — два контура', t: 'Anthropic связан контурами одновременно с Amazon и Alphabet. Если ожидаемая выручка одного разработчика закладывается в планы двух облаков и в оценку двух инвесторов, это многократный учёт одного ожидания.' },
+        { h: 'Зависимость в обе стороны', t: 'Облако строит мощности под крупного клиента, разработчик зависит от облака и его капитала. При разрыве страдают обе стороны.' },
+        { h: 'Непроверяемость — тоже риск', t: 'Раскрытия Amazon из среды сборки недоступны: влияние вложения в разработчика на прибыль Amazon в терминале не сверено. Это открытый вопрос, а не отсутствие риска.' }
+      ],
+      watch: 'Доля переоценки долей в прибыли Amazon; рост AWS при стагнации внешнего потребления.',
+      cite: ['amzn-q2'],
+      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Amazon и Anthropic — корпоративное раскрытие вне исследования. Отчёт Amazon не сверен: источник недоступен.'
+    }
+  }
+};
+
 </script>
 <script>
 /* Панель из 28 показателей
@@ -1360,6 +1536,13 @@ window.VG_CITES = {
   'eu-giga': { src: 'S26', status: 'verified', checked: '2026-09-20',
     loc: 'Страница политики ЕС, новость от 30.07.2026',
     quote: 'EU launches AI Gigafactories call to boost Europe’s computing capacity and unlock more than €30 billion in investment. The EU has launched a call for tenders to establish up to seven AI Gigafactories across Europe.' },
+
+  'googl-equity-gain': { src: 'S11', status: 'verified', checked: '2026-09-30',
+    loc: 'Пресс-релиз за II кв. 2026: сводка результатов и таблица консолидированных показателей; сверено по копии документа, полученной 20.09.2026',
+    quote: 'Other income reflected a net gain of $98.0 billion, primarily the result of net unrealized gains on our equity securities. Operating income $40,770; Other income (expense), net $97,983. Non-marketable securities 68,687 → 131,461.' },
+  'msft-equity-gain': { src: 'S10', status: 'verified', checked: '2026-09-30',
+    loc: 'Материалы к отчёту за IV кв. 2026 ф.г., комментарий финансового директора; сверено по копии документа, полученной 20.09.2026',
+    quote: 'When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic noted earlier.' },
 
   /* ---------------- подтверждено частично ---------------- */
   'cbr-permanent': { src: 'S21', status: 'partial', checked: '2026-09-20',
@@ -3091,6 +3274,252 @@ window.VG_HISTORY = [
    "total": 47
   },
   "seq": 5
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-09-30",
+  "label": "круговые контуры: разбор рисков и сверка переоценки долей",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 41,
+    "ocf": 55.4,
+    "fcf": 19.6
+   },
+   "googl": {
+    "capex": 44.9,
+    "ocf": 39.1,
+    "fcf": -5.9
+   },
+   "amzn": {
+    "capexDelta": 66.1,
+    "ocf": 161.4,
+    "fcf": -7.6
+   },
+   "meta": {
+    "capex": 31.1,
+    "ocf": 31.9,
+    "fcf": 0.8
+   },
+   "orcl": {
+    "capex": 55.6,
+    "ocf": 32,
+    "fcf": -23.7,
+    "rpo": 638
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.6,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 40.2
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 48,
+   "cycles": [
+    "amzn + anthropic",
+    "anthropic + googl",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 29,
+   "partial": 5,
+   "mismatch": 1,
+   "unreachable": 10,
+   "pending": 4,
+   "total": 49
+  },
+  "seq": 6
  }
 ];
 
@@ -3336,6 +3765,18 @@ window.VG_HISTORY = [
   var RANKS = 6;
   var SVGNS = 'http://www.w3.org/2000/svg';
 
+  /* Контрольная точка дуги. Встречные связи между двумя узлами изгибаются
+     в разные стороны, поэтому пара противоположных стрелок сама образует
+     замкнутое кольцо — его и обводит режим контуров. */
+  function ctrl(a, b, circular) {
+    var up = b.y < a.y - 2;
+    var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    var dx = b.x - a.x, dy = b.y - a.y;
+    var len = Math.sqrt(dx * dx + dy * dy) || 1;
+    var bend = (up ? 34 : 14) * (circular ? 1.6 : 1);
+    return { x: mx + (dy / len) * bend, y: my - (dx / len) * bend };
+  }
+
   function el(name, attrs) {
     var n = document.createElementNS(SVGNS, name);
     for (var k in attrs) if (attrs[k] !== undefined && attrs[k] !== null) n.setAttribute(k, attrs[k]);
@@ -3361,6 +3802,14 @@ window.VG_HISTORY = [
     this.filters = { types: {}, onlyReport: false, focus: null };
     Object.keys(opts.edgeTypes).forEach(function (k) { self.filters.types[k] = true; });
     this.onSelect = opts.onSelect || function () {};
+    this.loopInfo = opts.loopInfo || null;      // function(loop) -> html карточки
+    /* порядок контуров: сначала самые доказанные — номер на карте и в списке совпадает */
+    this.loopRank = opts.loopRank || function (c) {
+      return c.edges.every(function (e) { return e.inReport === 'yes'; }) ? 0 : 1;
+    };
+    this.loopMode = false;
+    this.pinned = null;                         // номер закреплённого контура
+    this.loops = [];
     this.build();
   }
 
@@ -3399,8 +3848,9 @@ window.VG_HISTORY = [
     svg.appendChild(defs);
 
     this.root = el('g');
-    this.gBands = el('g'); this.gEdges = el('g'); this.gNodes = el('g');
+    this.gBands = el('g'); this.gLoops = el('g'); this.gEdges = el('g'); this.gNodes = el('g');
     this.root.appendChild(this.gBands);
+    this.root.appendChild(this.gLoops);
     this.root.appendChild(this.gEdges);
     this.root.appendChild(this.gNodes);
     svg.appendChild(this.root);
@@ -3410,6 +3860,13 @@ window.VG_HISTORY = [
     this.tip.className = 'tip';
     this.tip.hidden = true;
     wrap.appendChild(this.tip);
+
+    this.card = document.createElement('div');
+    this.card.className = 'tip loopcard';
+    this.card.hidden = true;
+    this.card.setAttribute('role', 'dialog');
+    this.card.setAttribute('aria-live', 'polite');
+    wrap.appendChild(this.card);
 
     this.W = 1280; this.H = 660;
     this.svg.setAttribute('viewBox', '0 0 ' + this.W + ' ' + this.H);
@@ -3501,19 +3958,45 @@ window.VG_HISTORY = [
     this.gEdges.innerHTML = '';
     this.gNodes.innerHTML = '';
     this.edgeEls = [];
+    this.loops = this.cycles().map(function (c) {
+      c.key = global.VGM.cycleKey(c.edges);
+      c.rank = self.loopRank(c);
+      return c;
+    }).sort(function (a, b) {
+      return a.rank - b.rank || (a.key < b.key ? -1 : 1);
+    });
+    this.loops.forEach(function (c, i) { c.n = i + 1; });
+    var loopOf = new Map(), nodeInLoop = {};
+    this.loops.forEach(function (c) {
+      c.edges.forEach(function (e) {
+        if (!loopOf.has(e)) loopOf.set(e, []);
+        loopOf.get(e).push(c.n);
+        nodeInLoop[e.from] = 1; nodeInLoop[e.to] = 1;
+      });
+    });
+
     this.visibleEdges().forEach(function (e) {
-      var p = el('path', { class: 'gedge ge-' + e.type + (e.circular ? ' circ' : ''),
+      var ln = loopOf.get(e) || [];
+      var p = el('path', { class: 'gedge ge-' + e.type + (e.circular ? ' circ' : '') + (ln.length ? ' inloop' : ''),
+                           'data-loops': ln.join(' ') || null,
                            'marker-end': 'url(#arw-' + e.type + ')',
                            'stroke-width': e.weight ? 1 + e.weight * 0.6 : 1.4,
                            'stroke-dasharray': e.type === 'debt' ? '5 4' : null });
-      p.addEventListener('mouseenter', function (ev) { self.showTip(ev, self.edgeTip(e)); });
-      p.addEventListener('mouseleave', function () { self.hideTip(); });
+      /* в режиме контуров связь контура открывает карточку контура, а не связи */
+      p.addEventListener('mouseenter', function (ev) {
+        if (self.loopMode && ln.length) self.showLoop(ln[0], ev);
+        else self.showTip(ev, self.edgeTip(e));
+      });
+      p.addEventListener('mouseleave', function () { self.hideTip(); self.leaveLoop(); });
+      p.addEventListener('click', function (ev) {
+        if (self.loopMode && ln.length) { ev.stopPropagation(); self.pinLoop(ln[0]); }
+      });
       self.gEdges.appendChild(p);
       self.edgeEls.push({ e: e, el: p });
     });
     this.nodeEls = [];
     this.nodes.forEach(function (n) {
-      var g = el('g', { class: 'gnode', tabindex: 0, role: 'button', 'aria-label': n.name });
+      var g = el('g', { class: 'gnode' + (nodeInLoop[n.id] ? ' inloop' : ''), tabindex: 0, role: 'button', 'aria-label': n.name });
       var c = el('circle', { r: n.r, class: 'nd nd-' + n.layer });
       var t1 = el('text', { class: 'graph-node-label', 'text-anchor': 'middle' });
       t1.textContent = n.name;
@@ -3527,20 +4010,143 @@ window.VG_HISTORY = [
       self.gNodes.appendChild(g);
       self.nodeEls.push({ n: n, g: g, c: c, t: t1 });
     });
+    this.renderLoops();
     this.position();
     this.applyFocus();
+  };
+
+  /* ---------------------------------------------- круговые контуры --- */
+  Graph.prototype.renderLoops = function () {
+    var self = this;
+    this.gLoops.innerHTML = '';
+    this.loopEls = this.loops.map(function (c) {
+      var g = el('g', { class: 'gloop', tabindex: -1, role: 'button', 'data-n': c.n,
+                        'aria-label': 'Круговой контур ' + c.n + ': ' + c.names.concat([c.names[0]]).join(' → ') });
+      var halo = el('path', { class: 'loop-halo' });
+      var badge = el('g', { class: 'loop-badge' });
+      badge.appendChild(el('circle', { r: 11 }));
+      var t = el('text', { 'text-anchor': 'middle', dy: '0.35em' });
+      t.textContent = c.n;
+      badge.appendChild(t);
+      g.appendChild(halo); g.appendChild(badge);
+      g.addEventListener('mouseenter', function (ev) { self.showLoop(c.n, ev); });
+      g.addEventListener('mouseleave', function () { self.leaveLoop(); });
+      g.addEventListener('click', function (ev) { ev.stopPropagation(); self.pinLoop(c.n); });
+      g.addEventListener('focus', function () { self.showLoop(c.n); });
+      g.addEventListener('blur', function () { self.leaveLoop(); });
+      g.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); self.pinLoop(c.n); }
+        if (ev.key === 'Escape') { self.unpin(); }
+      });
+      self.gLoops.appendChild(g);
+      return { c: c, g: g, halo: halo, badge: badge };
+    });
+    this.gLoops.querySelectorAll('.gloop').forEach(function (g) {
+      g.setAttribute('tabindex', self.loopMode ? 0 : -1);
+    });
+  };
+
+  /* обводка проходит через центры узлов по тем же дугам, что и стрелки */
+  Graph.prototype.positionLoops = function () {
+    if (!this.loopEls) return;
+    this.loopEls.forEach(function (o) {
+      var ring = o.c.edges, first = ring[0].s;
+      var d = 'M' + first.x.toFixed(1) + ',' + first.y.toFixed(1);
+      var sx = 0, sy = 0, k = 0;
+      ring.forEach(function (e) {
+        var q = ctrl(e.s, e.t, e.circular);
+        d += ' Q' + q.x.toFixed(1) + ',' + q.y.toFixed(1) + ' ' + e.t.x.toFixed(1) + ',' + e.t.y.toFixed(1);
+        sx += e.s.x + q.x; sy += e.s.y + q.y; k += 2;
+      });
+      o.halo.setAttribute('d', d + ' Z');
+      o.cx = sx / k; o.cy = sy / k;
+      o.badge.setAttribute('transform', 'translate(' + o.cx.toFixed(1) + ',' + o.cy.toFixed(1) + ')');
+    });
+  };
+
+  Graph.prototype.setLoopMode = function (on) {
+    this.loopMode = !!on;
+    this.svg.classList.toggle('loops-on', this.loopMode);
+    this.gLoops.querySelectorAll('.gloop').forEach(function (g) {
+      g.setAttribute('tabindex', on ? 0 : -1);
+    });
+    if (!on) { this.pinned = null; this.clearLoop(); }
+  };
+
+  Graph.prototype.loopByN = function (n) {
+    return (this.loopEls || []).filter(function (o) { return o.c.n === n; })[0] || null;
+  };
+
+  Graph.prototype.markLoop = function (n) {
+    this.svg.classList.toggle('loop-focus', !!n);
+    (this.loopEls || []).forEach(function (o) { o.g.classList.toggle('active', o.c.n === n); });
+    this.edgeEls.forEach(function (o) {
+      var ls = (o.el.getAttribute('data-loops') || '').split(' ');
+      o.el.classList.toggle('hot', !!n && ls.indexOf(String(n)) >= 0);
+    });
+  };
+
+  /* карточка: у курсора при наведении, у значка контура при фокусе и закреплении */
+  Graph.prototype.showLoop = function (n, ev) {
+    if (!this.loopMode && !this.forceShow) return;
+    if (this.pinned && this.pinned !== n) return;
+    var o = this.loopByN(n); if (!o || !this.loopInfo) return;
+    this.hideTip();
+    this.markLoop(n);
+    this.card.innerHTML = this.loopInfo(o.c, this.pinned === n);
+    this.card.hidden = false;
+    this.card.classList.toggle('pinned', this.pinned === n);
+    var host = this.host.getBoundingClientRect();
+    var x, y;
+    if (ev && ev.clientX !== undefined && this.pinned !== n) {
+      x = ev.clientX - host.left + 16; y = ev.clientY - host.top + 12;
+    } else {
+      var r = this.svg.getBoundingClientRect();
+      x = (o.cx / this.W) * r.width + (r.left - host.left) + 18;
+      y = (o.cy / this.H) * r.height + (r.top - host.top) - 20;
+    }
+    var w = this.card.offsetWidth, h = this.card.offsetHeight;
+    if (x + w + 8 > host.width) x = Math.max(8, x - w - 36);
+    if (y + h + 8 > host.height) y = Math.max(8, host.height - h - 8);
+    this.card.style.left = x + 'px';
+    this.card.style.top = Math.max(8, y) + 'px';
+  };
+
+  Graph.prototype.leaveLoop = function () {
+    if (this.pinned) return;
+    this.clearLoop();
+  };
+
+  Graph.prototype.clearLoop = function () {
+    this.card.hidden = true;
+    this.card.classList.remove('pinned');
+    this.markLoop(null);
+  };
+
+  Graph.prototype.pinLoop = function (n) {
+    if (this.pinned === n) { this.unpin(); return; }
+    this.pinned = n;
+    this.showLoop(n);
+  };
+
+  Graph.prototype.unpin = function () {
+    this.pinned = null;
+    this.clearLoop();
+  };
+
+  /* подсветка контура извне: из списка контуров рядом с графом */
+  Graph.prototype.highlightLoop = function (n) {
+    if (this.pinned) return;
+    if (n) { this.forceShow = true; this.showLoop(n); this.forceShow = false; }
+    else this.clearLoop();
   };
 
   Graph.prototype.position = function () {
     if (!this.edgeEls) return;
     this.edgeEls.forEach(function (o) {
       var a = o.e.s, b = o.e.t;
-      var up = b.y < a.y - 2;                       // движение против потока
-      var mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
-      var dx = b.x - a.x, dy = b.y - a.y;
-      var len = Math.sqrt(dx * dx + dy * dy) || 1;
-      var bend = (up ? 34 : 14) * (o.e.circular ? 1.6 : 1);
-      var cx = mx + (dy / len) * bend, cy = my - (dx / len) * bend;
+      var q = ctrl(a, b, o.e.circular);
+      var cx = q.x, cy = q.y;
       // укоротить концы до края круга, оставив место под стрелку
       var d1 = Math.sqrt((cx - a.x) * (cx - a.x) + (cy - a.y) * (cy - a.y)) || 1;
       var d2 = Math.sqrt((b.x - cx) * (b.x - cx) + (b.y - cy) * (b.y - cy)) || 1;
@@ -3554,6 +4160,7 @@ window.VG_HISTORY = [
       o.g.setAttribute('transform', 'translate(' + o.n.x.toFixed(1) + ',' + o.n.y.toFixed(1) + ')');
       o.t.setAttribute('y', o.n.row ? o.n.r + 14 : -o.n.r - 7);
     });
+    this.positionLoops();
   };
 
   Graph.prototype.nodeTip = function (n) {
@@ -3619,13 +4226,17 @@ window.VG_HISTORY = [
 
   Graph.prototype.setFilter = function (type, on) {
     this.filters.types[type] = on;
+    this.pinned = null; this.clearLoop();
     this.render();
     this.layout();
+    this.setLoopMode(this.loopMode);
   };
   Graph.prototype.setOnlyReport = function (on) {
     this.filters.onlyReport = on;
+    this.pinned = null; this.clearLoop();
     this.render();
     this.layout();
+    this.setLoopMode(this.loopMode);
   };
   Graph.prototype.relax = function () { this.layout(); };
 
@@ -3650,6 +4261,17 @@ window.VG_HISTORY = [
       var p = toSvg(ev);
       drag.x = p.x; drag.y = p.y; drag.ty = p.y;
       self.position();
+    });
+    this.svg.addEventListener('click', function (ev) {
+      var t = ev.target;
+      if (t.closest && (t.closest('.gloop') || t.closest('.gnode') || t.closest('.gedge'))) return;
+      if (self.pinned) self.unpin();
+    });
+    this.host.addEventListener('keydown', function (ev) {
+      if (ev.key === 'Escape' && self.pinned) self.unpin();
+    });
+    this.card.addEventListener('click', function (ev) {
+      if (ev.target.closest && ev.target.closest('[data-close]')) self.unpin();
     });
     this.svg.addEventListener('pointerup', function () { drag = null; self.svg.classList.remove('dragging'); });
     this.svg.addEventListener('pointercancel', function () { drag = null; self.svg.classList.remove('dragging'); });
@@ -4163,10 +4785,24 @@ window.VG_HISTORY = [
 
       return '' +
         '<div class="panel" style="display:grid;gap:12px">' +
-          '<div class="controls">' + chips +
+          '<div class="controls">' +
+            '<button class="chip loopchip" type="button" role="switch" aria-pressed="false" id="loopMode" title="Подсветить замкнутые финансовые круги: деньги, вернувшиеся к тому, кто их дал">' +
+              '<i class="ring" aria-hidden="true"></i>Круговые контуры<b class="count" id="loopCount"></b></button>' +
+            '<span class="ctl-sep" aria-hidden="true"></span>' +
+            chips +
             '<button class="chip" type="button" role="switch" aria-pressed="false" id="onlyReport">Только связи из исследования</button>' +
             '<button class="iconbtn" type="button" id="relax">Перестроить</button>' +
             '<span class="count" style="color:var(--muted);font-size:12px" id="graphStat"></span>' +
+          '</div>' +
+          '<div class="loopbanner" id="loopBanner" hidden>' +
+            '<div class="lb-head"><i class="ring" aria-hidden="true"></i><b>Режим круговых контуров</b>' +
+              '<span id="loopBannerCount"></span></div>' +
+            '<p class="lb-quote">«' + esc(window.VG_LOOP_RISKS.generic.thesis) + '»<span>' + esc(window.VG_LOOP_RISKS.generic.thesisSrc) + '</span></p>' +
+            '<div class="legend">' +
+              '<b><i class="sq" style="background:var(--critical);opacity:.35"></i>Красная обводка — замкнутый круг: деньги возвращаются к тому, кто их дал</b>' +
+              '<b><i style="background:var(--ink-2)"></i>Бегущий пунктир — направление денег по кругу</b>' +
+              '<b>Наведите на круг, чтобы увидеть риски; щелчок закрепляет карточку</b>' +
+            '</div>' +
           '</div>' +
           '<div class="graphwrap" id="graphHost"></div>' +
           '<p class="sub" style="margin:0">Наведите курсор на связь или узел, потяните узел мышью, нажмите на узел — он оставит только своё окружение.</p>' +
@@ -4174,7 +4810,7 @@ window.VG_HISTORY = [
         '<div class="note"><b>Как читать контур и как его не читать.</b> Стрелка вверх — признак встречного движения, но сама по себе она замкнутого круга не доказывает: контур засчитывается только при наличии обратного пути, и именно его ищет алгоритм. При этом доля в капитале, облачный кредит, подписанный договор и уже совершённый платёж — разные экономические события. Замкнутый контур связей означает взаимную зависимость сторон, а не доказанный возврат одних и тех же денег. Чтобы утверждать второе, нужны суммы, даты, сроки обязательств и доля в выручке получателя; в этой сборке суммы есть не у всех связей.</div>' +
         '<div class="cols cols-2">' +
           '<div class="panel"><h3>Найденные круговые контуры</h3>' +
-            '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли</p>' +
+            '<p class="sub">Контур считается автоматически по видимым связям: деньги возвращаются в ту же точку, из которой вышли. Наведите на карточку — контур подсветится на карте; щелчок откроет разбор рисков</p>' +
             '<div id="cycles"></div></div>' +
           '<div class="panel"><h3 id="selTitle">Выбранный узел</h3>' +
             '<p class="sub" id="selSub">Нажмите на узел графа, чтобы увидеть все его денежные связи</p>' +
@@ -4187,11 +4823,64 @@ window.VG_HISTORY = [
     },
     after: function (root) {
       var host = root.querySelector('#graphHost');
+      var LR = window.VG_LOOP_RISKS;
+      function loopData(c) { return LR.loops[c.key] || null; }
+
+      /* карточка риска кругового контура */
+      function loopCard(c, pinned) {
+        var d = loopData(c), gen = LR.generic;
+        var flow = c.edges.map(function (e) {
+          var t = window.VG_EDGE_TYPES[e.type].label.toLowerCase();
+          return '<li><b>' + esc(e.s.name) + ' → ' + esc(e.t.name) + '</b> · ' + esc(t) +
+            (e.amount ? ', <b>' + esc(e.amount) + '</b>' : '') +
+            (e.back ? '<span class="k"> встречно: ' + esc(e.back) + '</span>' : '') + '</li>';
+        }).join('');
+        var risks = (d ? d.risks : gen.risks).map(function (r) {
+          return '<li><b>' + esc(r.h) + '.</b> ' + esc(r.t) + '</li>';
+        }).join('');
+        return '' +
+          '<div class="lc-head"><span class="lc-n">' + c.n + '</span>' +
+            '<div><div class="lc-kicker">Круговой контур' + (d ? ' · ' + esc(d.kind) : '') + '</div>' +
+            '<b class="lc-title">' + esc(d ? d.title : c.names.join(' ↔ ')) + '</b></div>' +
+            (pinned ? '<button type="button" class="lc-close" data-close aria-label="Закрыть">×</button>' : '') + '</div>' +
+          (d && d.headline ? '<p class="lc-headline">' + esc(d.headline) + '</p>' : '') +
+          '<div class="lc-sec">Как идут деньги</div><ul class="lc-flow">' + flow + '</ul>' +
+          (d ? '<p class="lc-mech">' + esc(d.mechanism) + '</p>' : '<p class="lc-mech">Контур найден автоматически, отдельного разбора пока нет — ниже общие риски кругового финансирования из исследования.</p>') +
+          (d && d.evidence ? '<div class="lc-evidence"><div class="lc-sec">Что видно в отчётности</div>' + esc(d.evidence) + ' ' + citeref(d.cite) + '</div>' : '') +
+          '<div class="lc-sec">Чем опасно</div><ul class="lc-risks">' + risks + '</ul>' +
+          '<div class="lc-sec">Сигнал тревоги по исследованию</div><p class="lc-signal">' + esc(gen.signal) + '</p>' +
+          (d && d.watch ? '<div class="lc-sec">Что проверять</div><p class="lc-watch">' + esc(d.watch) + '</p>' : '') +
+          '<p class="lc-basis">' + esc(d ? d.basis : 'Основание связей — в таблице под графом.') + (d && !d.evidence ? ' ' + citeref(d.cite) : '') + '</p>' +
+          '<p class="lc-foot">Контур связей означает взаимную зависимость сторон, а не доказанный возврат одних и тех же денег.' +
+            (pinned ? '' : ' Щелчок закрепит карточку.') + '</p>';
+      }
+
       var g = new window.VGGraph({
         host: host, nodes: window.VG_NODES, edges: window.VG_EDGES, edgeTypes: window.VG_EDGE_TYPES,
-        onSelect: function (node, edges) { showSel(node, edges); }
+        onSelect: function (node, edges) { showSel(node, edges); },
+        loopInfo: loopCard,
+        /* 0 — все связи из исследования; 1 — есть сверенное свидетельство в отчётности;
+           2 — механизм описан, но по отчётам не подтверждён */
+        loopRank: function (c) {
+          if (c.edges.every(function (e) { return e.inReport === 'yes'; })) return 0;
+          var d = LR.loops[window.VGM.cycleKey(c.edges)];
+          return d && d.evidence ? 1 : 2;
+        }
       });
       window.__vgGraph = g;
+
+      /* режим контуров: переключатель запоминается в браузере зрителя */
+      var loopBtn = root.querySelector('#loopMode'), banner = root.querySelector('#loopBanner');
+      function setLoops(on) {
+        loopBtn.setAttribute('aria-pressed', String(on));
+        banner.hidden = !on;
+        g.setLoopMode(on);
+        try { localStorage.setItem('vg-loops', on ? '1' : '0'); } catch (e) {}
+      }
+      loopBtn.addEventListener('click', function () { setLoops(loopBtn.getAttribute('aria-pressed') !== 'true'); });
+      var saved = null;
+      try { saved = localStorage.getItem('vg-loops'); } catch (e) {}
+      setLoops(saved === '1');
 
       function nodeName(id) { return (g.index[id] || {}).name || id; }
       function refMark(e) {
@@ -4202,8 +4891,13 @@ window.VG_HISTORY = [
       function refresh() {
         var edges = g.visibleEdges();
         root.querySelector('#graphStat').textContent = 'узлов ' + window.VG_NODES.length + ' · связей ' + edges.length;
-        var cy = g.cycles();
+        var cy = g.loops;
+        root.querySelector('#loopCount').textContent = cy.length ? ' ' + cy.length : '';
+        root.querySelector('#loopBannerCount').textContent = cy.length
+          ? 'Найдено замкнутых кругов: ' + cy.length
+          : 'При текущих фильтрах замкнутых кругов нет';
         root.querySelector('#cycles').innerHTML = cy.length ? cy.map(function (c) {
+          var d = loopData(c);
           var path = c.names.concat([c.names[0]]).map(function (n) { return '<span>' + esc(n) + '</span>'; }).join(' → ');
           var why = c.edges.map(function (e) {
             return window.VG_EDGE_TYPES[e.type].label.toLowerCase() + ': ' + (e.label || '') + (e.amount ? ' (' + e.amount + ')' : '');
@@ -4211,10 +4905,32 @@ window.VG_HISTORY = [
           var amounts = c.edges.filter(function (e) { return e.amount; }).length;
           var basis = c.edges.every(function (e) { return e.inReport === 'yes'; }) ? 'все связи контура описаны в исследовании'
             : 'часть связей контура — вне исследования, см. таблицу';
-          return '<div class="loop" style="margin-bottom:8px"><div class="path">' + path + '</div>' +
+          return '<div class="loop loopitem" tabindex="0" role="button" data-n="' + c.n + '" style="margin-bottom:8px">' +
+            '<div class="li-head"><span class="lc-n">' + c.n + '</span><div>' +
+              (d ? '<div class="lc-kicker">' + esc(d.kind) + '</div>' : '') +
+              '<div class="path">' + path + '</div></div></div>' +
+            (d && d.headline ? '<div class="why li-risk">' + esc(d.headline) + '</div>' : '') +
             '<div class="why">' + esc(why) + '</div>' +
             '<div class="why" style="color:var(--muted);font-size:11.5px">Сумма указана у ' + amounts + ' из ' + c.edges.length + ' связей · ' + basis + '</div></div>';
         }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
+
+        root.querySelectorAll('.loopitem').forEach(function (item) {
+          var n = +item.dataset.n;
+          item.addEventListener('mouseenter', function () { g.highlightLoop(n); });
+          item.addEventListener('mouseleave', function () { g.highlightLoop(null); });
+          item.addEventListener('focus', function () { g.highlightLoop(n); });
+          item.addEventListener('blur', function () { g.highlightLoop(null); });
+          function open() {
+            if (loopBtn.getAttribute('aria-pressed') !== 'true') setLoops(true);
+            host.scrollIntoView({ block: 'center', behavior: 'smooth' });
+            g.pinned = null;
+            g.pinLoop(n);
+          }
+          item.addEventListener('click', open);
+          item.addEventListener('keydown', function (ev) {
+            if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); open(); }
+          });
+        });
 
         root.querySelector('#edgeTable').innerHTML = edges.map(function (e) {
           return '<tr><td>' + esc(nodeName(e.from)) + '</td><td>' + esc(nodeName(e.to)) + '</td>' +
