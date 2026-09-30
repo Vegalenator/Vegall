@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Терминал вечернего эфира: шесть экономических процессов, которые не видны в котировках.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%230f2530'/%3E%3Cpath d='M4 10h24' stroke='%238aa3ac' stroke-width='1.6'/%3E%3Cpath d='M6 16l5 4 5-6 5 8 5-4' fill='none' stroke='%23e8905a' stroke-width='2'/%3E%3C/svg%3E">
+<style>*{box-sizing:border-box}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Экономика под поверхностью</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Макет: терминал эфирной редакции. Сверху шкала свежести данных (глубина = давность),
+   ниже слева шесть процессов-строк, справа досье выбранного процесса. */
+:root {
+  --bg: #e9eff0;
+  --panel: #f7fafa;
+  --ink: #0f2530;
+  --muted: #56707a;
+  --line: #c6d4d8;
+  --accent: #b8541c;
+  --deep: #2a6a8a;
+  --hot: #b73a2e;
+  --warm: #a8741a;
+  --calm: #2d7a66;
+  --hot-bg: #f6e3df;
+  --warm-bg: #f5ebd6;
+  --calm-bg: #dcefe8;
+  --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
+  --f-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
+  --f-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0b1a20; --panel: #10242c; --ink: #dae7ea; --muted: #8aa3ac; --line: #22404b;
+    --accent: #e8905a; --deep: #74b6d6; --hot: #ef7565; --warm: #e0b24f; --calm: #62c3a6;
+    --hot-bg: #3a1f1d; --warm-bg: #33291a; --calm-bg: #16332c; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0b1a20; --panel: #10242c; --ink: #dae7ea; --muted: #8aa3ac; --line: #22404b;
+  --accent: #e8905a; --deep: #74b6d6; --hot: #ef7565; --warm: #e0b24f; --calm: #62c3a6;
+  --hot-bg: #3a1f1d; --warm-bg: #33291a; --calm-bg: #16332c; color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 400 15px/1.55 var(--f-body);
+  -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 36px); padding-block: 28px 48px; display: grid; gap: 28px; }
+a { color: var(--deep); text-underline-offset: 3px; }
+a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
+.label { font: 600 11px/1.3 var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
+
+/* шапка */
+header.top { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: end; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 20px; }
+header.top h1 { font: 600 clamp(24px, 4vw, 40px)/1.08 var(--f-display); margin: 6px 0 0; letter-spacing: -.01em; text-wrap: balance; }
+header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
+.stamp { display: grid; gap: 4px; text-align: right; }
+.stamp .num { font-size: 20px; font-weight: 600; }
+
+/* шкала свежести */
+.depth { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px 12px; }
+.depth-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 20px; align-items: baseline; }
+.depth-head p { margin: 0; color: var(--muted); font-size: 13px; }
+.depth-svg { width: 100%; height: auto; display: block; margin-top: 8px; }
+.depth-svg text { font-family: var(--f-data); font-size: 11px; }
+.depth-svg .pin { cursor: pointer; }
+.depth-svg .pin:hover circle, .depth-svg .pin.on circle { stroke-width: 3; }
+
+/* основная сетка */
+.main { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 900px) { .main { grid-template-columns: minmax(0, 1fr); } }
+
+.list { display: grid; gap: 8px; }
+.row {
+  display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 4px 12px; text-align: left;
+  width: 100%; padding: 12px 14px; background: var(--panel); color: var(--ink);
+  border: 1px solid var(--line); border-radius: 6px; cursor: pointer; font: inherit;
+  transition: border-color .15s, transform .15s;
+}
+.row:hover { border-color: var(--muted); }
+.row[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.row .name { font-weight: 600; font-size: 15px; }
+.row .head { font: 600 17px/1.2 var(--f-data); font-variant-numeric: tabular-nums; }
+.row .cap { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
+.row .meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.row svg { grid-row: 1 / 3; grid-column: 2; align-self: center; width: 92px; height: 34px; }
+
+.chip { display: inline-flex; align-items: center; gap: 6px; font: 600 11px/1 var(--f-data); letter-spacing: .04em; padding: 4px 7px; border-radius: 3px; white-space: nowrap; }
+.chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.chip.hot { color: var(--hot); background: var(--hot-bg); }
+.chip.warm { color: var(--warm); background: var(--warm-bg); }
+.chip.calm { color: var(--calm); background: var(--calm-bg); }
+.tag { font: 500 11px/1 var(--f-data); color: var(--muted); border: 1px solid var(--line); padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
+
+/* досье */
+.dossier { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: clamp(16px, 2.4vw, 28px); display: grid; gap: 22px; min-width: 0; }
+.d-top { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; align-items: start; }
+.d-top h2 { font: 600 clamp(20px, 2.6vw, 26px)/1.15 var(--f-display); margin: 6px 0 0; text-wrap: balance; }
+.d-top .meta { display: flex; flex-wrap: wrap; gap: 6px; }
+.headline { display: grid; gap: 4px; }
+.headline .big { font: 600 clamp(34px, 5vw, 52px)/1 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.headline .what { color: var(--muted); max-width: 60ch; }
+.headline .delta { font: 500 14px/1.4 var(--f-data); color: var(--ink); }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
+.fact { background: var(--panel); box-shadow: 0 0 0 .5px var(--line); padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.fact .v { font: 600 18px/1.2 var(--f-data); font-variant-numeric: tabular-nums; }
+.fact .n { color: var(--muted); font-size: 12.5px; }
+
+.chart-box { display: grid; gap: 8px; min-width: 0; }
+.chart-box svg { width: 100%; height: auto; display: block; overflow: visible; }
+.chart-box svg text { font-family: var(--f-data); font-size: 11px; fill: var(--muted); }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--muted); }
+.legend span { display: inline-flex; gap: 6px; align-items: center; }
+.legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+
+.angle { border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; display: grid; gap: 8px; }
+.angle p { margin: 0; max-width: 68ch; }
+.lead { display: grid; gap: 10px; background: var(--bg); border-radius: 4px; padding: 14px 16px; }
+.lead blockquote { margin: 0; font-size: 15.5px; line-height: 1.6; max-width: 68ch; }
+.lead-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+button.copy { font: 600 12px/1 var(--f-data); letter-spacing: .04em; padding: 9px 12px; border-radius: 4px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
+button.copy:hover { background: var(--accent); color: var(--panel); }
+.copied { font: 500 12px/1 var(--f-data); color: var(--calm); }
+
+.two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
+.two p { margin: 4px 0 0; }
+.caveat { font-size: 13.5px; color: var(--muted); display: grid; gap: 4px; }
+.caveat p { margin: 0; }
+.sources { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
+
+footer.note { border-top: 1px solid var(--line); padding-top: 18px; color: var(--muted); font-size: 13.5px; display: grid; gap: 6px; }
+footer.note p { margin: 0; max-width: 90ch; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="label">Терминал вечернего эфира</div>
+      <h1>Экономика под поверхностью</h1>
+      <p>Шесть процессов, которые не видны в котировках. По каждому: последний показатель, изменение, дата публикации и повод для эфира.</p>
+    </div>
+    <div class="stamp">
+      <span class="label">Срез данных</span>
+      <span class="num" id="snap"></span>
+    </div>
+  </header>
+
+  <section class="depth" aria-labelledby="depth-title">
+    <div class="depth-head">
+      <span class="label" id="depth-title">Глубина: сколько дней назад закончился период последних данных</span>
+      <p>Бюджет и цепочки поставок видны почти в реальном времени, долговая нагрузка — с отставанием в полгода.</p>
+    </div>
+    <svg class="depth-svg" id="depth" role="img" aria-label="Шкала давности данных по шести процессам"></svg>
+  </section>
+
+  <div class="main">
+    <nav class="list" id="list" role="tablist" aria-label="Процессы"></nav>
+    <article class="dossier" id="dossier" role="tabpanel" aria-live="polite"></article>
+  </div>
+
+  <footer class="note">
+    <p><strong>Принцип терминала.</strong> Инвестиции и долговая нагрузка не обновляются с частотой биржевых котировок. Поэтому у каждого показателя стоит период и дата публикации, а шкала вверху показывает, насколько свежа картинка. Предварительные оценки помечены отдельно.</p>
+    <p>Цифры собраны 30 сентября 2026 года из публикаций Банка России, Минфина, Росстата, BIS, ФРБ Нью-Йорка, МВФ и МЭА; ссылки на первоисточники — в досье каждого процесса.</p>
+  </footer>
+</div>
+
+<script>
+const SNAPSHOT = "2026-09-30";
+
+const PROCESSES = [
+  {
+    id: "trade",
+    name: "Перестройка торговли",
+    status: ["warm", "Сдвиг"],
+    head: "+33,9 млрд $",
+    what: "Сальдо счёта текущих операций, январь–июль 2026",
+    delta: "+58% к январю–июлю 2025 (21,5 млрд $); в июле +1,7 млрд $",
+    kind: "Месячная оценка",
+    period: "январь–июль 2026",
+    periodEnd: "2026-07-31",
+    published: "14.09.2026",
+    freq: "ежемесячно, лаг ~6 недель",
+    spark: [21.5, 33.9],
+    facts: [
+      ["Экспорт товаров", "271,8 млрд $", "+16,3% г/г"],
+      ["Импорт товаров", "192,8 млрд $", "+15,0% г/г"],
+      ["Сальдо услуг", "−27,9 млрд $", "год назад −25,6 млрд $"],
+      ["Товарооборот с Китаем", "185,0 млрд $", "январь–август, +28,4% г/г (таможня КНР)"],
+      ["Россия → Китай", "100,4 млрд $", "+26,5% г/г"],
+      ["Китай → Россия", "84,7 млрд $", "+30,7% г/г"]
+    ],
+    chart: {
+      type: "bars", unit: "млрд $", title: "Январь–июль: 2025 против 2026",
+      series: [["2025", "--muted"], ["2026", "--accent"]],
+      groups: [["Экспорт товаров", [233.7, 271.8]], ["Импорт товаров", [167.7, 192.8]], ["Сальдо товаров", [66.0, 79.0]], ["Сальдо услуг", [-25.6, -27.9]], ["Текущий счёт", [21.5, 33.9]]]
+    },
+    track: "Экспорт и импорт между парами стран, сальдо России, состав услуг.",
+    helps: "Куда смещаются торговые связи и за счёт чего меняется внешнее сальдо.",
+    angle: [
+      "Сальдо выросло за счёт товарного экспорта: по оценке Банка России, он опережает импорт. Торговля с Китаем прибавила почти треть за год, и поставки из Китая растут быстрее, чем российский экспорт туда.",
+      "Дефицит услуг при этом расширяется: Банк России связывает это с ростом расходов россиян на зарубежные поездки. Товары приносят валюту, услуги её выводят."
+    ],
+    lead: "Профицит текущего счёта России за семь месяцев вырос до 33,9 миллиарда долларов — в полтора раза больше, чем год назад. Главный мотор — товарный экспорт. А товарооборот с Китаем за восемь месяцев прибавил 28 процентов, и импорт из Китая растёт даже быстрее экспорта. Обратная сторона — услуги: дефицит по ним расширился до 28 миллиардов, россияне больше тратят на поездки за границу.",
+    caveat: "Банк России публикует платёжный баланс в сокращённом виде, без разбивки по странам. Картину по партнёрам собираем из зеркальной статистики: таможня КНР и база МВФ по торговле. У МВФ заметный лаг.",
+    sources: [
+      ["Банк России: оценка платёжного баланса", "https://www.cbr.ru/statistics/macro_itm/external_sector/pb/bop-eval/"],
+      ["Товарооборот с Китаем, январь–август", "https://finance.mail.ru/article/tovarooborot-mezhdu-rf-i-knr-pokazali-uverennyj-rost-v-yanvare-avguste-69226599/"],
+      ["МВФ: торговля по партнёрам", "https://data.imf.org/"]
+    ]
+  },
+  {
+    id: "invest",
+    name: "Куда идут вложения",
+    status: ["hot", "Спад"],
+    head: "−9,9%",
+    what: "Инвестиции в основной капитал, I полугодие 2026, в сопоставимых ценах",
+    delta: "I кв. −14,3%, II кв. −6,6%: спад замедляется, но продолжается",
+    kind: "Квартальные данные",
+    period: "I полугодие 2026",
+    periodEnd: "2026-06-30",
+    published: "02.09.2026",
+    freq: "ежеквартально, лаг ~2 месяца",
+    spark: [-14.3, -6.6, -9.9, -5.4],
+    facts: [
+      ["Объём за полугодие", "16,22 трлн ₽", "в текущих ценах"],
+      ["Прогноз МЭР на 2026", "−5,4%", "в майском прогнозе было −1,5%"],
+      ["Здания и сооружения", "42,8%", "доля в структуре вложений"],
+      ["Машины и оборудование", "33,1%", "включая транспорт"],
+      ["Интеллектуальная собственность", "8,9%", "ПО, базы данных, НИОКР"],
+      ["Мир: вложения в энергетику", "3,4 трлн $", "оценка МЭА на 2026, +5%; из них 2,2 трлн — чистая энергетика"]
+    ],
+    chart: {
+      type: "bars", unit: "% г/г", title: "Инвестиции в основной капитал, изменение к прошлому году",
+      series: [["% г/г", "--hot"]],
+      groups: [["I кв. 2026", [-14.3]], ["II кв. 2026", [-6.6]], ["I пг 2026", [-9.9]], ["Прогноз МЭР на год", [-5.4]]]
+    },
+    track: "Инвестиции в основной капитал по отраслям и регионам; отдельно энергетика.",
+    helps: "Совпадают ли разговоры о развитии отрасли с реальными вложениями.",
+    angle: [
+      "Во втором квартале падение замедлилось, но Минэкономразвития в сентябре ухудшило годовой прогноз с −1,5% до −5,4%. Министерство объясняет спад дорогими кредитами и коррекцией после нескольких лет бурного роста.",
+      "Сюжет для эфира: сверить объявленные приоритеты (энергетика, транспорт, технологический суверенитет) с отраслевой таблицей Росстата. Где вкладываются даже при ставке 14%, а где стройки встали."
+    ],
+    lead: "Инвестиции в основной капитал в первом полугодии упали почти на 10 процентов. Во втором квартале спад замедлился до 6,6, но Минэкономразвития всё равно ухудшило прогноз на год — теперь ждут минус 5,4 процента вместо минус полутора. При ставке 14 процентов бизнес откладывает стройки и закупки оборудования. Вопрос в том, какие отрасли продолжают вкладываться — и совпадает ли это с тем, что объявлено приоритетами.",
+    caveat: "Отраслевая и региональная разбивка за полугодие публикуется в таблицах Росстата «Инвестиции в нефинансовые активы»; в этот срез она пока не загружена. Оценка МЭА — мировая и годовая, для России её надо сопоставлять с данными Росстата по добыче и энергетике.",
+    sources: [
+      ["Интерфакс: данные Росстата за I полугодие", "https://www.interfax.ru/business/1112797"],
+      ["Росстат: инвестиции в нефинансовые активы", "https://rosstat.gov.ru/investment_nonfinancial"],
+      ["Прогноз МЭР на 2026", "https://finance.mail.ru/article/minekonomrazvitiya-uhudshilo-prognoz-snizheniya-investicij-v-rf-v-2026-g-do-54-69229529/"],
+      ["МЭА: World Energy Investment 2026", "https://www.iea.org/reports/world-energy-investment-2026"]
+    ]
+  },
+  {
+    id: "debt",
+    name: "Цена долгов",
+    status: ["warm", "Высоко, но снижается"],
+    head: "20,4%",
+    what: "Доля доходов частного нефинансового сектора, уходящая на обслуживание долга, I кв. 2026 (BIS)",
+    delta: "−3,3 п.п. от пика 23,7% во II кв. 2025; три года назад — 12,8%",
+    kind: "Квартальные данные",
+    period: "I квартал 2026",
+    periodEnd: "2026-03-31",
+    published: "сентябрь 2026",
+    freq: "ежеквартально, лаг ~5 месяцев",
+    spark: [12.8, 14.7, 17.2, 18.5, 18.5, 20.4, 23.6, 23.0, 23.7, 21.8, 20.8, 20.4],
+    facts: [
+      ["Просрочка по ипотеке", "253 млрд ₽", "1,16% портфеля на 01.08.2026"],
+      ["Проблемная ипотека", "2,1%", "доля портфеля на 01.09.2026"],
+      ["Проблемные необеспеченные кредиты", "13,2%", "доля портфеля на 01.09.2026"],
+      ["Ключевая ставка", "14,00%", "сохранена 11.09.2026"],
+      ["Для сравнения: Китай", "19,1%", "долговая нагрузка, I кв. 2026"],
+      ["Для сравнения: США", "13,8%", "долговая нагрузка, I кв. 2026"]
+    ],
+    chart: {
+      type: "lines", unit: "% доходов", title: "Долговая нагрузка частного нефинансового сектора (BIS)",
+      labels: ["II·23", "III·23", "IV·23", "I·24", "II·24", "III·24", "IV·24", "I·25", "II·25", "III·25", "IV·25", "I·26"],
+      series: [
+        ["Россия", "--accent", [12.8, 14.7, 17.2, 18.5, 18.5, 20.4, 23.6, 23.0, 23.7, 21.8, 20.8, 20.4]],
+        ["Китай", "--deep", [18.0, 18.1, 18.0, 18.5, 18.5, 18.6, 18.5, 18.9, 18.9, 18.8, 18.8, 19.1]],
+        ["США", "--muted", [14.7, 14.6, 14.5, 14.5, 14.4, 14.4, 14.2, 14.0, 14.0, 13.9, 13.9, 13.8]]
+      ]
+    },
+    track: "Доля доходов, уходящая на обслуживание долга; просрочка по ипотеке.",
+    helps: "Насколько рост кредита становится нагрузкой для семей и компаний.",
+    angle: [
+      "За 2023–2024 годы нагрузка российских заёмщиков почти удвоилась и обогнала китайскую. Со снижением ставки она сползает вниз, но всё ещё в полтора раза выше американской.",
+      "Ипотека пока выглядит благополучно: просрочка около 1%. Но её объём за год вырос на три четверти: портфель стареет, новых выдач меньше, заёмщики нагружены сильнее. Тревожнее необеспеченные кредиты, где проблемных уже больше 13%."
+    ],
+    lead: "Каждый пятый рубль доходов российских компаний и домохозяйств уходит на обслуживание долга. Это данные Банка международных расчётов за первый квартал. Пик пройден — год назад было почти 24 процента, — но это всё ещё выше, чем в Китае, и в полтора раза выше, чем в США. По ипотеке просрочка пока около процента, зато в потребкредитах проблемных долгов уже больше 13 процентов портфеля.",
+    caveat: "BIS считает нагрузку для всего частного нефинансового сектора, отдельно по домохозяйствам для России ряда нет. Доли проблемных кредитов — из обзора Банка России «О развитии банковского сектора» (сентябрь 2026).",
+    sources: [
+      ["BIS: коэффициенты обслуживания долга", "https://data.bis.org/topics/DSR"],
+      ["Банк России: рынок ипотечного кредитования", "https://www.cbr.ru/statistics/bank_sector/mortgage/"],
+      ["Банк России: о развитии банковского сектора", "https://cbr.ru/Collection/Collection/File/62385/razv_bs_26_08.pdf"],
+      ["Банк России: ключевая ставка", "https://www.cbr.ru/hd_base/keyrate/"]
+    ]
+  },
+  {
+    id: "supply",
+    name: "Напряжение в поставках",
+    status: ["hot", "Напряжение"],
+    head: "1,06",
+    what: "Индекс давления на глобальные цепочки поставок (GSCPI), август 2026, в стандартных отклонениях от нормы",
+    delta: "Пик 1,85 в апреле — максимум с 2022 года; год назад −0,09",
+    kind: "Месячные данные",
+    period: "август 2026",
+    periodEnd: "2026-08-31",
+    published: "сентябрь 2026",
+    freq: "ежемесячно, в начале месяца",
+    spark: [0.12, -0.39, -0.31, -0.30, -0.21, -0.01, -0.20, -0.23, 0.29, 0.09, 0.02, -0.09, -0.02, -0.08, -0.12, 0.58, 0.48, 0.59, 0.68, 1.85, 1.83, 1.20, 0.94, 1.06],
+    facts: [
+      ["GSCPI, август 2026", "1,06", "июль 0,94; июнь 1,20"],
+      ["Ормузский пролив", "9,9 судна в сутки", "1 марта — 19 июля 2026; годом ранее 103,2 (−90%)"],
+      ["Норма индекса", "0", "среднее значение за всю историю ряда"],
+      ["Пик пандемии", "4,4", "декабрь 2021, для масштаба"]
+    ],
+    chart: {
+      type: "lines", unit: "ст. откл.", title: "GSCPI, сентябрь 2024 — август 2026", zero: true,
+      labels: ["IX·24", "X", "XI", "XII", "I·25", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII", "I·26", "II", "III", "IV", "V", "VI", "VII", "VIII"],
+      series: [["GSCPI", "--accent", [0.12, -0.39, -0.31, -0.30, -0.21, -0.01, -0.20, -0.23, 0.29, 0.09, 0.02, -0.09, -0.02, -0.08, -0.12, 0.58, 0.48, 0.59, 0.68, 1.85, 1.83, 1.20, 0.94, 1.06]]]
+    },
+    track: "Международный показатель давления на цепочки поставок; движение судов через ключевые порты.",
+    helps: "Может ли сбой перевозок перейти в цены и сроки поставок.",
+    angle: [
+      "Индекс ФРБ Нью-Йорка отступил от апрельского пика, но в августе снова подрос и держится около единицы. Для сравнения: в 2025 году он почти всё время был ниже нуля.",
+      "По данным PortWatch МВФ, с марта через Ормузский пролив проходило в среднем меньше десяти судов в сутки против сотни годом ранее. Нефть, СПГ и удобрения идут в обход, а это время и фрахт, которые с лагом в несколько месяцев доходят до цен."
+    ],
+    lead: "Глобальные цепочки поставок снова под давлением. Индекс Федерального резервного банка Нью-Йорка в августе — 1,06, в апреле он доходил до 1,85, это максимум с 2022 года. Главная причина — Ормузский пролив: по данным МВФ, с марта там проходит в среднем меньше десяти судов в сутки против сотни год назад. Удлинение маршрутов — это дороже фрахт и дольше сроки, а значит, через несколько месяцев и цены.",
+    caveat: "Портовые данные МВФ строятся по спутниковым сигналам судов и годятся как ранний сигнал, но требуют осторожной трактовки: пропуски сигнала и смена маршрутов искажают суточные цифры. GSCPI ежемесячно пересчитывается задним числом.",
+    sources: [
+      ["ФРБ Нью-Йорка: GSCPI", "https://www.newyorkfed.org/research/policy/gscpi"],
+      ["МВФ: PortWatch", "https://portwatch.imf.org/"],
+      ["Блог МВФ о сбоях в перевозках", "https://www.imf.org/en/blogs/articles/2026/04/29/global-disruptions-are-testing-how-the-world-moves-goods-and-people"]
+    ]
+  },
+  {
+    id: "expect",
+    name: "Ожидания людей и предприятий",
+    status: ["hot", "Разрыв"],
+    head: "14,2%",
+    what: "Медианные ожидания инфляции населением на год вперёд, сентябрь 2026 (инФОМ)",
+    delta: "+0,5 п.п. за месяц; фактическая инфляция в августе — 6,3% г/г",
+    kind: "Месячные данные",
+    period: "сентябрь 2026",
+    periodEnd: "2026-09-15",
+    published: "22.09.2026",
+    freq: "ежемесячно, опрос в первой половине месяца",
+    spark: [13.0, 12.8, 14.7, 13.7, 14.2],
+    facts: [
+      ["Наблюдаемая инфляция", "15,1%", "как рост цен ощущает население, сентябрь"],
+      ["Ожидания на 5 лет", "10,7%", "медиана, сентябрь"],
+      ["Ожидания людей со сбережениями", "12,8%", "без сбережений — 15,4%"],
+      ["Ценовые ожидания предприятий", "22,7 п.", "август 21,1; рост третий месяц подряд"],
+      ["Индикатор бизнес-климата", "−2,3 п.", "август −2,4"],
+      ["Инфляция (Росстат)", "6,33%", "август 2026, г/г"]
+    ],
+    chart: {
+      type: "lines", unit: "%", title: "Чего ждут люди и что показывает статистика",
+      labels: ["май", "июнь", "июль", "август", "сентябрь"],
+      series: [
+        ["Ожидания населения на год", "--accent", [13.0, 12.8, 14.7, 13.7, 14.2]],
+        ["Фактическая инфляция, г/г", "--deep", [5.31, 6.02, 5.98, 6.33, null]]
+      ]
+    },
+    track: "Ожидаемая инфляция, планы компаний по ценам, спросу и выпуску.",
+    helps: "Почему замедление инфляции ещё не значит, что бизнес и население начали вести себя иначе.",
+    angle: [
+      "Официальная инфляция за год снизилась с 8% до 6%, а люди ждут 14% и ощущают 15%. Разрыв больше чем двукратный. Главный раздражитель в сентябрьском опросе — бензин.",
+      "Бизнес третий месяц подряд повышает ценовые ожидания. Для Банка России это аргумент не спешить: 11 сентября ставку оставили на 14% после десяти снижений подряд."
+    ],
+    lead: "Статистика говорит: инфляция шесть процентов. Люди говорят: пятнадцать. В сентябре ожидания россиян на год вперёд выросли до 14,2 процента, и больше всего людей раздражает бензин. Бизнес тоже третий месяц подряд закладывает рост цен. Этот разрыв — главная причина, по которой Банк России в сентябре взял паузу и не стал снижать ставку.",
+    caveat: "Ожидания населения — медиана опроса инФОМ (около 2000 человек), это не прогноз цен, а настроение. Сентябрьской инфляции Росстата в срезе ещё нет.",
+    sources: [
+      ["Банк России: инфляционные ожидания", "https://www.cbr.ru/analytics/dkp/inflationary_expectations/"],
+      ["Коммерсантъ: ожидания в сентябре", "https://www.kommersant.ru/doc/8989929"],
+      ["Банк России: мониторинг предприятий", "https://www.cbr.ru/dkp/mp/"],
+      ["Банк России: инфляция и ключевая ставка", "https://www.cbr.ru/hd_base/infl/"]
+    ]
+  },
+  {
+    id: "budget",
+    name: "Исполнение бюджета",
+    status: ["hot", "Выше плана"],
+    head: "−5,8 трлн ₽",
+    what: "Дефицит федерального бюджета, январь–август 2026 (2,5% ВВП), предварительная оценка Минфина",
+    delta: "Годовой план −3,8 трлн ₽ (1,6% ВВП) превышен в 1,5 раза; в августе профицит ≈0,66 трлн ₽",
+    kind: "Предварительная оценка",
+    period: "январь–август 2026",
+    periodEnd: "2026-08-31",
+    published: "09.09.2026",
+    freq: "ежемесячно, в начале следующего месяца",
+    spark: [3.4, 6.455, 5.795],
+    facts: [
+      ["Доходы", "25,93 трлн ₽", "+9,2% г/г"],
+      ["Нефтегазовые доходы", "5,02 трлн ₽", "−16,7% г/г, в основном из-за курса"],
+      ["Ненефтегазовые доходы", "20,91 трлн ₽", "+18,1% г/г"],
+      ["НДС", "11,33 трлн ₽", "+26,3% г/г"],
+      ["Расходы", "31,72 трлн ₽", "+14,7% г/г"],
+      ["Госзакупки", "9,0 трлн ₽", "+36,2% г/г"]
+    ],
+    chart: {
+      type: "bars", unit: "трлн ₽", title: "Дефицит нарастающим итогом против годового плана",
+      series: [["трлн ₽", "--hot"]],
+      groups: [["янв–фев 2026", [3.4]], ["янв–июль 2026", [6.455]], ["янв–авг 2026", [5.795]], ["янв–авг 2025", [3.92]], ["План на 2026 год", [3.786]]]
+    },
+    track: "Доходы, расходы, нефтегазовая составляющая, отклонение от плана.",
+    helps: "Какие возможности для новых решений действительно остаются у государства.",
+    angle: [
+      "Нефтегазовые доходы падают, в основном из-за крепкого рубля. Бюджет держится на НДС (+26%) и других ненефтегазовых поступлениях, а расходы растут быстрее доходов.",
+      "Дефицит за восемь месяцев в полтора раза больше плана на весь год. Вопрос для эфира: чем закрывать разрыв — заимствованиями, ФНБ или новыми налогами, и что это оставляет на новые решения."
+    ],
+    lead: "Дефицит федерального бюджета за восемь месяцев — 5,8 триллиона рублей. Это в полтора раза больше, чем заложено на весь год. Нефтегазовые доходы упали почти на 17 процентов, в основном из-за курса. Держит бюджет НДС — плюс 26 процентов. Расходы растут быстрее доходов, и главный вопрос осени — где государство возьмёт деньги на новые решения.",
+    caveat: "Это предварительная оценка Минфина, окончательные данные Казначейства выходят позже и могут отличаться. Дефицит в течение года неравномерен: в августе бюджет был в профиците, на декабрь традиционно приходится пик расходов.",
+    sources: [
+      ["Интерфакс: бюджет за январь–август", "https://www.interfax.ru/business/1114021"],
+      ["Минфин России", "https://minfin.gov.ru/"]
+    ]
+  }
+];
+
+const $ = (s, el = document) => el.querySelector(s);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const fmt = (v, d = 1) => v.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d }).replace("-", "−");
+const cssv = n => `var(${n})`;
+const days = iso => Math.round((new Date(SNAPSHOT) - new Date(iso)) / 864e5);
+const byId = id => PROCESSES.find(p => p.id === id);
+
+$("#snap").textContent = new Date(SNAPSHOT).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+
+/* ——— шкала свежести ——— */
+function drawDepth(activeId) {
+  const svg = $("#depth");
+  const W = Math.max(300, Math.round(svg.parentNode.clientWidth - 36)), L = 24, R = W - 24, MAX = 200, y0 = 34;
+  const step = W < 600 ? 60 : 30;
+  const x = d => L + (R - L) * Math.min(d, MAX) / MAX;
+  let s = `<line x1="${L}" y1="${y0}" x2="${R}" y2="${y0}" stroke="${cssv("--line")}" stroke-width="2"/>`;
+  for (let d = 0; d <= MAX; d += step) {
+    s += `<line x1="${x(d)}" y1="${y0 - 5}" x2="${x(d)}" y2="${y0 + 5}" stroke="${cssv("--line")}"/>`;
+    s += `<text x="${x(d)}" y="${y0 - 12}" text-anchor="middle" fill="${cssv("--muted")}">${d === 0 ? "сегодня" : d + " дн."}</text>`;
+  }
+  const pts = PROCESSES.map(p => ({ p, d: days(p.periodEnd) })).sort((a, b) => a.d - b.d);
+  const rows = [];
+  pts.forEach(({ p, d }) => {
+    const px = x(d);
+    const label = `${p.name} · ${d} дн.`, tw = label.length * 6.9 + 10;
+    let anchor = px + 8 + tw > W ? "end" : "start";
+    let tx = anchor === "end" ? px - 8 : px + 8;
+    if (anchor === "end" && tx - tw < 0) { anchor = "start"; tx = Math.max(4, W - tw); }
+    const a = anchor === "end" ? tx - tw : tx, b = anchor === "end" ? tx : tx + tw;
+    let lane = 0;
+    while ((rows[lane] || []).some(([u, v]) => a < v + 12 && b > u - 12)) lane++;
+    (rows[lane] = rows[lane] || []).push([Math.min(a, px), Math.max(b, px)]);
+    const ly = y0 + 28 + lane * 22;
+    const on = p.id === activeId;
+    s += `<g class="pin${on ? " on" : ""}" data-id="${p.id}" tabindex="0" role="button" aria-label="${esc(p.name)}: ${d} дней">
+      <line x1="${px}" y1="${y0}" x2="${px}" y2="${ly}" stroke="${cssv(on ? "--accent" : "--line")}"/>
+      <circle cx="${px}" cy="${y0}" r="6" fill="${cssv("--panel")}" stroke="${cssv("--" + p.status[0])}" stroke-width="2"/>
+      <text x="${tx}" y="${ly + 4}" text-anchor="${anchor}" fill="${cssv(on ? "--ink" : "--muted")}" font-weight="${on ? 600 : 400}">${esc(p.name)} · ${d} дн.</text>
+    </g>`;
+  });
+  svg.setAttribute("viewBox", `0 0 ${W} ${y0 + 28 + rows.length * 22}`);
+  svg.innerHTML = s;
+  svg.querySelectorAll(".pin").forEach(g => {
+    g.addEventListener("click", () => select(g.dataset.id));
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); select(g.dataset.id); } });
+  });
+}
+
+/* ——— спарклайны ——— */
+function spark(vals, color) {
+  const w = 92, h = 34, p = 4;
+  const v = vals.filter(n => n !== null);
+  const mn = Math.min(...v, 0), mx = Math.max(...v, 0);
+  const sx = i => p + (w - 2 * p) * (vals.length === 1 ? .5 : i / (vals.length - 1));
+  const sy = n => h - p - (h - 2 * p) * (n - mn) / ((mx - mn) || 1);
+  const d = vals.map((n, i) => `${i ? "L" : "M"}${sx(i).toFixed(1)},${sy(n).toFixed(1)}`).join("");
+  const last = vals.length - 1;
+  return `<svg viewBox="0 0 ${w} ${h}" aria-hidden="true">
+    <line x1="${p}" x2="${w - p}" y1="${sy(0)}" y2="${sy(0)}" stroke="${cssv("--line")}" stroke-dasharray="2 3"/>
+    <path d="${d}" fill="none" stroke="${cssv(color)}" stroke-width="1.8" stroke-linejoin="round"/>
+    <circle cx="${sx(last)}" cy="${sy(vals[last])}" r="3" fill="${cssv(color)}"/></svg>`;
+}
+
+/* ——— графики ——— */
+function niceTicks(mn, mx, n = 5) {
+  const span = mx - mn || 1, raw = span / n, mag = 10 ** Math.floor(Math.log10(raw));
+  const step = [1, 2, 2.5, 5, 10].map(k => k * mag).find(k => span / k <= n) || mag * 10;
+  const lo = Math.floor(mn / step) * step, hi = Math.ceil(mx / step) * step, out = [];
+  for (let t = lo; t <= hi + step / 2; t += step) out.push(+t.toFixed(6));
+  return out;
+}
+function decimals(ticks) { return ticks.some(t => Math.abs(t % 1) > 1e-6) ? (ticks.some(t => Math.abs((t * 10) % 1) > 1e-6) ? 2 : 1) : 0; }
+
+function lineChart(c, W) {
+  const H = W < 500 ? 230 : 280, L = 44, R = 14, T = 14, B = 30;
+  const all = c.series.flatMap(s => s[2]).filter(v => v !== null);
+  const ticks = niceTicks(Math.min(...all, c.zero ? 0 : Infinity), Math.max(...all));
+  const mn = ticks[0], mx = ticks[ticks.length - 1], dp = decimals(ticks);
+  const n = c.labels.length;
+  const x = i => L + (W - L - R) * i / (n - 1);
+  const y = v => T + (H - T - B) * (1 - (v - mn) / (mx - mn));
+  let s = "";
+  ticks.forEach(t => {
+    s += `<line x1="${L}" x2="${W - R}" y1="${y(t)}" y2="${y(t)}" stroke="${cssv("--line")}" stroke-width="${t === 0 && c.zero ? 1.4 : 1}" ${t === 0 && c.zero ? "" : 'stroke-dasharray="2 4"'}/>`;
+    s += `<text x="${L - 8}" y="${y(t) + 4}" text-anchor="end">${fmt(t, dp)}</text>`;
+  });
+  const every = Math.ceil(n / (W < 500 ? 6 : 12));
+  c.labels.forEach((lb, i) => { if (i % every === 0 || i === n - 1) s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle">${esc(lb)}</text>`; });
+  c.series.forEach(([name, col, vals], si) => {
+    const idx = vals.map((v, i) => v === null ? null : i).filter(i => i !== null);
+    const d = idx.map((i, k) => `${k ? "L" : "M"}${x(i).toFixed(1)},${y(vals[i]).toFixed(1)}`).join("");
+    if (si === 0) {
+      const base = y(Math.max(mn, Math.min(0, mx)));
+      s += `<path d="${d}L${x(idx[idx.length - 1])},${base}L${x(idx[0])},${base}Z" fill="${cssv(col)}" opacity=".10"/>`;
+    }
+    s += `<path d="${d}" fill="none" stroke="${cssv(col)}" stroke-width="${si === 0 ? 2.4 : 1.8}" stroke-linejoin="round"/>`;
+    const li = idx[idx.length - 1];
+    s += `<circle cx="${x(li)}" cy="${y(vals[li])}" r="4" fill="${cssv(col)}" stroke="${cssv("--panel")}" stroke-width="2"/>`;
+    s += `<text x="${x(li) - 8}" y="${y(vals[li]) - 9}" text-anchor="end" style="fill:${cssv(col)};font-weight:600">${fmt(vals[li], vals[li] % 1 ? (Math.abs(vals[li] * 10 % 1) > 1e-6 ? 2 : 1) : 1)}</text>`;
+  });
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.title)}">${s}</svg>` + legend(c.series.map(s => [s[0], s[1]]));
+}
+
+function barChart(c, W) {
+  const rowH = c.series.length > 1 ? 44 : 34, L = W < 500 ? 118 : 150, R = 56, T = 10;
+  const vals = c.groups.flatMap(g => g[1]);
+  const ticks = niceTicks(Math.min(0, ...vals), Math.max(0, ...vals), 4);
+  const mn = ticks[0], mx = ticks[ticks.length - 1], dp = decimals(ticks);
+  const H = T + c.groups.length * rowH + 26;
+  const x = v => L + (W - L - R) * (v - mn) / (mx - mn);
+  let s = "";
+  ticks.forEach(t => {
+    s += `<line x1="${x(t)}" x2="${x(t)}" y1="${T - 4}" y2="${H - 22}" stroke="${cssv("--line")}" ${t === 0 ? 'stroke-width="1.4"' : 'stroke-dasharray="2 4"'}/>`;
+    s += `<text x="${x(t)}" y="${H - 6}" text-anchor="middle">${fmt(t, dp)}</text>`;
+  });
+  const bh = c.series.length > 1 ? 14 : 18;
+  c.groups.forEach(([lb, gv], gi) => {
+    const y0 = T + gi * rowH + (rowH - bh * gv.length - 2 * (gv.length - 1)) / 2;
+    s += `<text x="${L - 12}" y="${T + gi * rowH + rowH / 2 + 4}" text-anchor="end" style="fill:${cssv("--ink")}">${esc(lb)}</text>`;
+    gv.forEach((v, si) => {
+      const col = c.series[si][1];
+      const a = x(Math.min(0, v)), b = x(Math.max(0, v)), yy = y0 + si * (bh + 2);
+      s += `<rect x="${a}" y="${yy}" width="${Math.max(1, b - a)}" height="${bh}" rx="2" fill="${cssv(col)}" opacity="${si === c.series.length - 1 ? 1 : .45}"/>`;
+      const out = v < 0 ? a - 6 : b + 6;
+      s += `<text x="${out}" y="${yy + bh / 2 + 4}" text-anchor="${v < 0 ? "end" : "start"}" style="fill:${cssv("--ink")}">${fmt(v, Math.abs(v % 1) > 1e-6 && Math.abs(v * 10 % 1) > 1e-6 ? 2 : 1)}</text>`;
+    });
+  });
+  const lg = c.series.length > 1 ? legend(c.series.map((s, i) => [s[0], s[1], i < c.series.length - 1])) : "";
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(c.title)}">${s}</svg>` + lg;
+}
+function legend(items) {
+  return `<div class="legend">${items.map(([n, col, faint]) => `<span><i style="background:${cssv(col)};opacity:${faint ? .45 : 1}"></i>${esc(n)}</span>`).join("")}</div>`;
+}
+
+/* ——— список и досье ——— */
+function renderList(activeId) {
+  $("#list").innerHTML = PROCESSES.map(p => `
+    <button class="row" role="tab" id="tab-${p.id}" aria-controls="dossier" aria-selected="${p.id === activeId}" data-id="${p.id}">
+      <span class="name">${esc(p.name)}</span>
+      ${spark(p.spark, "--" + p.status[0])}
+      <span class="head">${esc(p.head)}</span>
+      <span class="cap">${esc(p.period)}</span>
+      <span class="meta" style="grid-column:1/-1"><span class="chip ${p.status[0]}">${esc(p.status[1])}</span><span class="tag">${esc(p.kind)}</span></span>
+    </button>`).join("");
+  $("#list").querySelectorAll(".row").forEach(b => b.addEventListener("click", () => select(b.dataset.id)));
+}
+
+function renderDossier(p) {
+  $("#dossier").setAttribute("aria-labelledby", "tab-" + p.id);
+  $("#dossier").innerHTML = `
+    <div class="d-top">
+      <div><span class="label">Процесс</span><h2>${esc(p.name)}</h2></div>
+      <div class="meta"><span class="chip ${p.status[0]}">${esc(p.status[1])}</span><span class="tag">${esc(p.kind)}</span></div>
+    </div>
+    <div class="headline">
+      <span class="big">${esc(p.head)}</span>
+      <span class="what">${esc(p.what)}</span>
+      <span class="delta">${esc(p.delta)}</span>
+    </div>
+    <div class="facts">
+      <div class="fact"><span class="label">Период</span><span class="v">${esc(p.period)}</span><span class="n">закончился ${days(p.periodEnd)} дн. назад</span></div>
+      <div class="fact"><span class="label">Опубликовано</span><span class="v">${esc(p.published)}</span><span class="n">${esc(p.freq)}</span></div>
+      ${p.facts.map(([l, v, n]) => `<div class="fact"><span class="label">${esc(l)}</span><span class="v">${esc(v)}</span><span class="n">${esc(n)}</span></div>`).join("")}
+    </div>
+    <div class="chart-box"><span class="label">${esc(p.chart.title)}, ${esc(p.chart.unit)}</span><div id="chart"></div></div>
+    <div class="angle">
+      <span class="label">Почему это тема эфира</span>
+      ${p.angle.map(t => `<p>${esc(t)}</p>`).join("")}
+    </div>
+    <div class="lead">
+      <div class="lead-bar"><span class="label">Подводка к сюжету · ~40 секунд</span><span><span class="copied" id="copied" hidden>Скопировано</span> <button class="copy" id="copy" type="button">Копировать текст</button></span></div>
+      <blockquote id="lead-text">${esc(p.lead)}</blockquote>
+    </div>
+    <div class="two">
+      <div><span class="label">Что отслеживаем</span><p>${esc(p.track)}</p></div>
+      <div><span class="label">Что это помогает заметить</span><p>${esc(p.helps)}</p></div>
+    </div>
+    <div class="caveat"><span class="label">Ограничения данных</span><p>${esc(p.caveat)}</p></div>
+    <div><span class="label">Первоисточники</span><div class="sources">${p.sources.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join("")}</div></div>`;
+  drawChart(p);
+  $("#copy").addEventListener("click", () => {
+    const txt = p.lead, done = () => { const c = $("#copied"); c.hidden = false; setTimeout(() => c.hidden = true, 1800); };
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($("#lead-text")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); };
+    try { navigator.clipboard.writeText(txt).then(done, fallback); } catch (e) { fallback(); }
+  });
+}
+
+function drawChart(p) {
+  const box = $("#chart"), W = Math.max(300, Math.round(box.clientWidth));
+  box.innerHTML = p.chart.type === "lines" ? lineChart(p.chart, W) : barChart(p.chart, W);
+}
+
+let current = null;
+function select(id, push = true) {
+  const p = byId(id) || PROCESSES[0];
+  current = p;
+  renderList(p.id);
+  renderDossier(p);
+  drawDepth(p.id);
+  if (push) { try { history.replaceState(null, "", "#" + p.id); } catch (e) {} }
+}
+
+select((location.hash || "").slice(1) || "expect", false);
+let rz;
+window.addEventListener("resize", () => { clearTimeout(rz); rz = setTimeout(() => { drawDepth(current.id); drawChart(current); }, 120); });
+window.addEventListener("hashchange", () => select(location.hash.slice(1), false));
+</script>
+
+</body>
+</html>
