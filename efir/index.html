@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Сюжетная игра для знатоков музыки 80-х и 90-х: ночная смена на петербургской радиостанции 31 декабря 1999 года.">
+<meta name="theme-color" content="#16111a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%2316111a'/%3E%3Crect x='5' y='9' width='22' height='14' rx='2' fill='none' stroke='%23ffb23e' stroke-width='1.6'/%3E%3Ccircle cx='11.5' cy='16' r='2.4' fill='%23ffb23e'/%3E%3Ccircle cx='20.5' cy='16' r='2.4' fill='%23ffb23e'/%3E%3C/svg%3E">
+<style>*{box-sizing:border-box}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Ночной эфир</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=Golos+Text:wght@400;500;600&family=Neucha&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Ночная радиостудия 1999 года: стена в акустическом поролоне, пульт сверху, стол ведущего слева, пейджер и блокнот справа.
+   Единый тёмный вид задан сознательно: в студии ночь при любой теме. */
+:root{
+  --wall:#16111a; --wall2:#1c1621; --panel:#231c27; --panel-hi:#2e2533; --edge:rgba(255,190,120,.14);
+  --text:#efe5d8; --muted:#a8998c; --dim:#76695f;
+  --amber:#ffb23e; --amber-lo:#7a4a12; --red:#ff4b3a;
+  --lcd:#a7b88e; --lcd-ink:#1d2716; --paper:#f0e5cb; --paper-ink:#2c231e;
+  --good:#86d39a; --bad:#ff7466;
+  --disp:"Rubik Mono One","Arial Black",Impact,sans-serif;
+  --body:"Golos Text","Segoe UI",Roboto,Arial,sans-serif;
+  --hand:"Neucha","Comic Sans MS","Segoe Print",cursive;
+  --mono:"IBM Plex Mono","Consolas","Courier New",monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{
+  margin:0; color:var(--text); font:400 16px/1.55 var(--body);
+  background-color:var(--wall);
+  background-image:
+    radial-gradient(900px 420px at 30% -10%, rgba(255,170,70,.10), transparent 70%),
+    repeating-conic-gradient(from 45deg at 50% 50%, var(--wall2) 0 25%, var(--wall) 0 50%);
+  background-size:auto, 26px 26px;
+  -webkit-font-smoothing:antialiased;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--amber);outline-offset:3px}
+.app{max-width:1180px;margin:0 auto;padding-inline:16px;padding-block:14px 40px;display:grid;gap:14px}
+
+/* пульт */
+.deck{display:grid;grid-template-columns:auto auto 1fr auto auto auto;gap:12px 18px;align-items:center;
+  background:linear-gradient(#2a222e,#1f1923);border:1px solid var(--edge);border-radius:10px;padding:12px 16px;
+  box-shadow:0 14px 30px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.05)}
+.brand{display:flex;align-items:baseline;gap:8px;white-space:nowrap}
+.brand .freq{font:600 13px var(--mono);color:var(--amber)}
+.brand .name{font:15px var(--disp);letter-spacing:.02em}
+.onair{font:11px var(--disp);letter-spacing:.14em;padding:7px 11px;border-radius:5px;color:#3a1410;
+  background:#5a1f1a;border:1px solid #772a22;transition:.3s}
+.onair.live{background:var(--red);color:#fff5ee;box-shadow:0 0 18px rgba(255,75,58,.65)}
+.onair.dead{animation:blink .7s steps(2) infinite}
+@keyframes blink{50%{background:#5a1f1a;box-shadow:none;color:#3a1410}}
+.grid-strip{display:flex;gap:4px;flex-wrap:wrap;min-width:0}
+.grid-strip span{font:500 11px/1 var(--mono);padding:6px 7px;border-radius:4px;color:var(--dim);border:1px solid rgba(255,255,255,.06);white-space:nowrap}
+.grid-strip span.done{color:var(--muted);border-color:rgba(255,178,62,.25)}
+.grid-strip span.now{color:var(--wall);background:var(--amber);border-color:var(--amber)}
+.readout{display:grid;gap:2px;justify-items:end}
+.lbl{font:500 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.lcd{font:600 24px/1 var(--mono);color:var(--amber);text-shadow:0 0 12px rgba(255,178,62,.45);font-variant-numeric:tabular-nums;
+  background:#120d0a;padding:6px 9px;border-radius:5px;border:1px solid #3a2a1a}
+.aud{position:relative}
+.meter{width:160px;height:6px;border-radius:3px;background:#120d0a;position:relative;overflow:visible;margin-top:3px}
+.meter i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--amber-lo),var(--amber));transition:width .8s}
+.meter b{position:absolute;top:-3px;width:2px;height:12px;background:var(--good);left:calc(45000/80000*100%)}
+.delta{position:absolute;right:0;top:-6px;font:600 13px var(--mono);opacity:0;pointer-events:none}
+.delta.show{animation:rise 1.4s ease-out}
+.delta.up{color:var(--good)} .delta.down{color:var(--bad)}
+@keyframes rise{0%{opacity:0;transform:translateY(8px)}15%{opacity:1}100%{opacity:0;transform:translateY(-22px)}}
+.snd{background:none;border:1px solid var(--edge);border-radius:6px;padding:7px 10px;font-size:12px;color:var(--muted)}
+.snd[aria-pressed="false"]{text-decoration:line-through}
+
+/* стол */
+.desk{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px;align-items:start}
+.stage{background:var(--panel);border:1px solid var(--edge);border-radius:10px;padding:clamp(18px,3vw,30px);min-height:520px;min-width:0;
+  box-shadow:0 14px 30px rgba(0,0,0,.4)}
+.kicker{font:600 12px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin:0 0 6px}
+.stage h2{font:clamp(20px,3.2vw,28px)/1.2 var(--disp);margin:0 0 18px;text-wrap:balance}
+.lines{display:grid;gap:12px;max-width:66ch}
+.ln{margin:0;animation:fadein .5s both;animation-delay:var(--d,0s)}
+.ln.narr{color:var(--muted);font-style:italic}
+.ln .who{display:block;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:2px}
+.ln.pg{font:500 14px/1.5 var(--mono);background:var(--lcd);color:var(--lcd-ink);padding:10px 12px;border-radius:6px}
+@keyframes fadein{from{opacity:.001;transform:translateY(6px)}}
+.acts{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
+.btn{background:var(--amber);color:#1b1208;border:0;border-radius:6px;padding:11px 18px;font-weight:600}
+.btn:hover{filter:brightness(1.08)}
+.btn:disabled{opacity:.35;cursor:default;filter:none}
+.btn.ghost{background:transparent;color:var(--text);border:1px solid var(--edge)}
+.choice{display:block;width:100%;text-align:left;background:var(--panel-hi);border:1px solid var(--edge);border-radius:7px;padding:12px 14px;max-width:66ch}
+.choice:hover:not(:disabled){border-color:var(--amber)}
+.choice small{display:block;color:var(--muted);font-size:13px;margin-top:2px}
+.choice.picked{border-color:var(--amber);background:#3a2c22}
+.choice:disabled:not(.picked){opacity:.4}
+.chs{display:grid;gap:8px;margin-top:20px}
+.intro{color:var(--muted);max-width:66ch;margin:0 0 18px}
+.result{margin-top:16px;font:600 14px var(--mono);color:var(--amber)}
+
+/* кассета */
+.cas{position:relative;display:grid;grid-template-rows:auto 1fr;width:100%;aspect-ratio:1.6;max-width:100%;border-radius:7px;padding:7px;
+  background:linear-gradient(#3b3440,#2a242f);border:1px solid rgba(255,255,255,.08);box-shadow:0 6px 14px rgba(0,0,0,.4);text-align:left}
+.cas-label{background:var(--paper);color:var(--paper-ink);border-radius:3px;padding:5px 7px;font:17px/1.05 var(--hand);min-height:0;overflow:hidden}
+.cas-label b{display:block;font-weight:400}
+.cas-label i{display:block;font-style:normal;font-size:14px;opacity:.75}
+.reels{display:flex;justify-content:center;gap:28%;align-items:center}
+.reels i{width:22px;height:22px;border-radius:50%;background:radial-gradient(circle,#1a1519 30%,#d8cfc0 32% 44%,#1a1519 46%)}
+.yr{position:absolute;right:8px;bottom:6px;font:600 12px var(--mono);color:var(--amber)}
+.order .pool,.order .slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}
+.order .pool{margin-bottom:22px}
+.order button.cas{cursor:pointer;font:inherit}
+.order button.cas:hover{outline:1px solid var(--amber)}
+.slot{border:1px dashed rgba(255,178,62,.35);border-radius:8px;aspect-ratio:1.6;display:grid;place-items:center;padding:0;background:none;color:var(--dim);font:600 20px var(--mono);max-width:100%}
+.slot .cas{height:100%}
+.slot.ok .cas{box-shadow:0 0 0 2px var(--good)} .slot.no .cas{box-shadow:0 0 0 2px var(--bad)}
+.sublbl{font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0 0 8px}
+
+/* викторины */
+.qhead{display:flex;justify-content:space-between;align-items:center;gap:12px;font:600 12px var(--mono);color:var(--muted);margin-bottom:12px}
+.timer{flex:0 1 200px;height:6px;border-radius:3px;background:#120d0a;overflow:hidden}
+.timer i{display:block;height:100%;background:var(--amber);width:100%}
+.riddle{font:500 16px/1.5 var(--mono);background:var(--lcd);color:var(--lcd-ink);padding:14px 16px;border-radius:7px;max-width:66ch;margin:0 0 16px}
+.bubble{background:var(--panel-hi);border:1px solid var(--edge);border-radius:12px 12px 12px 3px;padding:14px 16px;max-width:66ch;margin:0 0 16px}
+.bubble .who{display:block;font:600 11px var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--amber);margin-bottom:4px}
+.opts{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px;max-width:66ch}
+.opt{background:var(--panel-hi);border:1px solid var(--edge);border-radius:7px;padding:11px 13px;text-align:left}
+.opt:hover:not(:disabled){border-color:var(--amber)}
+.opt.ok{border-color:var(--good);background:rgba(134,211,154,.12)}
+.opt.no{border-color:var(--bad);background:rgba(255,116,102,.12)}
+.opt:disabled{cursor:default}
+.expl{max-width:66ch;color:var(--muted);border-left:2px solid var(--amber);padding-left:12px;margin:14px 0 0}
+.expl b{color:var(--text)}
+
+/* сопоставление и города */
+.dead-air{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.dead-air .lcd{font-size:20px;color:var(--red);text-shadow:0 0 12px rgba(255,75,58,.5)}
+.match{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.col{display:grid;gap:8px;align-content:start;min-width:0}
+.tile{background:var(--panel-hi);border:1px solid var(--edge);border-radius:7px;padding:10px 12px;text-align:left;min-height:46px}
+.tile.album{font-family:var(--hand);font-size:19px;background:var(--paper);color:var(--paper-ink);border-color:transparent}
+.tile.sel{outline:2px solid var(--amber);outline-offset:1px}
+.tile.done{opacity:.55;cursor:default}
+.tile .tag{float:right;font:600 11px var(--mono);color:var(--good)}
+.tile.album .tag{color:#2f7a45}
+.shake{animation:shake .35s}
+@keyframes shake{25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;min-height:44px}
+.chip{background:var(--paper);color:var(--paper-ink);border:0;border-radius:999px;padding:7px 14px;font:18px var(--hand)}
+.chip.sel{outline:2px solid var(--amber);outline-offset:2px}
+.bins{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+.bin{background:var(--panel-hi);border:1px solid var(--edge);border-radius:8px;padding:10px 12px;text-align:left;min-height:96px;display:grid;align-content:start;gap:6px}
+.bin:hover{border-color:var(--amber)}
+.bin h4{margin:0;font:600 12px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--amber)}
+.bin .in{display:flex;flex-wrap:wrap;gap:4px}
+.bin .in span{font:15px var(--hand);background:rgba(240,229,203,.12);border-radius:999px;padding:2px 9px}
+
+/* акростих */
+.word{display:flex;gap:6px;margin:0 0 18px;flex-wrap:wrap}
+.word span{width:44px;height:54px;display:grid;place-items:center;font:600 28px var(--mono);color:var(--amber);background:#120d0a;border:1px solid #3a2a1a;border-radius:6px;text-shadow:0 0 12px rgba(255,178,62,.5)}
+.word span.cur{border-color:var(--amber)}
+
+/* подозреваемые */
+.suspects{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px}
+.sus{background:var(--panel-hi);border:1px solid var(--edge);border-radius:8px;padding:12px 14px;text-align:left}
+.sus b{display:block;font-weight:600}
+.sus small{color:var(--muted);font-size:13px}
+.sus:hover:not(:disabled){border-color:var(--amber)}
+.sus.ok{border-color:var(--good)} .sus.no{border-color:var(--bad)}
+
+/* боковая панель */
+.side{display:grid;gap:14px;min-width:0}
+.pager{background:linear-gradient(#35303a,#221e26);border-radius:18px;padding:14px;border:1px solid rgba(255,255,255,.08);box-shadow:0 12px 26px rgba(0,0,0,.45)}
+.pager.buzz{animation:buzz .4s 2}
+@keyframes buzz{25%{transform:rotate(-1.2deg)}75%{transform:rotate(1.2deg)}}
+.pager-top{display:flex;justify-content:space-between;font:600 10px var(--mono);letter-spacing:.1em;color:var(--dim);margin-bottom:8px}
+.pager-top .led{width:8px;height:8px;border-radius:50%;background:#3b2320;align-self:center}
+.pager.buzz .led,.pager .led.new{background:var(--red);box-shadow:0 0 8px var(--red)}
+.pager-lcd{background:var(--lcd);color:var(--lcd-ink);border-radius:6px;padding:10px 11px;min-height:128px;font:500 13.5px/1.45 var(--mono);
+  box-shadow:inset 0 2px 6px rgba(0,0,0,.35)}
+.pager-lcd .meta{display:flex;justify-content:space-between;font-size:11px;opacity:.7;border-bottom:1px dashed rgba(29,39,22,.4);padding-bottom:4px;margin-bottom:6px}
+.pager-btns{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+.pager-btns button{background:#18141b;border:1px solid rgba(255,255,255,.1);border-radius:999px;width:38px;height:28px;color:var(--muted)}
+.pager-btns span{font:600 11px var(--mono);color:var(--dim)}
+.vu{display:flex;gap:6px;align-items:end;height:54px;background:#120d0a;border-radius:8px;padding:8px 10px;border:1px solid #2a1f16}
+.vu i{flex:1;height:10%;background:linear-gradient(0deg,var(--amber-lo),var(--amber) 70%,var(--red));border-radius:2px;transition:height .12s}
+.notes{background:var(--paper);color:var(--paper-ink);border-radius:4px;padding:14px 16px 16px;box-shadow:0 10px 22px rgba(0,0,0,.4);
+  background-image:repeating-linear-gradient(transparent 0 25px,rgba(60,90,160,.18) 25px 26px);background-position:0 36px}
+.notes h3{margin:0 0 6px;font:22px var(--hand)}
+.notes ol{margin:0;padding-left:20px;font:17px/26px var(--hand)}
+.notes .empty{font:16px/26px var(--hand);opacity:.6;margin:0}
+
+/* титул и финал */
+.title-card{display:grid;gap:14px;max-width:62ch}
+.title-card .date{font:600 13px var(--mono);letter-spacing:.12em;color:var(--amber)}
+.title-card h1{font:clamp(34px,7vw,64px)/1 var(--disp);margin:0;text-wrap:balance}
+.title-card p{margin:0;color:var(--muted)}
+.title-card .lead{color:var(--text);font-size:17px}
+.rules{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:6px 0 0;padding:0;list-style:none}
+.rules li{border-top:1px solid var(--edge);padding-top:8px;font-size:14px;color:var(--muted)}
+.rules b{display:block;color:var(--text);font:600 12px var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:2px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:18px 0 0;max-width:66ch}
+.stats div{background:var(--panel-hi);border-radius:7px;padding:10px 12px}
+.stats dt{font:600 10px var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim)}
+.stats dd{margin:2px 0 0;font:600 18px var(--mono);color:var(--amber);font-variant-numeric:tabular-nums}
+.verdict{font:clamp(18px,3vw,24px)/1.25 var(--disp);margin:6px 0 12px;text-wrap:balance}
+.foot{font-size:12px;color:var(--dim);text-align:center}
+
+@media (max-width:900px){
+  .deck{grid-template-columns:auto auto 1fr}
+  .grid-strip{grid-column:1/-1;order:9}
+  .desk{grid-template-columns:1fr}
+  .stage{min-height:0}
+}
+@media (max-width:520px){
+  .deck{grid-template-columns:1fr auto}
+  .brand{grid-column:1/-1}
+  .readout{justify-items:start}
+  .meter{width:130px}
+  .match{grid-template-columns:1fr}
+  .word span{width:38px;height:48px;font-size:24px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+
+<div class="app">
+  <header class="deck">
+    <div class="brand"><span class="freq">FM 102,7</span><span class="name">ПОЛНОЧЬ</span></div>
+    <div class="onair" id="onair">В ЭФИРЕ</div>
+    <nav class="grid-strip" id="strip" aria-label="Сетка эфира"></nav>
+    <div class="readout"><span class="lbl">Время</span><span class="lcd" id="clock">21:52</span></div>
+    <div class="readout aud">
+      <span class="lbl">Слушатели · цель 45 000</span>
+      <span class="lcd" id="aud">9 000</span>
+      <div class="meter" aria-hidden="true"><i id="audbar"></i><b></b></div>
+      <span class="delta" id="delta"></span>
+    </div>
+    <button class="snd" id="snd" aria-pressed="true" hidden>Звук</button>
+  </header>
+
+  <main class="desk">
+    <section class="stage" id="stage" aria-live="polite"></section>
+    <aside class="side">
+      <div class="pager" id="pager">
+        <div class="pager-top"><span>ПЕЙДЖЕР СТУДИИ</span><span class="led" id="led"></span></div>
+        <div class="pager-lcd" id="pagerLcd"></div>
+        <div class="pager-btns"><button id="pgPrev" aria-label="Предыдущее сообщение">◂</button><span id="pgPos">0 / 0</span><button id="pgNext" aria-label="Следующее сообщение">▸</button></div>
+      </div>
+      <div class="vu" id="vu" aria-hidden="true"></div>
+      <div class="notes"><h3>Блокнот</h3><ol id="notes"></ol><p class="empty" id="notesEmpty">Пока пусто. Сюда попадёт всё странное за ночь.</p></div>
+    </aside>
+  </main>
+  <p class="foot">Некоммерческий фанатский проект. Станция, её сотрудники, Сова и Гранатов вымышлены; все группы, песни и альбомы настоящие, их названия принадлежат правообладателям.</p>
+</div>
+
+<script>
+(() => {
+const GOAL = 45000, START = 9000, SCALE = 80000, KEY = 'efir99-v1';
+const $ = s => document.querySelector(s);
+const fmt = n => Math.round(n).toLocaleString('ru-RU');
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+let S = fresh();
+function fresh() { return { i: 0, l: START, f: {}, pager: [], notes: [], log: {}, clock: '21:52' }; }
+const store = {
+  get() { try { return JSON.parse(localStorage.getItem(KEY)); } catch (e) { return null; } },
+  set(v) { try { localStorage.setItem(KEY, JSON.stringify(v)); } catch (e) {} },
+  del() { try { localStorage.removeItem(KEY); } catch (e) {} }
+};
+
+/* ---------- звук: всё синтезируется на месте ---------- */
+const A = {
+  ctx: null, on: true,
+  init() {
+    if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {} }
+    if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume();
+    $('#snd').hidden = !this.ctx;
+  },
+  tone(f, d, type = 'sine', v = .07, w = 0) {
+    if (!this.on || !this.ctx) return;
+    const c = this.ctx, t = c.currentTime + w, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(v, t + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .03);
+  },
+  noise(d = .35, v = .04) {
+    if (!this.on || !this.ctx) return;
+    const c = this.ctx, b = c.createBuffer(1, c.sampleRate * d, c.sampleRate), x = b.getChannelData(0);
+    for (let i = 0; i < x.length; i++) x[i] = (Math.random() * 2 - 1) * (1 - i / x.length);
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    f.type = 'bandpass'; f.frequency.value = 2400; f.Q.value = .7; g.gain.value = v;
+    s.buffer = b; s.connect(f).connect(g).connect(c.destination); s.start();
+  },
+  beep() { this.tone(2800, .08, 'square', .03); this.tone(2800, .08, 'square', .03, .13); this.tone(2800, .08, 'square', .03, .26); },
+  good() { [523, 659, 784].forEach((f, k) => this.tone(f, .28, 'triangle', .06, k * .07)); },
+  bad() { this.tone(150, .32, 'sawtooth', .045); },
+  click() { this.tone(1100, .025, 'square', .018); },
+  chime() { [392, 523, 659, 784, 1046].forEach((f, k) => this.tone(f, .6, 'sine', .05, k * .12)); }
+};
+$('#snd').onclick = () => { A.on = !A.on; $('#snd').setAttribute('aria-pressed', A.on); };
+
+/* ---------- сетка эфира ---------- */
+const CH = ['22:00 Хронология', '23:00 Пейджер', '23:20 Гость', '00:00 Сбой', '01:10 Заявки', '03:00 Час быка', '05:30 Сова'];
+function renderStrip(cur) {
+  $('#strip').innerHTML = CH.map((c, k) => `<span class="${k + 1 < cur ? 'done' : k + 1 === cur ? 'now' : ''}">${c}</span>`).join('');
+}
+
+/* ---------- слушатели ---------- */
+let shown = START, raf = 0;
+function renderAud(instant) {
+  cancelAnimationFrame(raf);
+  const from = shown, to = S.l, t0 = performance.now(), dur = instant || reduced ? 0 : 900;
+  const step = now => {
+    const k = dur ? Math.min(1, (now - t0) / dur) : 1;
+    shown = from + (to - from) * (1 - Math.pow(1 - k, 3));
+    $('#aud').textContent = fmt(shown);
+    if (k < 1) raf = requestAnimationFrame(step);
+  };
+  raf = requestAnimationFrame(step);
+  $('#audbar').style.width = Math.min(100, S.l / SCALE * 100) + '%';
+}
+function add(n) {
+  if (!n) return;
+  S.l = Math.max(0, S.l + n);
+  renderAud();
+  const d = $('#delta');
+  d.textContent = (n > 0 ? '+' : '−') + fmt(Math.abs(n));
+  d.className = 'delta ' + (n > 0 ? 'up' : 'down');
+  void d.offsetWidth; d.classList.add('show');
+}
+
+/* ---------- пейджер и блокнот ---------- */
+let pgIdx = -1;
+function page(text, from = 'АБ. 4471') {
+  S.pager.push({ t: S.clock, from, text });
+  pgIdx = S.pager.length - 1;
+  renderPager(true);
+  A.beep();
+  const p = $('#pager'); p.classList.remove('buzz'); void p.offsetWidth; p.classList.add('buzz');
+}
+function renderPager(fresh) {
+  const n = S.pager.length, m = S.pager[pgIdx];
+  $('#pagerLcd').innerHTML = m
+    ? `<div class="meta"><span>${m.from}</span><span>${m.t}</span></div>${m.text}`
+    : `<div class="meta"><span>НЕТ СООБЩЕНИЙ</span><span>--:--</span></div>Приём включён.`;
+  $('#pgPos').textContent = n ? `${pgIdx + 1} / ${n}` : '0 / 0';
+  $('#led').classList.toggle('new', !!fresh);
+}
+$('#pgPrev').onclick = () => { if (pgIdx > 0) { pgIdx--; renderPager(); A.click(); } };
+$('#pgNext').onclick = () => { if (pgIdx < S.pager.length - 1) { pgIdx++; renderPager(); A.click(); } };
+function note(t) { if (!S.notes.includes(t)) { S.notes.push(t); renderNotes(); } }
+function renderNotes() {
+  $('#notes').innerHTML = S.notes.map(n => `<li>${n}</li>`).join('');
+  $('#notesEmpty').hidden = S.notes.length > 0;
+}
+
+/* ---------- индикаторы ---------- */
+const vu = $('#vu');
+for (let k = 0; k < 12; k++) vu.append(el('i'));
+let silent = true;
+setInterval(() => {
+  [...vu.children].forEach((b, k) => {
+    const lvl = silent ? 4 + Math.random() * 3 : 25 + Math.random() * 65 * (1 - Math.abs(k - 5.5) / 14);
+    b.style.height = lvl + '%';
+  });
+}, reduced ? 1000 : 140);
+function air(mode) {
+  const o = $('#onair');
+  o.classList.toggle('live', mode !== 'off');
+  o.classList.toggle('dead', mode === 'dead');
+  silent = mode !== 'live';
+}
+
+/* ---------- движок сцен ---------- */
+let timers = [];
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+const every = (fn, ms) => timers.push(setInterval(fn, ms));
+function clearTimers() { timers.forEach(t => { clearTimeout(t); clearInterval(t); }); timers = []; }
+
+function go(i) {
+  clearTimers();
+  S.i = i;
+  const sc = SCENES[i];
+  S.clock = sc.clock || S.clock;
+  if (i > 0) store.set(S);
+  $('#clock').textContent = S.clock;
+  renderStrip(sc.ch || 0);
+  air(sc.air || 'live');
+  const st = $('#stage');
+  st.innerHTML = '';
+  if (sc.kicker) st.append(el('p', 'kicker', sc.kicker));
+  if (sc.title) st.append(el('h2', null, sc.title));
+  A.noise(.25, .025);
+  sc.run(st);
+  st.scrollIntoView({ block: 'start', behavior: reduced ? 'auto' : 'smooth' });
+}
+function nextBtn(st, label = 'Дальше', to) {
+  const a = el('div', 'acts'), b = el('button', 'btn', label);
+  b.onclick = () => { A.click(); go(to == null ? S.i + 1 : to); };
+  a.append(b); st.append(a); b.focus({ preventScroll: true });
+  return b;
+}
+function lineEl(ln, k) {
+  const [who, text] = ln;
+  let e;
+  if (!who) e = el('p', 'ln narr', text);
+  else if (who === 'pg') e = el('p', 'ln pg', text);
+  else e = el('p', 'ln', `<span class="who">${who}</span>${text}`);
+  e.style.setProperty('--d', (k * .12) + 's');
+  return e;
+}
+function story(o) {
+  return Object.assign({}, o, {
+    run(st) {
+      const box = el('div', 'lines'); st.append(box);
+      const lines = typeof o.lines === 'function' ? o.lines() : o.lines;
+      lines.forEach((ln, k) => box.append(lineEl(ln, k)));
+      if (o.enter) o.enter();
+      if (o.pager) page(o.pager);
+      if (o.note) note(o.note);
+      const ch = typeof o.choices === 'function' ? o.choices() : o.choices;
+      if (!ch) { nextBtn(st, o.next || 'Дальше'); return; }
+      const wrap = el('div', 'chs'); st.append(wrap);
+      ch.forEach(c => {
+        const b = el('button', 'choice', c.label + (c.hint ? `<small>${c.hint}</small>` : ''));
+        b.onclick = () => {
+          A.click();
+          [...wrap.children].forEach(x => x.disabled = true);
+          b.classList.add('picked');
+          if (c.l) add(c.l);
+          if (c.f) Object.assign(S.f, c.f);
+          const rep = el('div', 'lines'); rep.style.marginTop = '16px';
+          (c.reply || []).forEach((ln, k) => rep.append(lineEl(ln, k)));
+          st.append(rep);
+          if (c.note) note(c.note);
+          nextBtn(st, 'Дальше', c.to);
+        };
+        wrap.append(b);
+      });
+    }
+  });
+}
+function finish(st, text, key, val) {
+  if (key) S.log[key] = val;
+  st.append(el('p', 'result', text));
+  nextBtn(st);
+}
+
+/* ---------- мини-игры ---------- */
+const casHTML = (x, yr) => `<span class="cas-label"><b>${x.a}</b><i>${x.s}</i></span><span class="reels"><i></i><i></i></span>${yr ? `<span class="yr">${x.y}</span>` : ''}`;
+
+function gOrder(st, items) {
+  const box = el('div', 'order'); st.append(box);
+  let pool = shuffle(items.map((x, k) => ({ ...x, k })));
+  while (pool.every((x, j) => x.k === j)) pool = shuffle(pool);
+  const slots = Array(items.length).fill(null);
+  let checked = false;
+  const draw = () => {
+    box.innerHTML = '<p class="sublbl">Кассеты на столе</p>';
+    const p = el('div', 'pool');
+    pool.forEach(x => {
+      const b = el('button', 'cas', casHTML(x));
+      b.setAttribute('aria-label', `${x.a}, ${x.s}. Поставить в следующий слот`);
+      b.onclick = () => { A.click(); const j = slots.indexOf(null); slots[j] = x; pool = pool.filter(y => y !== x); draw(); };
+      p.append(b);
+    });
+    if (!pool.length) p.append(el('p', 'intro', 'Все кассеты в деке. Проверяем?'));
+    box.append(p, el('p', 'sublbl', 'Порядок в эфире: от ранних к поздним'));
+    const s = el('div', 'slots');
+    slots.forEach((x, j) => {
+      const b = el('button', 'slot' + (checked ? (x.k === j ? ' ok' : ' no') : ''));
+      if (x) { b.append(el('span', 'cas', casHTML(x, checked))); b.setAttribute('aria-label', `Слот ${j + 1}: ${x.a}. Убрать`); }
+      else b.textContent = j + 1;
+      b.onclick = () => { if (checked || !x) return; A.click(); slots[j] = null; pool.push(x); draw(); };
+      if (checked) b.disabled = true;
+      s.append(b);
+    });
+    box.append(s);
+    if (!checked) {
+      const a = el('div', 'acts'), c = el('button', 'btn', 'Выпустить блок в эфир');
+      c.disabled = slots.includes(null);
+      c.onclick = () => {
+        checked = true;
+        const ok = slots.filter((x, j) => x.k === j).length;
+        add(ok * 1500); ok >= 4 ? A.good() : A.bad();
+        draw();
+        box.append(el('p', 'expl', items.map(x => `<b>${x.y}</b> · ${x.a} — «${x.s}»`).join('<br>')));
+        finish(st, `На своих местах: ${ok} из ${items.length}`, 'order', `${ok}/${items.length}`);
+      };
+      a.append(c); box.append(a);
+    }
+  };
+  draw();
+}
+
+function gQuiz(st, qs, cfg) {
+  const box = el('div'); st.append(box);
+  let qi = 0, right = 0;
+  const show = () => {
+    const q = qs[qi];
+    box.innerHTML = '';
+    const head = el('div', 'qhead', `<span>${cfg.label} ${qi + 1} из ${qs.length}</span>`);
+    let bar = null;
+    if (cfg.time) { const t = el('span', 'timer'); bar = el('i'); t.append(bar); head.append(t); }
+    box.append(head);
+    if (cfg.pager) { page(q.q); box.append(el('p', 'riddle', q.q)); }
+    else box.append(el('div', 'bubble', `<span class="who">${cfg.who}</span>${q.q}`));
+    const opts = el('div', 'opts'); box.append(opts);
+    const list = cfg.fixed ? q.o : shuffle(q.o);
+    let t0 = performance.now(), over = false;
+    const answer = (b, o) => {
+      if (over) return; over = true; clearTimers();
+      [...opts.children].forEach(x => { x.disabled = true; if (x._o.ok) x.classList.add('ok'); });
+      let gain;
+      if (o && o.ok) {
+        right++;
+        const left = cfg.time ? Math.max(0, 1 - (performance.now() - t0) / (cfg.time * 1000)) : 0;
+        gain = cfg.win + Math.round(left * cfg.bonus / 100) * 100;
+        A.good();
+      } else { if (b) b.classList.add('no'); gain = -cfg.lose; A.bad(); }
+      add(gain);
+      const pre = !o ? '<b>Время вышло.</b> ' : o.ok ? '<b>Точно.</b> ' : '<b>Мимо.</b> ';
+      box.append(el('p', 'expl', pre + q.e));
+      const a = el('div', 'acts'), n = el('button', 'btn', qi < qs.length - 1 ? cfg.nextLabel : 'Итог');
+      n.onclick = () => { A.click(); qi++; if (qi < qs.length) show(); else { box.innerHTML = ''; finish(st, cfg.done(right, qs.length), cfg.key, `${right}/${qs.length}`); } };
+      a.append(n); box.append(a); n.focus({ preventScroll: true });
+    };
+    list.forEach(o => {
+      const b = el('button', 'opt', o.t); b._o = o;
+      b.onclick = () => answer(b, o);
+      opts.append(b);
+    });
+    if (cfg.time) {
+      every(() => {
+        const k = 1 - (performance.now() - t0) / (cfg.time * 1000);
+        bar.style.width = Math.max(0, k * 100) + '%';
+        if (k <= 0) answer(null, null);
+      }, 100);
+    }
+  };
+  show();
+}
+
+function gMatch(st, pairs) {
+  const top = el('div', 'dead-air', '<span class="lbl">Тишина в эфире</span>');
+  const clk = el('span', 'lcd', '00:00'); top.append(clk); st.append(top);
+  const m = el('div', 'match'), L = el('div', 'col'), R = el('div', 'col');
+  m.append(L, R); st.append(m);
+  let sel = null, done = 0, wrong = 0;
+  const t0 = performance.now();
+  let secs = 0;
+  every(() => { secs = Math.floor((performance.now() - t0) / 1000); clk.textContent = `${String(Math.floor(secs / 60)).padStart(2, '0')}:${String(secs % 60).padStart(2, '0')}`; }, 250);
+  const mk = (x, side) => {
+    const b = el('button', 'tile' + (side === 'L' ? ' album' : ''), side === 'L' ? `«${x.al}»` : x.ar);
+    b._k = x.k; b._s = side;
+    b.onclick = () => {
+      if (b.classList.contains('done')) return;
+      A.click();
+      if (!sel || sel._s === side) { if (sel) sel.classList.remove('sel'); sel = b; b.classList.add('sel'); return; }
+      if (sel._k === b._k) {
+        done++;
+        [sel, b].forEach(y => { y.classList.remove('sel'); y.classList.add('done'); y.disabled = true; y.insertAdjacentHTML('afterbegin', `<span class="tag">${x.y}</span>`); });
+        A.good(); add(800); sel = null;
+        if (done === pairs.length) {
+          clearTimers();
+          air('live');
+          const bonus = Math.max(0, 60 - secs) * 100;
+          if (bonus) later(() => add(bonus), 700);
+          S.f.deadAir = secs;
+          finish(st, `Эфир восстановлен. Тишина длилась ${secs} с, ошибок: ${wrong}${bonus ? `, бонус за скорость +${fmt(bonus)}` : ''}`, 'match', `${secs} с`);
+        }
+      } else {
+        wrong++; A.bad(); add(-400);
+        [sel, b].forEach(y => { y.classList.remove('shake'); void y.offsetWidth; y.classList.add('shake'); });
+        sel.classList.remove('sel'); sel = null;
+      }
+    };
+    return b;
+  };
+  const list = pairs.map((x, k) => ({ ...x, k }));
+  shuffle(list).forEach(x => L.append(mk(x, 'L')));
+  shuffle(list).forEach(x => R.append(mk(x, 'R')));
+}
+
+function gBins(st, bins) {
+  const chips = el('div', 'chips'), grid = el('div', 'bins');
+  st.append(el('p', 'sublbl', 'Группы · выберите одну, потом город'), chips, el('p', 'sublbl', 'Города'), grid);
+  const all = shuffle(bins.flatMap((b, k) => b.items.map(n => ({ n, k }))));
+  let sel = null, left = all.length, wrong = 0;
+  const binEls = bins.map((b, k) => {
+    const e = el('button', 'bin', `<h4>${b.city}</h4><span class="in"></span>`);
+    e.onclick = () => {
+      if (!sel) { e.classList.remove('shake'); void e.offsetWidth; e.classList.add('shake'); return; }
+      if (sel._x.k === k) {
+        A.good(); add(700);
+        e.querySelector('.in').append(el('span', null, sel._x.n));
+        sel.remove(); sel = null; left--;
+        if (!left) finish(st, `Приветы разосланы по адресам. Ошибок: ${wrong}`, 'bins', `${wrong} ош.`);
+      } else {
+        wrong++; A.bad(); add(-350);
+        sel.classList.remove('shake'); void sel.offsetWidth; sel.classList.add('shake');
+      }
+    };
+    grid.append(e); return e;
+  });
+  all.forEach(x => {
+    const c = el('button', 'chip', x.n); c._x = x;
+    c.onclick = () => { A.click(); if (sel) sel.classList.remove('sel'); sel = c === sel ? null : c; if (sel) c.classList.add('sel'); };
+    chips.append(c);
+  });
+}
+
+function gAcro(st, qs, word) {
+  const w = el('div', 'word'); st.append(w);
+  [...word].forEach(() => w.append(el('span', null, '')));
+  const box = el('div'); st.append(box);
+  let qi = 0, miss = 0;
+  const show = () => {
+    [...w.children].forEach((c, k) => c.classList.toggle('cur', k === qi));
+    const q = qs[qi];
+    box.innerHTML = '';
+    page(q.q);
+    box.append(el('p', 'riddle', q.q));
+    const opts = el('div', 'opts'); box.append(opts);
+    shuffle(q.o).forEach(o => {
+      const b = el('button', 'opt', o.t);
+      b.onclick = () => {
+        if (o.ok) {
+          A.good(); add(1000);
+          b.classList.add('ok');
+          [...opts.children].forEach(x => x.disabled = true);
+          w.children[qi].textContent = word[qi];
+          qi++;
+          later(() => qi < qs.length ? show() : done(), 700);
+        } else { miss++; A.bad(); add(-500); b.classList.add('no'); b.disabled = true; }
+      };
+      opts.append(b);
+    });
+  };
+  const done = () => {
+    [...w.children].forEach(c => c.classList.remove('cur'));
+    box.innerHTML = '';
+    A.chime();
+    finish(st, `Слово сложилось: ${word}. Промахов: ${miss}`, 'acro', `${miss} пром.`);
+  };
+  show();
+}
+
+/* ---------- содержание ---------- */
+const SCENES = [
+  { clock: '21:52', air: 'off', run(st) {
+    const saved = store.get();
+    const card = el('div', 'title-card', `
+      <span class="date">31.12.1999 · ПЕТЕРБУРГ · 22:00 — 06:00</span>
+      <h1>Ночной эфир</h1>
+      <p class="lead">Последняя ночь девяностых. Станцию «Полночь FM» только что купили, и новый владелец будет слушать твою смену до утра. Если к шести утра аудитория не наберёт 45 000, с первого января в эфире останутся только танцы без ведущих.</p>
+      <p>Всю ночь на студийный пейджер пишет абонент, который подписывается «Сова». Он явно знает о станции больше, чем ты.</p>
+      <ul class="rules">
+        <li><b>Семь глав</b>Каждый час эфира — своя беда: сбитый плейлист, гость-враль, сбой компьютера, путаница с заявками.</li>
+        <li><b>Слушатели</b>Верные ответы прибавляют аудиторию, ошибки и тишина в эфире её отнимают.</li>
+        <li><b>Блокнот</b>Сюда попадают улики. К рассвету из них придётся понять, кто такой Сова.</li>
+      </ul>`);
+    st.append(card);
+    const a = el('div', 'acts');
+    const b = el('button', 'btn', 'Выйти в эфир');
+    b.onclick = () => { A.init(); S = fresh(); pgIdx = -1; renderPager(); renderNotes(); shown = START; renderAud(true); go(1); };
+    a.append(b);
+    if (saved && saved.i > 0 && saved.i < SCENES.length) {
+      const c = el('button', 'btn ghost', `Продолжить смену (${saved.clock})`);
+      c.onclick = () => { A.init(); S = saved; pgIdx = S.pager.length - 1; renderPager(); renderNotes(); shown = S.l; renderAud(true); go(S.i); };
+      a.append(c);
+    }
+    st.append(a);
+  }},
+
+  story({ clock: '21:52', kicker: 'Пролог · 21:52', title: 'Мансарда на Лиговском',
+    lines: [
+      ['', 'Петербург, Лиговский проспект, шестой этаж без лифта. Студия «Полночь FM 102,7» — две комнаты под самой крышей, пульт, два кассетных деки, проигрыватель и компьютер с плейлистом, которому никто не доверяет.'],
+      ['', 'Днём по телевизору Ельцин объявил, что уходит. Город отреагировал сдержанно: город режет оливье.'],
+      ['Лёха, звукорежиссёр', 'Шеф, новость. Станцию купили. Холдинг «Гранат-Медиа», хозяин — некий Эдуард Гранатов. Инна Марковна звонила: он сегодня всю ночь слушает нас. Если к шести утра не наберём сорок пять тысяч, с первого января у нас формат «танцы нон-стоп, ведущие не нужны».'],
+      ['Лёха', 'Хотя танцы я как раз люблю.'],
+      ['', 'На столе вздрагивает студийный пейджер.']
+    ],
+    pager: 'Добрый вечер, ночная смена. Не проспите первый час. Я слушаю. — СОВА',
+    choices: [
+      { label: 'Открыть смену голосом: поздравить город и пообещать ночь без повторов', hint: 'Смело. Слушатели любят обещания.', l: 600,
+        reply: [['Лёха', 'Без повторов? До шести утра? Ну, ты сказал, а я услышал.']] },
+      { label: 'Меньше слов, больше музыки: сразу в первый блок', hint: 'Надёжно.', l: 300,
+        reply: [['Лёха', 'Правильно. Разговоры в этой студии пусть ведут те, кто умеет. То есть ты, но попозже.']] }
+    ]
+  }),
+
+  story({ clock: '21:58', ch: 1, kicker: 'Глава 1 · 21:58', title: 'Хронология',
+    lines: [
+      ['', 'Грохот. Лёха уронил кейс с кассетами первого блока. Шесть кассет на полу, наклейки с порядком эфира улетели под пульт.'],
+      ['Лёха', 'Инна Марковна требует, чтобы первый час шёл хронологией: от старых к новым. «Слушатель должен чувствовать путь», цитирую дословно. Годов на кассетах нет. Выручай.'],
+      ['', 'Разложи кассеты по году выхода песни: от самой ранней к самой поздней. Каждая кассета на своём месте добавит 1 500 слушателей.']
+    ],
+    next: 'К пульту'
+  }),
+  { clock: '22:00', ch: 1, kicker: 'Глава 1 · 22:00', title: 'Первый блок', run(st) {
+    gOrder(st, [
+      { a: 'Survivor', s: 'Eye of the Tiger', y: 1982 },
+      { a: 'Alphaville', s: 'Forever Young', y: 1984 },
+      { a: 'Наутилус Помпилиус', s: 'Скованные одной цепью', y: 1986 },
+      { a: 'Кино', s: 'Звезда по имени Солнце', y: 1989 },
+      { a: 'Nirvana', s: 'Smells Like Teen Spirit', y: 1991 },
+      { a: 'Мумий Тролль', s: 'Утекай', y: 1997 }
+    ]);
+  }},
+
+  story({ clock: '22:52', ch: 1, kicker: 'Эфир · 22:52', title: 'Лёха просит слова',
+    lines: [
+      ['', 'Первый час прошёл. На столе остывает чай, за окном кто-то уже запускает петарды, не дождавшись полуночи.'],
+      ['Лёха', 'Шеф, можно я в какой-то момент поставлю Prodigy? «Firestarter». Для души. Девяносто шестой год, между прочим, тоже классика.']
+    ],
+    pager: 'Хронология — основа вкуса. Дальше будет сложнее. Сыграем в 23:00? — С.',
+    choices: [
+      { label: 'Ставь, но после полуночи', hint: 'Компромисс.', f: { lexa: 1 },
+        reply: [['Лёха', 'Договорились. Записываю в блокнот кровью.']] },
+      { label: 'Ставь прямо сейчас', hint: 'Лёха счастлив, часть аудитории вздрагивает.', l: -500, f: { lexa: 2 },
+        reply: [['', 'Пять минут ломаных битов. Лёха дирижирует карандашом. Пейджер молчит, но как-то выразительно.']] },
+      { label: 'Нет. У нас формат', hint: 'Формат есть формат.', l: 300, f: { lexa: 0 },
+        reply: [['Лёха', 'Понял. Формат. Я запомню, как ты растоптал мою юность.']] }
+    ]
+  }),
+
+  story({ clock: '22:59', ch: 2, kicker: 'Глава 2 · 22:59', title: 'Пейджер Совы',
+    lines: [
+      ['pg', 'АБ. 4471: Правила простые. Я описываю песню — ты ставишь. На каждую 25 секунд, эфир не ждёт. — С.'],
+      ['Лёха', 'Он что, играет с нами? С эфиром?'],
+      ['', 'Шесть загадок. Верный ответ даёт 1 500 слушателей и бонус за скорость до 500, промах стоит 800. Не успел за 25 секунд — это тоже промах.']
+    ],
+    next: 'Принять вызов'
+  }),
+  { clock: '23:00', ch: 2, kicker: 'Глава 2 · 23:00', title: 'Загадки с пейджера', run(st) {
+    gQuiz(st, [
+      { q: 'Карандашный парень протягивает руку прямо со страницы комикса, и девушка уходит за ним в нарисованный мир.',
+        o: [{ t: 'a-ha — Take On Me', ok: 1 }, { t: 'Alphaville — Big in Japan' }, { t: 'Duran Duran — Hungry Like the Wolf' }, { t: 'Tears for Fears — Shout' }],
+        e: 'Клип 1985 года сделан ротоскопией: живые кадры обведены карандашом вручную. На MTV Video Music Awards 1986 года он взял шесть наград.' },
+      { q: 'Свидание в кинотеатре, потом мертвецы встают из могил и танцуют, а под конец низкий голос читает стихи и зловеще смеётся.',
+        o: [{ t: 'Michael Jackson — Thriller', ok: 1 }, { t: 'Ray Parker Jr. — Ghostbusters' }, { t: 'Michael Jackson — Bad' }, { t: 'Bonnie Tyler — Total Eclipse of the Heart' }],
+        e: 'Стихи читает Винсент Прайс, звезда фильмов ужасов. Клип снял Джон Лэндис, и длится он почти четырнадцать минут.' },
+      { q: 'Девяносто девять детских шариков в небе приняли за вражеские цели, и началась война. Оригинал, пожалуйста, на немецком.',
+        o: [{ t: 'Nena — 99 Luftballons', ok: 1 }, { t: 'Kraftwerk — Das Model' }, { t: 'Alphaville — Forever Young' }, { t: 'Modern Talking — Brother Louie' }],
+        e: 'Западный Берлин, 1983 год. В США до второго места Billboard дошла немецкая версия, а первое место в Британии взяла английская, «99 Red Balloons».' },
+      { q: 'Прогулка вдоль Москвы-реки до Парка Горького и свист, который узнал весь мир.',
+        o: [{ t: 'Scorpions — Wind of Change', ok: 1 }, { t: 'Scorpions — Still Loving You' }, { t: 'Europe — Carrie' }, { t: 'Bon Jovi — Wanted Dead or Alive' }],
+        e: 'Клаус Майне написал её после Московского фестиваля мира в августе 1989-го. Песня вошла в альбом «Crazy World» 1990 года.' },
+      { q: 'Рыбак Андрей бросает сети и просит Учителя научить его ходить по воде.',
+        o: [{ t: 'Наутилус Помпилиус — Прогулки по воде', ok: 1 }, { t: 'Аквариум — Город золотой' }, { t: 'ДДТ — Родина' }, { t: 'Наутилус Помпилиус — Я хочу быть с тобой' }],
+        e: 'Альбом «Чужая земля», 1993 год. Евангельский сюжет в исполнении группы из Свердловска.' },
+      { q: 'Кавер на песню Долли Партон. Певицу в фильме охраняет Кевин Костнер.',
+        o: [{ t: 'Whitney Houston — I Will Always Love You', ok: 1 }, { t: 'Céline Dion — My Heart Will Go On' }, { t: 'Bryan Adams — (Everything I Do) I Do It for You' }, { t: 'Roxette — It Must Have Been Love' }],
+        e: '«Телохранитель», 1992 год. Долли Партон выпустила оригинал в 1974-м. Остальные три варианта — тоже саундтреки: «Титаник», «Робин Гуд» и «Красотка».' }
+    ], { label: 'Загадка', pager: true, time: 25, win: 1500, bonus: 500, lose: 800, nextLabel: 'Следующая загадка', key: 'quiz',
+         done: (r, n) => `Угадано ${r} из ${n}. Пейджер затих — видимо, Сова ставит оценку.` });
+  }},
+
+  story({ clock: '23:18', ch: 3, kicker: 'Глава 3 · 23:18', title: 'Гость опаздывает на полтора часа',
+    lines: [
+      ['', 'В дверь вваливается Вадим «Гриф» Серов, бас-гитарист группы «Сухой закон» (1986–1994, два альбома, один хит, три развода). Обещал прийти в десять, пришёл в одиннадцать двадцать, с гитарой и пакетом мандаринов.'],
+      ['Гриф', 'Я тебе сейчас в эфире такого нарасскажу! Половина — правда, половина — для красоты. Поймаешь, где я вру, — эфир твой. Не поймаешь — ну, значит, я артист.'],
+      ['', 'Шесть историй. Правильно распознанная правда или байка приносит 1 200 слушателей, ошибка стоит 600.']
+    ],
+    pager: 'Гриф в студии? Держите ухо востро. — С.',
+    next: 'Включить микрофон гостю'
+  }),
+  { clock: '23:20', ch: 3, kicker: 'Глава 3 · 23:20', title: 'Правда или байка', run(st) {
+    const T = (ok) => [{ t: 'Правда', ok: ok ? 1 : 0 }, { t: 'Байка', ok: ok ? 0 : 1 }];
+    gQuiz(st, [
+      { q: 'Когда в восемьдесят первом запустили MTV, первым клипом поставили «Video Killed the Radio Star». Прямо про нас с тобой, коллега.', o: T(1),
+        e: 'Правда. The Buggles открыли MTV 1 августа 1981 года. Радио, как видишь, живо.' },
+      { q: 'Live Aid в восемьдесят пятом шёл одновременно в Лондоне и в Москве. Я сам стоял в «Лужниках», Боно мне кивнул.', o: T(0),
+        e: 'Байка. Live Aid проходил 13 июля 1985 года на лондонском «Уэмбли» и на стадионе имени Джона Кеннеди в Филадельфии.' },
+      { q: '«Чёрный альбом» «Кино» доделывали уже после гибели Цоя, с его черновой записи голоса.', o: T(1),
+        e: 'Правда. Летом 1990-го в Латвии Цой напел новые песни на черновую кассету. После его гибели музыканты «Кино» дописали по ней альбом, он вышел в 1991-м.' },
+      { q: 'Бой Джордж начинал вокалистом в Duran Duran, а потом ушёл собирать Culture Club.', o: T(0),
+        e: 'Байка. У Duran Duran поёт Саймон Ле Бон. Бой Джордж — голос Culture Club.' },
+      { q: '«Smells Like Teen Spirit» названа в честь дезодоранта. Кобейн, говорят, узнал об этом уже после выхода сингла.', o: T(1),
+        e: 'Правда. Кэтлин Ханна написала на стене «Kurt smells like Teen Spirit», имея в виду дезодорант, которым пользовалась его девушка. Кобейн принял фразу за бунтарский лозунг.' },
+      { q: 'Modern Talking разбежались в восемьдесят седьмом и больше никогда не сходились. Дитер поклялся на синтезаторе.', o: T(0),
+        e: 'Байка. Дуэт воссоединился в 1998 году и выпустил «You’re My Heart, You’re My Soul ’98». Клятва на синтезаторе, видимо, не считается.' }
+    ], { label: 'История', who: 'Гриф', fixed: true, win: 1200, bonus: 0, lose: 600, nextLabel: 'Следующая история', key: 'truth',
+         done: (r, n) => `Раскушено ${r} из ${n}. Гриф доволен собой при любом счёте.` });
+  }},
+
+  story({ clock: '23:50', ch: 3, kicker: 'Эфир · 23:50', title: 'Что над вами',
+    lines: [
+      ['Гриф', 'А знаешь, что прямо над вами? Чердак. В восемьдесят восьмом оттуда вещало пиратское «Радио Чердак». Ведущий называл себя Сова и крутил то, что на Ленинградском радио не ставили никогда.'],
+      ['Гриф', 'Пеленгаторы нашли антенну, а его самого — нет. Говорят, потом он поднялся на пластинках, стал большим человеком. Ладно, мне пора, у меня ещё два эфира и одна бывшая жена.'],
+      ['Лёха', 'Сова. Как на пейджере.']
+    ],
+    pager: 'Гриф врёт через раз. Но про чердак — правда. — С.',
+    note: 'В 1988 году с чердака над студией вещало пиратское «Радио Чердак». Ведущий называл себя Сова.'
+  }),
+
+  story({ clock: '23:59', ch: 4, kicker: 'Глава 4 · 23:59', title: '00:00:04',
+    lines: [
+      ['Лёха', 'По формату в полночь куранты с кассеты, дальше плейлист с компьютера. Кстати, формально новое тысячелетие начнётся только в 2001-м. Но кто считает.'],
+      ['', 'Бьют куранты. Лёха разливает шампанское по кружкам с надписью «Олимпиада-80». Двенадцатый удар.'],
+      ['', 'Четыре секунды нового года. Экран компьютера мигает: «01.01.1900». Плейлист исчез. В эфире тишина.'],
+      ['Лёха', 'Проблема двухтысячного! Нас предупреждали, а я смеялся!']
+    ],
+    enter() { air('dead'); },
+    next: 'Спасать эфир'
+  }),
+  { clock: '00:00', ch: 4, air: 'dead', kicker: 'Глава 4 · 00:00', title: 'Сбой двухтысячного', run(st) {
+    st.append(el('p', 'intro', 'Альбомы на кассетах есть, но наклейки с именами групп отсырели и отвалились. Соедини каждый альбом с исполнителем: нажми на альбом, потом на группу. Верная пара даёт 800 слушателей, ошибка стоит 400. Если управишься быстрее минуты, за каждую оставшуюся секунду тишины получишь ещё 100.'));
+    gMatch(st, [
+      { al: 'Разлука', ar: 'Наутилус Помпилиус', y: 1986 },
+      { al: 'Группа крови', ar: 'Кино', y: 1988 },
+      { al: 'Опиум', ar: 'Агата Кристи', y: 1995 },
+      { al: 'Морская', ar: 'Мумий Тролль', y: 1997 },
+      { al: 'Thriller', ar: 'Michael Jackson', y: 1982 },
+      { al: 'The Joshua Tree', ar: 'U2', y: 1987 },
+      { al: 'Violator', ar: 'Depeche Mode', y: 1990 },
+      { al: 'Nevermind', ar: 'Nirvana', y: 1991 }
+    ]);
+  }},
+
+  story({ clock: '00:40', ch: 4, kicker: 'Эфир · 00:40', title: 'Звонок из Комарово',
+    lines: () => [
+      ['', 'Звонит студийный телефон. Инна Марковна, программный директор, звонит с дачи в Комарово, судя по звукам, из-за праздничного стола.'],
+      ['Инна Марковна', `Я слышала тишину. ${S.f.deadAir != null ? S.f.deadAir + ' секунд' : 'Долгую'}! В новогоднюю ночь! Ладно, вытянули, я не за этим звоню.`],
+      ['Инна Марковна', 'Про Гранатова. Я его помню по восьмидесятым: торговал винилом у «Сайгона», весь рок-клуб у него пластинки брал. И вот что странно: он сам попросил ночную смену до утра не трогать. Сказал: «Хочу послушать, как они справятся без меня». Без него — это как?']
+    ],
+    pager: 'С Новым годом. Компьютеры сдались, люди — нет. — С.',
+    note: 'Гранатов в 80-е торговал винилом у «Сайгона». Сам попросил не трогать ночную смену «без него».'
+  }),
+
+  story({ clock: '01:08', ch: 5, kicker: 'Глава 5 · 01:08', title: 'Стол заявок',
+    lines: () => [
+      ['', 'После полуночи пейджер разрывается: приветы землякам. Звонят из общежитий, с вахт, из такси.'],
+      ['Лёха', S.f.lexa === 1 ? 'Я поставил «Firestarter», как договаривались, спасибо! Но у нас проблема: я уже передал привет «землякам ДДТ из Ленинграда». Нам позвонили из Уфы. Трижды.' : 'Проблема: я передал привет «землякам ДДТ из Ленинграда». Нам позвонили из Уфы. Трижды.'],
+      ['', 'Разложи группы по городам, где они появились. Верный адрес даёт 700 слушателей, ошибка стоит 350.']
+    ],
+    next: 'Разобрать заявки'
+  }),
+  { clock: '01:10', ch: 5, kicker: 'Глава 5 · 01:10', title: 'Откуда вы, ребята?', run(st) {
+    gBins(st, [
+      { city: 'Ленинград', items: ['Кино', 'Аквариум', 'Алиса'] },
+      { city: 'Свердловск', items: ['Наутилус Помпилиус', 'Агата Кристи', 'Чайф'] },
+      { city: 'Уфа', items: ['ДДТ', 'Земфира'] },
+      { city: 'Омск', items: ['Гражданская оборона'] },
+      { city: 'Владивосток', items: ['Мумий Тролль'] }
+    ]);
+  }},
+
+  story({ clock: '02:40', ch: 5, kicker: 'Эфир · 02:40', title: 'Дядя Миша с термосом',
+    lines: [
+      ['', 'Поднимается вахтёр дядя Миша: термос, бутерброды, армейская выправка. Служил радистом и считает, что понимает в эфире больше всех.'],
+      ['Дядя Миша', 'Ребята, у подъезда с десяти вечера стоит чёрный «Мерседес». Мотор работает, внутри мужик сидит. Я постучал, он опустил стекло, а там играет ваше радио. Говорит: «Работайте, отец, я свой». А номер на машине — сто два.'],
+      ['Лёха', 'Сто два. Как наша частота.']
+    ],
+    pager: 'Печка в машине барахлит, но вы греете. — С.',
+    note: 'С 22:00 у подъезда стоит чёрный «Мерседес» с номером 102. Водитель слушает «Полночь FM».'
+  }),
+
+  story({ clock: '02:59', ch: 6, kicker: 'Глава 6 · 02:59', title: 'Час быка',
+    lines: [
+      ['', 'Три часа ночи. Самое тихое время эфира: не спят только таксисты, сторожа и влюблённые.'],
+      ['pg', 'АБ. 4471: Шесть вопросов. Первые буквы ответов, по-русски, сложатся в место, где я оставил тебе подарок. — С.'],
+      ['', 'Верный ответ приносит 1 000 слушателей, промах стоит 500. Отвечать можно, пока не угадаешь.']
+    ],
+    next: 'Читать пейджер'
+  }),
+  { clock: '03:00', ch: 6, kicker: 'Глава 6 · 03:00', title: 'Шесть букв', run(st) {
+    gAcro(st, [
+      { q: 'Свердловская группа, у которой есть песня про футбольный матч «Аргентина — Ямайка 5:0».',
+        o: [{ t: 'Чайф', ok: 1 }, { t: 'Сплин' }, { t: 'Смысловые галлюцинации' }, { t: 'Би-2' }] },
+      { q: 'Основатель омской «Гражданской обороны».',
+        o: [{ t: 'Егор Летов', ok: 1 }, { t: 'Янка Дягилева' }, { t: 'Юрий Шевчук' }, { t: 'Константин Кинчев' }] },
+      { q: 'Шведский дуэт Пера Гессле и Мари Фредрикссон.',
+        o: [{ t: 'Roxette (Роксетт)', ok: 1 }, { t: 'Ace of Base (Эйс оф Бейс)' }, { t: 'Eurythmics (Юритмикс)' }, { t: 'Modern Talking (Модерн Токинг)' }] },
+      { q: 'Британцы, спевшие «Enjoy the Silence». Сегодня эту песню лучше в эфир не ставить: тишины уже было достаточно.',
+        o: [{ t: 'Depeche Mode (Депеш Мод)', ok: 1 }, { t: 'Pet Shop Boys (Пет Шоп Бойз)' }, { t: 'Erasure (Иррейжер)' }, { t: 'New Order (Нью Ордер)' }] },
+      { q: 'Группа Бориса Гребенщикова.',
+        o: [{ t: 'Аквариум', ok: 1 }, { t: 'Зоопарк' }, { t: 'Пикник' }, { t: 'Кино' }] },
+      { q: 'Человек, написавший «Smells Like Teen Spirit».',
+        o: [{ t: 'Курт Кобейн', ok: 1 }, { t: 'Дэйв Грол' }, { t: 'Эдди Веддер' }, { t: 'Лэйн Стэйли' }] }
+    ], 'ЧЕРДАК');
+  }},
+
+  story({ clock: '04:05', ch: 6, kicker: 'Эфир · 04:05', title: 'Подарок наверху',
+    lines: [
+      ['Лёха', 'Чердак. Прямо над нами. Там замок висит с восемьдесят восьмого, ключ у дяди Миши.'],
+      ['Лёха', 'Если пойдёшь, я поставлю двенадцатиминутный ремикс и подержу эфир. Но двенадцать минут без ведущего в прямом эфире — это двенадцать минут.']
+    ],
+    choices: [
+      { label: 'Подняться на чердак', hint: 'Часть слушателей уйдёт, пока тебя нет в эфире.', l: -1500, f: { tape: true }, to: 19 },
+      { label: 'Остаться в эфире: чердак подождёт до утра', hint: 'Надёжно.', l: 1000, f: { tape: false }, to: 20,
+        reply: [['', 'Ты остаёшься у микрофона. Пейджер молчит долго, минут двадцать.'], ['pg', 'АБ. 4471: Понимаю. Эфир важнее. Когда-то я решил так же. — С.']] }
+    ]
+  }),
+  story({ clock: '04:09', ch: 6, kicker: 'Чердак · 04:09', title: 'Жестянка из-под леденцов',
+    lines: [
+      ['', 'На чердаке пахнет голубями и холодным железом. Луч фонарика выхватывает самодельную мачту антенны, примотанную проволокой к стропилам.'],
+      ['', 'Под мачтой стоит жестяная коробка из-под монпансье. Внутри кассета МК-60 и сложенный вкладыш. На вкладыше аккуратным почерком: «Радио Чердак. Нулевой выпуск. 1988. Ведущий — Сова».'],
+      ['', 'На обороте приписка свежей ручкой: «Тому, кто дойдёт. Э. Г.»']
+    ],
+    note: 'На чердаке — кассета «Радио Чердак. Нулевой выпуск. 1988». Подписана свежей ручкой: «Э. Г.»',
+    next: 'Вернуться в студию'
+  }),
+
+  { clock: '05:30', ch: 7, kicker: 'Глава 7 · 05:30', title: 'Кто такой Сова?', run(st) {
+    page('Скоро рассвет. Кто я? Ответишь в эфире — я услышу. — С.');
+    st.append(el('p', 'intro', 'Перечитай блокнот. Потом выбери, кого назовёшь в эфире. Верная догадка даёт 5 000 слушателей: город любит развязки.'));
+    const box = el('div', 'suspects'); st.append(box);
+    const sus = [
+      { n: 'Инна Марковна', d: 'Программный директор, двадцать лет в радио.', e: 'Инна Марковна в 1988-м вела утреннюю гимнастику на государственном радио. К тому же ночь она провела в Комарово, где пейджер не ловит.' },
+      { n: 'Вадим «Гриф» Серов', d: 'Басист, знает все легенды города.', e: 'Гриф рассказывал про Сову, пока пейджер пищал у тебя на столе, и руки у него были заняты мандаринами.' },
+      { n: 'Дядя Миша', d: 'Вахтёр, бывший армейский радист.', e: 'Дядя Миша принципиально не пользуется пейджером и гордится этим. Все сообщения пришли, пока он был внизу, на вахте.' },
+      { n: 'Лёха', d: 'Звукорежиссёр, 23 года, фанат Prodigy.', e: 'В 1988-м Лёхе было двенадцать, а пиратский передатчик ему не доверили бы даже сейчас.' },
+      { n: 'Эдуард Гранатов', d: 'Новый владелец станции.', ok: 1, e: 'Винил у «Сайгона», просьба не трогать смену «без него», «Мерседес» с номером 102 у подъезда. Сова — это Гранатов, бывший ведущий «Радио Чердак».' }
+    ];
+    sus.forEach(x => {
+      const b = el('button', 'sus', `<b>${x.n}</b><small>${x.d}</small>`);
+      b.onclick = () => {
+        [...box.children].forEach(y => y.disabled = true);
+        b.classList.add(x.ok ? 'ok' : 'no');
+        if (x.ok) { S.f.owl = true; A.good(); add(5000); } else { S.f.owl = false; A.bad(); }
+        st.append(el('p', 'expl', (x.ok ? '<b>В точку.</b> ' : '<b>Нет.</b> ') + x.e + (x.ok ? '' : ' Настоящий Сова всё это время сидел в чёрном «Мерседесе» у подъезда: это Эдуард Гранатов.')));
+        S.log.owl = x.ok ? 'разгадан' : 'не разгадан';
+        nextBtn(st);
+      };
+      box.append(b);
+    });
+  }},
+
+  story({ clock: '05:55', ch: 7, kicker: 'Эфир · 05:55', title: 'Последняя песня смены',
+    lines: [
+      ['', 'За окном синеет. Лиговский пуст, только дворник и чёрный «Мерседес» у подъезда.'],
+      ['Лёха', 'Пять минут. Что ставим последним? Решай, это твоя подпись под сменой.']
+    ],
+    choices: () => {
+      const c = [
+        { label: 'Кино — «Звезда по имени Солнце»', hint: 'Беспроигрышно для Петербурга.', l: 3000, f: { last: 'kino' } },
+        { label: 'Scorpions — «Wind of Change»', hint: 'Про перемены, в самую подходящую ночь.', l: 3000, f: { last: 'wind' } },
+        { label: 'The Prodigy — «Firestarter»', hint: 'Лёхин выбор. Рискованно.', l: 1000, f: { last: 'prodigy' } }
+      ];
+      if (S.f.tape) c.unshift({ label: 'Кассету с чердака: «Радио Чердак. Нулевой выпуск», 1988', hint: 'Двенадцать лет она ждала эфира.', l: 8000, f: { last: 'tape' },
+        reply: [['', 'Шипение плёнки. Молодой голос с ленинградским выговором: «Добрый вечер, это Радио Чердак, и нас тут нет». Пейджер пищит один раз, без текста.']] });
+      return c;
+    }
+  }),
+
+  { clock: '06:00', air: 'off', kicker: 'Утро · 06:00', title: 'Конец смены', run(st) {
+    const win = S.l >= GOAL, owl = !!S.f.owl, tape = !!S.f.tape && S.f.last === 'tape';
+    let verdict, lines;
+    if (win && owl && tape) {
+      verdict = 'Эфир продолжается. И чердак тоже';
+      lines = [['', 'Дверь открывается. Мужчина лет сорока пяти в кашемировом пальто, с термосом и старым пейджером на поясе.'],
+        ['Гранатов', 'Ты меня вычислил и поставил мой нулевой выпуск. Я двенадцать лет не слышал собственного голоса в эфире. Ночная смена остаётся, формат остаётся. А на чердаке сделаем вторую студию: ей давно пора.'],
+        ['Лёха', 'А Prodigy там можно будет?'], ['Гранатов', 'Там можно всё. Так было задумано с восемьдесят восьмого.']];
+    } else if (win) {
+      verdict = 'Смена остаётся в эфире';
+      lines = [['', 'Дверь открывается. Мужчина лет сорока пяти в кашемировом пальто, с термосом.'],
+        ['Гранатов', `${fmt(S.l)} слушателей в новогоднюю ночь. Формат остаётся, ночная смена тоже.`],
+        ['Гранатов', owl ? 'И да, Сова — это я. Хорошо, что ты догадался.' : 'А Сову ты так и не узнал. Ничего. Я ещё напишу.'],
+        ...(S.f.tape && !tape ? [['', 'Он замечает на пульте кассету с чердака, берёт её в руки и долго молчит. Потом кладёт обратно: «Поставишь в следующую новогоднюю ночь».']] : [])];
+    } else {
+      verdict = 'Формат сменён';
+      lines = [['', 'Дверь открывается. Мужчина лет сорока пяти в кашемировом пальто.'],
+        ['Гранатов', `${fmt(S.l)}. До сорока пяти тысяч не дотянули. С первого января здесь будут танцы, я держу слово, даже неприятное.`],
+        ...(S.f.tape ? [['Гранатов', 'Кассету с чердака оставь себе. Я когда-то начинал с одной такой и с одной антенны на проволоке. Начнёшь своё — я буду слушать.']] : [['Гранатов', 'А на чердак ты так и не поднялся. Жаль: там лежало кое-что для тебя.']])];
+    }
+    st.append(el('p', 'verdict', verdict));
+    const box = el('div', 'lines'); st.append(box);
+    lines.forEach((ln, k) => box.append(lineEl(ln, k)));
+    const lex = S.f.lexa === 2 ? 'Лёха всю ночь был счастлив' : S.f.lexa === 1 ? 'Лёха своё получил' : 'Лёха до сих пор дуется';
+    st.append(el('dl', 'stats', `
+      <div><dt>Слушатели</dt><dd>${fmt(S.l)}</dd></div>
+      <div><dt>Хронология</dt><dd>${S.log.order || '—'}</dd></div>
+      <div><dt>Загадки Совы</dt><dd>${S.log.quiz || '—'}</dd></div>
+      <div><dt>Байки Грифа</dt><dd>${S.log.truth || '—'}</dd></div>
+      <div><dt>Тишина в эфире</dt><dd>${S.log.match || '—'}</dd></div>
+      <div><dt>Сова</dt><dd>${S.log.owl || '—'}</dd></div>`));
+    st.append(el('p', 'expl', `Цель — 45 000. ${lex}. ${win ? '' : 'В следующий раз держи в голове блокнот: развязка тоже приносит слушателей.'}`));
+    if (win) A.chime();
+    store.del();
+    const a = el('div', 'acts'), b = el('button', 'btn', 'Новая смена');
+    b.onclick = () => { S = fresh(); pgIdx = -1; renderPager(); renderNotes(); shown = START; renderAud(true); go(1); };
+    a.append(b); st.append(a);
+  }}
+];
+
+
+function boot(data) {
+  if (data && data.S) { S = data.S; }
+  renderPager(); renderNotes(); shown = S.l; renderAud(true);
+  if (data && data.S && S.i > 0) go(S.i); else go(0);
+}
+try { window.claude?.hot?.snapshot?.(() => ({ S })); } catch (e) {}
+const hot = window.claude?.hot;
+hot?.ready ? hot.ready(boot) : boot(hot?.data ?? {});
+})();
+</script>
+
+</body>
+</html>
