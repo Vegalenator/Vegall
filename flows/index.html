@@ -270,7 +270,11 @@ function flag(iso){if(!iso||iso.length!==2)return"";return String.fromCodePoint.
 function nf(d){return new Intl.NumberFormat("ru-RU",{maximumFractionDigits:d,minimumFractionDigits:d})}
 var nf0=nf(0),nf1=nf(1);
 function money(v){if(v==null)return"—";var a=Math.abs(v);if(a>=1e9)return"$"+nf1.format(v/1e9)+" млрд";if(a>=1e6)return"$"+nf0.format(v/1e6)+" млн";return"$"+nf0.format(v)}
-function tons(t){if(t==null||!t)return"—";var a=Math.abs(t);if(a>=1e6)return nf1.format(t/1e6)+" млн т";if(a>=1e3)return nf0.format(t/1e3)+" тыс. т";return nf0.format(t)+" т"}
+/* Газ: 1 т ≈ 1,36 тыс. м³ (при стандартных условиях; для СПГ — после регазификации). */
+var GAS_M3=1360;
+function bcm(t){var v=t*GAS_M3;return v>=1e9?nf1.format(v/1e9)+" млрд м³":nf0.format(v/1e6)+" млн м³"}
+function tonsRaw(t){if(t==null||!t)return"—";var a=Math.abs(t);if(a>=1e6)return nf1.format(t/1e6)+" млн т";if(a>=1e3)return nf0.format(t/1e3)+" тыс. т";return nf0.format(t)+" т"}
+function tons(t,m){if(t==null||!t)return"—";if(m&&m.id==="pipegas")return bcm(t);if(m&&m.id==="lng")return tonsRaw(t)+" (≈"+bcm(t)+")";return tonsRaw(t)}
 function pct(x){if(x==null)return"—";return nf1.format(x*100)+"%"}
 function delta(x){if(x==null||!isFinite(x))return'<span class="flat">—</span>';var c=x>0.005?"up":x<-0.005?"down":"flat";var s=(x>0?"+":x<0?"−":"")+nf0.format(Math.abs(x*100))+"%";return'<span class="'+c+'">'+s+"</span>"}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
@@ -283,7 +287,8 @@ function scaleUsd(max){
   if(max>=5e6)return{h:"млн $",f:function(v){return v==null?"—":nf0.format(v/1e6)}};
   return{h:"тыс. $",f:function(v){return v==null?"—":nf0.format(v/1e3)}};
 }
-function scaleT(max){
+function scaleT(max,m){
+  if(m&&m.id==="pipegas"){return max*GAS_M3>=5e9?{h:"млрд м³",f:function(v){return v?nf1.format(v*GAS_M3/1e9):"—"}}:{h:"млн м³",f:function(v){return v?nf0.format(v*GAS_M3/1e6):"—"}}}
   if(max>=5e6)return{h:"млн т",f:function(v){return v?nf1.format(v/1e6):"—"}};
   if(max>=5e3)return{h:"тыс. т",f:function(v){return v?nf0.format(v/1e3):"—"}};
   return{h:"т",f:function(v){return v?nf0.format(v):"—"}};
@@ -374,7 +379,7 @@ function sensBlock(m,ins){
 }
 function histBlock(m){
   var h=m.history;if(!h||!h.years)return'<h4>Рынок за 4 года</h4><div class="note-s">История ещё собирается.</div>';
-  var y=h.years,su=scaleUsd(Math.max.apply(null,h.usd)),st=scaleT(Math.max.apply(null,h.t.map(function(v){return v||0})));
+  var y=h.years,su=scaleUsd(Math.max.apply(null,h.usd)),st=scaleT(Math.max.apply(null,h.t.map(function(v){return v||0})),m);
   var okT=h.cov_t>0.6&&h.t[0]>0;
   function big(sc,v){var x=parseFloat(sc.f(v).replace(/\s/g,"").replace(",","."));return isFinite(x)&&x>=100?nf0.format(x):sc.f(v)}
   var rows='<tr class="tot"><td>Экспорт, '+su.h+'</td>'+h.usd.map(function(v){return"<td>"+big(su,v)+"</td>"}).join("")+"<td>"+delta(h.usd[3]/h.usd[0]-1)+"</td></tr>";
@@ -432,7 +437,8 @@ function segmentBlock(m,r){
   var h=m.history&&m.history.shares&&m.history.shares[r.iso];
   if(h){var d=(h[3]-h[0])*100;pts.push("Доля "+m.history.years[0]+"→"+m.history.years[3]+": "+nf1.format(h[0]*100)+"% → "+nf1.format(h[3]*100)+"% ("+(Math.abs(d)<0.3?"без изменений":(d>0?"+":"−")+nf1.format(Math.abs(d))+" п.п.")+").")}
   if(r.t&&m.total_t){var p=r.usd/r.t,avg=m.total_usd/m.total_t,dv=p/avg-1;
-    pts.push("Средняя цена: $"+nf0.format(p)+" за тонну — "+(Math.abs(dv)<0.03?"на уровне рынка":(dv>0?"на ":"на ")+nf0.format(Math.abs(dv)*100)+"% "+(dv>0?"дороже":"дешевле")+" среднего по рынку ($"+nf0.format(avg)+")")+(r.method==="mirror"?" (в ценах покупателей, с фрахтом)":"")+".")}
+    var unitP=m.id==="pipegas"?" за тыс. м³":" за тонну",kP=m.id==="pipegas"?GAS_M3/1000:1;p/=kP;avg/=kP;
+    pts.push("Средняя цена: $"+nf0.format(p)+unitP+(m.id==="lng"?" ($"+nf0.format(p/(GAS_M3/1000))+" за тыс. м³)":"")+" — "+(Math.abs(dv)<0.03?"на уровне рынка":"на "+nf0.format(Math.abs(dv)*100)+"% "+(dv>0?"дороже":"дешевле")+" среднего по рынку ($"+nf0.format(avg)+")")+(r.method==="mirror"?" (в ценах покупателей, с фрахтом)":"")+".")}
   if(r.buyers&&r.buyers.length){var b0=r.buyers[0],t3=r.buyers.slice(0,3).reduce(function(a,x){return a+x[1]},0);
     pts.push(b0[1]>=0.4?"Сильная зависимость от одного покупателя: "+cname(b0[0])+" берёт "+pct(b0[1])+".":"Покупатели диверсифицированы: на тройку крупнейших приходится "+pct(t3)+".")}
   var im=(m.importers||[]).findIndex(function(x){return x[0]===r.iso});
@@ -484,7 +490,7 @@ function dossier(m,r){
     '<div class="fact"><span class="k">Место</span><span class="v">№'+r.rank+'</span></div>'+
     '<div class="fact"><span class="k">Доля мира</span><span class="v">'+pct(share(r))+'</span></div>'+
     '<div class="fact"><span class="k">к '+m.prev_year+'</span><span class="v">'+delta(yoy(r))+'</span></div>'+
-   '</div><div class="note-s">'+m.year+": "+money(r.usd)+" · "+tons(r.t)+". "+esc(tag)+"</div>";
+   '</div><div class="note-s">'+m.year+": "+money(r.usd)+" · "+tons(r.t,m)+". "+esc(tag)+"</div>";
   var mon=(r.monthly||[]).filter(function(q){return q[1]>0});
   if(mon.length>2){
     var ch=document.createElement("div");ch.className="charts";
@@ -494,7 +500,7 @@ function dossier(m,r){
     ch.appendChild(a);
     var tv=mon.filter(function(q){return q[2]>0});
     var b=document.createElement("div");b.innerHTML='<span class="label">Объём в месяц</span>';
-    if(tv.length>2)b.appendChild(spark(tv.map(function(q){return[q[0],q[2]]}),{color:col,lab:pLabel,fmt:tons,aria:"Помесячный экспорт в тоннах: "+cname(r.iso)}));
+    if(tv.length>2)b.appendChild(spark(tv.map(function(q){return[q[0],q[2]]}),{color:col,lab:pLabel,fmt:function(v){return m.id==="lng"?tonsRaw(v):tons(v,m)},aria:"Помесячный экспорт в тоннах: "+cname(r.iso)}));
     else b.insertAdjacentHTML("beforeend",'<div class="note-s">Масса в помесячных данных не указана.</div>');
     ch.appendChild(b);box.appendChild(ch);
     if(r.monthly_cov){var cv=document.createElement("div");cv.className="note-s";cv.textContent="Помесячный ряд собран по странам, которые сдают месячную статистику: "+r.monthly_by.map(cname).join(", ")+". Это "+Math.round(r.monthly_cov*100)+"% годовых поставок"+(r.monthly_missing&&r.monthly_missing.length?"; без помесячных данных: "+r.monthly_missing.map(cname).join(", "):"")+".";box.appendChild(cv)}
@@ -538,12 +544,12 @@ function marketCard(m,data){
   var ruLine=ru?'<span class="tag">Россия</span><strong class="num">№'+ru.rank+"</strong> · доля "+'<strong class="num">'+pct(share(ru))+"</strong> · к "+m.prev_year+" "+delta(yoy(ru))+(ru.method==="mirror"?' <span class="note-s">≈ оценка по партнёрам</span>':"")
     :'<span class="note-s">Россия не входит в число заметных экспортёров</span>';
   card.innerHTML='<div class="c-head"><div class="c-title"><h3>'+esc(m.name)+'</h3><span class="hs">ТН ВЭД '+esc(m.hs)+'</span><span class="conc '+c[0]+'" title="Доля трёх крупнейших экспортёров: '+pct(m.top3_share)+'">'+c[1]+"</span></div>"+
-    '<div class="c-meta"><span><span class="k">Мировой экспорт '+m.year+":</span> <span class=\"num\">"+money(m.total_usd)+" · "+tons(m.total_t)+'</span></span><span class="k">'+esc(m.unit_note)+"</span></div>"+
+    '<div class="c-meta"><span><span class="k">Мировой экспорт '+m.year+":</span> <span class=\"num\">"+money(m.total_usd)+" · "+tons(m.total_t,m)+'</span></span><span class="k">'+esc(m.unit_note)+"</span></div>"+
     '<div class="ru-line">'+ruLine+"</div></div>";
   card.appendChild(analysis(m,data));
   var body=document.createElement("div");body.className="c-body";
   var rank=document.createElement("div");rank.className="rank";
-  var su=scaleUsd(Math.max.apply(null,ex.map(function(r){return r.usd||0}))),st=scaleT(Math.max.apply(null,ex.map(function(r){return r.t||0})));
+  var su=scaleUsd(Math.max.apply(null,ex.map(function(r){return r.usd||0}))),st=scaleT(Math.max.apply(null,ex.map(function(r){return r.t||0})),m);
   var top=ex.filter(function(r){return r.rank<=12}),extra=ex.filter(function(r){return r.rank>12});
   var max=Math.max.apply(null,ex.map(function(r){return val(r)||0}));
   rank.innerHTML='<div class="cols thead"><span>№</span><span>Страна</span><span>'+su.h+'</span><span>'+st.h+'</span><span>доля, %</span><span>к '+String(m.prev_year).slice(2)+'</span></div>'+
@@ -622,7 +628,7 @@ function summaries(data){
   var maxL=Math.max.apply(null,ms.map(function(m){var r=m.exporters&&m.exporters[0];return r?share(r)||0:0}).concat([0.01]));
   var l='<div class="srow lrow shead"><span>Рынок</span><span style="text-align:left">Лидер</span><span>%</span><span>экспорт</span></div>';
   l+=ms.map(function(m){var r=m.exporters&&m.exporters[0];if(!r)return"";var s=share(r);
-    return'<a class="srow lrow" href="#'+m.id+'"><span class="mk">'+esc(m.name)+'</span><span class="who"><span>'+flag(r.iso)+" "+esc(cname(r.iso))+(r.method==="mirror"?" ≈":"")+'</span><span class="track"><span class="fill" style="width:'+((s||0)/maxL*100).toFixed(1)+'%"></span></span></span><span class="r">'+(s!=null?nf1.format(s*100):"—")+'</span><span class="r">'+(state.unit==="usd"?money(r.usd).replace(" млрд","").replace("$","")+(r.usd>=1e9?" млрд":""):tons(r.t))+"</span></a>"}).join("");
+    return'<a class="srow lrow" href="#'+m.id+'"><span class="mk">'+esc(m.name)+'</span><span class="who"><span>'+flag(r.iso)+" "+esc(cname(r.iso))+(r.method==="mirror"?" ≈":"")+'</span><span class="track"><span class="fill" style="width:'+((s||0)/maxL*100).toFixed(1)+'%"></span></span></span><span class="r">'+(s!=null?nf1.format(s*100):"—")+'</span><span class="r">'+(state.unit==="usd"?money(r.usd).replace(" млрд","").replace("$","")+(r.usd>=1e9?" млрд":""):(m.id==="lng"?tonsRaw(r.t):tons(r.t,m)))+"</span></a>"}).join("");
   if(data.cbgold){var gb=data.cbgold.countries.filter(function(c){return c.d12!=null}).sort(function(a,b){return b.d12-a.d12})[0];if(gb)l+='<a class="srow lrow" href="#cbgold"><span class="mk">Золото ЦБ, покупки</span><span class="who"><span>'+flag(gb.iso)+" "+esc(cname(gb.iso))+'</span></span><span></span><span class="r up">+'+nf0.format(gb.d12)+" т</span></a>"}
   document.getElementById("lead-table").innerHTML=l;
 }
