@@ -400,23 +400,24 @@ function sensitivity(m,ins){
 var LVL=["","низкая","умеренная","заметная","высокая","критическая"];
 function sensBlock(m,ins){
   var s=sensitivity(m,ins);
-  return'<h4>Чувствительность к шокам</h4><div><div class="level">'+LVL[s.lvl]+' <span class="num" style="font:500 12px var(--f-mono);color:var(--ink-3)">'+s.lvl+'/5</span></div></div>'+
+  return'<h4>Чувствительность к шокам · авторский индекс</h4><div><div class="level">'+LVL[s.lvl]+' <span class="num" style="font:500 12px var(--f-mono);color:var(--ink-3)">'+s.lvl+'/5</span></div></div>'+
    '<div><div class="scale" role="img" aria-label="Уровень '+s.lvl+' из 5">'+[1,2,3,4,5].map(function(i){return'<span'+(i<=s.lvl?' class="on"':"")+' style="opacity:'+(i<=s.lvl?0.35+0.13*i:1)+'"></span>'}).join("")+'</div><div class="scale-l"><span>санкции и пошлины почти не заметны</span><span>цены реагируют резко</span></div></div>'+
    '<div class="comp">'+s.parts.map(function(p){return'<div>'+esc(p[0])+'<i><b style="width:'+Math.round(p[1]*100)+'%"></b></i></div>'}).join("")+'</div>'+
-   (ins&&ins.sub_note?'<div class="note-s">'+esc(ins.sub_note)+"</div>":"");
+   (ins&&ins.sub_note?'<div class="note-s">'+esc(ins.sub_note)+"</div>":"")+
+   '<details class="note-s"><summary>Как считается</summary>Индекс редакции терминала, не официальная статистика. 30% — концентрация поставщиков (индекс Херфиндаля–Хиршмана по долям в деньгах, 2500 = максимум шкалы); 20% — доля трёх крупнейших импортёров (25% → 0, 75% → максимум); 20% — доля экспорта стран под санкциями (Россия, Иран, Венесуэла, Беларусь, КНДР, Сирия; 25% → максимум); 30% — экспертная оценка заменяемости поставщика от 1 до 5. Сумма 0–1 переводится в уровни 1–5.</details>';
 }
 function histBlock(m){
   var h=m.history;if(!h||!h.years)return'<h4>Рынок за 4 года</h4><div class="note-s">История ещё собирается.</div>';
   var y=h.years,su=scaleUsd(Math.max.apply(null,h.usd)),st=scaleT(Math.max.apply(null,h.t.map(function(v){return v||0})),m);
   var okT=h.cov_t>0.6&&h.t[0]>0;
   function big(sc,v){var x=parseFloat(sc.f(v).replace(/\s/g,"").replace(",","."));return isFinite(x)&&x>=100?nf0.format(x):sc.f(v)}
-  var rows='<tr class="tot"><td>Экспорт, '+su.h+'</td>'+h.usd.map(function(v){return"<td>"+big(su,v)+"</td>"}).join("")+"<td>"+delta(h.usd[3]/h.usd[0]-1)+"</td></tr>";
+  var rows='<tr class="tot"><td>Экспорт*, '+su.h+'</td>'+h.usd.map(function(v){return"<td>"+big(su,v)+"</td>"}).join("")+"<td>"+delta(h.usd[3]/h.usd[0]-1)+"</td></tr>";
   if(okT)rows+='<tr class="tot"><td>Объём, '+st.h+'</td>'+h.t.map(function(v){return"<td>"+big(st,v)+"</td>"}).join("")+"<td>"+delta(h.t[3]/h.t[0]-1)+"</td></tr>";
   var keys=Object.keys(h.shares);
   keys.sort(function(a,b){return h.shares[b][3]-h.shares[a][3]});
   keys=keys.slice(0,5).concat(keys.indexOf("RU")>4?["RU"]:[]);
   rows+=keys.map(function(k){var v=h.shares[k],d=(v[3]-v[0])*100;return'<tr'+(k==="RU"?' class="ru"':"")+'><td>'+flag(k)+" "+esc(cname(k))+"</td>"+v.map(function(x){return"<td>"+nf1.format(x*100)+"</td>"}).join("")+'<td><span class="'+(d>0.3?"up":d<-0.3?"down":"flat")+'">'+(d>0?"+":d<0?"−":"")+nf1.format(Math.abs(d))+"</span></td></tr>"}).join("");
-  var tbl='<div class="tw"><table class="ht"><thead><tr><th></th>'+y.map(function(v){return"<th>"+v+"</th>"}).join("")+'<th>Δ</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="note-s">Доли — % мирового экспорта в деньгах; Δ доли — в процентных пунктах. Сопоставимый круг: '+h.n+" стран, "+Math.round(h.cov*100)+"% экспорта "+y[3]+".</div>";
+  var tbl='<div class="tw"><table class="ht"><thead><tr><th></th>'+y.map(function(v){return"<th>"+v+"</th>"}).join("")+'<th>Δ</th></tr></thead><tbody>'+rows+'</tbody></table></div><div class="note-s">Доли — % мирового экспорта в деньгах; Δ доли — в процентных пунктах. * Сопоставимый круг: '+h.n+" стран с данными за все годы, "+Math.round(h.cov*100)+"% мирового экспорта "+y[3]+"; поэтому итог "+y[3]+" может быть чуть меньше мирового в шапке. Для зеркальных оценок — только покупатели, сдававшие статистику все четыре года.</div>";
   var pts=[];
   var dv=h.usd[3]/h.usd[0]-1;
   if(okT){var dt=h.t[3]/h.t[0]-1;
@@ -457,13 +458,16 @@ function positions(iso){
 }
 
 
+function refT(f){return f.t||(f.bcm?f.bcm*1e9/GAS_M3:null)}
 function refOf(m,iso){var n=window.__DATA&&window.__DATA.segments&&window.__DATA.segments[m.id]&&window.__DATA.segments[m.id][iso];return n&&n.reference&&n.reference.year===m.year?n.reference:null}
-function refNote(m,r){var f=refOf(m,r.iso);return f?' <span class="note-s">· официально '+tonsRaw(f.t)+"</span>":""}
+function refNote(m,r){var f=refOf(m,r.iso);return f?' <span class="note-s">· официально '+(m.id==="pipegas"||m.id==="lng"?tons(refT(f),m):tonsRaw(refT(f)))+"</span>":""}
 function refLine(m,r){
   var f=refOf(m,r.iso);if(!f)return null;
-  var cov=r.t?r.t/f.t:null;
-  var better=(m.exporters||[]).filter(function(x){return x.iso!==r.iso&&x.t&&x.t>f.t}).length+1;
-  return"Сверка: официально "+tonsRaw(f.t)+" за "+f.year+" год ("+f.source+")"+(cov?" — зеркальная оценка учитывает лишь "+nf0.format(cov*100)+"%":"")+". С официальным объёмом страна — №"+better+" по тоннам среди экспортёров в таблице.";
+  var ft=refT(f),cov=r.t?r.t/ft:null;
+  var better=(m.exporters||[]).filter(function(x){return x.iso!==r.iso&&x.t&&x.t>ft}).length+1;
+  var shown=m.id==="pipegas"||m.id==="lng"?tons(ft,m):tonsRaw(ft);
+  var cmp=cov==null?"":(r.method==="mirror"?" — зеркальная оценка учитывает "+nf0.format(cov*100)+"%":" — оценка терминала "+(Math.abs(cov-1)<0.03?"совпадает":"отличается на "+(cov>1?"+":"−")+nf0.format(Math.abs(cov-1)*100)+"%"+(m.id==="pipegas"?" (пересчёт тонн в м³ приблизителен)":"")));
+  return"Сверка: официально "+shown+" за "+f.year+" год ("+f.source+")"+cmp+(r.method==="mirror"?". С официальным объёмом страна — №"+better+" по массе среди экспортёров в таблице":"")+".";
 }
 function segmentBlock(m,r){
   var ex=m.exporters||[],lead=ex[0];
@@ -514,16 +518,16 @@ function miniChart(h,m){
   var bars=h.usd.map(function(v,i){var x=i*(bw+gap),bh=Math.max(2,(H-30)*v/max),y=H-14-bh;
     return'<rect class="bt'+(i===3?" last":"")+'" x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="2"/><text class="vl" x="'+(x+bw/2)+'" y="'+(y-3)+'" text-anchor="middle">'+nf0.format(v/1e9)+'</text><text class="yl" x="'+(x+bw/2)+'" y="'+(H-2)+'" text-anchor="middle">'+String(h.years[i]).slice(2)+"</text>"}).join("");
   var dv=h.usd[3]/h.usd[0]-1,okT=h.cov_t>0.6&&h.t[0]>0,dt=okT?h.t[3]/h.t[0]-1:null;
-  return'<span class="label">Мировой экспорт, млрд $</span><div class="mini-chart"><svg viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Мировой экспорт по годам">'+bars+'</svg></div><div class="note-s">'+h.years[0]+"–"+h.years[3]+": в деньгах "+delta(dv)+(dt!=null?", в объёме "+delta(dt):"")+"</div>";
+  return'<span class="label">Экспорт*, млрд $</span><div class="mini-chart"><svg viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Мировой экспорт по годам">'+bars+'</svg></div><div class="note-s">'+h.years[0]+"–"+h.years[3]+": в деньгах "+delta(dv)+(dt!=null?", в объёме "+delta(dt):"")+'</div><div class="note-s">* страны с данными за все 4 года: '+Math.round(h.cov*100)+'% экспорта '+h.years[3]+' ($'+nf1.format(m.total_usd/1e9)+" млрд)</div>";
 }
 function miniLeaders(rows,ru){
   var h=rows.map(function(r){return'<div'+(r.iso==="RU"?' class="ru"':"")+'><span class="n">'+r.rank+'</span><span class="nm">'+flag(r.iso)+" "+esc(cname(r.iso))+(r.method==="mirror"?" ≈":"")+'</span><span class="num">'+pct(share(r))+"</span></div>"}).join("");
   if(ru&&rows.indexOf(ru)<0)h+='<div class="ru"><span class="n">'+ru.rank+'</span><span class="nm">'+flag("RU")+" Россия"+(ru.method==="mirror"?" ≈":"")+'</span><span class="num">'+pct(share(ru))+"</span></div>";
-  return'<span class="label">Лидеры экспорта</span><div class="mini-lead">'+h+"</div>";
+  return'<span class="label">Лидеры экспорта · доля '+(state.unit==="usd"?"по стоимости":"по тоннам")+'</span><div class="mini-lead">'+h+"</div>";
 }
 function miniSens(m,ins){
   var s=sensitivity(m,ins);
-  return'<div class="mini-sens"><span class="label">Чувствительность</span><span><b class="level" style="font-size:13px">'+LVL[s.lvl]+'</b> <span class="note-s">'+s.lvl+'/5</span></span><span></span><div class="scale">'+[1,2,3,4,5].map(function(i){return'<span'+(i<=s.lvl?' class="on"':"")+' style="opacity:'+(i<=s.lvl?0.35+0.13*i:1)+'"></span>'}).join("")+"</div></div>";
+  return'<div class="mini-sens"><span class="label">Чувствительность · авт. индекс</span><span><b class="level" style="font-size:13px">'+LVL[s.lvl]+'</b> <span class="note-s">'+s.lvl+'/5</span></span><span></span><div class="scale">'+[1,2,3,4,5].map(function(i){return'<span'+(i<=s.lvl?' class="on"':"")+' style="opacity:'+(i<=s.lvl?0.35+0.13*i:1)+'"></span>'}).join("")+"</div></div>";
 }
 function makeCollapsible(card,id,mini){
   var full=document.createElement("div");full.className="full";
@@ -562,7 +566,7 @@ function dossier(m,r){
   box.innerHTML='<h4>'+flag(r.iso)+" "+esc(cname(r.iso))+'</h4>'+
    '<div class="facts">'+
     '<div class="fact"><span class="k">Место</span><span class="v">№'+r.rank+'</span></div>'+
-    '<div class="fact"><span class="k">Доля мира</span><span class="v">'+pct(share(r))+'</span></div>'+
+    '<div class="fact"><span class="k">Доля мира, '+(state.unit==="usd"?"$":"т")+'</span><span class="v">'+pct(share(r))+'</span></div>'+
     '<div class="fact"><span class="k">к '+m.prev_year+'</span><span class="v">'+delta(yoy(r))+'</span></div>'+
    '</div><div class="note-s">'+m.year+": "+money(r.usd)+" · "+tons(r.t,m)+". "+esc(tag)+"</div>";
   var mon=(r.monthly||[]).filter(function(q){return q[1]>0});
@@ -626,8 +630,10 @@ function marketCard(m,data){
   var su=scaleUsd(Math.max.apply(null,ex.map(function(r){return r.usd||0}))),st=scaleT(Math.max.apply(null,ex.map(function(r){return r.t||0})),m);
   var top=ex.filter(function(r){return r.rank<=12}),extra=ex.filter(function(r){return r.rank>12});
   var max=Math.max.apply(null,ex.map(function(r){return val(r)||0}));
-  rank.innerHTML='<div class="cols thead"><span>№</span><span>Страна</span><span>'+su.h+'</span><span>'+st.h+'</span><span>доля, %</span><span>к '+String(m.prev_year).slice(2)+'</span></div>'+
+  rank.innerHTML='<div class="cols thead"><span>№</span><span>Страна</span><span>'+su.h+'</span><span>'+st.h+'</span><span>доля '+(state.unit==="usd"?"$":"т")+', %</span><span>к '+String(m.prev_year).slice(2)+'</span></div>'+
     '<ol>'+top.map(function(r){return rowHTML(r,max,su,st)}).join("")+"</ol>"+(extra.length?'<div class="gap">…</div><ol>'+extra.map(function(r){return rowHTML(r,max,su,st)}).join("")+"</ol>":"");
+  var nM=ex.filter(function(r){return r.method==="mirror"}).length;
+  rank.insertAdjacentHTML("beforeend",'<div class="note-s" style="padding:8px 10px 0">Доли — от мирового итога '+m.year+'. В него вошли: стран, сдавших экспорт в ООН, — '+m.reporters+'; зеркальных оценок — '+(m.mirrors_n||nM)+'. <b>≈</b> — зеркальная оценка: экспорт страны, не сдающей статистику, восстановлен по импорту её покупателей (цены CIF, учтены только покупатели, сдающие данные, — оценка снизу). <b>хаб</b> — реэкспортный центр, товар во многом чужого происхождения. Колонка объёма — масса нетто'+(m.id==="pipegas"?", пересчитанная в м³":"")+'; «—» — страна её не указала.</div>');
   var dos=document.createElement("div");dos.className="dossier";
   body.appendChild(rank);body.appendChild(dos);card.appendChild(body);
   function select(iso){

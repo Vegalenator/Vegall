@@ -55,7 +55,7 @@ COMMODITIES = [
     dict(id="lng", group="energy", name="СПГ", hs="271111",
          unit_note="природный газ сжиженный", pulse=["gie_storage"]),
     dict(id="pipegas", group="energy", name="Трубопроводный газ", hs="271121",
-         unit_note="природный газ в газообразном состоянии", pulse=["gie_storage"]),
+         unit_note="природный газ в газообразном состоянии, в основном трубопроводный. Хабы (Бельгия, Нидерланды) реэкспортируют в том числе регазифицированный СПГ: с карточкой СПГ не складывать", pulse=["gie_storage"]),
     dict(id="coal", group="energy", name="Уголь", hs="2701",
          unit_note="каменный уголь: энергетический и коксующийся"),
     dict(id="ironore", group="metals", name="Железная руда", hs="2601",
@@ -94,6 +94,7 @@ SKIP_PARTNERS = {0, 97, 837, 838, 839, 899}
 
 # ---------------------------------------------------------------- сеть ----
 _last_call = [0.0]
+FETCH_DATES = set()  # даты получения ответов Comtrade для текущего рынка
 STATS = {"calls": 0, "cached": 0, "errors": 0}
 
 
@@ -119,10 +120,14 @@ def cached(key, ttl_days, fn):
             age = (TODAY - dt.date.fromisoformat(obj["fetched"])).days
             if age < ttl_days + jitter:
                 STATS["cached"] += 1
+                if key.startswith("ct:"):
+                    FETCH_DATES.add(obj["fetched"])
                 return obj["data"]
         except Exception:
             pass
     data = fn()
+    if data is not None and key.startswith("ct:"):
+        FETCH_DATES.add(TODAY.isoformat())
     if data is not None:
         os.makedirs(CACHE, exist_ok=True)
         with open(p, "w") as f:
@@ -262,6 +267,7 @@ def mirror(cmd, year, partner, ttl=7):
 def build_market(c):
     cmd = c["hs"]
     print(f"• {c['name']} ({cmd})", file=sys.stderr)
+    FETCH_DATES.clear()
     y_last = TODAY.year - 1
     rep = {y_last: exports_reported(cmd, y_last), y_last - 1: exports_reported(cmd, y_last - 1)}
     # Берём последний год, если по нему отчитались хотя бы 75% стран прошлого года.
@@ -431,6 +437,7 @@ def build_market(c):
             out["monthly"] = [[m[0], round(m[1]), round(m[2] / 1000)] + m[3:] for m in r["monthly"]]
         return out
 
+    write_export(c, year, ranked, total, total_kg, t_cov)
     top3 = sum(r["share"] for r in ranked[:3])
     hhi = sum((r["share"] * 100) ** 2 for r in ranked)
     history = build_history(cmd, year, prev, cur, old, ranked, mirrors, top)
@@ -447,7 +454,28 @@ def build_market(c):
         "pulse": c.get("pulse", []),
         "history": history,
         "source": "UN Comtrade",
+        "mirrors_n": len(mirrors),
+        "extracted": [min(FETCH_DATES), max(FETCH_DATES)] if FETCH_DATES else None,
     }
+
+
+def write_export(c, year, ranked, total, total_kg, t_cov):
+    """Полная таблица рынка (все страны мирового итога) в data/export/<id>.csv —
+    чтобы любую долю можно было пересчитать вручную."""
+    d = os.path.join(DATA, "export")
+    os.makedirs(d, exist_ok=True)
+    with open(os.path.join(d, f"{c['id']}.csv"), "w", newline="", encoding="utf-8") as f:
+        w = csv.writer(f)
+        w.writerow(["# рынок", c["name"], "HS", c["hs"], "год", year,
+                    "выгрузка", f"{min(FETCH_DATES)}..{max(FETCH_DATES)}" if FETCH_DATES else ""])
+        w.writerow(["# мировой итог, USD", round(total), "масса известна у доли стоимости", round(t_cov, 3),
+                    "мировой тоннаж, т", round(total_kg / 1000) if total_kg else ""])
+        w.writerow(["rank", "iso2", "m49", "method", "usd", "tonnes", "share_usd", "share_t",
+                    "importers_used_for_mirror"])
+        for r in ranked:
+            w.writerow([r["rank"], iso2(r["code"]), r["code"], r["method"], round(r["usd"]),
+                        round(r["kg"] / 1000) if r["kg"] else "", round(r["share"], 5),
+                        round(r["share_kg"], 5) if r.get("share_kg") else "", r.get("importers", "")])
 
 
 # ---------------------------------------------------------- история ------
