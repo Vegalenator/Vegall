@@ -229,6 +229,25 @@ def months_back(n_from, n_to):
     return out
 
 
+def mass(rows_by_partner, need=0.9):
+    """Масса по набору партнёров или None. Масса 0 при ненулевой стоимости
+    означает «не указана», а не «ноль тонн». Сумма засчитывается, только если
+    партнёры с известной массой дают не меньше need стоимости."""
+    vals = list(rows_by_partner)
+    total = sum(v[0] for v in vals)
+    known = [v for v in vals if v[1] and v[1] > 0]
+    if not known or sum(v[0] for v in known) < need * total:
+        return None
+    return sum(v[1] for v in known)
+
+
+def importers_active(cmd, year):
+    """Страны, сдавшие в ООН импорт этого товара за год (из любых стран).
+    Для них отсутствие строки «импорт из X» — настоящий ноль, а не пропуск."""
+    rows = comtrade("A", year, "M", cmd, partner=0, ttl=7) or []
+    return {r[0] for r in rows if is_country(r[0])}
+
+
 def exports_reported(cmd, year):
     rows = comtrade("A", year, "X", cmd, partner=0, ttl=7) or []
     return {r[0]: (r[3], r[4]) for r in rows if is_country(r[0])}
@@ -258,7 +277,7 @@ def build_market(c):
     cands = [k for k in dict.fromkeys(MIRROR_CANDIDATES + big_old) if k not in cur]
     rows = {}
     for code, (usd, kg) in cur.items():
-        rows[code] = dict(code=code, usd=usd, kg=kg, method="reported")
+        rows[code] = dict(code=code, usd=usd, kg=kg if kg and kg > 0 else None, method="reported")
     mirrors = {}
     threshold = max([v[0] for v in cur.values()] + [1]) * 0.01
     for code in cands:
@@ -267,16 +286,21 @@ def build_market(c):
         if usd < threshold:
             continue
         mirrors[code] = m
-        rows[code] = dict(code=code, usd=usd, kg=sum(v[1] for v in m.values()),
+        rows[code] = dict(code=code, usd=usd, kg=mass(m.values()),
                           method="mirror", importers=len(m))
 
     total = sum(r["usd"] for r in rows.values()) or 1
-    total_kg = sum(r["kg"] for r in rows.values()) or 1
+    # Мировой тоннаж и доли по тоннам считаются, только если масса известна
+    # у стран, дающих не меньше 85% стоимости. Иначе знаменатель — неполная
+    # выборка (как у железной руды, где массу не дают Австралия и Бразилия).
+    t_cov = sum(r["usd"] for r in rows.values() if r["kg"]) / total
+    total_kg = sum(r["kg"] for r in rows.values() if r["kg"]) if t_cov >= 0.85 else None
+    t_missing = [iso2(r["code"]) for r in sorted(rows.values(), key=lambda r: -r["usd"]) if not r["kg"]][:4]
     ranked = sorted(rows.values(), key=lambda r: -r["usd"])
     for i, r in enumerate(ranked, 1):
         r["rank"] = i
         r["share"] = r["usd"] / total
-        r["share_kg"] = r["kg"] / total_kg if r["kg"] else None
+        r["share_kg"] = r["kg"] / total_kg if (r["kg"] and total_kg) else None
 
     # Динамика к прошлому году. Для зеркальных оценок сравниваем только по тем
     # импортёрам, которые отчитались за оба года, иначе неполнота исказит итог.
@@ -288,13 +312,15 @@ def build_market(c):
                 r["yoy_kg"] = r["kg"] / old[code][1] - 1
         elif r["method"] == "mirror":
             m_old = mirror(cmd, prev, code)
-            common = set(m_old) & set(mirrors[code])
-            a = sum(mirrors[code][k][0] for k in common)
-            b = sum(m_old[k][0] for k in common)
+            # Панель: импортёры, сдавшие статистику по товару в оба года.
+            # Если такой импортёр перестал покупать у страны — это настоящее падение.
+            common = importers_active(cmd, year) & importers_active(cmd, prev)
+            a = sum(mirrors[code].get(k, (0, 0))[0] for k in common)
+            b = sum(m_old.get(k, (0, 0))[0] for k in common)
             if b:
                 r["yoy"] = a / b - 1
-            ak = sum(mirrors[code][k][1] for k in common)
-            bk = sum(m_old[k][1] for k in common)
+            ak = mass(mirrors[code][k] for k in common if k in mirrors[code])
+            bk = mass(m_old[k] for k in common if k in m_old)
             if bk and ak:
                 r["yoy_kg"] = ak / bk - 1
 
@@ -372,7 +398,7 @@ def build_market(c):
             if have < 0.85 * stable_base:
                 continue
             ser.append([p, sum(rows_m[k][0] for k in stable if k in rows_m),
-                        sum(rows_m[k][1] for k in stable if k in rows_m)])
+                        mass(rows_m[k] for k in stable if k in rows_m) or 0])
         if len(ser) >= 3:
             r["monthly"] = ser
             r["monthly_cov"] = round(stable_base / base_tot, 3)
@@ -411,7 +437,9 @@ def build_market(c):
     return {
         "id": c["id"], "group": c["group"], "name": c["name"], "hs": cmd,
         "unit_note": c["unit_note"], "year": year, "prev_year": prev,
-        "reporters": len(cur), "total_usd": round(total), "total_t": round(total_kg / 1000),
+        "reporters": len(cur), "total_usd": round(total),
+        "total_t": round(total_kg / 1000) if total_kg else None,
+        "t_cov": round(t_cov, 3), "t_missing": t_missing,
         "top3_share": round(top3, 4), "hhi": round(hhi),
         "exporters": [clean(r) for r in top],
         "importers": [[iso2(x[0]), round(x[3]), round(x[3] / imp_tot, 4)] for x in imp[:6]],
@@ -425,32 +453,42 @@ def build_market(c):
 # ---------------------------------------------------------- история ------
 def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
     """Как рынок менялся за 4 года. Число отчитавшихся стран год от года
-    разное, поэтому всё считается по сопоставимому кругу экспортёров:
-    только по тем, у кого есть данные за каждый год."""
+    разное, поэтому всё считается по сопоставимому кругу:
+    - экспортёры — только те, у кого есть данные за каждый год;
+    - для зеркальных оценок — один и тот же круг импортёров во всех четырёх
+      годах, иначе выпавший из статистики покупатель выглядел бы как падение."""
     years = [year - 3, year - 2, prev, year]
     mirror_codes = [r["code"] for r in ranked if r["method"] == "mirror"]
     series = {}
     for y in years:
-        if y == year:
-            rep, mir = cur, {k: mirrors[k] for k in mirror_codes}
-        else:
-            rep = old if y == prev else exports_reported(cmd, y)
-            mir = {}
-            for k in mirror_codes:
-                if k not in rep:
-                    mir[k] = mirror(cmd, y, k, ttl=30)
+        rep = cur if y == year else (old if y == prev else exports_reported(cmd, y))
         for k, (usd, kg) in rep.items():
-            series.setdefault(k, {})[y] = (usd, kg)
-        for k, m in mir.items():
-            series.setdefault(k, {})[y] = (sum(v[0] for v in m.values()), sum(v[1] for v in m.values()))
+            if k not in mirror_codes:
+                series.setdefault(k, {})[y] = (usd, kg if kg and kg > 0 else None)
+    mirror_cov = {}
+    # Панель импортёров, сдававших статистику по товару во все четыре года:
+    # отсутствие у них строки «импорт из X» — реальный ноль, а страна, не
+    # сдавшая данные в какой-то год, исключается из сравнения целиком.
+    panel = set.intersection(*(importers_active(cmd, y) for y in years))
+    for k in mirror_codes:
+        by_year = {y: (mirrors[k] if y == year else mirror(cmd, y, k, ttl=30)) for y in years}
+        cur_tot = sum(v[0] for v in by_year[year].values()) or 1
+        cov = sum(v[0] for i, v in by_year[year].items() if i in panel) / cur_tot
+        if cov < 0.3:
+            continue
+        mirror_cov[iso2(k)] = round(cov, 3)
+        for y in years:
+            sub = [by_year[y][i] for i in panel if i in by_year[y]]
+            series.setdefault(k, {})[y] = (sum(v[0] for v in sub), mass(sub))
     matched = [k for k, v in series.items() if all(v.get(y, (0, 0))[0] > 0 for y in years)]
     if not matched:
         return None
     usd = [sum(series[k][y][0] for k in matched) for y in years]
     cur_total = sum(r["usd"] for r in ranked) or 1
     # Тоннаж — только по странам, указавшим массу во все годы.
-    matched_t = [k for k in matched if all(series[k][y][1] > 0 for y in years)]
+    matched_t = [k for k in matched if all(series[k][y][1] for y in years)]
     t = [sum(series[k][y][1] for k in matched_t) / 1000 for y in years]
+    last_usd = sum(series[k][year][0] for k in matched) or 1
     focus = [r["code"] for r in top[:8]]
     if FOCUS in series and FOCUS not in focus:
         focus.append(FOCUS)
@@ -468,9 +506,10 @@ def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
     moves.sort()
     return {
         "years": years, "usd": [round(v) for v in usd], "t": [round(v) for v in t],
-        "cov": round(sum(series[k][year][0] for k in matched) / cur_total, 3),
-        "cov_t": round(sum(series[k][year][1] for k in matched_t) / max(1, sum(series[k][year][1] for k in matched)), 3),
-        "n": len(matched), "shares": shares,
+        "cov": round(last_usd / cur_total, 3),
+        # доля стоимости сопоставимого круга, по которой известна масса
+        "cov_t": round(sum(series[k][year][0] for k in matched_t) / last_usd, 3),
+        "n": len(matched), "shares": shares, "mirror_cov": mirror_cov,
         "gainers": [list(m[1:]) for m in moves[::-1][:3] if m[0] > 0.003],
         "losers": [list(m[1:]) for m in moves[:3] if m[0] < -0.003],
     }
