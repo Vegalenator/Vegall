@@ -296,6 +296,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .cp{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;font-size:13.5px}
 .cp .w{font-family:var(--ff-mono);font-size:12.5px;color:var(--accent)}
 .srcs{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.keysays{margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)}
+.keysays b.caps{display:block;margin-bottom:8px;color:var(--st-confirmed)}
+.keysays ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.keysays li{font-size:13.5px;line-height:1.5;color:var(--ink)}
+.keysays li span{color:var(--ink-2);font-size:12.5px}
+.gist.q{font-style:italic}
 .outcome{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1.3fr) 20px minmax(0,1fr);align-items:stretch}
 .outcome .arr{display:grid;place-items:center;color:var(--muted)}
 .outcome > div{min-width:0;font-size:13px}
@@ -600,6 +606,15 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     }
     return out + esc(src.slice(last));
   }
+  /* ключевые заявления: помеченные key, иначе дословные цитаты последнего дня */
+  function keyStatements(e, n) {
+    const list = (e.statements || []).filter(x => x && x.text);
+    let k = list.filter(x => x.key);
+    if (!k.length) { const last = list.map(x => x.date || '').sort().pop(); k = list.filter(x => (x.date || '') === last && x.kind === 'quote'); }
+    if (!k.length) k = list.slice(-n);
+    return k.slice(0, n);
+  }
+  const sayText = x => x.kind === 'quote' ? `«${x.text}»` : x.text;
   function statementsHtml(e, ph) {
     const list = (e.statements || []).filter(x => x && x.text);
     if (!list.length) {
@@ -676,11 +691,13 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const flags = [rowChangeFlag(e), ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
     const subs = esc(e.where || e.kind || '') + (ph !== 'closed' && e.consensus && e.consensus.short ? ` · <span class="csh">${esc(e.consensus.short)}</span>` : '');
     const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
+    const k1 = ph === 'closed' && e.outcome ? keyStatements(e, 1)[0] : null;
+    const gistQ = k1 ? `<div class="gist q">${esc(trim(sayText(k1), 150))} — ${esc(k1.who || '')}</div>` : '';
     const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
     const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms;"` : '';
     return `<button type="button" class="${cls}" data-open="${esc(e.id)}" title="${esc(TY[typeOf(e)].label)}" aria-current="${state.openId === e.id && !state.help}" style="--tc:var(--t-${typeOf(e)});${delay ? delay.slice(8, -1) : ''}">
       ${timeCell(e)}
-      <div style="min-width:0"><div class="t">${esc(e.title)}${flags ? `<span class="flags">${flags}</span>` : ''}</div><div class="sub">${subs}</div>${gist}</div>
+      <div style="min-width:0"><div class="t">${esc(e.title)}${flags ? `<span class="flags">${flags}</span>` : ''}</div><div class="sub">${subs}</div>${gist}${gistQ}</div>
       <span class="go" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </button>`;
   }
@@ -783,6 +800,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div><b class="caps">Ожидали</b>${wl(o.expected || '—')}</div><div class="arr">→</div>
         <div class="dec"><b class="caps">Решили</b>${wl(o.decided)}</div><div class="arr">→</div>
         <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${wl(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
+        ${(() => { const ks = keyStatements(e, 4); return ks.length ? `<div class="keysays"><b class="caps">Ключевые заявления</b><ul>${ks.map(x => `<li>${wl(sayText(x))} <span>— ${wl(x.who || '')}</span></li>`).join('')}</ul></div>` : ''; })()}
         <div class="small">${o.filledAt ? 'Записано ' + esc(String(o.filledAt).slice(0, 16).replace('T', ' ')) + (o.filledBy === 'claude' ? ' · собрано Claude по источникам' : '') + '. ' : ''}${(o.sources || []).length ? 'Источники: ' + (o.sources || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(', ') : ''}</div></section>`;
     } else if (ph === 'awaiting') {
       outcome = `<section>${lab('Итог')}<div class="pending">Событие завершилось. Итог в формате «ожидали → решили → осталось открытым» запишет ближайший автопрогон — в 06:47, 15:47 или 22:47 мск.</div></section>`;
