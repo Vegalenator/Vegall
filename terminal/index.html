@@ -29,6 +29,9 @@
   --hot-bg: #f6e3df;
   --warm-bg: #f5ebd6;
   --calm-bg: #dcefe8;
+  --up: #23794a;
+  --down: #be3328;
+  --flat: #94740c;
   --f-display: "Unbounded", "Arial Black", system-ui, sans-serif;
   --f-body: "Golos Text", "Segoe UI", system-ui, sans-serif;
   --f-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
@@ -37,24 +40,44 @@
   :root:not([data-theme="light"]) {
     --bg: #0b1a20; --panel: #10242c; --ink: #dae7ea; --muted: #8aa3ac; --line: #22404b;
     --accent: #e8905a; --deep: #74b6d6; --hot: #ef7565; --warm: #e0b24f; --calm: #62c3a6;
-    --hot-bg: #3a1f1d; --warm-bg: #33291a; --calm-bg: #16332c; color-scheme: dark;
+    --hot-bg: #3a1f1d; --warm-bg: #33291a; --calm-bg: #16332c;
+    --up: #5ccb8d; --down: #f2766a; --flat: #dcb64c; color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0b1a20; --panel: #10242c; --ink: #dae7ea; --muted: #8aa3ac; --line: #22404b;
   --accent: #e8905a; --deep: #74b6d6; --hot: #ef7565; --warm: #e0b24f; --calm: #62c3a6;
-  --hot-bg: #3a1f1d; --warm-bg: #33291a; --calm-bg: #16332c; color-scheme: dark;
+  --hot-bg: #3a1f1d; --warm-bg: #33291a; --calm-bg: #16332c;
+  --up: #5ccb8d; --down: #f2766a; --flat: #dcb64c; color-scheme: dark;
 }
 
 * { box-sizing: border-box; }
 body {
-  margin: 0; background: var(--bg); color: var(--ink);
+  margin: 0; color: var(--ink);
+  background:
+    radial-gradient(60rem 40rem at 8% -10%, color-mix(in srgb, var(--deep) 16%, transparent), transparent 70%),
+    radial-gradient(50rem 36rem at 105% 30%, color-mix(in srgb, var(--accent) 11%, transparent), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
   font: 400 15px/1.55 var(--f-body);
   -webkit-font-smoothing: antialiased;
 }
 .wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 36px); padding-block: 28px 48px; display: grid; gap: 28px; }
 a { color: var(--deep); text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.glass {
+  background: color-mix(in srgb, var(--panel) 74%, transparent);
+  -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
+  border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
+}
+/* динамика: рост, падение, без изменений */
+.t { font-family: var(--f-data); font-weight: 600; font-variant-numeric: tabular-nums; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
+.t-u { color: var(--up); background: color-mix(in srgb, var(--up) 13%, transparent); }
+.t-d { color: var(--down); background: color-mix(in srgb, var(--down) 13%, transparent); }
+.t-f { color: var(--flat); background: color-mix(in srgb, var(--flat) 15%, transparent); }
+.k { font-weight: 600; color: var(--ink); background: linear-gradient(transparent 62%, color-mix(in srgb, var(--accent) 22%, transparent) 62%); padding: 0 1px; }
+.arr { font-size: .62em; vertical-align: .25em; margin-right: .3em; }
+.c-u { color: var(--up); } .c-d { color: var(--down); } .c-f { color: var(--flat); }
 .num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
 .label { font: 600 11px/1.3 var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
@@ -66,7 +89,7 @@ header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
 .stamp .num { font-size: 20px; font-weight: 600; }
 
 /* шкала свежести */
-.depth { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 16px 18px 12px; }
+.depth { border-radius: 10px; padding: 16px 18px 12px; }
 .depth-head { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 20px; align-items: baseline; }
 .depth-head p { margin: 0; color: var(--muted); font-size: 13px; }
 .depth-svg { width: 100%; height: auto; display: block; margin-top: 8px; }
@@ -81,12 +104,11 @@ header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
 .list { display: grid; gap: 8px; }
 .row {
   display: grid; grid-template-columns: minmax(0, 1fr) 92px; gap: 4px 12px; text-align: left;
-  width: 100%; padding: 12px 14px; background: var(--panel); color: var(--ink);
-  border: 1px solid var(--line); border-radius: 6px; cursor: pointer; font: inherit;
+  width: 100%; padding: 12px 14px; color: var(--ink); border-radius: 10px; cursor: pointer; font: inherit;
   transition: border-color .15s, transform .15s;
 }
 .row:hover { border-color: var(--muted); }
-.row[aria-selected="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.row[aria-selected="true"] { border-color: color-mix(in srgb, var(--accent) 70%, transparent); box-shadow: inset 3px 0 0 var(--accent), 0 6px 24px -12px color-mix(in srgb, var(--accent) 45%, transparent); background: color-mix(in srgb, var(--panel) 88%, var(--accent)); }
 .row .name { font-weight: 600; font-size: 15px; }
 .row .head { font: 600 17px/1.2 var(--f-data); font-variant-numeric: tabular-nums; }
 .row .cap { grid-column: 1 / -1; color: var(--muted); font-size: 12.5px; }
@@ -101,18 +123,21 @@ header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
 .tag { font: 500 11px/1 var(--f-data); color: var(--muted); border: 1px solid var(--line); padding: 3px 6px; border-radius: 3px; white-space: nowrap; }
 
 /* досье */
-.dossier { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: clamp(16px, 2.4vw, 28px); display: grid; gap: 22px; min-width: 0; }
+.dossier { border-radius: 12px; padding: clamp(16px, 2.4vw, 28px); display: grid; gap: 22px; min-width: 0; }
 .d-top { display: flex; flex-wrap: wrap; gap: 10px 24px; justify-content: space-between; align-items: start; }
 .d-top h2 { font: 600 clamp(20px, 2.6vw, 26px)/1.15 var(--f-display); margin: 6px 0 0; text-wrap: balance; }
 .d-top .meta { display: flex; flex-wrap: wrap; gap: 6px; }
 .headline { display: grid; gap: 4px; }
-.headline .big { font: 600 clamp(34px, 5vw, 52px)/1 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.headline .big { display: inline-flex; align-items: baseline; font: 600 clamp(34px, 5vw, 52px)/1 var(--f-display); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .headline .what { color: var(--muted); max-width: 60ch; }
-.headline .delta { font: 500 14px/1.4 var(--f-data); color: var(--ink); }
+.headline .delta { font: 500 14px/1.9 var(--f-body); color: var(--ink); }
 
-.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); border: 1px solid var(--line); border-radius: 4px; overflow: hidden; }
-.fact { background: var(--panel); box-shadow: 0 0 0 .5px var(--line); padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
+.fact { --tc: var(--muted); background: color-mix(in srgb, var(--tc) 7%, transparent); border: 1px solid color-mix(in srgb, var(--tc) 22%, transparent); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
+.fact.tr-u { --tc: var(--up); } .fact.tr-d { --tc: var(--down); } .fact.tr-f { --tc: var(--flat); }
 .fact .v { font: 600 18px/1.2 var(--f-data); font-variant-numeric: tabular-nums; }
+.fact.tr-u .v { color: var(--up); } .fact.tr-d .v { color: var(--down); } .fact.tr-f .v { color: var(--flat); }
+.fact .n .t { padding: 0 4px; }
 .fact .n { color: var(--muted); font-size: 12.5px; }
 
 .chart-box { display: grid; gap: 8px; min-width: 0; }
@@ -122,9 +147,12 @@ header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
 .legend span { display: inline-flex; gap: 6px; align-items: center; }
 .legend i { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
 
-.angle { border-left: 3px solid var(--accent); padding: 2px 0 2px 16px; display: grid; gap: 8px; }
+.sh { display: flex; align-items: center; gap: 10px; font: 600 11px/1.3 var(--f-data); letter-spacing: .1em; text-transform: uppercase; color: var(--accent); }
+.sh::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 45%, transparent), transparent); }
+.plate { border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; background: color-mix(in srgb, var(--pc, var(--deep)) 7%, transparent); border: 1px solid color-mix(in srgb, var(--pc, var(--deep)) 16%, transparent); }
+.angle { --pc: var(--accent); box-shadow: inset 3px 0 0 color-mix(in srgb, var(--accent) 80%, transparent); }
 .angle p { margin: 0; max-width: 68ch; }
-.lead { display: grid; gap: 10px; background: var(--bg); border-radius: 4px; padding: 14px 16px; }
+.lead { --pc: var(--deep); }
 .lead blockquote { margin: 0; font-size: 15.5px; line-height: 1.6; max-width: 68ch; }
 .lead-bar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
 button.copy { font: 600 12px/1 var(--f-data); letter-spacing: .04em; padding: 9px 12px; border-radius: 4px; border: 1px solid var(--accent); background: transparent; color: var(--accent); cursor: pointer; }
@@ -132,8 +160,9 @@ button.copy:hover { background: var(--accent); color: var(--panel); }
 .copied { font: 500 12px/1 var(--f-data); color: var(--calm); }
 
 .two { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; }
-.two p { margin: 4px 0 0; }
-.caveat { font-size: 13.5px; color: var(--muted); display: grid; gap: 4px; }
+.two p { margin: 0; }
+.chart-box { padding: 14px 16px 10px; border-radius: 10px; background: color-mix(in srgb, var(--panel) 55%, transparent); border: 1px solid color-mix(in srgb, var(--line) 60%, transparent); }
+.caveat { --pc: var(--flat); font-size: 13.5px; color: var(--muted); }
 .caveat p { margin: 0; }
 .sources { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
 
@@ -156,7 +185,7 @@ footer.note p { margin: 0; max-width: 90ch; }
     </div>
   </header>
 
-  <section class="depth" aria-labelledby="depth-title">
+  <section class="depth glass" aria-labelledby="depth-title">
     <div class="depth-head">
       <span class="label" id="depth-title">Глубина: сколько дней назад закончился период последних данных</span>
       <p>Бюджет и цепочки поставок видны почти в реальном времени, долговая нагрузка — с отставанием в полгода.</p>
@@ -166,7 +195,7 @@ footer.note p { margin: 0; max-width: 90ch; }
 
   <div class="main">
     <nav class="list" id="list" role="tablist" aria-label="Процессы"></nav>
-    <article class="dossier" id="dossier" role="tabpanel" aria-live="polite"></article>
+    <article class="dossier glass" id="dossier" role="tabpanel" aria-live="polite"></article>
   </div>
 
   <footer class="note">
@@ -183,9 +212,9 @@ const PROCESSES = [
     id: "trade",
     name: "Перестройка торговли",
     status: ["warm", "Сдвиг"],
-    head: "+33,9 млрд $",
+    head: "+33,9 млрд $", trend: "u",
     what: "Сальдо счёта текущих операций, январь–июль 2026",
-    delta: "+58% к январю–июлю 2025 (21,5 млрд $); в июле +1,7 млрд $",
+    delta: "{u:+58%} к январю–июлю 2025 (21,5 млрд $); в июле {u:+1,7 млрд $}",
     kind: "Месячная оценка",
     period: "январь–июль 2026",
     periodEnd: "2026-07-31",
@@ -193,12 +222,12 @@ const PROCESSES = [
     freq: "ежемесячно, лаг ~6 недель",
     spark: [21.5, 33.9],
     facts: [
-      ["Экспорт товаров", "271,8 млрд $", "+16,3% г/г"],
-      ["Импорт товаров", "192,8 млрд $", "+15,0% г/г"],
-      ["Сальдо услуг", "−27,9 млрд $", "год назад −25,6 млрд $"],
-      ["Товарооборот с Китаем", "185,0 млрд $", "январь–август, +28,4% г/г (таможня КНР)"],
-      ["Россия → Китай", "100,4 млрд $", "+26,5% г/г"],
-      ["Китай → Россия", "84,7 млрд $", "+30,7% г/г"]
+      ["Экспорт товаров", "271,8 млрд $", "{u:+16,3%} г/г", "u"],
+      ["Импорт товаров", "192,8 млрд $", "{u:+15,0%} г/г", "u"],
+      ["Сальдо услуг", "−27,9 млрд $", "дефицит {d:+2,3 млрд $} за год; было −25,6", "d"],
+      ["Товарооборот с Китаем", "185,0 млрд $", "январь–август, {u:+28,4%} г/г (таможня КНР)", "u"],
+      ["Россия → Китай", "100,4 млрд $", "{u:+26,5%} г/г", "u"],
+      ["Китай → Россия", "84,7 млрд $", "{u:+30,7%} г/г", "u"]
     ],
     chart: {
       type: "bars", unit: "млрд $", title: "Январь–июль: 2025 против 2026",
@@ -223,9 +252,9 @@ const PROCESSES = [
     id: "invest",
     name: "Куда идут вложения",
     status: ["hot", "Спад"],
-    head: "−9,9%",
+    head: "−9,9%", trend: "d",
     what: "Инвестиции в основной капитал, I полугодие 2026, в сопоставимых ценах",
-    delta: "I кв. −14,3%, II кв. −6,6%: спад замедляется, но продолжается",
+    delta: "I кв. {d:−14,3%}, II кв. {d:−6,6%}: спад замедляется, но продолжается",
     kind: "Квартальные данные",
     period: "I полугодие 2026",
     periodEnd: "2026-06-30",
@@ -233,12 +262,12 @@ const PROCESSES = [
     freq: "ежеквартально, лаг ~2 месяца",
     spark: [-14.3, -6.6, -9.9, -5.4],
     facts: [
-      ["Объём за полугодие", "16,22 трлн ₽", "в текущих ценах"],
-      ["Прогноз МЭР на 2026", "−5,4%", "в майском прогнозе было −1,5%"],
+      ["Объём за полугодие", "16,22 трлн ₽", "в текущих ценах", "f"],
+      ["Прогноз МЭР на 2026", "−5,4%", "в майском прогнозе было {d:−1,5%}", "d"],
       ["Здания и сооружения", "42,8%", "доля в структуре вложений"],
       ["Машины и оборудование", "33,1%", "включая транспорт"],
       ["Интеллектуальная собственность", "8,9%", "ПО, базы данных, НИОКР"],
-      ["Мир: вложения в энергетику", "3,4 трлн $", "оценка МЭА на 2026, +5%; из них 2,2 трлн — чистая энергетика"]
+      ["Мир: вложения в энергетику", "3,4 трлн $", "оценка МЭА на 2026, {u:+5%}; из них {k:2,2 трлн} — чистая энергетика", "u"]
     ],
     chart: {
       type: "bars", unit: "% г/г", title: "Инвестиции в основной капитал, изменение к прошлому году",
@@ -264,9 +293,9 @@ const PROCESSES = [
     id: "debt",
     name: "Цена долгов",
     status: ["warm", "Высоко, но снижается"],
-    head: "20,4%",
+    head: "20,4%", trend: "d",
     what: "Доля доходов частного нефинансового сектора, уходящая на обслуживание долга, I кв. 2026 (BIS)",
-    delta: "−3,3 п.п. от пика 23,7% во II кв. 2025; три года назад — 12,8%",
+    delta: "{d:−3,3 п.п.} от пика {k:23,7%} во II кв. 2025; три года назад — {k:12,8%}",
     kind: "Квартальные данные",
     period: "I квартал 2026",
     periodEnd: "2026-03-31",
@@ -274,12 +303,12 @@ const PROCESSES = [
     freq: "ежеквартально, лаг ~5 месяцев",
     spark: [12.8, 14.7, 17.2, 18.5, 18.5, 20.4, 23.6, 23.0, 23.7, 21.8, 20.8, 20.4],
     facts: [
-      ["Просрочка по ипотеке", "253 млрд ₽", "1,16% портфеля на 01.08.2026"],
-      ["Проблемная ипотека", "2,1%", "доля портфеля на 01.09.2026"],
-      ["Проблемные необеспеченные кредиты", "13,2%", "доля портфеля на 01.09.2026"],
-      ["Ключевая ставка", "14,00%", "сохранена 11.09.2026"],
-      ["Для сравнения: Китай", "19,1%", "долговая нагрузка, I кв. 2026"],
-      ["Для сравнения: США", "13,8%", "долговая нагрузка, I кв. 2026"]
+      ["Просрочка по ипотеке", "253 млрд ₽", "{k:1,16%} портфеля на 01.08; во II кв. {u:+73%} г/г", "u"],
+      ["Проблемная ипотека", "2,1%", "доля портфеля на 01.09, {f:без изменений} за август", "f"],
+      ["Проблемные необеспеченные кредиты", "13,2%", "доля портфеля на 01.09, {f:без изменений} за август", "f"],
+      ["Ключевая ставка", "14,00%", "{f:сохранена} 11.09.2026", "f"],
+      ["Для сравнения: Китай", "19,1%", "I кв. 2026, {u:+0,3 п.п.} за квартал", "u"],
+      ["Для сравнения: США", "13,8%", "I кв. 2026, {d:−0,1 п.п.} за квартал", "d"]
     ],
     chart: {
       type: "lines", unit: "% доходов", title: "Долговая нагрузка частного нефинансового сектора (BIS)",
@@ -309,9 +338,9 @@ const PROCESSES = [
     id: "supply",
     name: "Напряжение в поставках",
     status: ["hot", "Напряжение"],
-    head: "1,06",
+    head: "1,06", trend: "u",
     what: "Индекс давления на глобальные цепочки поставок (GSCPI), август 2026, в стандартных отклонениях от нормы",
-    delta: "Пик 1,85 в апреле — максимум с 2022 года; год назад −0,09",
+    delta: "Пик {k:1,85} в апреле — максимум с 2022 года; за год {u:+1,15}",
     kind: "Месячные данные",
     period: "август 2026",
     periodEnd: "2026-08-31",
@@ -319,8 +348,8 @@ const PROCESSES = [
     freq: "ежемесячно, в начале месяца",
     spark: [0.12, -0.39, -0.31, -0.30, -0.21, -0.01, -0.20, -0.23, 0.29, 0.09, 0.02, -0.09, -0.02, -0.08, -0.12, 0.58, 0.48, 0.59, 0.68, 1.85, 1.83, 1.20, 0.94, 1.06],
     facts: [
-      ["GSCPI, август 2026", "1,06", "июль 0,94; июнь 1,20"],
-      ["Ормузский пролив", "9,9 судна в сутки", "1 марта — 19 июля 2026; годом ранее 103,2 (−90%)"],
+      ["GSCPI, август 2026", "1,06", "{u:+0,12} к июлю (0,94)", "u"],
+      ["Ормузский пролив", "9,9 судна в сутки", "1 марта — 19 июля 2026; годом ранее 103,2 ({d:−90%})", "d"],
       ["Норма индекса", "0", "среднее значение за всю историю ряда"],
       ["Пик пандемии", "4,4", "декабрь 2021, для масштаба"]
     ],
@@ -347,9 +376,9 @@ const PROCESSES = [
     id: "expect",
     name: "Ожидания людей и предприятий",
     status: ["hot", "Разрыв"],
-    head: "14,2%",
+    head: "14,2%", trend: "u",
     what: "Медианные ожидания инфляции населением на год вперёд, сентябрь 2026 (инФОМ)",
-    delta: "+0,5 п.п. за месяц; фактическая инфляция в августе — 6,3% г/г",
+    delta: "{u:+0,5 п.п.} за месяц; фактическая инфляция в августе — {k:6,3%} г/г",
     kind: "Месячные данные",
     period: "сентябрь 2026",
     periodEnd: "2026-09-15",
@@ -357,12 +386,12 @@ const PROCESSES = [
     freq: "ежемесячно, опрос в первой половине месяца",
     spark: [13.0, 12.8, 14.7, 13.7, 14.2],
     facts: [
-      ["Наблюдаемая инфляция", "15,1%", "как рост цен ощущает население, сентябрь"],
-      ["Ожидания на 5 лет", "10,7%", "медиана, сентябрь"],
-      ["Ожидания людей со сбережениями", "12,8%", "без сбережений — 15,4%"],
-      ["Ценовые ожидания предприятий", "22,7 п.", "август 21,1; рост третий месяц подряд"],
-      ["Индикатор бизнес-климата", "−2,3 п.", "август −2,4"],
-      ["Инфляция (Росстат)", "6,33%", "август 2026, г/г"]
+      ["Наблюдаемая инфляция", "15,1%", "как рост цен ощущает население; {u:+0,8 п.п.}", "u"],
+      ["Ожидания на 5 лет", "10,7%", "медиана; {f:как в августе}", "f"],
+      ["Ожидания людей со сбережениями", "12,8%", "{u:+0,8 п.п.}; без сбережений {k:15,4%} ({u:+0,4})", "u"],
+      ["Ценовые ожидания предприятий", "22,7 п.", "{u:+1,6 п.} к августу; третий месяц роста", "u"],
+      ["Индикатор бизнес-климата", "−2,3 п.", "{f:+0,1 п.} к августу, почти без изменений", "f"],
+      ["Инфляция (Росстат)", "6,33%", "август, г/г; {u:+0,35 п.п.} к июлю", "u"]
     ],
     chart: {
       type: "lines", unit: "%", title: "Чего ждут люди и что показывает статистика",
@@ -391,9 +420,9 @@ const PROCESSES = [
     id: "budget",
     name: "Исполнение бюджета",
     status: ["hot", "Выше плана"],
-    head: "−5,8 трлн ₽",
+    head: "−5,8 трлн ₽", trend: "d",
     what: "Дефицит федерального бюджета, январь–август 2026 (2,5% ВВП), предварительная оценка Минфина",
-    delta: "Годовой план −3,8 трлн ₽ (1,6% ВВП) превышен в 1,5 раза; в августе профицит ≈0,66 трлн ₽",
+    delta: "Годовой план {k:−3,8 трлн ₽} (1,6% ВВП) превышен в {d:1,5 раза}; в августе профицит {u:≈0,66 трлн ₽}",
     kind: "Предварительная оценка",
     period: "январь–август 2026",
     periodEnd: "2026-08-31",
@@ -401,12 +430,12 @@ const PROCESSES = [
     freq: "ежемесячно, в начале следующего месяца",
     spark: [3.4, 6.455, 5.795],
     facts: [
-      ["Доходы", "25,93 трлн ₽", "+9,2% г/г"],
-      ["Нефтегазовые доходы", "5,02 трлн ₽", "−16,7% г/г, в основном из-за курса"],
-      ["Ненефтегазовые доходы", "20,91 трлн ₽", "+18,1% г/г"],
-      ["НДС", "11,33 трлн ₽", "+26,3% г/г"],
-      ["Расходы", "31,72 трлн ₽", "+14,7% г/г"],
-      ["Госзакупки", "9,0 трлн ₽", "+36,2% г/г"]
+      ["Доходы", "25,93 трлн ₽", "{u:+9,2%} г/г", "u"],
+      ["Нефтегазовые доходы", "5,02 трлн ₽", "{d:−16,7%} г/г, в основном из-за курса", "d"],
+      ["Ненефтегазовые доходы", "20,91 трлн ₽", "{u:+18,1%} г/г", "u"],
+      ["НДС", "11,33 трлн ₽", "{u:+26,3%} г/г", "u"],
+      ["Расходы", "31,72 трлн ₽", "{u:+14,7%} г/г", "u"],
+      ["Госзакупки", "9,0 трлн ₽", "{u:+36,2%} г/г", "u"]
     ],
     chart: {
       type: "bars", unit: "трлн ₽", title: "Дефицит нарастающим итогом против годового плана",
@@ -430,6 +459,12 @@ const PROCESSES = [
 
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const ARROW = { u: "▲", d: "▼", f: "◆" };
+/* {u:…} рост, {d:…} падение, {f:…} без изменений, {k:…} ключевая цифра */
+const rich = str => esc(str).replace(/\{([udfk]):([^}]*)\}/g, (_, t, x) => t === "k" ? `<b class="k">${x}</b>` : `<span class="t t-${t}">${x}</span>`);
+/* в текстах для эфира подсвечиваем цифры с единицами */
+const keyNums = str => rich(str).replace(/(^|[\s(«—])([+−]?\d+(?:,\d+)?(?:\s?(?:%|п\.\s?п\.|млрд \$|трлн ₽|трлн \$|раза?|процент[а-я]*|миллиард[а-я]*(?: долларов)?|триллион[а-я]*(?: рублей)?|судов|дней)))/g, '$1<b class="k">$2</b>');
+const arrow = t => t ? `<span class="arr c-${t}" aria-hidden="true">${ARROW[t]}</span>` : "";
 const fmt = (v, d = 1) => v.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d }).replace("-", "−");
 const cssv = n => `var(${n})`;
 const days = iso => Math.round((new Date(SNAPSHOT) - new Date(iso)) / 864e5);
@@ -565,10 +600,10 @@ function legend(items) {
 /* ——— список и досье ——— */
 function renderList(activeId) {
   $("#list").innerHTML = PROCESSES.map(p => `
-    <button class="row" role="tab" id="tab-${p.id}" aria-controls="dossier" aria-selected="${p.id === activeId}" data-id="${p.id}">
+    <button class="row glass" role="tab" id="tab-${p.id}" aria-controls="dossier" aria-selected="${p.id === activeId}" data-id="${p.id}">
       <span class="name">${esc(p.name)}</span>
-      ${spark(p.spark, "--" + p.status[0])}
-      <span class="head">${esc(p.head)}</span>
+      ${spark(p.spark, "--" + ({ u: "up", d: "down", f: "flat" }[p.trend] || "muted"))}
+      <span class="head c-${p.trend}">${arrow(p.trend)}${esc(p.head)}</span>
       <span class="cap">${esc(p.period)}</span>
       <span class="meta" style="grid-column:1/-1"><span class="chip ${p.status[0]}">${esc(p.status[1])}</span><span class="tag">${esc(p.kind)}</span></span>
     </button>`).join("");
@@ -579,34 +614,34 @@ function renderDossier(p) {
   $("#dossier").setAttribute("aria-labelledby", "tab-" + p.id);
   $("#dossier").innerHTML = `
     <div class="d-top">
-      <div><span class="label">Процесс</span><h2>${esc(p.name)}</h2></div>
+      <div><span class="sh">Процесс</span><h2>${esc(p.name)}</h2></div>
       <div class="meta"><span class="chip ${p.status[0]}">${esc(p.status[1])}</span><span class="tag">${esc(p.kind)}</span></div>
     </div>
     <div class="headline">
-      <span class="big">${esc(p.head)}</span>
+      <span class="big c-${p.trend}">${arrow(p.trend)}${esc(p.head)}</span>
       <span class="what">${esc(p.what)}</span>
-      <span class="delta">${esc(p.delta)}</span>
+      <span class="delta">${rich(p.delta)}</span>
     </div>
     <div class="facts">
       <div class="fact"><span class="label">Период</span><span class="v">${esc(p.period)}</span><span class="n">закончился ${days(p.periodEnd)} дн. назад</span></div>
       <div class="fact"><span class="label">Опубликовано</span><span class="v">${esc(p.published)}</span><span class="n">${esc(p.freq)}</span></div>
-      ${p.facts.map(([l, v, n]) => `<div class="fact"><span class="label">${esc(l)}</span><span class="v">${esc(v)}</span><span class="n">${esc(n)}</span></div>`).join("")}
+      ${p.facts.map(([l, v, n, t]) => `<div class="fact${t ? " tr-" + t : ""}"><span class="label">${esc(l)}</span><span class="v">${arrow(t)}${esc(v)}</span><span class="n">${rich(n)}</span></div>`).join("")}
     </div>
-    <div class="chart-box"><span class="label">${esc(p.chart.title)}, ${esc(p.chart.unit)}</span><div id="chart"></div></div>
-    <div class="angle">
-      <span class="label">Почему это тема эфира</span>
-      ${p.angle.map(t => `<p>${esc(t)}</p>`).join("")}
+    <div class="chart-box"><span class="sh">${esc(p.chart.title)}, ${esc(p.chart.unit)}</span><div id="chart"></div></div>
+    <div class="angle plate">
+      <span class="sh">Почему это тема эфира</span>
+      ${p.angle.map(t => `<p>${keyNums(t)}</p>`).join("")}
     </div>
-    <div class="lead">
-      <div class="lead-bar"><span class="label">Подводка к сюжету · ~40 секунд</span><span><span class="copied" id="copied" hidden>Скопировано</span> <button class="copy" id="copy" type="button">Копировать текст</button></span></div>
-      <blockquote id="lead-text">${esc(p.lead)}</blockquote>
+    <div class="lead plate">
+      <div class="lead-bar"><span class="sh" style="flex:1">Подводка к сюжету · ~40 секунд</span><span><span class="copied" id="copied" hidden>Скопировано</span> <button class="copy" id="copy" type="button">Копировать текст</button></span></div>
+      <blockquote id="lead-text">${keyNums(p.lead)}</blockquote>
     </div>
     <div class="two">
-      <div><span class="label">Что отслеживаем</span><p>${esc(p.track)}</p></div>
-      <div><span class="label">Что это помогает заметить</span><p>${esc(p.helps)}</p></div>
+      <div class="plate"><span class="sh">Что отслеживаем</span><p>${esc(p.track)}</p></div>
+      <div class="plate"><span class="sh">Что это помогает заметить</span><p>${esc(p.helps)}</p></div>
     </div>
-    <div class="caveat"><span class="label">Ограничения данных</span><p>${esc(p.caveat)}</p></div>
-    <div><span class="label">Первоисточники</span><div class="sources">${p.sources.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join("")}</div></div>`;
+    <div class="caveat plate"><span class="sh">Ограничения данных</span><p>${esc(p.caveat)}</p></div>
+    <div class="plate" style="--pc: var(--muted)"><span class="sh">Первоисточники</span><div class="sources">${p.sources.map(([n, u]) => `<a href="${u}" target="_blank" rel="noopener">${esc(n)}</a>`).join("")}</div></div>`;
   drawChart(p);
   $("#copy").addEventListener("click", () => {
     const txt = p.lead, done = () => { const c = $("#copied"); c.hidden = false; setTimeout(() => c.hidden = true, 1800); };
