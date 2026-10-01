@@ -54,7 +54,11 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .stamp{font-size:12px;color:var(--ink-3)}
 
 /* карточки */
-.grid{display:grid;gap:18px;grid-template-columns:1fr}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(min(100%,400px),1fr));align-items:start}
+.card.open{grid-column:1/-1}
+.card:not(.open)>.full{display:none}
+.card.open>.mini{display:none}
+.full{display:flex;flex-direction:column;min-width:0}
 .card{background:var(--sheet);border:1px solid var(--rule);border-radius:8px;display:flex;flex-direction:column;min-width:0;scroll-margin-top:90px}
 .c-head{padding:14px 18px 10px;display:grid;gap:5px;border-bottom:1px dashed var(--rule)}
 .c-title{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 12px}
@@ -189,8 +193,32 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .prof dt{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);padding-top:2px}
 .prof dd{margin:0;line-height:1.4}
 .prof dt.plus{color:var(--up)} .prof dt.minus{color:var(--down)}
+
+/* свёрнутая карточка */
+.mini{display:grid;gap:10px;padding:14px 16px 12px;cursor:pointer;border-radius:8px;min-width:0}
+.mini:hover{background:var(--paper)}
+.mini .c-title h3{font-size:17px}
+.mini .lead{margin:0;font-size:13.5px;line-height:1.45;color:var(--ink-2)}
+.mini-row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;align-items:start}
+.mini-chart svg{display:block;width:100%;max-width:240px;height:auto}
+.mini-chart .bt{fill:var(--bar)} .mini-chart .bt.last{fill:var(--ink-2)}
+.mini-chart .vl{fill:var(--ink-2);font:10.5px var(--f-mono)} .mini-chart .yl{fill:var(--ink-3);font:10px var(--f-mono)}
+.mini-lead{display:grid;gap:4px;font-size:13px}
+.mini-lead div{display:grid;grid-template-columns:16px minmax(0,1fr) auto;gap:6px;align-items:baseline}
+.mini-lead .n{font:500 11px var(--f-mono);color:var(--ink-3);text-align:right}
+.mini-lead .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mini-lead .num{color:var(--ink-2)}
+.mini-lead .ru .nm{font-weight:600;color:var(--signal)}
+.mini-sens{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;align-items:center;font-size:12.5px}
+.mini-sens .scale{max-width:160px}
+.mini-risk{font-size:12.5px;color:var(--ink-2);border-top:1px dashed var(--rule);padding-top:8px}
+.mini-risk b{color:var(--down);font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;margin-right:4px}
+.mini-more{font-size:12px;color:var(--ink-3);display:flex;justify-content:space-between}
+.mini-more span:last-child{color:var(--ink-2);font-weight:500}
+.closer{margin-left:auto;border:1px solid var(--rule);background:var(--sheet);border-radius:5px;padding:3px 10px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
+.closer:hover{color:var(--ink);border-color:var(--ink-3)}
+@media (max-width:440px){.mini-row{grid-template-columns:1fr}}
 /* золото ЦБ */
-#cbgold{grid-column:1/-1}
 .gold-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:900px){.gold-cols{grid-template-columns:1fr}}
 .gold-cols>section{padding:12px 14px;min-width:0}
@@ -258,7 +286,7 @@ footer.end a{color:inherit}
 (function(){
 "use strict";
 var GROUPS=[["all","Все"],["energy","Энергия"],["metals","Металлы"],["food","Продовольствие"],["precious","Золото"]];
-var state={group:"all",unit:"usd",sel:{}};
+var state={group:"all",unit:"usd",sel:{},open:{}};
 var WORLD=null;
 try{var saved=JSON.parse(localStorage.getItem("flows-ui")||"{}");if(saved.group)state.group=saved.group;if(saved.unit)state.unit=saved.unit}catch(e){}
 function save(){try{localStorage.setItem("flows-ui",JSON.stringify({group:state.group,unit:state.unit}))}catch(e){}}
@@ -468,6 +496,41 @@ function profileBlock(iso){
     "</dl>";
   return el;
 }
+
+function miniChart(h,m){
+  if(!h||!h.years)return'<div class="note-s">Мировой экспорт '+m.year+": "+money(m.total_usd)+"</div>";
+  var W=200,H=86,max=Math.max.apply(null,h.usd),bw=30,gap=(W-4*bw)/3;
+  var bars=h.usd.map(function(v,i){var x=i*(bw+gap),bh=Math.max(2,(H-30)*v/max),y=H-14-bh;
+    return'<rect class="bt'+(i===3?" last":"")+'" x="'+x+'" y="'+y+'" width="'+bw+'" height="'+bh+'" rx="2"/><text class="vl" x="'+(x+bw/2)+'" y="'+(y-3)+'" text-anchor="middle">'+nf0.format(v/1e9)+'</text><text class="yl" x="'+(x+bw/2)+'" y="'+(H-2)+'" text-anchor="middle">'+String(h.years[i]).slice(2)+"</text>"}).join("");
+  var dv=h.usd[3]/h.usd[0]-1,okT=h.cov_t>0.6&&h.t[0]>0,dt=okT?h.t[3]/h.t[0]-1:null;
+  return'<span class="label">Мировой экспорт, млрд $</span><div class="mini-chart"><svg viewBox="0 0 '+W+" "+H+'" role="img" aria-label="Мировой экспорт по годам">'+bars+'</svg></div><div class="note-s">'+h.years[0]+"–"+h.years[3]+": в деньгах "+delta(dv)+(dt!=null?", в объёме "+delta(dt):"")+"</div>";
+}
+function miniLeaders(rows,ru){
+  var h=rows.map(function(r){return'<div'+(r.iso==="RU"?' class="ru"':"")+'><span class="n">'+r.rank+'</span><span class="nm">'+flag(r.iso)+" "+esc(cname(r.iso))+(r.method==="mirror"?" ≈":"")+'</span><span class="num">'+pct(share(r))+"</span></div>"}).join("");
+  if(ru&&rows.indexOf(ru)<0)h+='<div class="ru"><span class="n">'+ru.rank+'</span><span class="nm">'+flag("RU")+" Россия"+(ru.method==="mirror"?" ≈":"")+'</span><span class="num">'+pct(share(ru))+"</span></div>";
+  return'<span class="label">Лидеры экспорта</span><div class="mini-lead">'+h+"</div>";
+}
+function miniSens(m,ins){
+  var s=sensitivity(m,ins);
+  return'<div class="mini-sens"><span class="label">Чувствительность</span><span><b class="level" style="font-size:13px">'+LVL[s.lvl]+'</b> <span class="note-s">'+s.lvl+'/5</span></span><span></span><div class="scale">'+[1,2,3,4,5].map(function(i){return'<span'+(i<=s.lvl?' class="on"':"")+' style="opacity:'+(i<=s.lvl?0.35+0.13*i:1)+'"></span>'}).join("")+"</div></div>";
+}
+function makeCollapsible(card,id,mini){
+  var full=document.createElement("div");full.className="full";
+  while(card.firstChild)full.appendChild(card.firstChild);
+  var mn=document.createElement("div");mn.className="mini";mn.setAttribute("role","button");mn.tabIndex=0;mn.setAttribute("aria-expanded","false");mn.innerHTML=mini;
+  card.appendChild(mn);card.appendChild(full);
+  var t=full.querySelector(".c-title");
+  if(t){var cb=document.createElement("button");cb.type="button";cb.className="closer";cb.textContent="Свернуть ↑";t.appendChild(cb);cb.addEventListener("click",function(e){e.stopPropagation();toggle(card,id,false)})}
+  function open(){toggle(card,id,true)}
+  mn.addEventListener("click",open);
+  mn.addEventListener("keydown",function(e){if(e.key==="Enter"||e.key===" "){e.preventDefault();open()}});
+  if(state.open[id])card.classList.add("open");
+}
+function toggle(card,id,on){
+  state.open[id]=on;card.classList.toggle("open",on);
+  card.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
+}
+function openCard(id){var c=document.getElementById(id);if(c&&!c.classList.contains("open"))toggle(c,id,true);else if(c)c.scrollIntoView({block:"start"})}
 function concentration(m){var t=m.top3_share;if(t>=0.6)return['hi',"высокая концентрация"];if(t>=0.4)return['mid',"умеренная концентрация"];return['lo',"рынок раздроблен"]}
 
 function rowHTML(r,max,su,st){
@@ -573,6 +636,15 @@ function marketCard(m,data){
   src.innerHTML='Источник: <a href="https://comtradeplus.un.org/" target="_blank" rel="noopener">UN Comtrade</a>, '+m.year+' год, отчитались '+m.reporters+" стран. ≈ — оценка по импорту партнёров. Обновлено "+(m.fetched||"—")+".";
   foot.appendChild(src);
   card.appendChild(foot);
+  var ins=data.insights&&data.insights[m.id]||{};
+  var ruR=(m.exporters||[]).find(function(x){return x.iso==="RU"});
+  makeCollapsible(card,m.id,
+    '<div class="c-title"><h3>'+esc(m.name)+'</h3><span class="hs">ТН ВЭД '+esc(m.hs)+'</span><span class="conc '+c[0]+'">'+c[1]+"</span></div>"+
+    (ins.lead?'<p class="lead">'+esc(ins.lead)+"</p>":"")+
+    '<div class="mini-row"><div>'+miniChart(m.history,m)+"</div><div>"+miniLeaders((m.exporters||[]).slice(0,5),ruR)+"</div></div>"+
+    miniSens(m,ins)+
+    (ins.risk?'<div class="mini-risk"><b>Главный риск</b>'+esc(ins.risk)+"</div>":"")+
+    '<div class="mini-more"><span>'+m.year+" · UN Comtrade</span><span>Развернуть ↓</span></div>");
   return card;
 }
 
@@ -609,6 +681,16 @@ function goldCard(g){
   }
   cols.addEventListener("click",function(e){var b=e.target.closest(".row");if(b)select(b.dataset.iso3)});
   select(buyers[0]?buyers[0].iso3:(byHold[0]&&byHold[0].iso3));
+  var gi2=window.__INS&&window.__INS.cbgold||{};
+  var ldr=byHold.slice(0,5).map(function(c,i){return'<div'+(c.iso==="RU"?' class="ru"':"")+'><span class="n">'+(i+1)+'</span><span class="nm">'+flag(c.iso)+" "+esc(cname(c.iso)||c.iso3)+'</span><span class="num">'+nf0.format(c.t)+" т</span></div>"}).join("");
+  var buy=buyers.slice(0,5).map(function(c,i){return'<div'+(c.iso==="RU"?' class="ru"':"")+'><span class="n">'+(i+1)+'</span><span class="nm">'+flag(c.iso)+" "+esc(cname(c.iso)||c.iso3)+'</span><span class="num up">+'+nf0.format(c.d12)+" т</span></div>"}).join("");
+  makeCollapsible(card,"cbgold",
+    '<div class="c-title"><h3>Золото центробанков</h3><span class="hs">резервы, тонны</span></div>'+
+    (gi2.lead?'<p class="lead">'+esc(gi2.lead)+"</p>":"")+
+    '<div class="mini-row"><div><span class="label">Крупнейшие держатели</span><div class="mini-lead">'+ldr+'</div></div><div><span class="label">Покупали за 12 месяцев</span><div class="mini-lead">'+buy+"</div></div></div>"+
+    (ru?'<div class="mini-sens"><span class="label">Россия</span><span>№'+ruRank+" · "+nf0.format(ru.t)+" т · за 12 мес. "+(ru.d12==null?"—":'<span class="'+(ru.d12<0?"down":"up")+'">'+(ru.d12>0?"+":"−")+nf0.format(Math.abs(ru.d12))+" т</span>")+"</span></div>":"")+
+    (gi2.risk?'<div class="mini-risk"><b>Главный риск</b>'+esc(gi2.risk)+"</div>":"")+
+    '<div class="mini-more"><span>'+pLabel(g.latest)+" · IMF IRFCL</span><span>Развернуть ↓</span></div>");
   return card;
 }
 
@@ -649,6 +731,7 @@ function render(data){
    '<div>Стоимость — в долларах США по данным отчитавшейся стороны: экспорт в ценах FOB, зеркальные оценки в ценах CIF, поэтому они выше на 3–8% за счёт фрахта и страховки. Объём — масса нетто; часть стран её не указывает.</div>';
 }
 
+document.addEventListener("click",function(e){var a=e.target.closest('a[href^="#"]');if(!a)return;var id=a.getAttribute("href").slice(1);if(document.getElementById(id)&&document.getElementById(id).classList.contains("card")){e.preventDefault();openCard(id)}});
 function boot(data){
   if(data){window.__INS=data.insights||{};window.__DATA=data}
   if(!data||!data.markets){document.getElementById("grid").innerHTML='<p class="empty">Данные ещё не собраны. Запустите <code>python3 flows/fetch/update.py</code>.</p>';return}
