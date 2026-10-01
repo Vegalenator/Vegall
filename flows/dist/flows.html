@@ -105,7 +105,8 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .charts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
 @media (max-width:440px){.charts{grid-template-columns:1fr}}
 .charts .label{display:block;margin-bottom:2px}
-.buyers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 16px}
+.buyers{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-flow:column;gap:4px 16px}
+.buyer .bn{font:500 11px var(--f-mono);color:var(--ink-3);margin-right:4px}
 .buyer{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:6px;font-size:13px;align-items:center}
 .buyer .nmb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .buyer .bt{height:3px;background:var(--bar-soft);margin-top:3px}
@@ -506,7 +507,8 @@ function dossier(m,r){
     b2.innerHTML='<span class="label">Куда идёт, '+m.year+(r.buyers_mirror&&r.method!=="mirror"?" (по данным импортёров)":"")+'</span>';
     if(mp)b2.appendChild(mp);
     var list=document.createElement("div");list.className="buyers";
-    list.innerHTML=r.buyers.map(function(x){return'<div class="buyer"><div class="nmb">'+flag(x[0])+" "+esc(cname(x[0]))+'<div class="bt"><div class="bf" style="width:'+(x[1]*100).toFixed(1)+'%"></div></div></div><span class="num">'+pct(x[1])+"</span></div>"}).join("");
+    list.style.gridTemplateRows="repeat("+Math.ceil(r.buyers.length/2)+",auto)";
+    list.innerHTML=r.buyers.map(function(x,i){return'<div class="buyer"><div class="nmb"><span class="bn">'+(i+1)+"</span>"+flag(x[0])+" "+esc(cname(x[0]))+'<div class="bt"><div class="bf" style="width:'+(x[1]*100).toFixed(1)+'%"></div></div></div><span class="num">'+pct(x[1])+"</span></div>"}).join("");
     b2.appendChild(list);b2.style.display="grid";b2.style.gap="8px";
     box.appendChild(b2);
   }
