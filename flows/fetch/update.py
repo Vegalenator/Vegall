@@ -407,6 +407,7 @@ def build_market(c):
 
     top3 = sum(r["share"] for r in ranked[:3])
     hhi = sum((r["share"] * 100) ** 2 for r in ranked)
+    history = build_history(cmd, year, prev, cur, old, ranked, mirrors, top)
     return {
         "id": c["id"], "group": c["group"], "name": c["name"], "hs": cmd,
         "unit_note": c["unit_note"], "year": year, "prev_year": prev,
@@ -416,7 +417,62 @@ def build_market(c):
         "importers": [[iso2(x[0]), round(x[3]), round(x[3] / imp_tot, 4)] for x in imp[:6]],
         "months_reporters": reporters_by_month,
         "pulse": c.get("pulse", []),
+        "history": history,
         "source": "UN Comtrade",
+    }
+
+
+# ---------------------------------------------------------- история ------
+def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
+    """Как рынок менялся за 4 года. Число отчитавшихся стран год от года
+    разное, поэтому всё считается по сопоставимому кругу экспортёров:
+    только по тем, у кого есть данные за каждый год."""
+    years = [year - 3, year - 2, prev, year]
+    mirror_codes = [r["code"] for r in ranked if r["method"] == "mirror"]
+    series = {}
+    for y in years:
+        if y == year:
+            rep, mir = cur, {k: mirrors[k] for k in mirror_codes}
+        else:
+            rep = old if y == prev else exports_reported(cmd, y)
+            mir = {}
+            for k in mirror_codes:
+                if k not in rep:
+                    mir[k] = mirror(cmd, y, k, ttl=30)
+        for k, (usd, kg) in rep.items():
+            series.setdefault(k, {})[y] = (usd, kg)
+        for k, m in mir.items():
+            series.setdefault(k, {})[y] = (sum(v[0] for v in m.values()), sum(v[1] for v in m.values()))
+    matched = [k for k, v in series.items() if all(v.get(y, (0, 0))[0] > 0 for y in years)]
+    if not matched:
+        return None
+    usd = [sum(series[k][y][0] for k in matched) for y in years]
+    cur_total = sum(r["usd"] for r in ranked) or 1
+    # Тоннаж — только по странам, указавшим массу во все годы.
+    matched_t = [k for k in matched if all(series[k][y][1] > 0 for y in years)]
+    t = [sum(series[k][y][1] for k in matched_t) / 1000 for y in years]
+    focus = [r["code"] for r in top[:8]]
+    if FOCUS in series and FOCUS not in focus:
+        focus.append(FOCUS)
+    shares = {}
+    for k in focus:
+        if k in matched:
+            shares[iso2(k)] = [round(series[k][y][0] / usd[i], 4) for i, y in enumerate(years)]
+    # Кто сильнее всех нарастил и потерял долю (среди заметных игроков).
+    moves = []
+    for k in matched:
+        a = series[k][years[0]][0] / usd[0]
+        b = series[k][years[-1]][0] / usd[-1]
+        if max(a, b) >= 0.02:
+            moves.append((b - a, iso2(k), round(a, 4), round(b, 4)))
+    moves.sort()
+    return {
+        "years": years, "usd": [round(v) for v in usd], "t": [round(v) for v in t],
+        "cov": round(sum(series[k][year][0] for k in matched) / cur_total, 3),
+        "cov_t": round(sum(series[k][year][1] for k in matched_t) / max(1, sum(series[k][year][1] for k in matched)), 3),
+        "n": len(matched), "shares": shares,
+        "gainers": [list(m[1:]) for m in moves[::-1][:3] if m[0] > 0.003],
+        "losers": [list(m[1:]) for m in moves[:3] if m[0] < -0.003],
     }
 
 
@@ -585,6 +641,11 @@ def main():
     except Exception as e:
         print(f"  ! IMF: {e}", file=sys.stderr)
 
+    insights = {}
+    ipath = os.path.join(DATA, "insights.json")
+    if os.path.exists(ipath):
+        with open(ipath) as f:
+            insights = json.load(f)
     notes = {}
     if os.path.exists(NOTES):
         with open(NOTES) as f:
@@ -592,7 +653,7 @@ def main():
 
     out = {
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-        "markets": markets, "pulses": pulses, "cbgold": gold, "notes": notes,
+        "markets": markets, "pulses": pulses, "cbgold": gold, "notes": notes, "insights": insights,
         "stats": STATS,
     }
     with open(OUT, "w") as f:
