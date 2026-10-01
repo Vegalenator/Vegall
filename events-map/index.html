@@ -259,6 +259,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .onair::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:3px;background:var(--accent)}
 .says{display:grid;gap:4px}
 .says-empty{margin:0;font-size:13px;color:var(--ink-2)}
+.says-live{margin:-4px 0 10px;font-size:12px;color:var(--ink-2)}
+.says-live::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--live);margin-right:7px;vertical-align:1px}
 .says-day + .says-day{margin-top:14px}
 .says-h{display:flex;align-items:baseline;gap:8px;font-family:var(--ff-mono);font-size:11.5px;color:var(--ink-2);padding-bottom:6px;border-bottom:1px solid var(--hair);margin-bottom:4px}
 .says-h span{color:var(--muted);font-size:10.5px}
@@ -602,7 +604,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const list = (e.statements || []).filter(x => x && x.text);
     if (!list.length) {
       if (ph !== 'live') return '';
-      return `<section class="blk says">${lab('Заявления')}<p class="says-empty">Заявления собираются по итогам каждого дня события: вечерний прогон в 22:47 мск.</p></section>`;
+      return `<section class="blk says">${lab('Заявления')}<p class="says-empty">Пока событие идёт, заявления проверяются каждый час, с 7:23 до 23:23 мск.${liveNote(e)}</p></section>`;
     }
     const s0 = times(e).s, days = {};
     list.forEach(x => (days[x.date || ''] = days[x.date || ''] || []).push(x));
@@ -617,7 +619,12 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         ${x.kind === 'quote' ? `<blockquote>«${wl(x.text)}»</blockquote>` : `<p>${wl(x.text)}</p>`}
         ${x.source ? `<a class="say-src" href="${esc(x.source.url)}" target="_blank" rel="noopener">${esc(x.source.name)}</a>` : ''}</figure>`).join('')}</div>`;
     }).join('');
-    return `<section class="blk says">${lab('Заявления')}${body}</section>`;
+    const note = ph === 'live' ? `<p class="says-live">Идёт: проверяется каждый час.${liveNote(e)}</p>` : '';
+    return `<section class="blk says">${lab('Заявления')}${note}${body}</section>`;
+  }
+  function liveNote(e) {
+    const t = e.liveCheckedAt ? new Date(e.liveCheckedAt) : null;
+    return t && !isNaN(t) ? ` Последняя проверка — ${dayKey(t) === dayKey(new Date()) ? '' : fShort.format(t) + ', '}${fTime.format(t)}.` : '';
   }
   function navHtml(idx) {
     const up = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 10l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
