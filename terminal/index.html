@@ -70,14 +70,14 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
   -webkit-backdrop-filter: blur(16px) saturate(140%); backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid color-mix(in srgb, var(--line) 75%, transparent);
 }
-/* динамика: рост, падение, без изменений */
+/* оценка: хорошо, плохо, нейтрально; направление показывает стрелка */
 .t { font-family: var(--f-data); font-weight: 600; font-variant-numeric: tabular-nums; padding: 1px 5px; border-radius: 3px; white-space: nowrap; }
-.t-u { color: var(--up); background: color-mix(in srgb, var(--up) 13%, transparent); }
-.t-d { color: var(--down); background: color-mix(in srgb, var(--down) 13%, transparent); }
-.t-f { color: var(--flat); background: color-mix(in srgb, var(--flat) 15%, transparent); }
+.t-g { color: var(--up); background: color-mix(in srgb, var(--up) 13%, transparent); }
+.t-b { color: var(--down); background: color-mix(in srgb, var(--down) 13%, transparent); }
+.t-n { color: var(--flat); background: color-mix(in srgb, var(--flat) 15%, transparent); }
 .k { font-weight: 600; color: var(--ink); background: linear-gradient(transparent 62%, color-mix(in srgb, var(--accent) 22%, transparent) 62%); padding: 0 1px; }
 .arr { font-size: .62em; vertical-align: .25em; margin-right: .3em; }
-.c-u { color: var(--up); } .c-d { color: var(--down); } .c-f { color: var(--flat); }
+.c-g { color: var(--up); } .c-b { color: var(--down); } .c-n { color: var(--flat); }
 .num { font-family: var(--f-data); font-variant-numeric: tabular-nums; }
 .label { font: 600 11px/1.3 var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
@@ -85,6 +85,9 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 header.top { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: end; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 20px; }
 header.top h1 { font: 600 clamp(24px, 4vw, 40px)/1.08 var(--f-display); margin: 6px 0 0; letter-spacing: -.01em; text-wrap: balance; }
 header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
+.key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+.key .t { margin-right: 4px; }
+.key b { font-size: 10px; letter-spacing: .2em; color: var(--muted); }
 .stamp { display: grid; gap: 4px; text-align: right; }
 .stamp .num { font-size: 20px; font-weight: 600; }
 
@@ -134,9 +137,9 @@ header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
 
 .facts { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; }
 .fact { --tc: var(--muted); background: color-mix(in srgb, var(--tc) 7%, transparent); border: 1px solid color-mix(in srgb, var(--tc) 22%, transparent); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; align-content: start; }
-.fact.tr-u { --tc: var(--up); } .fact.tr-d { --tc: var(--down); } .fact.tr-f { --tc: var(--flat); }
+.fact.tr-g { --tc: var(--up); } .fact.tr-b { --tc: var(--down); } .fact.tr-n { --tc: var(--flat); }
 .fact .v { font: 600 18px/1.2 var(--f-data); font-variant-numeric: tabular-nums; }
-.fact.tr-u .v { color: var(--up); } .fact.tr-d .v { color: var(--down); } .fact.tr-f .v { color: var(--flat); }
+.fact.tr-g .v { color: var(--up); } .fact.tr-b .v { color: var(--down); } .fact.tr-n .v { color: var(--flat); }
 .fact .n .t { padding: 0 4px; }
 .fact .n { color: var(--muted); font-size: 12.5px; }
 
@@ -178,6 +181,12 @@ footer.note p { margin: 0; max-width: 90ch; }
       <div class="label">Терминал вечернего эфира</div>
       <h1>Экономика под поверхностью</h1>
       <p>Шесть процессов, которые не видны в котировках. По каждому: последний показатель, изменение, дата публикации и повод для эфира.</p>
+      <div class="key" aria-label="Как читать цвета">
+        <span><span class="t t-g">зелёный</span> хорошо для экономики</span>
+        <span><span class="t t-b">красный</span> плохо</span>
+        <span><span class="t t-n">жёлтый</span> нейтрально или без изменений</span>
+        <span><b class="c-n">▲ ▼ ◆</b> рост · падение · на месте</span>
+      </div>
     </div>
     <div class="stamp">
       <span class="label">Срез данных</span>
@@ -212,9 +221,9 @@ const PROCESSES = [
     id: "trade",
     name: "Перестройка торговли",
     status: ["warm", "Сдвиг"],
-    head: "+33,9 млрд $", trend: "u",
+    head: "+33,9 млрд $", trend: "u+",
     what: "Сальдо счёта текущих операций, январь–июль 2026",
-    delta: "{u:+58%} к январю–июлю 2025 (21,5 млрд $); в июле {u:+1,7 млрд $}",
+    delta: "{u+:+58%} к январю–июлю 2025 (21,5 млрд $); в июле {u+:+1,7 млрд $}",
     kind: "Месячная оценка",
     period: "январь–июль 2026",
     periodEnd: "2026-07-31",
@@ -222,12 +231,12 @@ const PROCESSES = [
     freq: "ежемесячно, лаг ~6 недель",
     spark: [21.5, 33.9],
     facts: [
-      ["Экспорт товаров", "271,8 млрд $", "{u:+16,3%} г/г", "u"],
-      ["Импорт товаров", "192,8 млрд $", "{u:+15,0%} г/г", "u"],
-      ["Сальдо услуг", "−27,9 млрд $", "дефицит {d:+2,3 млрд $} за год; было −25,6", "d"],
-      ["Товарооборот с Китаем", "185,0 млрд $", "январь–август, {u:+28,4%} г/г (таможня КНР)", "u"],
-      ["Россия → Китай", "100,4 млрд $", "{u:+26,5%} г/г", "u"],
-      ["Китай → Россия", "84,7 млрд $", "{u:+30,7%} г/г", "u"]
+      ["Экспорт товаров", "271,8 млрд $", "{u+:+16,3%} г/г", "u+"],
+      ["Импорт товаров", "192,8 млрд $", "{u~:+15,0%} г/г", "u~"],
+      ["Сальдо услуг", "−27,9 млрд $", "дефицит {d-:+2,3 млрд $} за год; было −25,6", "d-"],
+      ["Товарооборот с Китаем", "185,0 млрд $", "январь–август, {u+:+28,4%} г/г (таможня КНР)", "u+"],
+      ["Россия → Китай", "100,4 млрд $", "{u+:+26,5%} г/г", "u+"],
+      ["Китай → Россия", "84,7 млрд $", "{u~:+30,7%} г/г", "u~"]
     ],
     chart: {
       type: "bars", unit: "млрд $", title: "Январь–июль: 2025 против 2026",
@@ -252,9 +261,9 @@ const PROCESSES = [
     id: "invest",
     name: "Куда идут вложения",
     status: ["hot", "Спад"],
-    head: "−9,9%", trend: "d",
+    head: "−9,9%", trend: "d-",
     what: "Инвестиции в основной капитал, I полугодие 2026, в сопоставимых ценах",
-    delta: "I кв. {d:−14,3%}, II кв. {d:−6,6%}: спад замедляется, но продолжается",
+    delta: "I кв. {d-:−14,3%}, II кв. {d-:−6,6%}: спад замедляется, но продолжается",
     kind: "Квартальные данные",
     period: "I полугодие 2026",
     periodEnd: "2026-06-30",
@@ -262,12 +271,12 @@ const PROCESSES = [
     freq: "ежеквартально, лаг ~2 месяца",
     spark: [-14.3, -6.6, -9.9, -5.4],
     facts: [
-      ["Объём за полугодие", "16,22 трлн ₽", "в текущих ценах", "f"],
-      ["Прогноз МЭР на 2026", "−5,4%", "в майском прогнозе было {d:−1,5%}", "d"],
+      ["Объём за полугодие", "16,22 трлн ₽", "в текущих ценах", "f~"],
+      ["Прогноз МЭР на 2026", "−5,4%", "в майском прогнозе было {k:−1,5%}", "d-"],
       ["Здания и сооружения", "42,8%", "доля в структуре вложений"],
       ["Машины и оборудование", "33,1%", "включая транспорт"],
       ["Интеллектуальная собственность", "8,9%", "ПО, базы данных, НИОКР"],
-      ["Мир: вложения в энергетику", "3,4 трлн $", "оценка МЭА на 2026, {u:+5%}; из них {k:2,2 трлн} — чистая энергетика", "u"]
+      ["Мир: вложения в энергетику", "3,4 трлн $", "оценка МЭА на 2026, {u+:+5%}; из них {k:2,2 трлн} — чистая энергетика", "u+"]
     ],
     chart: {
       type: "bars", unit: "% г/г", title: "Инвестиции в основной капитал, изменение к прошлому году",
@@ -293,9 +302,9 @@ const PROCESSES = [
     id: "debt",
     name: "Цена долгов",
     status: ["warm", "Высоко, но снижается"],
-    head: "20,4%", trend: "d",
+    head: "20,4%", trend: "d+",
     what: "Доля доходов частного нефинансового сектора, уходящая на обслуживание долга, I кв. 2026 (BIS)",
-    delta: "{d:−3,3 п.п.} от пика {k:23,7%} во II кв. 2025; три года назад — {k:12,8%}",
+    delta: "{d+:−3,3 п.п.} от пика {k:23,7%} во II кв. 2025; три года назад — {k:12,8%}",
     kind: "Квартальные данные",
     period: "I квартал 2026",
     periodEnd: "2026-03-31",
@@ -303,12 +312,12 @@ const PROCESSES = [
     freq: "ежеквартально, лаг ~5 месяцев",
     spark: [12.8, 14.7, 17.2, 18.5, 18.5, 20.4, 23.6, 23.0, 23.7, 21.8, 20.8, 20.4],
     facts: [
-      ["Просрочка по ипотеке", "253 млрд ₽", "{k:1,16%} портфеля на 01.08; во II кв. {u:+73%} г/г", "u"],
-      ["Проблемная ипотека", "2,1%", "доля портфеля на 01.09, {f:без изменений} за август", "f"],
-      ["Проблемные необеспеченные кредиты", "13,2%", "доля портфеля на 01.09, {f:без изменений} за август", "f"],
-      ["Ключевая ставка", "14,00%", "{f:сохранена} 11.09.2026", "f"],
-      ["Для сравнения: Китай", "19,1%", "I кв. 2026, {u:+0,3 п.п.} за квартал", "u"],
-      ["Для сравнения: США", "13,8%", "I кв. 2026, {d:−0,1 п.п.} за квартал", "d"]
+      ["Просрочка по ипотеке", "253 млрд ₽", "{k:1,16%} портфеля на 01.08; во II кв. {u-:+73%} г/г", "u-"],
+      ["Проблемная ипотека", "2,1%", "доля портфеля на 01.09, {f~:без изменений} за август", "f~"],
+      ["Проблемные необеспеченные кредиты", "13,2%", "доля портфеля на 01.09, {f~:без изменений} за август", "f~"],
+      ["Ключевая ставка", "14,00%", "{f~:сохранена} 11.09.2026", "f~"],
+      ["Для сравнения: Китай", "19,1%", "I кв. 2026, {u-:+0,3 п.п.} за квартал", "u-"],
+      ["Для сравнения: США", "13,8%", "I кв. 2026, {d+:−0,1 п.п.} за квартал", "d+"]
     ],
     chart: {
       type: "lines", unit: "% доходов", title: "Долговая нагрузка частного нефинансового сектора (BIS)",
@@ -338,9 +347,9 @@ const PROCESSES = [
     id: "supply",
     name: "Напряжение в поставках",
     status: ["hot", "Напряжение"],
-    head: "1,06", trend: "u",
+    head: "1,06", trend: "u-",
     what: "Индекс давления на глобальные цепочки поставок (GSCPI), август 2026, в стандартных отклонениях от нормы",
-    delta: "Пик {k:1,85} в апреле — максимум с 2022 года; за год {u:+1,15}",
+    delta: "Пик {k:1,85} в апреле — максимум с 2022 года; за год {u-:+1,15}",
     kind: "Месячные данные",
     period: "август 2026",
     periodEnd: "2026-08-31",
@@ -348,8 +357,8 @@ const PROCESSES = [
     freq: "ежемесячно, в начале месяца",
     spark: [0.12, -0.39, -0.31, -0.30, -0.21, -0.01, -0.20, -0.23, 0.29, 0.09, 0.02, -0.09, -0.02, -0.08, -0.12, 0.58, 0.48, 0.59, 0.68, 1.85, 1.83, 1.20, 0.94, 1.06],
     facts: [
-      ["GSCPI, август 2026", "1,06", "{u:+0,12} к июлю (0,94)", "u"],
-      ["Ормузский пролив", "9,9 судна в сутки", "1 марта — 19 июля 2026; годом ранее 103,2 ({d:−90%})", "d"],
+      ["GSCPI, август 2026", "1,06", "{u-:+0,12} к июлю (0,94)", "u-"],
+      ["Ормузский пролив", "9,9 судна в сутки", "1 марта — 19 июля 2026; годом ранее 103,2 ({d-:−90%})", "d-"],
       ["Норма индекса", "0", "среднее значение за всю историю ряда"],
       ["Пик пандемии", "4,4", "декабрь 2021, для масштаба"]
     ],
@@ -376,9 +385,9 @@ const PROCESSES = [
     id: "expect",
     name: "Ожидания людей и предприятий",
     status: ["hot", "Разрыв"],
-    head: "14,2%", trend: "u",
+    head: "14,2%", trend: "u-",
     what: "Медианные ожидания инфляции населением на год вперёд, сентябрь 2026 (инФОМ)",
-    delta: "{u:+0,5 п.п.} за месяц; фактическая инфляция в августе — {k:6,3%} г/г",
+    delta: "{u-:+0,5 п.п.} за месяц; фактическая инфляция в августе — {k:6,3%} г/г",
     kind: "Месячные данные",
     period: "сентябрь 2026",
     periodEnd: "2026-09-15",
@@ -386,12 +395,12 @@ const PROCESSES = [
     freq: "ежемесячно, опрос в первой половине месяца",
     spark: [13.0, 12.8, 14.7, 13.7, 14.2],
     facts: [
-      ["Наблюдаемая инфляция", "15,1%", "как рост цен ощущает население; {u:+0,8 п.п.}", "u"],
-      ["Ожидания на 5 лет", "10,7%", "медиана; {f:как в августе}", "f"],
-      ["Ожидания людей со сбережениями", "12,8%", "{u:+0,8 п.п.}; без сбережений {k:15,4%} ({u:+0,4})", "u"],
-      ["Ценовые ожидания предприятий", "22,7 п.", "{u:+1,6 п.} к августу; третий месяц роста", "u"],
-      ["Индикатор бизнес-климата", "−2,3 п.", "{f:+0,1 п.} к августу, почти без изменений", "f"],
-      ["Инфляция (Росстат)", "6,33%", "август, г/г; {u:+0,35 п.п.} к июлю", "u"]
+      ["Наблюдаемая инфляция", "15,1%", "как рост цен ощущает население; {u-:+0,8 п.п.}", "u-"],
+      ["Ожидания на 5 лет", "10,7%", "медиана; {f~:как в августе}", "f~"],
+      ["Ожидания людей со сбережениями", "12,8%", "{u-:+0,8 п.п.}; без сбережений {k:15,4%} ({u-:+0,4})", "u-"],
+      ["Ценовые ожидания предприятий", "22,7 п.", "{u-:+1,6 п.} к августу; третий месяц роста", "u-"],
+      ["Индикатор бизнес-климата", "−2,3 п.", "{u~:+0,1 п.} к августу, почти без изменений", "u~"],
+      ["Инфляция (Росстат)", "6,33%", "август, г/г; {u-:+0,35 п.п.} к июлю", "u-"]
     ],
     chart: {
       type: "lines", unit: "%", title: "Чего ждут люди и что показывает статистика",
@@ -420,9 +429,9 @@ const PROCESSES = [
     id: "budget",
     name: "Исполнение бюджета",
     status: ["hot", "Выше плана"],
-    head: "−5,8 трлн ₽", trend: "d",
+    head: "−5,8 трлн ₽", trend: "d-",
     what: "Дефицит федерального бюджета, январь–август 2026 (2,5% ВВП), предварительная оценка Минфина",
-    delta: "Годовой план {k:−3,8 трлн ₽} (1,6% ВВП) превышен в {d:1,5 раза}; в августе профицит {u:≈0,66 трлн ₽}",
+    delta: "Годовой план {k:−3,8 трлн ₽} (1,6% ВВП) превышен в {u-:1,5 раза}; в августе профицит {u+:≈0,66 трлн ₽}",
     kind: "Предварительная оценка",
     period: "январь–август 2026",
     periodEnd: "2026-08-31",
@@ -430,12 +439,12 @@ const PROCESSES = [
     freq: "ежемесячно, в начале следующего месяца",
     spark: [3.4, 6.455, 5.795],
     facts: [
-      ["Доходы", "25,93 трлн ₽", "{u:+9,2%} г/г", "u"],
-      ["Нефтегазовые доходы", "5,02 трлн ₽", "{d:−16,7%} г/г, в основном из-за курса", "d"],
-      ["Ненефтегазовые доходы", "20,91 трлн ₽", "{u:+18,1%} г/г", "u"],
-      ["НДС", "11,33 трлн ₽", "{u:+26,3%} г/г", "u"],
-      ["Расходы", "31,72 трлн ₽", "{u:+14,7%} г/г", "u"],
-      ["Госзакупки", "9,0 трлн ₽", "{u:+36,2%} г/г", "u"]
+      ["Доходы", "25,93 трлн ₽", "{u+:+9,2%} г/г", "u+"],
+      ["Нефтегазовые доходы", "5,02 трлн ₽", "{d-:−16,7%} г/г, в основном из-за курса", "d-"],
+      ["Ненефтегазовые доходы", "20,91 трлн ₽", "{u+:+18,1%} г/г", "u+"],
+      ["НДС", "11,33 трлн ₽", "{u+:+26,3%} г/г", "u+"],
+      ["Расходы", "31,72 трлн ₽", "{u~:+14,7%} г/г", "u~"],
+      ["Госзакупки", "9,0 трлн ₽", "{u~:+36,2%} г/г", "u~"]
     ],
     chart: {
       type: "bars", unit: "трлн ₽", title: "Дефицит нарастающим итогом против годового плана",
@@ -460,11 +469,14 @@ const PROCESSES = [
 const $ = (s, el = document) => el.querySelector(s);
 const esc = s => String(s).replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 const ARROW = { u: "▲", d: "▼", f: "◆" };
-/* {u:…} рост, {d:…} падение, {f:…} без изменений, {k:…} ключевая цифра */
-const rich = str => esc(str).replace(/\{([udfk]):([^}]*)\}/g, (_, t, x) => t === "k" ? `<b class="k">${x}</b>` : `<span class="t t-${t}">${x}</span>`);
+/* Код динамики: направление u/d/f (рост, падение, без изменений) + оценка +/−/~ (хорошо, плохо, нейтрально).
+   {u-:…} — выросло, и это плохо; {k:…} — ключевая цифра без оценки. Цвет — оценка, стрелка — направление. */
+const TONE = { "+": "g", "-": "b", "~": "n" };
+const tone = code => code ? TONE[code[1]] || "n" : "";
+const rich = str => esc(str).replace(/\{([udf][+~-]|k):([^}]*)\}/g, (_, c, x) => c === "k" ? `<b class="k">${x}</b>` : `<span class="t t-${tone(c)}">${x}</span>`);
 /* в текстах для эфира подсвечиваем цифры с единицами */
 const keyNums = str => rich(str).replace(/(^|[\s(«—])([+−]?\d+(?:,\d+)?(?:\s?(?:%|п\.\s?п\.|млрд \$|трлн ₽|трлн \$|раза?|процент[а-я]*|миллиард[а-я]*(?: долларов)?|триллион[а-я]*(?: рублей)?|судов|дней)))/g, '$1<b class="k">$2</b>');
-const arrow = t => t ? `<span class="arr c-${t}" aria-hidden="true">${ARROW[t]}</span>` : "";
+const arrow = c => c ? `<span class="arr c-${tone(c)}" aria-hidden="true">${ARROW[c[0]]}</span>` : "";
 const fmt = (v, d = 1) => v.toLocaleString("ru-RU", { minimumFractionDigits: d, maximumFractionDigits: d }).replace("-", "−");
 const cssv = n => `var(${n})`;
 const days = iso => Math.round((new Date(SNAPSHOT) - new Date(iso)) / 864e5);
@@ -602,8 +614,8 @@ function renderList(activeId) {
   $("#list").innerHTML = PROCESSES.map(p => `
     <button class="row glass" role="tab" id="tab-${p.id}" aria-controls="dossier" aria-selected="${p.id === activeId}" data-id="${p.id}">
       <span class="name">${esc(p.name)}</span>
-      ${spark(p.spark, "--" + ({ u: "up", d: "down", f: "flat" }[p.trend] || "muted"))}
-      <span class="head c-${p.trend}">${arrow(p.trend)}${esc(p.head)}</span>
+      ${spark(p.spark, "--" + ({ g: "up", b: "down", n: "flat" }[tone(p.trend)] || "muted"))}
+      <span class="head c-${tone(p.trend)}">${arrow(p.trend)}${esc(p.head)}</span>
       <span class="cap">${esc(p.period)}</span>
       <span class="meta" style="grid-column:1/-1"><span class="chip ${p.status[0]}">${esc(p.status[1])}</span><span class="tag">${esc(p.kind)}</span></span>
     </button>`).join("");
@@ -618,14 +630,14 @@ function renderDossier(p) {
       <div class="meta"><span class="chip ${p.status[0]}">${esc(p.status[1])}</span><span class="tag">${esc(p.kind)}</span></div>
     </div>
     <div class="headline">
-      <span class="big c-${p.trend}">${arrow(p.trend)}${esc(p.head)}</span>
+      <span class="big c-${tone(p.trend)}">${arrow(p.trend)}${esc(p.head)}</span>
       <span class="what">${esc(p.what)}</span>
       <span class="delta">${rich(p.delta)}</span>
     </div>
     <div class="facts">
       <div class="fact"><span class="label">Период</span><span class="v">${esc(p.period)}</span><span class="n">закончился ${days(p.periodEnd)} дн. назад</span></div>
       <div class="fact"><span class="label">Опубликовано</span><span class="v">${esc(p.published)}</span><span class="n">${esc(p.freq)}</span></div>
-      ${p.facts.map(([l, v, n, t]) => `<div class="fact${t ? " tr-" + t : ""}"><span class="label">${esc(l)}</span><span class="v">${arrow(t)}${esc(v)}</span><span class="n">${rich(n)}</span></div>`).join("")}
+      ${p.facts.map(([l, v, n, t]) => `<div class="fact${t ? " tr-" + tone(t) : ""}"><span class="label">${esc(l)}</span><span class="v">${arrow(t)}${esc(v)}</span><span class="n">${rich(n)}</span></div>`).join("")}
     </div>
     <div class="chart-box"><span class="sh">${esc(p.chart.title)}, ${esc(p.chart.unit)}</span><div id="chart"></div></div>
     <div class="angle plate">
