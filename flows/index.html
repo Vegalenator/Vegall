@@ -169,6 +169,13 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .comp i{display:block;height:3px;background:var(--bar-soft)}
 .comp i b{display:block;height:100%;background:var(--ink-3)}
 
+
+/* досье: положение в сегменте */
+.seg-b{display:grid;gap:7px;padding:10px 12px;border:1px solid var(--signal);border-radius:6px;background:var(--signal-soft)}
+.seg-b .label{font-weight:600;color:var(--signal)}
+.seg-b ul{margin:0;padding-left:16px;display:grid;gap:3px;font-size:13px;color:var(--ink)}
+.seg-b p{margin:0;font-size:13.5px;line-height:1.45}
+.seg-b .seg-d{font-size:11px;color:var(--ink-3)}
 /* профиль страны в досье */
 .prof{display:grid;gap:7px;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--paper)}
 .prof-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;align-items:baseline}
@@ -414,13 +421,36 @@ function positions(iso){
   if(D.cbgold){var g=D.cbgold.countries,c=g.find(function(x){return x.iso===iso});if(c){var k=g.indexOf(c)+1;if(k<=15)out.push([k,"золото в резервах",null])}}
   return out;
 }
+
+function segmentBlock(m,r){
+  var ex=m.exporters||[],lead=ex[0];
+  var pts=[];
+  var above=ex.find(function(x){return x.rank===r.rank-1}),below=ex.find(function(x){return x.rank===r.rank+1});
+  if(r.rank===1&&below)pts.push("Лидер рынка: отрыв от №2 ("+cname(below.iso)+") — "+nf1.format((r.share-below.share)*100)+" п.п.");
+  else if(lead){var k=lead.share/r.share;pts.push("№"+r.rank+" из "+ex.length+" в рейтинге"+(k>=1.15?"; в "+nf1.format(k)+" раза меньше лидера ("+cname(lead.iso)+")":"; почти вровень с лидером ("+cname(lead.iso)+")")+(above&&above.rank>1?((above.share-r.share)<0.0005?"; практически вровень с №"+above.rank+" ("+cname(above.iso)+")":"; до №"+above.rank+" ("+cname(above.iso)+") — "+nf1.format((above.share-r.share)*100)+" п.п."):"")+".")}
+  var h=m.history&&m.history.shares&&m.history.shares[r.iso];
+  if(h){var d=(h[3]-h[0])*100;pts.push("Доля "+m.history.years[0]+"→"+m.history.years[3]+": "+nf1.format(h[0]*100)+"% → "+nf1.format(h[3]*100)+"% ("+(Math.abs(d)<0.3?"без изменений":(d>0?"+":"−")+nf1.format(Math.abs(d))+" п.п.")+").")}
+  if(r.t&&m.total_t){var p=r.usd/r.t,avg=m.total_usd/m.total_t,dv=p/avg-1;
+    pts.push("Средняя цена: $"+nf0.format(p)+" за тонну — "+(Math.abs(dv)<0.03?"на уровне рынка":(dv>0?"на ":"на ")+nf0.format(Math.abs(dv)*100)+"% "+(dv>0?"дороже":"дешевле")+" среднего по рынку ($"+nf0.format(avg)+")")+(r.method==="mirror"?" (в ценах покупателей, с фрахтом)":"")+".")}
+  if(r.buyers&&r.buyers.length){var b0=r.buyers[0],t3=r.buyers.slice(0,3).reduce(function(a,x){return a+x[1]},0);
+    pts.push(b0[1]>=0.4?"Сильная зависимость от одного покупателя: "+cname(b0[0])+" берёт "+pct(b0[1])+".":"Покупатели диверсифицированы: на тройку крупнейших приходится "+pct(t3)+".")}
+  var im=(m.importers||[]).findIndex(function(x){return x[0]===r.iso});
+  if(im>=0)pts.push("Одновременно №"+(im+1)+" импортёр мира ("+pct(m.importers[im][2])+" импорта): страна перепродаёт или перерабатывает поток.");
+  var note=window.__DATA&&window.__DATA.segments&&window.__DATA.segments[m.id]&&window.__DATA.segments[m.id][r.iso];
+  var el=document.createElement("div");el.className="seg-b";
+  el.innerHTML='<span class="label">'+esc(cname(r.iso))+" на рынке: "+esc(m.name.toLowerCase())+"</span>"+
+    (note?"<p>"+esc(note.text)+"</p>":"")+
+    "<ul>"+pts.map(function(t){return"<li>"+esc(t)+"</li>"}).join("")+"</ul>"+
+    (note&&note.reviewed?'<span class="seg-d">Комментарий проверен '+new Date(note.reviewed+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+"; цифры — по данным UN Comtrade за "+m.year+" год.</span>":'<span class="seg-d">Цифры — по данным UN Comtrade за '+m.year+" год.</span>");
+  return el;
+}
 function profileBlock(iso){
   var P=window.__DATA&&window.__DATA.countries&&window.__DATA.countries[iso];
   if(!P)return null;
   var el=document.createElement("div");el.className="prof";
   var age=P.reviewed?Math.floor((Date.now()-new Date(P.reviewed+"T00:00:00"))/864e5):999;
   var pos=positions(iso);
-  el.innerHTML='<div class="prof-h"><span class="label">Профиль страны</span><span class="prof-d'+(age>45?" old":"")+'">'+(P.reviewed?"проверено "+new Date(P.reviewed+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+(age>45?" · требует проверки":""):"")+"</span></div>"+
+  el.innerHTML='<div class="prof-h"><span class="label">Профиль страны в целом</span><span class="prof-d'+(age>45?" old":"")+'">'+(P.reviewed?"проверено "+new Date(P.reviewed+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+(age>45?" · требует проверки":""):"")+"</span></div>"+
     (pos.length?'<div class="pos">В рейтингах терминала: '+pos.slice(0,7).map(function(p){return"<b>№"+p[0]+"</b> "+esc(p[1])}).join(" · ")+"</div>":"")+
     "<dl>"+
     (P.role?"<dt>Роль</dt><dd>"+esc(P.role)+"</dd>":"")+
@@ -470,6 +500,7 @@ function dossier(m,r){
   }else{
     var nm=document.createElement("div");nm.className="note-s";nm.textContent="Помесячных данных за последний год нет: страна сдаёт только годовую статистику или публикует её с большой задержкой.";box.appendChild(nm);
   }
+  box.appendChild(segmentBlock(m,r));
   var pf=profileBlock(r.iso);if(pf)box.appendChild(pf);
   if(r.buyers&&r.buyers.length){
     var mp=flowMap(r.iso,r.buyers,"Куда идёт экспорт: "+cname(r.iso));

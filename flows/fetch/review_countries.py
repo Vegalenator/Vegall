@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-"""Проверка и обновление профилей стран (flows/data/countries.json).
+"""Проверка и обновление профилей стран (flows/data/countries.json)
+и заметок о стране в отдельных сегментах (flows/data/segments.json).
 
 Для каждого профиля старше REVIEW_DAYS дней Claude с веб-поиском сверяет текст
 со свежими новостями (последние ~3 месяца) и возвращает обновлённую версию.
@@ -23,6 +24,7 @@ import anthropic
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PATH = os.path.join(ROOT, "data", "countries.json")
+SEG_PATH = os.path.join(ROOT, "data", "segments.json")
 LOG = os.path.join(ROOT, "data", "countries_log.json")
 REVIEW_DAYS = 30
 MAX_PER_RUN = 20
@@ -40,8 +42,11 @@ SYSTEM = """Ты аналитик сырьевых рынков в редакц�
 - Меняй только то, что устарело или стало неточным. Если всё верно, верни текст как есть.
 - Каждое поле — одно-два коротких предложения по-русски, без канцелярита, без оценочных
   эпитетов. Конкретные факты важнее общих слов. Не придумывай цифры.
+- Тебе также даны заметки о положении страны на отдельных сырьевых рынках
+  (segments: код рынка → текст, 2–3 предложения). Проверь и их тем же способом.
 - Ответ заверши одним JSON-объектом в блоке ```json с ключами:
-  role, partners, strengths, weaknesses, outlook, changes.
+  role, partners, strengths, weaknesses, outlook, segments, changes.
+  segments — объект с теми же кодами рынков, что во входных данных (или пустой объект).
   changes — одно предложение о том, что изменилось, или пустая строка."""
 
 
@@ -66,8 +71,9 @@ def extract_json(text):
     return obj
 
 
-def review(client, iso, profile, today):
+def review(client, iso, profile, segs, today):
     current = {k: profile.get(k, "") for k in FIELDS}
+    current["segments"] = segs
     messages = [{
         "role": "user",
         "content": f"Сегодня {today}. Страна: {iso} (код ISO-2).\n"
@@ -98,6 +104,8 @@ def review(client, iso, profile, today):
 def main():
     args = sys.argv[1:]
     data = load()
+    with open(SEG_PATH, encoding="utf-8") as f:
+        segdata = json.load(f)
     today = dt.date.today()
     keys = [k for k in data if not k.startswith("_")]
     if args and args != ["--all"]:
@@ -120,7 +128,9 @@ def main():
             log = json.load(f)
     for iso in todo:
         try:
-            new = review(client, iso, data[iso], today.isoformat())
+            segs = {m: v[iso]["text"] for m, v in segdata.items()
+                    if not m.startswith("_") and iso in v}
+            new = review(client, iso, data[iso], segs, today.isoformat())
         except (anthropic.RateLimitError, anthropic.APIConnectionError) as e:
             print(f"  {iso}: временная ошибка, пропуск до следующего прогона ({e})", file=sys.stderr)
             continue
@@ -131,6 +141,10 @@ def main():
             print(f"  {iso}: ответ не принят ({e})", file=sys.stderr)
             continue
         changed = any(new[k].strip() != data[iso].get(k, "").strip() for k in FIELDS)
+        for m, text in (new.get("segments") or {}).items():
+            if m in segs and isinstance(text, str) and text.strip():
+                changed = changed or text.strip() != segs[m].strip()
+                segdata[m][iso] = {"text": text.strip(), "reviewed": today.isoformat()}
         for k in FIELDS:
             data[iso][k] = new[k].strip()
         data[iso]["reviewed"] = today.isoformat()
@@ -138,6 +152,9 @@ def main():
             log.append({"date": today.isoformat(), "iso": iso, "changes": new.get("changes", "").strip()})
         print(f"  {iso}: {'обновлён' if changed else 'без изменений'}")
         save(data)  # сохраняем после каждой страны, чтобы сбой не терял работу
+        with open(SEG_PATH, "w", encoding="utf-8") as f:
+            json.dump(segdata, f, ensure_ascii=False, indent=1)
+            f.write("\n")
     with open(LOG, "w", encoding="utf-8") as f:
         json.dump(log[-500:], f, ensure_ascii=False, indent=1)
 
