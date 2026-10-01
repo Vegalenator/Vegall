@@ -14,6 +14,10 @@ payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("<
 marker = '<script id="flows-data" type="application/json">null</script>'
 assert marker in src
 out = src.replace(marker, '<script id="flows-data" type="application/json">' + payload + "</script>")
+world = json.dumps(json.load(open(os.path.join(ROOT, "data", "world.json"))), separators=(",", ":"))
+wmarker = '<script id="world-data" type="application/json">null</script>'
+assert wmarker in out
+out = out.replace(wmarker, '<script id="world-data" type="application/json">' + world + "</script>")
 os.makedirs(os.path.join(ROOT, "dist"), exist_ok=True)
 with open(os.path.join(ROOT, "dist", "flows.html"), "w", encoding="utf-8") as f:
     f.write(out)
