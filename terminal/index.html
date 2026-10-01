@@ -8,13 +8,13 @@
 <style>*{box-sizing:border-box}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>Экономика под поверхностью</title>
+<title>Монитор структурных процессов</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
 <style>
-/* Макет: терминал эфирной редакции. Сверху шкала свежести данных (глубина = давность),
-   ниже слева шесть процессов-строк, справа досье выбранного процесса. */
+/* Макет: узкая шапка, сразу под ней слева шесть процессов-строк, справа досье выбранного процесса.
+   В подвале — легенда цветов и шкала свежести данных (глубина = давность). */
 :root {
   --bg: #e9eff0;
   --panel: #f7fafa;
@@ -62,7 +62,7 @@ body {
   font: 400 15px/1.55 var(--f-body);
   -webkit-font-smoothing: antialiased;
 }
-.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 36px); padding-block: 28px 48px; display: grid; gap: 28px; }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: clamp(16px, 3vw, 36px); padding-block: 14px 48px; display: grid; gap: 16px; }
 a { color: var(--deep); text-underline-offset: 3px; }
 a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .glass {
@@ -82,14 +82,15 @@ a:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outlin
 .label { font: 600 11px/1.3 var(--f-data); letter-spacing: .08em; text-transform: uppercase; color: var(--muted); }
 
 /* шапка */
-header.top { display: flex; flex-wrap: wrap; gap: 12px 32px; align-items: end; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 20px; }
-header.top h1 { font: 600 clamp(24px, 4vw, 40px)/1.08 var(--f-display); margin: 6px 0 0; letter-spacing: -.01em; text-wrap: balance; }
-header.top p { margin: 8px 0 0; color: var(--muted); max-width: 62ch; }
-.key { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 12px; font-size: 12.5px; color: var(--muted); }
+header.top { display: flex; flex-wrap: wrap; gap: 6px 24px; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--line); padding-bottom: 12px; }
+header.top .title { display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 16px; min-width: 0; }
+header.top h1 { font: 600 clamp(18px, 2.4vw, 24px)/1.15 var(--f-display); margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+header.top p { margin: 0; color: var(--muted); }
+.key { display: flex; flex-wrap: wrap; gap: 6px 18px; font-size: 12.5px; color: var(--muted); }
 .key .t { margin-right: 4px; }
 .key b { font-size: 10px; letter-spacing: .2em; color: var(--muted); }
-.stamp { display: grid; gap: 4px; text-align: right; }
-.stamp .num { font-size: 20px; font-weight: 600; }
+.stamp { display: flex; gap: 10px; align-items: baseline; }
+.stamp .num { font-size: 15px; font-weight: 600; }
 
 /* шкала свежести */
 .depth { border-radius: 10px; padding: 16px 18px 12px; }
@@ -169,7 +170,7 @@ button.copy:hover { background: var(--accent); color: var(--panel); }
 .caveat p { margin: 0; }
 .sources { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; }
 
-footer.note { border-top: 1px solid var(--line); padding-top: 18px; color: var(--muted); font-size: 13.5px; display: grid; gap: 6px; }
+footer.note { border-top: 1px solid var(--line); padding-top: 18px; margin-top: 12px; color: var(--muted); font-size: 13.5px; display: grid; gap: 12px; }
 footer.note p { margin: 0; max-width: 90ch; }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
@@ -177,16 +178,9 @@ footer.note p { margin: 0; max-width: 90ch; }
 
 <div class="wrap">
   <header class="top">
-    <div>
-      <div class="label">Терминал вечернего эфира</div>
-      <h1>Экономика под поверхностью</h1>
-      <p>Шесть процессов, которые не видны в котировках. По каждому: последний показатель, изменение, дата публикации и повод для эфира.</p>
-      <div class="key" aria-label="Как читать цвета">
-        <span><span class="t t-g">зелёный</span> хорошо для экономики</span>
-        <span><span class="t t-b">красный</span> плохо</span>
-        <span><span class="t t-n">жёлтый</span> нейтрально или без изменений</span>
-        <span><b class="c-n">▲ ▼ ◆</b> рост · падение · на месте</span>
-      </div>
+    <div class="title">
+      <h1>Монитор структурных процессов</h1>
+      <p>Шесть процессов, которые не видны в котировках.</p>
     </div>
     <div class="stamp">
       <span class="label">Срез данных</span>
@@ -194,21 +188,29 @@ footer.note p { margin: 0; max-width: 90ch; }
     </div>
   </header>
 
-  <section class="depth glass" aria-labelledby="depth-title">
-    <div class="depth-head">
-      <span class="label" id="depth-title">Глубина: сколько дней назад закончился период последних данных</span>
-      <p>Бюджет и цепочки поставок видны почти в реальном времени, долговая нагрузка — с отставанием в полгода.</p>
-    </div>
-    <svg class="depth-svg" id="depth" role="img" aria-label="Шкала давности данных по шести процессам"></svg>
-  </section>
-
   <div class="main">
     <nav class="list" id="list" role="tablist" aria-label="Процессы"></nav>
     <article class="dossier glass" id="dossier" role="tabpanel" aria-live="polite"></article>
   </div>
 
   <footer class="note">
-    <p><strong>Принцип терминала.</strong> Инвестиции и долговая нагрузка не обновляются с частотой биржевых котировок. Поэтому у каждого показателя стоит период и дата публикации, а шкала вверху показывает, насколько свежа картинка. Предварительные оценки помечены отдельно.</p>
+    <span class="sh">Как читать терминал</span>
+    <div class="key" aria-label="Как читать цвета">
+      <span><span class="t t-g">зелёный</span> хорошо для экономики</span>
+      <span><span class="t t-b">красный</span> плохо</span>
+      <span><span class="t t-n">жёлтый</span> нейтрально или без изменений</span>
+      <span><b>▲ ▼ ◆</b> рост · падение · на месте</span>
+    </div>
+
+    <section class="depth glass" aria-labelledby="depth-title">
+      <div class="depth-head">
+        <span class="label" id="depth-title">Глубина: сколько дней назад закончился период последних данных</span>
+        <p>Бюджет и цепочки поставок видны почти в реальном времени, долговая нагрузка — с отставанием в полгода.</p>
+      </div>
+      <svg class="depth-svg" id="depth" role="img" aria-label="Шкала давности данных по шести процессам"></svg>
+    </section>
+
+    <p><strong>Принцип терминала.</strong> Инвестиции и долговая нагрузка не обновляются с частотой биржевых котировок. Поэтому у каждого показателя стоит период и дата публикации, а шкала глубины показывает, насколько свежа картинка. Предварительные оценки помечены отдельно.</p>
     <p>Цифры собраны 30 сентября 2026 года из публикаций Банка России, Минфина, Росстата, BIS, ФРБ Нью-Йорка, МВФ и МЭА; ссылки на первоисточники — в досье каждого процесса.</p>
   </footer>
 </div>
