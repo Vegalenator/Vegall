@@ -646,6 +646,11 @@ def main():
     if os.path.exists(ipath):
         with open(ipath) as f:
             insights = json.load(f)
+    countries = {}
+    cpath = os.path.join(DATA, "countries.json")
+    if os.path.exists(cpath):
+        with open(cpath) as f:
+            countries = json.load(f)
     notes = {}
     if os.path.exists(NOTES):
         with open(NOTES) as f:
@@ -653,7 +658,7 @@ def main():
 
     out = {
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-        "markets": markets, "pulses": pulses, "cbgold": gold, "notes": notes, "insights": insights,
+        "markets": markets, "pulses": pulses, "cbgold": gold, "notes": notes, "insights": insights, "countries": countries,
         "stats": STATS,
     }
     with open(OUT, "w") as f:

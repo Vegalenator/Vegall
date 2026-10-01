@@ -10,6 +10,11 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 src = open(os.path.join(ROOT, "index.html"), encoding="utf-8").read()
 data = json.load(open(os.path.join(ROOT, "data", "flows.json"), encoding="utf-8"))
 data.pop("stats", None)
+# Редакционные слои подмешиваются при сборке, чтобы правка текста не требовала нового сбора данных.
+for key, name in (("insights", "insights.json"), ("notes", "notes.json"), ("countries", "countries.json")):
+    path = os.path.join(ROOT, "data", name)
+    if os.path.exists(path):
+        data[key] = json.load(open(path, encoding="utf-8"))
 payload = json.dumps(data, ensure_ascii=False, separators=(",", ":")).replace("</", "<\\/")
 marker = '<script id="flows-data" type="application/json">null</script>'
 assert marker in src

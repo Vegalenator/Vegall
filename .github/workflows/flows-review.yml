@@ -1,0 +1,48 @@
+name: Карта товарных потоков — проверка профилей стран
+
+# Раз в неделю проверяет до 20 профилей старше 30 дней:
+# так каждая страна пересматривается примерно раз в месяц.
+on:
+  schedule:
+    - cron: "41 4 * * 1"   # понедельник, 07:41 мск
+  workflow_dispatch:
+    inputs:
+      countries:
+        description: "Коды стран через пробел (пусто — по сроку, --all — все)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: flows-update
+  cancel-in-progress: false
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Проверить профили
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "ANTHROPIC_API_KEY не задан — проверка пропущена"; exit 0
+          fi
+          pip install -q anthropic
+          python3 flows/fetch/review_countries.py ${{ github.event.inputs.countries }}
+      - name: Пересобрать страницу
+        run: python3 flows/build.py
+      - name: Закоммитить
+        run: |
+          git config user.name "flows-bot"
+          git config user.email "flows-bot@users.noreply.github.com"
+          git add flows/data/countries.json flows/data/countries_log.json flows/dist 2>/dev/null || true
+          git diff --cached --quiet || git commit -m "Карта товарных потоков: проверка профилей стран $(date -u +%F)"
+          git push

@@ -168,6 +168,19 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .comp div{display:grid;gap:2px;font-size:12px;color:var(--ink-2)}
 .comp i{display:block;height:3px;background:var(--bar-soft)}
 .comp i b{display:block;height:100%;background:var(--ink-3)}
+
+/* профиль страны в досье */
+.prof{display:grid;gap:7px;padding:10px 12px;border:1px solid var(--rule);border-radius:6px;background:var(--paper)}
+.prof-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;align-items:baseline}
+.prof-h .label{font-weight:600}
+.prof-d{font-size:11px;color:var(--ink-3)}
+.prof-d.old{color:var(--down)}
+.prof .pos{font-size:12.5px;color:var(--ink-2)}
+.prof .pos b{font:500 12.5px var(--f-mono);color:var(--ink)}
+.prof dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;margin:0;font-size:13px}
+.prof dt{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);padding-top:2px}
+.prof dd{margin:0;line-height:1.4}
+.prof dt.plus{color:var(--up)} .prof dt.minus{color:var(--down)}
 /* золото ЦБ */
 #cbgold{grid-column:1/-1}
 .gold-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -392,6 +405,32 @@ function analysis(m,data){
   el.innerHTML='<section class="thesis">'+thesisBlock(m,ins)+'</section><section class="hist">'+histBlock(m)+'</section><section class="sens">'+sensBlock(m,ins)+"</section>";
   return el;
 }
+
+var MSHORT={crude:"нефть",products:"дизель и мазут",lng:"СПГ",pipegas:"трубный газ",coal:"уголь",ironore:"жел. руда",copper:"медь",copperore:"медная руда",aluminium:"алюминий",nickel:"никель",wheat:"пшеница",corn:"кукуруза",soy:"соя",fert:"удобрения",gold:"золото (торговля)"};
+function positions(iso){
+  var D=window.__DATA;if(!D)return[];
+  var out=[];(D.markets||[]).forEach(function(m){var r=(m.exporters||[]).find(function(x){return x.iso===iso});if(r&&r.rank<=10)out.push([r.rank,MSHORT[m.id]||m.name,r.share])});
+  out.sort(function(a,b){return a[0]-b[0]||b[2]-a[2]});
+  if(D.cbgold){var g=D.cbgold.countries,c=g.find(function(x){return x.iso===iso});if(c){var k=g.indexOf(c)+1;if(k<=15)out.push([k,"золото в резервах",null])}}
+  return out;
+}
+function profileBlock(iso){
+  var P=window.__DATA&&window.__DATA.countries&&window.__DATA.countries[iso];
+  if(!P)return null;
+  var el=document.createElement("div");el.className="prof";
+  var age=P.reviewed?Math.floor((Date.now()-new Date(P.reviewed+"T00:00:00"))/864e5):999;
+  var pos=positions(iso);
+  el.innerHTML='<div class="prof-h"><span class="label">Профиль страны</span><span class="prof-d'+(age>45?" old":"")+'">'+(P.reviewed?"проверено "+new Date(P.reviewed+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+(age>45?" · требует проверки":""):"")+"</span></div>"+
+    (pos.length?'<div class="pos">В рейтингах терминала: '+pos.slice(0,7).map(function(p){return"<b>№"+p[0]+"</b> "+esc(p[1])}).join(" · ")+"</div>":"")+
+    "<dl>"+
+    (P.role?"<dt>Роль</dt><dd>"+esc(P.role)+"</dd>":"")+
+    (P.partners?"<dt>Партнёры</dt><dd>"+esc(P.partners)+"</dd>":"")+
+    (P.strengths?'<dt class="plus">Сильные</dt><dd>'+esc(P.strengths)+"</dd>":"")+
+    (P.weaknesses?'<dt class="minus">Слабые</dt><dd>'+esc(P.weaknesses)+"</dd>":"")+
+    (P.outlook?"<dt>Перспектива</dt><dd>"+esc(P.outlook)+"</dd>":"")+
+    "</dl>";
+  return el;
+}
 function concentration(m){var t=m.top3_share;if(t>=0.6)return['hi',"высокая концентрация"];if(t>=0.4)return['mid',"умеренная концентрация"];return['lo',"рынок раздроблен"]}
 
 function rowHTML(r,max,su,st){
@@ -431,6 +470,7 @@ function dossier(m,r){
   }else{
     var nm=document.createElement("div");nm.className="note-s";nm.textContent="Помесячных данных за последний год нет: страна сдаёт только годовую статистику или публикует её с большой задержкой.";box.appendChild(nm);
   }
+  var pf=profileBlock(r.iso);if(pf)box.appendChild(pf);
   if(r.buyers&&r.buyers.length){
     var mp=flowMap(r.iso,r.buyers,"Куда идёт экспорт: "+cname(r.iso));
     var b2=document.createElement("div");
@@ -525,6 +565,7 @@ function goldCard(g){
     cols.querySelectorAll(".row").forEach(function(b){b.setAttribute("aria-selected",b.dataset.iso3===c.iso3?"true":"false")});
     dos.innerHTML='<div class="label">'+flag(c.iso)+" "+esc(cname(c.iso)||c.iso3)+": золото в резервах, тонны · последний месяц "+pLabel(c.period)+" · за месяц "+(c.d1==null?"—":(c.d1>0?"+":c.d1<0?"−":"")+nf1.format(Math.abs(c.d1))+" т")+"</div>";
     if(c.monthly&&c.monthly.length>2)dos.appendChild(spark(c.monthly.map(function(q){return[q[0],q[1]]}),{w:1000,h:120,color:c.iso==="RU"?"var(--signal)":"var(--bar)",zeroBased:false,lab:pLabel,fmt:function(v){return nf1.format(v)+" т"},aria:"Золотые резервы: "+cname(c.iso)}));
+    var gp=profileBlock(c.iso);if(gp)dos.appendChild(gp);
     var s=document.createElement("div");s.className="src-l";s.innerHTML='Источник: <a href="https://data.imf.org/en/datasets/IMF.STA:IRFCL" target="_blank" rel="noopener">IMF IRFCL</a>, пересчёт из тройских унций.';dos.appendChild(s);
   }
   cols.addEventListener("click",function(e){var b=e.target.closest(".row");if(b)select(b.dataset.iso3)});
@@ -570,7 +611,7 @@ function render(data){
 }
 
 function boot(data){
-  if(data)window.__INS=data.insights||{};
+  if(data){window.__INS=data.insights||{};window.__DATA=data}
   if(!data||!data.markets){document.getElementById("grid").innerHTML='<p class="empty">Данные ещё не собраны. Запустите <code>python3 flows/fetch/update.py</code>.</p>';return}
   render(data);
   document.getElementById("groups").addEventListener("click",function(e){var b=e.target.closest("button");if(!b)return;state.group=b.dataset.g;save();render(data)});
