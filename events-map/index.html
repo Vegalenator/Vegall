@@ -619,7 +619,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const list = (e.statements || []).filter(x => x && x.text);
     if (!list.length) {
       if (ph !== 'live') return '';
-      return `<section class="blk says">${lab('Заявления')}<p class="says-empty">Пока событие идёт, заявления проверяются каждый час, с 7:23 до 23:23 мск.${liveNote(e)}</p></section>`;
+      return `<section class="blk says">${lab('Заявления')}<p class="says-empty">Пока событие идёт, заявления проверяются каждый час.${liveNote(e)}</p></section>`;
     }
     const s0 = times(e).s, days = {};
     list.forEach(x => (days[x.date || ''] = days[x.date || ''] || []).push(x));
