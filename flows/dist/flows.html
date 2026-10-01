@@ -500,8 +500,6 @@ function dossier(m,r){
   }else{
     var nm=document.createElement("div");nm.className="note-s";nm.textContent="Помесячных данных за последний год нет: страна сдаёт только годовую статистику или публикует её с большой задержкой.";box.appendChild(nm);
   }
-  box.appendChild(segmentBlock(m,r));
-  var pf=profileBlock(r.iso);if(pf)box.appendChild(pf);
   if(r.buyers&&r.buyers.length){
     var mp=flowMap(r.iso,r.buyers,"Куда идёт экспорт: "+cname(r.iso));
     var b2=document.createElement("div");
@@ -512,6 +510,8 @@ function dossier(m,r){
     b2.appendChild(list);b2.style.display="grid";b2.style.gap="8px";
     box.appendChild(b2);
   }
+  box.appendChild(segmentBlock(m,r));
+  var pf=profileBlock(r.iso);if(pf)box.appendChild(pf);
   return box;
 }
 
