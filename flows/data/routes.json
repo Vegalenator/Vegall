@@ -5,6 +5,8 @@
   "crude": [
    {
     "id": "me_cn",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Персидский залив → Китай",
     "mode": "sea",
     "to": "CN",
@@ -99,11 +101,12 @@
      ]
     ],
     "from": "SA",
-    "status": "operating",
     "shadow": false
    },
    {
     "id": "me_in",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Персидский залив → Индия",
     "mode": "sea",
     "to": "IN",
@@ -153,11 +156,12 @@
      ]
     ],
     "from": "IQ",
-    "status": "operating",
     "shadow": false
    },
    {
     "id": "me_jk",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Персидский залив → Япония и Корея",
     "mode": "sea",
     "to": "JP",
@@ -248,11 +252,12 @@
      ]
     ],
     "from": "SA",
-    "status": "operating",
     "shadow": false
    },
    {
     "id": "me_eu",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Персидский залив → Европа",
     "mode": "sea",
     "to": "NL",
@@ -364,7 +369,6 @@
      ]
     ],
     "from": "SA",
-    "status": "operating",
     "shadow": false
    },
    {
@@ -383,11 +387,12 @@
      ]
     ],
     "via": [],
-    "flow": "Около 5–7 млн барр./сут; позволяет вывозить нефть через Красное море в обход Ормуза.",
-    "note": "Страховка Саудовской Аравии на случай закрытия Ормузского пролива.",
+    "flow": "С марта 2026 года, после закрытия Ормуза, работает на полную мощность 7 млн барр./сут; отгрузки нефти из Янбу — около 5 млн барр./сут.",
+    "note": "Главный обходной маршрут Залива; вместе с другими обходными трубами заменяет лишь около 9 из ~20 млн барр./сут, ходивших через Ормуз.",
     "pairs": [],
     "from": "SA",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -520,7 +525,8 @@
      ]
     ],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "ru_black",
@@ -600,7 +606,8 @@
      ]
     ],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "ru_kozmino",
@@ -646,7 +653,8 @@
      ]
     ],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "espo",
@@ -685,6 +693,7 @@
     "pairs": [],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -712,6 +721,7 @@
     "pairs": [],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -764,6 +774,7 @@
     ],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -796,6 +807,7 @@
      ]
     ],
     "from": "RU",
+    "alert": "",
     "shadow": false
    },
    {
@@ -836,6 +848,7 @@
     ],
     "from": "KZ",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -868,6 +881,7 @@
     ],
     "from": "AZ",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -886,11 +900,12 @@
      ]
     ],
     "via": [],
-    "flow": "Экспорт нефти Иракского Курдистана возобновлён в сентябре 2025 года после двухлетней остановки.",
+    "flow": "Мощность 1,6 млн барр./сут; экспорт возобновлён в сентябре 2025 года. После закрытия Ормуза — один из немногих выходов иракской нефти, но в 2026 году загружен лишь примерно на 0,2 млн барр./сут.",
     "note": "",
     "pairs": [],
     "from": "IQ",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -923,10 +938,13 @@
     ],
     "from": "KZ",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
     "id": "ir_cn",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Иран → Китай",
     "mode": "sea",
     "shadow": true,
@@ -1014,8 +1032,7 @@
       "CN"
      ]
     ],
-    "from": "IR",
-    "status": "operating"
+    "from": "IR"
    },
    {
     "id": "us_eu",
@@ -1089,6 +1106,7 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -1208,6 +1226,7 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -1252,6 +1271,7 @@
     ],
     "from": "CA",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -1351,6 +1371,7 @@
     ],
     "from": "BR",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -1421,6 +1442,7 @@
     ],
     "from": "NG",
     "status": "operating",
+    "alert": "",
     "shadow": false
    }
   ],
@@ -1522,7 +1544,8 @@
      ]
     ],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "ru_tr",
@@ -1568,7 +1591,8 @@
      ]
     ],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "ru_af",
@@ -1667,7 +1691,8 @@
      ]
     ],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "us_latam",
@@ -1725,6 +1750,7 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -1795,6 +1821,7 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -1881,10 +1908,13 @@
     ],
     "from": "IN",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
     "id": "me_eu_p",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Персидский залив → Европа и Африка",
     "mode": "sea",
     "to": "NL",
@@ -1991,7 +2021,6 @@
      ]
     ],
     "from": "SA",
-    "status": "operating",
     "shadow": false
    },
    {
@@ -2054,6 +2083,7 @@
     ],
     "from": "NL",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2108,6 +2138,7 @@
     ],
     "from": "SG",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2166,6 +2197,7 @@
     ],
     "from": "KR",
     "status": "operating",
+    "alert": "",
     "shadow": false
    }
   ],
@@ -2246,6 +2278,7 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2369,10 +2402,13 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
     "id": "qa_asia",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Катар → Азия",
     "mode": "sea",
     "to": "CN",
@@ -2459,11 +2495,12 @@
      ]
     ],
     "from": "QA",
-    "status": "operating",
     "shadow": false
    },
    {
     "id": "qa_eu",
+    "status": "disrupted",
+    "alert": "Ормузский пролив фактически закрыт с 28 февраля 2026 года (короткое открытие с 17 июня до начала июля); маршрут нарушен.",
     "name": "Катар → Европа",
     "mode": "sea",
     "to": "IT",
@@ -2539,7 +2576,6 @@
      ]
     ],
     "from": "QA",
-    "status": "operating",
     "shadow": false
    },
    {
@@ -2592,6 +2628,7 @@
     ],
     "from": "AU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2637,6 +2674,7 @@
     "pairs": [],
     "from": "AU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2699,6 +2737,7 @@
     ],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2841,7 +2880,8 @@
     "note": "Перевозки — на газовозах «теневого» флота; маршрут на карте схематичный.",
     "pairs": [],
     "from": "RU",
-    "status": "operating"
+    "status": "operating",
+    "alert": ""
    },
    {
     "id": "ru_sakh",
@@ -2891,6 +2931,7 @@
     ],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2943,6 +2984,7 @@
     ],
     "from": "MY",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -2997,6 +3039,7 @@
     ],
     "from": "DZ",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3041,6 +3084,7 @@
     ],
     "from": "NG",
     "status": "operating",
+    "alert": "",
     "shadow": false
    }
   ],
@@ -3091,6 +3135,7 @@
     ],
     "from": "AU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3145,6 +3190,7 @@
     ],
     "from": "AU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3197,6 +3243,7 @@
     ],
     "from": "AU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3237,6 +3284,7 @@
     ],
     "from": "ID",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3287,6 +3335,7 @@
     ],
     "from": "ID",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3332,6 +3381,7 @@
     "pairs": [],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3382,6 +3432,7 @@
     ],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3411,6 +3462,7 @@
     "pairs": [],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3494,6 +3546,7 @@
     ],
     "from": "RU",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3526,6 +3579,7 @@
     ],
     "from": "MN",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3600,6 +3654,7 @@
     ],
     "from": "US",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3648,6 +3703,7 @@
     ],
     "from": "ZA",
     "status": "operating",
+    "alert": "",
     "shadow": false
    },
    {
@@ -3718,6 +3774,7 @@
     ],
     "from": "CO",
     "status": "operating",
+    "alert": "",
     "shadow": false
    }
   ]

@@ -48,9 +48,9 @@ COMMODITIES = [
     dict(id="crude", group="energy", name="Сырая нефть", hs="2709",
          unit_note="нефть сырая и газовый конденсат",
          pulse=["eia_crude"]),
-    dict(id="products", group="energy", name="Дизель и мазут", hs="271019",
-         unit_note="средние и тяжёлые дистилляты: дизель, газойль, мазут, масла. "
-                   "Таможенная статистика не отделяет дизель от мазута на уровне 6 знаков",
+    dict(id="products", group="energy", name="Средние и тяжёлые нефтепродукты", hs="271019",
+         unit_note="дизель и газойль, авиакеросин, мазут, смазочные масла (HS 271019). "
+                   "Дизель отдельно в статистике ООН не выделяется: место страны здесь — не место на рынке дизеля",
          pulse=["eia_distillate"]),
     dict(id="lng", group="energy", name="СПГ", hs="271111",
          unit_note="природный газ сжиженный", pulse=["gie_storage"]),
@@ -63,10 +63,10 @@ COMMODITIES = [
                    "Готовые тепловыделяющие сборки (HS 8401.30) сюда не входят; часть торговли засекречена"),
     dict(id="ironore", group="metals", name="Железная руда", hs="2601",
          unit_note="руды и концентраты железные"),
-    dict(id="copper", group="metals", name="Медь рафинированная", hs="7403",
-         unit_note="медь рафинированная и сплавы, необработанные"),
+    dict(id="copper", group="metals", name="Медь рафинированная и сплавы", hs="7403",
+         unit_note="медь рафинированная и медные сплавы, необработанные (HS 7403)"),
     dict(id="copperore", group="metals", name="Медная руда и концентрат", hs="2603",
-         unit_note="руды и концентраты медные"),
+         unit_note="руды и концентраты медные; масса — вес концентрата, а не содержащейся в нём меди"),
     dict(id="aluminium", group="metals", name="Алюминий", hs="7601",
          unit_note="алюминий необработанный"),
     dict(id="nickel", group="metals", name="Никель", hs="7502",
@@ -78,7 +78,7 @@ COMMODITIES = [
     dict(id="fert", group="food", name="Удобрения", hs="31",
          unit_note="все минеральные и химические удобрения (группа 31)"),
     dict(id="gold", group="precious", name="Золото: физическая торговля", hs="7108",
-         unit_note="золото немонетарное: слитки, полуфабрикаты"),
+         unit_note="золото необработанное и полуфабрикаты (HS 7108). Монетарное золото (710820) по методике ООН обычно в товарную статистику не попадает"),
 ]
 
 # Страны, которые часто не сдают статистику или сдают с большой задержкой.
@@ -87,6 +87,10 @@ MIRROR_CANDIDATES = [643, 364, 862, 368, 414, 634, 434, 566, 24, 12, 795, 112,
                      180, 324, 496, 398, 804, 784, 682, 32, 860, 894, 152, 604,
                      360, 36, 76, 124, 579, 458, 96, 512, 818, 710, 608, 178]
 FOCUS = 643          # Россия: всегда в фокусе, если присутствует на рынке
+RISK_ISO = {"RU", "IR", "VE", "BY", "KP", "SY"}  # страны под широкими санкциями
+# Строки, которые противоречат отраслевым данным и исключаются из рынка.
+EXCLUDE = {"lng": {682: "у Саудовской Аравии нет экспортных заводов СПГ; "
+                        "строка в отчёте страны, вероятно, ошибка классификации"}}
 MONTHLY_MIRROR_MAX = 2   # для скольких «зеркальных» стран строить помесячный ряд
 TOP_N = 12
 BUYERS_FOR = 8
@@ -284,15 +288,21 @@ def build_market(c):
     # прошлого года, не отчитавшиеся за текущий.
     big_old = sorted(old, key=lambda k: -old[k][0])[:15]
     cands = [k for k in dict.fromkeys(MIRROR_CANDIDATES + big_old) if k not in cur]
+    excl = EXCLUDE.get(c["id"], {})
+    cur = {k: v for k, v in cur.items() if k not in excl}
+    old = {k: v for k, v in old.items() if k not in excl}
     rows = {}
     for code, (usd, kg) in cur.items():
         rows[code] = dict(code=code, usd=usd, kg=kg if kg and kg > 0 else None, method="reported")
     mirrors = {}
-    threshold = max([v[0] for v in cur.values()] + [1]) * 0.01
+    # Все найденные зеркальные оценки входят в мировой итог; порог влияет
+    # только на то, попадёт ли страна в короткий список на странице.
     for code in cands:
+        if code in excl:
+            continue
         m = mirror(cmd, year, code)
         usd = sum(v[0] for v in m.values())
-        if usd < threshold:
+        if usd <= 0:
             continue
         mirrors[code] = m
         rows[code] = dict(code=code, usd=usd, kg=mass(m.values()),
@@ -310,6 +320,12 @@ def build_market(c):
         r["rank"] = i
         r["share"] = r["usd"] / total
         r["share_kg"] = r["kg"] / total_kg if (r["kg"] and total_kg) else None
+    # Отдельное место по массе — среди стран, у которых масса известна.
+    ranked_t = sorted([r for r in rows.values() if r["kg"]], key=lambda r: -r["kg"])
+    for i, r in enumerate(ranked_t, 1):
+        r["rank_t"] = i
+    usd_t = sum(r["usd"] for r in ranked_t)
+    risk_share = sum(r["share"] for r in ranked if iso2(r["code"]) in RISK_ISO)
 
     # Динамика к прошлому году. Для зеркальных оценок сравниваем только по тем
     # импортёрам, которые отчитались за оба года, иначе неполнота исказит итог.
@@ -334,6 +350,10 @@ def build_market(c):
                 r["yoy_kg"] = ak / bk - 1
 
     top = ranked[:TOP_N]
+    # Лидеры по массе тоже попадают в список, чтобы рейтинг по тоннам был полным.
+    for r in ranked_t[:TOP_N]:
+        if r not in top:
+            top.append(r)
     focus_codes = [r["code"] for r in top[:BUYERS_FOR]]
     focus_row = next((r for r in ranked if r["code"] == FOCUS), None)
     if focus_row and FOCUS not in focus_codes:
@@ -421,7 +441,7 @@ def build_market(c):
     imp_tot = sum(x[3] for x in imp) or 1
 
     def clean(r):
-        out = {"iso": iso2(r["code"]), "m49": r["code"], "rank": r["rank"],
+        out = {"iso": iso2(r["code"]), "m49": r["code"], "rank": r["rank"], "rank_t": r.get("rank_t"),
                "usd": round(r["usd"]), "t": round(r["kg"] / 1000) if r["kg"] else None,
                "share": round(r["share"], 4), "method": r["method"]}
         for k in ("yoy", "yoy_kg"):
@@ -450,6 +470,8 @@ def build_market(c):
         "reporters": len(cur), "total_usd": round(total),
         "total_t": round(total_kg / 1000) if total_kg else None,
         "t_cov": round(t_cov, 3), "t_missing": t_missing,
+        "n": len(ranked), "n_t": len(ranked_t), "usd_t": round(usd_t), "risk_share": round(risk_share, 4),
+        "excluded": [{"iso": iso2(k), "reason": v} for k, v in excl.items()],
         "top3_share": round(top3, 4), "hhi": round(hhi),
         "exporters": [clean(r) for r in top],
         "importers": [[iso2(x[0]), round(x[3]), round(x[3] / imp_tot, 4)] for x in imp[:6]],
@@ -489,7 +511,10 @@ def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
     - для зеркальных оценок — один и тот же круг импортёров во всех четырёх
       годах, иначе выпавший из статистики покупатель выглядел бы как падение."""
     years = [year - 3, year - 2, prev, year]
-    mirror_codes = [r["code"] for r in ranked if r["method"] == "mirror"]
+    # В историю берём зеркальные оценки от 1% рынка (плюс Россию): мелкие
+    # потребовали бы сотен дополнительных запросов при незаметном вкладе.
+    mirror_codes = [r["code"] for r in ranked if r["method"] == "mirror"
+                    and (r["share"] >= 0.01 or r["code"] == FOCUS)]
     series = {}
     for y in years:
         rep = cur if y == year else (old if y == prev else exports_reported(cmd, y))
@@ -519,6 +544,7 @@ def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
     # Тоннаж — только по странам, указавшим массу во все годы.
     matched_t = [k for k in matched if all(series[k][y][1] for y in years)]
     t = [sum(series[k][y][1] for k in matched_t) / 1000 for y in years]
+    usd_t = [sum(series[k][y][0] for k in matched_t) for y in years]
     last_usd = sum(series[k][year][0] for k in matched) or 1
     focus = [r["code"] for r in top[:8]]
     if FOCUS in series and FOCUS not in focus:
@@ -537,6 +563,7 @@ def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
     moves.sort()
     return {
         "years": years, "usd": [round(v) for v in usd], "t": [round(v) for v in t],
+        "usd_t": [round(v) for v in usd_t],
         "cov": round(last_usd / cur_total, 3),
         # доля стоимости сопоставимого круга, по которой известна масса
         "cov_t": round(sum(series[k][year][0] for k in matched_t) / last_usd, 3),
