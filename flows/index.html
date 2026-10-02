@@ -218,6 +218,39 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .closer{margin-left:auto;border:1px solid var(--rule);background:var(--sheet);border-radius:5px;padding:3px 10px;font-size:12.5px;color:var(--ink-2);cursor:pointer}
 .closer:hover{color:var(--ink);border-color:var(--ink-3)}
 @media (max-width:440px){.mini-row{grid-template-columns:1fr}}
+
+/* карта газопроводов */
+.pipes{padding:14px 10px 4px;display:grid;gap:8px;border-top:1px dashed var(--rule);margin-top:10px}
+.pipes-h{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;justify-content:space-between}
+.pipes-h h4{margin:0;font:600 12px/1.2 var(--f-body);text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3)}
+.pipes .seg button{padding:4px 9px;font-size:12px}
+.pmap svg{display:block;width:100%;aspect-ratio:2/1;height:auto;background:var(--paper);border-radius:6px}
+.pmap .land{fill:var(--land);stroke:var(--sheet);stroke-width:.5;vector-effect:non-scaling-stroke}
+.pl{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;pointer-events:none}
+.pl.operating{stroke:var(--signal)}
+.pl.stopped{stroke:var(--ink-3);stroke-dasharray:4 4}
+.pl.planned{stroke:var(--bar);stroke-dasharray:1 5}
+.pl.sel{stroke-width:5!important;filter:drop-shadow(0 0 3px var(--signal))}
+.ph{fill:none;stroke:transparent;stroke-width:14;vector-effect:non-scaling-stroke;cursor:pointer;pointer-events:stroke}
+.ph:focus-visible{outline:none;stroke:var(--signal-soft)}
+.pdot{fill:var(--sheet);stroke:var(--ink-2);stroke-width:1.2;vector-effect:non-scaling-stroke}
+.plegend{display:flex;flex-wrap:wrap;gap:4px 14px;font-size:11.5px;color:var(--ink-3)}
+.plegend i{display:inline-block;width:22px;height:0;border-top:3px solid;vertical-align:middle;margin-right:5px}
+.pchips{display:flex;flex-wrap:wrap;gap:4px}
+.pchips button{border:1px solid var(--rule);background:var(--sheet);border-radius:12px;padding:2px 9px;font-size:12px;color:var(--ink-2);cursor:pointer}
+.pchips button[aria-pressed="true"]{border-color:var(--signal);color:var(--signal);font-weight:600}
+.pchips button.stopped{text-decoration:line-through;text-decoration-color:var(--ink-3)}
+.pinfo{border:1px solid var(--rule);border-radius:6px;padding:10px 12px;display:grid;gap:6px;font-size:13px;background:var(--sheet)}
+.pinfo h5{margin:0;font:600 15px/1.2 var(--f-body);display:flex;flex-wrap:wrap;gap:4px 10px;align-items:baseline}
+.pst{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;padding:1px 6px;border-radius:3px;border:1px solid currentColor}
+.pst.operating{color:var(--up)} .pst.stopped{color:var(--down)} .pst.planned{color:var(--ink-3)}
+.pinfo dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:3px 10px;margin:0}
+.pinfo dt{font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);padding-top:2px}
+.pinfo dd{margin:0}
+.pinfo table{border-collapse:collapse;width:100%;font-size:12.5px}
+.pinfo th{font:500 10.5px var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);text-align:left;border-bottom:1px solid var(--rule);padding:2px 4px}
+.pinfo td{padding:3px 4px;border-bottom:1px dashed var(--rule)}
+.pinfo td.num{text-align:right;font-family:var(--f-mono)}
 /* золото ЦБ */
 .gold-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:900px){.gold-cols{grid-template-columns:1fr}}
@@ -546,6 +579,53 @@ function toggle(card,id,on){
   card.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"start"});
 }
 function openCard(id){var c=document.getElementById(id);if(c&&!c.classList.contains("open"))toggle(c,id,true);else if(c)c.scrollIntoView({block:"start"})}
+
+var PSTATUS={operating:"работает",stopped:"остановлен",planned:"проект"};
+var PREG={world:[-180,84,180,-58],europe:[-12,66,52,28],eurasia:[18,70,135,10],america:[-128,58,-34,-36]};
+function pproj(lon,lat){var H=WORLD.h;return[(lon+180)/360*WORLD.w,(84-lat)/142*H]}
+function pipelinesBlock(data){
+  var P=data.pipelines;if(!P||!P.list||!WORLD)return null;
+  var el=document.createElement("div");el.className="pipes";
+  var region="europe",sel="ts";
+  el.innerHTML='<div class="pipes-h"><h4>Магистральные газопроводы</h4><div class="seg" role="group" aria-label="Регион карты">'+
+    [["world","Мир"],["europe","Европа"],["eurasia","Евразия"],["america","Америка"]].map(function(x){return'<button type="button" data-r="'+x[0]+'" aria-pressed="'+(x[0]===region)+'">'+x[1]+"</button>"}).join("")+"</div></div>"+
+    '<div class="pmap"></div><div class="plegend"><span><i style="border-color:var(--signal)"></i>работает</span><span><i style="border-color:var(--ink-3);border-top-style:dashed"></i>остановлен</span><span><i style="border-color:var(--bar);border-top-style:dotted"></i>проект</span><span>Нажмите на трубу или выберите из списка</span></div>'+
+    '<div class="pchips">'+P.list.map(function(p){return'<button type="button" class="'+p.status+'" data-p="'+p.id+'" aria-pressed="false">'+esc(p.name)+"</button>"}).join("")+'</div><div class="pinfo" aria-live="polite"></div>';
+  var land=Object.keys(WORLD.countries).map(function(k){return'<path class="land" d="'+WORLD.countries[k]+'"/>'}).join("");
+  function line(p){return p.route.map(function(pt,i){var q=pproj(pt[0],pt[1]);return(i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1)}).join("")}
+  var lines=P.list.map(function(p){var d=line(p),w=p.capacity?Math.max(1.6,Math.min(4,1.2+p.capacity/20)):1.8;
+    var a=pproj(p.route[0][0],p.route[0][1]),b=pproj(p.route[p.route.length-1][0],p.route[p.route.length-1][1]);
+    return'<path class="pl '+p.status+'" data-p="'+p.id+'" d="'+d+'" stroke-width="'+w.toFixed(1)+'"/><circle class="pdot" cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="1.1"/><circle class="pdot" cx="'+b[0].toFixed(1)+'" cy="'+b[1].toFixed(1)+'" r="1.1"/>'+
+      '<path class="ph" data-p="'+p.id+'" d="'+d+'" tabindex="0" role="button" aria-label="'+esc(p.name)+'"><title>'+esc(p.name)+"</title></path>"}).join("");
+  var mapBox=el.querySelector(".pmap");
+  mapBox.innerHTML='<svg viewBox="0 0 '+WORLD.w+" "+WORLD.h+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Карта магистральных газопроводов">'+land+lines+"</svg>";
+  var svg=mapBox.querySelector("svg");
+  function setRegion(r){region=r;var b=PREG[r],p1=pproj(b[0],b[1]),p2=pproj(b[2],b[3]);var w=p2[0]-p1[0],h=p2[1]-p1[1];
+    if(w/h<2){var nw=h*2;p1[0]-=(nw-w)/2;w=nw}else{var nh=w/2;p1[1]-=(nh-h)/2;h=nh}
+    svg.setAttribute("viewBox",p1[0].toFixed(1)+" "+p1[1].toFixed(1)+" "+w.toFixed(1)+" "+h.toFixed(1));
+    el.querySelectorAll(".pipes-h button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.r===r?"true":"false")});}
+  function fmtUsd(v){return v==null?"—":money(v)}
+  function show(id){
+    sel=id;var p=P.list.find(function(x){return x.id===id});if(!p)return;
+    el.querySelectorAll(".pl").forEach(function(x){x.classList.toggle("sel",x.dataset.p===id)});
+    el.querySelectorAll(".pchips button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.p===id?"true":"false")});
+    var hl=svg.querySelector('.pl[data-p="'+id+'"]');if(hl)hl.parentNode.insertBefore(hl,svg.querySelector(".ph"));
+    var tr=(p.trade||[]),yr=tr.map(function(t){return t.year}).filter(Boolean)[0];
+    var tbl=tr.length?'<table><thead><tr><th>Поток</th><th style="text-align:right">'+(yr||"")+', $</th><th>Чей отчёт</th></tr></thead><tbody>'+tr.map(function(t){return"<tr><td>"+flag(t.from)+" "+esc(cname(t.from))+" → "+flag(t.to)+" "+esc(cname(t.to))+'</td><td class="num">'+(t.year?fmtUsd(t.usd):"нет данных")+"</td><td>"+(t.year?(t.by==="importer"?"импортёр":"экспортёр")+(t.year!==yr?", "+t.year:""):'<span class="note-s">обе страны не раскрывают</span>')+"</td></tr>"}).join("")+"</tbody></table>"+
+      '<div class="note-s">Стоимость всей торговли газом между странами по данным UN Comtrade (HS 271121). Если страны связаны несколькими трубами, сумма относится ко всем сразу. Объёмы из таможенной статистики по газу ненадёжны (массу страны указывают по-разному), поэтому ориентир по объёму — мощность и известная прокачка.</div>':'<div class="note-s">Торговых данных нет: труба не работает или ещё не построена.</div>';
+    el.querySelector(".pinfo").innerHTML='<h5>'+esc(p.name)+' <span class="pst '+p.status+'">'+PSTATUS[p.status]+"</span></h5><dl>"+
+      "<dt>Маршрут</dt><dd>"+flag(p.from)+" "+esc(cname(p.from))+" → "+flag(p.to)+" "+esc(cname(p.to))+"</dd>"+
+      "<dt>Оператор</dt><dd>"+esc(p.operator)+(p.since?" · с "+p.since+" года":"")+"</dd>"+
+      (p.capacity?"<dt>Мощность</dt><dd>"+nf1.format(p.capacity).replace(",0","")+" млрд м³ в год</dd>":"")+
+      (p.flow?"<dt>Прокачка</dt><dd>"+esc(p.flow)+"</dd>":"")+
+      (p.note?"<dt>Важно</dt><dd>"+esc(p.note)+"</dd>":"")+
+      "</dl>"+tbl+'<div class="note-s">Паспорт трубы — редакция терминала, проверено '+new Date((P.reviewed||"2026-10-02")+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+"; маршрут на карте схематичный.</div>";
+  }
+  el.addEventListener("click",function(e){var b=e.target.closest("[data-r]");if(b){setRegion(b.dataset.r);return}var t=e.target.closest("[data-p]");if(t){show(t.dataset.p)}});
+  el.addEventListener("keydown",function(e){var t=e.target.closest(".ph");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();show(t.dataset.p)}});
+  setRegion(region);show(sel);
+  return el;
+}
 function concentration(m){var t=m.top3_share;if(t>=0.6)return['hi',"высокая концентрация"];if(t>=0.4)return['mid',"умеренная концентрация"];return['lo',"рынок раздроблен"]}
 
 function rowHTML(r,max,su,st){
@@ -634,6 +714,7 @@ function marketCard(m,data){
     '<ol>'+top.map(function(r){return rowHTML(r,max,su,st)}).join("")+"</ol>"+(extra.length?'<div class="gap">…</div><ol>'+extra.map(function(r){return rowHTML(r,max,su,st)}).join("")+"</ol>":"");
   var nM=ex.filter(function(r){return r.method==="mirror"}).length;
   rank.insertAdjacentHTML("beforeend",'<div class="note-s" style="padding:8px 10px 0">Доли — от мирового итога '+m.year+'. В него вошли: стран, сдавших экспорт в ООН, — '+m.reporters+'; зеркальных оценок — '+(m.mirrors_n||nM)+'. <b>≈</b> — зеркальная оценка: экспорт страны, не сдающей статистику, восстановлен по импорту её покупателей (цены CIF, учтены только покупатели, сдающие данные, — оценка снизу). <b>хаб</b> — реэкспортный центр, товар во многом чужого происхождения. Колонка объёма — масса нетто'+(m.id==="pipegas"?", пересчитанная в м³":"")+'; «—» — страна её не указала.</div>');
+  if(m.id==="pipegas"){var pb=pipelinesBlock(data);if(pb)rank.appendChild(pb)}
   var dos=document.createElement("div");dos.className="dossier";
   body.appendChild(rank);body.appendChild(dos);card.appendChild(body);
   function select(iso){
