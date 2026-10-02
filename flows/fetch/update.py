@@ -88,6 +88,9 @@ MIRROR_CANDIDATES = [643, 364, 862, 368, 414, 634, 434, 566, 24, 12, 795, 112,
                      360, 36, 76, 124, 579, 458, 96, 512, 818, 710, 608, 178]
 FOCUS = 643          # Россия: всегда в фокусе, если присутствует на рынке
 RISK_ISO = {"RU", "IR", "VE", "BY", "KP", "SY"}  # страны под широкими санкциями
+# Экспортёры, чьи морские отгрузки идут через Ормузский пролив (закрыт с 28.02.2026).
+# Часть объёмов Саудовской Аравии, ОАЭ и Ирака может идти в обход по трубам.
+HORMUZ_ISO = {"SA", "IQ", "KW", "QA", "BH", "IR", "AE"}
 # Строки, которые противоречат отраслевым данным и исключаются из рынка.
 EXCLUDE = {"lng": {682: "у Саудовской Аравии нет экспортных заводов СПГ; "
                         "строка в отчёте страны, вероятно, ошибка классификации"}}
@@ -326,6 +329,8 @@ def build_market(c):
         r["rank_t"] = i
     usd_t = sum(r["usd"] for r in ranked_t)
     risk_share = sum(r["share"] for r in ranked if iso2(r["code"]) in RISK_ISO)
+    hormuz_share = sum(r["share"] for r in ranked if iso2(r["code"]) in HORMUZ_ISO)
+    hormuz_top = [iso2(r["code"]) for r in ranked if iso2(r["code"]) in HORMUZ_ISO][:4]
 
     # Динамика к прошлому году. Для зеркальных оценок сравниваем только по тем
     # импортёрам, которые отчитались за оба года, иначе неполнота исказит итог.
@@ -471,6 +476,7 @@ def build_market(c):
         "total_t": round(total_kg / 1000) if total_kg else None,
         "t_cov": round(t_cov, 3), "t_missing": t_missing,
         "n": len(ranked), "n_t": len(ranked_t), "usd_t": round(usd_t), "risk_share": round(risk_share, 4),
+        "hormuz_share": round(hormuz_share, 4), "hormuz_top": hormuz_top,
         "excluded": [{"iso": iso2(k), "reason": v} for k, v in excl.items()],
         "top3_share": round(top3, 4), "hhi": round(hhi),
         "exporters": [clean(r) for r in top],

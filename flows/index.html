@@ -440,14 +440,16 @@ function sensitivity(m,ins){
   var ex=m.exporters||[];
   var hhi=m.hhi||0,s1=clamp(hhi/2500);
   var imp=(m.importers||[]).slice(0,3).reduce(function(a,x){return a+x[2]},0),s2=clamp((imp-0.25)/0.5);
-  var rkx=ex.filter(function(r){return RISK[r.iso]}),risk=m.risk_share!=null?m.risk_share:rkx.reduce(function(a,r){return a+r.share},0),s3=clamp(risk/0.25);
+  var rkx=ex.filter(function(r){return RISK[r.iso]}),risk=m.risk_share!=null?m.risk_share:rkx.reduce(function(a,r){return a+r.share},0);
+  /* золото возят самолётами — Ормуз для него не узкое место */
+  var hz=m.id==="gold"?0:(m.hormuz_share||0),s3=clamp((risk+hz)/0.25);
   var sub=ins&&ins.substitution||3,s4=(sub-1)/4;
   var score=0.3*s1+0.2*s2+0.2*s3+0.3*s4;
   var lvl=Math.min(5,1+Math.floor(score*5));
   return{lvl:lvl,score:score,parts:[
     ["Концентрация поставщиков: топ-3 дают "+pct(m.top3_share),s1],
     ["Зависимость от покупателей: топ-3 импортёра берут "+pct(imp),s2],
-    ["Под санкциями: "+pct(risk)+" экспорта"+(rkx.length?" ("+rkx.map(function(r){return RISK_N[r.iso]}).join(", ")+")":""),s3],
+    ["Под санкциями: "+pct(risk)+" экспорта"+(rkx.length?" ("+rkx.map(function(r){return RISK_N[r.iso]}).join(", ")+")":"")+(hz>=0.03?"; через закрытый Ормуз шло "+pct(hz)+" ("+(m.hormuz_top||[]).slice(0,3).map(cname).join(", ")+")":""),s3],
     ["Заменить выпавшего поставщика: "+SUB_L[sub],s4]]};
 }
 var LVL=["","низкая","умеренная","заметная","высокая","критическая"];
@@ -457,7 +459,7 @@ function sensBlock(m,ins){
    '<div><div class="scale" role="img" aria-label="Уровень '+s.lvl+' из 5">'+[1,2,3,4,5].map(function(i){return'<span'+(i<=s.lvl?' class="on"':"")+' style="opacity:'+(i<=s.lvl?0.35+0.13*i:1)+'"></span>'}).join("")+'</div><div class="scale-l"><span>низкая</span><span>высокая</span></div></div>'+
    '<div class="comp">'+s.parts.map(function(p){return'<div>'+esc(p[0])+'<i><b style="width:'+Math.round(p[1]*100)+'%"></b></i></div>'}).join("")+'</div>'+
    (ins&&ins.sub_note?'<div class="note-s">'+esc(ins.sub_note)+"</div>":"")+
-   '<details class="note-s"><summary>Как считается</summary>Редакционная оценка структурной уязвимости рынка, не официальная статистика и не прогноз реакции цен: она не учитывает запасы, свободные мощности, сроки замены и масштаб конкретного шока, а концентрация считается по стоимости, а не по физическим поставкам. 30% — концентрация поставщиков (индекс Херфиндаля–Хиршмана по долям в деньгах, 2500 = максимум шкалы); 20% — доля трёх крупнейших импортёров (25% → 0, 75% → максимум); 20% — доля экспорта стран под санкциями (Россия, Иран, Венесуэла, Беларусь, КНДР, Сирия; 25% → максимум); 30% — экспертная оценка заменяемости поставщика от 1 до 5. Сумма 0–1 переводится в уровни 1–5.</details>';
+   '<details class="note-s"><summary>Как считается</summary>Редакционная оценка структурной уязвимости рынка, не официальная статистика и не прогноз реакции цен: она не учитывает запасы, свободные мощности, сроки замены и масштаб конкретного шока, а концентрация считается по стоимости, а не по физическим поставкам. 30% — концентрация поставщиков (индекс Херфиндаля–Хиршмана по долям в деньгах, 2500 = максимум шкалы); 20% — доля трёх крупнейших импортёров (25% → 0, 75% → максимум); 20% — доля экспорта стран под санкциями (Россия, Иран, Венесуэла, Беларусь, КНДР, Сирия) плюс доля экспорта стран Персидского залива, отгружающих через Ормузский пролив, закрытый с 28 февраля 2026 года (по данным 2025 года; часть объёмов идёт в обход по трубам), 25% → максимум; 30% — экспертная оценка заменяемости поставщика от 1 до 5. Сумма 0–1 переводится в уровни 1–5.</details>';
 }
 function histBlock(m){
   var h=m.history;if(!h||!h.years)return'<h4>Рынок за 4 года</h4><div class="note-s">История ещё собирается.</div>';
@@ -484,7 +486,7 @@ function histBlock(m){
 function thesisBlock(m,ins){
   var ex=m.exporters||[],lead=ex[0],imp=m.importers&&m.importers[0];
   var auto=lead?"Главный экспортёр — "+cname(lead.iso)+" ("+pct(lead.share)+" мирового экспорта"+(lead.method==="mirror"?", оценка":"")+")"+(imp?"; главный покупатель — "+cname(imp[0])+" ("+pct(imp[2])+" мирового импорта)":"")+".":"";
-  var h=(ins&&ins.alert?'<div class="alert"><b>Внимание</b>'+esc(ins.alert)+"</div>":"")+'<h4>Что происходит</h4>';
+  var h='<h4>Что происходит</h4>';
   if(ins&&ins.thesis)h+="<p>"+esc(ins.thesis)+"</p>";
   h+='<dl class="struct">'+
     (ins&&ins.producer?"<dt>Производят</dt><dd>"+esc(ins.producer)+"</dd>":"")+
@@ -666,7 +668,7 @@ function routesBlock(m,data){
     cls:function(p){return p.status==="stopped"?"stopped":p.status==="disrupted"?"disrupted":p.shadow?"shadow":"m-"+p.mode},
     badges:function(p){return'<span class="pst operating" style="color:var(--ink-2)">'+MODE[p.mode]+"</span>"+(p.shadow?' <span class="pst shadowb">теневой флот</span>':"")+(p.status==="stopped"?' <span class="pst stopped">остановлен</span>':"")+(p.status==="disrupted"?' <span class="pst disrupted">нарушен</span>':"")},
     legend:'<span><i style="border-color:var(--sea)"></i>море</span><span><i style="border-color:var(--shadowc)"></i>теневой флот</span><span><i style="border-color:var(--signal)"></i>трубопровод</span><span><i style="border-color:var(--ink-2);border-top-style:dashed"></i>железная дорога</span><span><i style="border-color:var(--ink-3);border-top-style:dotted"></i>остановлен</span><span><i style="border-color:var(--down);border-top-style:dashed"></i>нарушен (Ормуз)</span>',
-    info:function(p){return(p.alert?"<dt>Сейчас</dt><dd><b style=\"color:var(--down)\">"+esc(p.alert)+"</b></dd>":"")+"<dt>Направление</dt><dd>"+flag(p.from)+" "+esc(cname(p.from))+" → "+flag(p.to)+" "+esc(cname(p.to))+"</dd>"+
+    info:function(p){return(p.alert?"<dt>Сейчас</dt><dd>"+esc(p.alert)+"</dd>":"")+"<dt>Направление</dt><dd>"+flag(p.from)+" "+esc(cname(p.from))+" → "+flag(p.to)+" "+esc(cname(p.to))+"</dd>"+
       (p.via&&p.via.length?"<dt>Через</dt><dd>"+esc(p.via.join(" · "))+"</dd>":"")+
       (p.flow?"<dt>Поток</dt><dd>"+esc(p.flow)+"</dd>":"")+(p.note?"<dt>Важно</dt><dd>"+esc(p.note)+"</dd>":"")},
     tradeNote:"Стоимость торговли товаром «"+esc(m.name)+"» (HS "+esc(m.hs)+") между странами по данным UN Comtrade за год. Это вся торговля пары, а не только этот маршрут. Импорт Китая из Ирана в таможне почти не виден: нефть декларируется как малайзийская."});
@@ -792,7 +794,6 @@ function marketCard(m,data){
   makeCollapsible(card,m.id,
     '<div class="c-title"><h3>'+esc(m.name)+'</h3><span class="hs">ТН ВЭД '+esc(m.hs)+'</span><span class="conc '+c[0]+'">'+c[1]+"</span></div>"+
     (ins.lead?'<p class="lead">'+esc(ins.lead)+"</p>":"")+
-    (ins.alert?'<div class="alert"><b>Внимание</b>'+esc(ins.alert)+"</div>":"")+
     '<div class="mini-row"><div>'+miniChart(m.history,m)+"</div><div>"+miniLeaders(ordered(m.exporters||[]).slice(0,5),ruR)+"</div></div>"+
     miniSens(m,ins)+
     (ins.risk?'<div class="mini-risk"><b>Главный риск</b>'+esc(ins.risk)+"</div>":"")+
