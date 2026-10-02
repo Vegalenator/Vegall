@@ -1,0 +1,1712 @@
+<title>Перемотка</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik+Mono+One&family=PT+Sans:ital,wght@0,400;0,700;1,400&family=PT+Mono&family=Press+Start+2P&family=Neucha&display=swap">
+<style>
+/* Раскладка: одна комната-хаб под абажуром (SVG-сцена) + верхняя «панель видика»;
+   испытания открываются поверх как предметы крупным планом; сюжет идёт на экране «Рубина». */
+:root{
+  --room:#1b120c;        /* темнота подвала */
+  --room-2:#2a1b12;
+  --wood:#6e3f22;        /* полировка серванта */
+  --wood-hi:#9a5c32;
+  --carpet:#8c1d22;      /* ковёр на стене */
+  --paper:#efe2c2;       /* тетрадный лист, афиша */
+  --paper-ink:#2b2a6e;   /* шариковая ручка */
+  --lamp:#ffc46b;        /* свет абажура */
+  --crt:#0f1f8f;         /* синий экран видика */
+  --osd:#e9fff1;         /* экранные надписи */
+  --osd-green:#5dff8f;
+  --neon:#ff3ea5;        /* обложки 80-х */
+  --neon-2:#36e4ff;
+  --chrome:#dfe6ee;
+  --ok:#57d17a;
+  --bad:#ff5a4a;
+  --fg:#f3e6cf;
+  --fg-dim:#bda98a;
+  --line:rgba(255,214,150,.18);
+
+  --f-display:"Rubik Mono One", "Arial Black", Impact, sans-serif;
+  --f-body:"PT Sans", "Trebuchet MS", Arial, sans-serif;
+  --f-osd:"Press Start 2P", "Courier New", monospace;
+  --f-mono:"PT Mono", "Courier New", monospace;
+  --f-hand:"Neucha", "Comic Sans MS", cursive;
+
+  --r:6px;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--room); color:var(--fg);
+  font:16px/1.5 var(--f-body);
+  -webkit-font-smoothing:antialiased;
+  overflow-x:hidden;
+}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--neon-2);outline-offset:2px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* ===== общий кинескопный налёт ===== */
+.scan::after{
+  content:"";position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,.22) 0 1px,transparent 1px 3px);
+  mix-blend-mode:multiply;
+}
+#grain{position:fixed;inset:0;pointer-events:none;z-index:90;opacity:.07;mix-blend-mode:overlay}
+
+/* ===== верхняя панель — фасад видика ===== */
+.deck{
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:8px 16px;
+  background:linear-gradient(#c9cdd2,#9ea3a9 55%,#868b91);
+  color:#1d1f22;border-bottom:2px solid #3a3d41;
+  box-shadow:0 6px 18px rgba(0,0,0,.55);
+}
+.deck__brand{font:700 13px/1 var(--f-body);letter-spacing:.18em;text-transform:uppercase;display:flex;flex-direction:column;gap:2px}
+.deck__brand b{font:12px/1 var(--f-display);letter-spacing:.06em}
+.deck__brand small{font-size:9px;letter-spacing:.3em;opacity:.7}
+.lcd{
+  display:flex;align-items:center;gap:10px;
+  background:#0b1410;border:2px solid #2b2f33;border-radius:4px;
+  padding:6px 10px;color:var(--osd-green);font:10px/1 var(--f-osd);
+  text-shadow:0 0 6px rgba(93,255,143,.7);
+  box-shadow:inset 0 0 12px rgba(0,0,0,.9);
+}
+.lcd__counter{font-size:14px;letter-spacing:.12em;font-variant-numeric:tabular-nums}
+.lcd__mode{opacity:.85}
+.deck__sp{flex:1}
+.deck__btns{display:flex;gap:6px;flex-wrap:wrap}
+.key{
+  border:1px solid #4a4e53;border-radius:3px;padding:7px 10px;
+  background:linear-gradient(#2d3034,#17191c);color:#e8e8e8;
+  font:11px/1 var(--f-body);font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  box-shadow:0 2px 0 #000,inset 0 1px 0 rgba(255,255,255,.15);
+  display:inline-flex;align-items:center;gap:6px;
+}
+.key:active{transform:translateY(2px);box-shadow:0 0 0 #000}
+.key .led{width:6px;height:6px;border-radius:50%;background:#3b0b0b}
+.key[aria-pressed="true"] .led{background:#ff4a3a;box-shadow:0 0 6px #ff4a3a}
+.wraps{display:inline-flex;align-items:center;gap:6px;font:700 12px/1 var(--f-body);color:#1d1f22}
+.wraps__ico{width:26px;height:18px;border-radius:2px;background:linear-gradient(90deg,#ffde00 0 33%,#e3001b 33% 66%,#0055b8 66%);position:relative;box-shadow:0 1px 0 #000}
+.wraps__ico::after{content:"TURBO";position:absolute;inset:0;display:grid;place-items:center;font:7px/1 var(--f-display);color:#fff;text-shadow:0 1px 0 #000}
+
+/* ===== экраны ===== */
+.screen{min-height:calc(100% - 60px);padding-block:18px 40px;padding-inline:16px}
+.wrap{max-width:1180px;margin:0 auto}
+
+/* ===== титульник ===== */
+.title{display:grid;place-items:center;min-height:calc(100vh - 80px);padding-block:20px}
+.tv{
+  position:relative;width:min(760px,100%);
+  background:linear-gradient(135deg,#5a3219,#3b200f 60%,#2b170b);
+  border-radius:22px;padding:22px 22px 70px;
+  box-shadow:0 30px 80px rgba(0,0,0,.7),inset 0 2px 0 rgba(255,255,255,.12),inset 0 -6px 0 rgba(0,0,0,.4);
+}
+.tv::before{ /* шпон */
+  content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:.35;
+  background:repeating-linear-gradient(95deg,transparent 0 9px,rgba(0,0,0,.25) 9px 10px,transparent 10px 23px,rgba(255,200,140,.06) 23px 25px);
+}
+.tv__glass{
+  position:relative;aspect-ratio:4/3;max-width:100%;
+  border-radius:38px/30px;overflow:hidden;
+  background:#05070f;border:10px solid #1a1a1a;
+  box-shadow:inset 0 0 60px rgba(0,0,0,.9),0 0 0 3px #3b3b3b;
+}
+.tv__screen{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:6%;
+  filter:saturate(1.15) contrast(1.05);
+}
+.tv__screen.blue{background:radial-gradient(ellipse at center,#2a3ad6,#0f1f8f 70%,#08105a)}
+.tv__glare{position:absolute;inset:0;pointer-events:none;background:radial-gradient(ellipse at 30% 20%,rgba(255,255,255,.14),transparent 45%);border-radius:inherit}
+.tv__curve{position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 90px 10px rgba(0,0,0,.75);border-radius:inherit}
+.tv__panel{position:absolute;left:22px;right:22px;bottom:14px;height:44px;display:flex;align-items:center;gap:14px}
+.tv__brand{font:15px/1 var(--f-display);color:#d9c39c;letter-spacing:.12em;text-shadow:0 1px 0 #000}
+.tv__grille{flex:1;height:26px;background:repeating-linear-gradient(90deg,#1a0e06 0 3px,#4a2a14 3px 6px);border-radius:3px;opacity:.9}
+.knob{width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#e9e4da,#8a847a 60%,#3d3a35);box-shadow:0 3px 4px rgba(0,0,0,.6);position:relative}
+.knob::after{content:"";position:absolute;left:50%;top:4px;width:3px;height:11px;margin-left:-1.5px;background:#2a2622;border-radius:2px}
+.knob--2::after{transform:rotate(130deg);transform-origin:50% 13px}
+
+.logo{
+  font:clamp(30px,8.5vw,74px)/.95 var(--f-display);letter-spacing:-.01em;margin:0;
+  background:linear-gradient(180deg,#fff 0%,#c9e7ff 38%,#3a5d8c 50%,#ffd9f1 52%,#ff6ac0 70%,#fff 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 8px rgba(255,62,165,.55)) drop-shadow(0 4px 0 #2a0738);
+  text-wrap:balance;
+}
+.logo-sub{font:clamp(9px,1.6vw,12px)/1.8 var(--f-osd);color:var(--osd);margin:14px 0 0;letter-spacing:.06em;text-shadow:0 0 6px rgba(255,255,255,.5)}
+.osd-top{position:absolute;top:6%;left:7%;right:7%;display:flex;justify-content:space-between;font:clamp(8px,1.5vw,12px)/1 var(--f-osd);color:var(--osd);text-shadow:0 0 6px rgba(255,255,255,.6)}
+.blink{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.title__actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:26px}
+.btn-play{
+  border:0;border-radius:4px;padding:14px 22px;
+  background:linear-gradient(#ffe8a8,#ffb400);color:#2a1300;
+  font:13px/1 var(--f-osd);letter-spacing:.06em;
+  box-shadow:0 4px 0 #8a4a00,0 0 26px rgba(255,180,0,.45);
+}
+.btn-play:active{transform:translateY(3px);box-shadow:0 1px 0 #8a4a00}
+.btn-ghost{border:2px solid var(--osd);background:transparent;color:var(--osd);border-radius:4px;padding:12px 18px;font:11px/1 var(--f-osd)}
+.title__warn{max-width:620px;margin:22px auto 0;font:12px/1.6 var(--f-mono);color:var(--fg-dim);text-align:center}
+
+/* ===== сюжетный экран ===== */
+.story{display:grid;place-items:center;padding-block:10px}
+.story .tv{width:min(860px,100%)}
+.story__text{
+  font:clamp(12px,2vw,17px)/1.75 var(--f-mono);color:var(--osd);text-align:left;width:100%;
+  text-shadow:0 0 5px rgba(233,255,241,.55),1px 0 0 rgba(255,0,80,.35),-1px 0 0 rgba(0,200,255,.35);
+  white-space:pre-wrap;max-height:100%;overflow:auto;
+}
+.story__text .who{color:#ffe36b}
+.story__osd{position:absolute;top:5%;left:6%;right:6%;display:flex;justify-content:space-between;gap:10px;font:clamp(7px,1.3vw,11px)/1.3 var(--f-osd);color:var(--osd)}
+.story__nav{display:flex;justify-content:center;gap:12px;margin-top:18px;flex-wrap:wrap}
+.tv__screen.play{justify-content:flex-start;padding:13% 7% 8%;background:#06070c}
+.tv__screen.play::before{content:"";position:absolute;inset:0;background:radial-gradient(ellipse at 50% 40%,rgba(40,60,120,.35),transparent 70%);pointer-events:none}
+.roll{animation:roll 6s linear infinite}
+@keyframes roll{0%,92%{transform:none}94%{transform:translateY(-6px) skewX(4deg)}96%{transform:translateY(4px)}100%{transform:none}}
+.noisebar{position:absolute;left:0;right:0;height:14%;background:linear-gradient(transparent,rgba(255,255,255,.08),transparent);animation:bar 4.5s linear infinite;pointer-events:none}
+@keyframes bar{from{top:-15%}to{top:110%}}
+
+/* ===== комната ===== */
+.room{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:18px;align-items:start}
+@media (max-width:900px){.room{grid-template-columns:1fr}}
+.scene{position:relative;border-radius:10px;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.6);background:#140c07}
+.scene svg{display:block;width:100%;height:auto}
+.hot{cursor:pointer;outline:none}
+.hot .hl{fill:none;stroke:transparent;stroke-width:3;transition:stroke .2s}
+.hot:hover .hl,.hot:focus-visible .hl{stroke:rgba(255,215,140,.9)}
+.hot.active .hl{stroke:var(--neon-2);stroke-dasharray:8 6;animation:march 1s linear infinite}
+@keyframes march{to{stroke-dashoffset:-28}}
+.pin{pointer-events:none}
+.pin circle{fill:var(--neon);}
+.pin text{font:bold 22px var(--f-body);fill:#fff}
+.pin{animation:bob 1.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-6px)}}
+.lampglow{mix-blend-mode:screen;pointer-events:none}
+
+.side{display:flex;flex-direction:column;gap:14px;min-width:0}
+.note{
+  position:relative;background:var(--paper);color:var(--paper-ink);
+  background-image:linear-gradient(rgba(70,110,200,.18) 1px,transparent 1px),linear-gradient(90deg,rgba(70,110,200,.18) 1px,transparent 1px);
+  background-size:16px 16px;
+  padding:16px 16px 14px;border-radius:2px;transform:rotate(-.6deg);
+  box-shadow:0 8px 20px rgba(0,0,0,.5);
+  font:19px/1.3 var(--f-hand);
+}
+.note::before{content:"";position:absolute;top:-10px;left:50%;width:70px;height:20px;margin-left:-35px;background:rgba(255,248,200,.6);transform:rotate(3deg);box-shadow:0 1px 2px rgba(0,0,0,.2)}
+.note h3{margin:0 0 6px;font:12px/1.3 var(--f-body);font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#8c1d22}
+.note p{margin:0}
+.objects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.obj{
+  text-align:left;border:1px solid var(--line);background:rgba(255,220,160,.04);border-radius:var(--r);
+  padding:8px 10px;font-size:13px;line-height:1.25;color:var(--fg);
+}
+.obj:hover{background:rgba(255,220,160,.1)}
+.obj.active{border-color:var(--neon-2);box-shadow:0 0 0 1px var(--neon-2) inset;color:#fff}
+.obj small{display:block;color:var(--fg-dim);font-size:11px}
+.shelfrow{display:flex;gap:4px;flex-wrap:wrap}
+.spine-mini{width:22px;height:64px;border-radius:2px;background:#1a1a1a;border:1px solid #333;position:relative}
+.spine-mini.got{background:var(--c,#444);box-shadow:0 0 10px var(--c,#444)}
+.spine-mini.got::after{content:"";position:absolute;left:3px;right:3px;top:8px;height:24px;background:rgba(255,255,255,.85);border-radius:1px}
+.panel-h{font:11px/1.3 var(--f-body);font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--fg-dim);margin:0 0 8px}
+
+/* ===== модальное окно (предмет крупным планом) ===== */
+.modal{position:fixed;inset:0;z-index:60;display:grid;place-items:center;padding:16px;background:rgba(8,4,2,.82);backdrop-filter:blur(3px);overflow:auto}
+.sheet{
+  position:relative;width:min(860px,100%);max-height:calc(100vh - 32px);overflow:auto;
+  background:linear-gradient(#2b1d14,#1f150e);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 30px 80px rgba(0,0,0,.8);
+  padding:22px clamp(16px,3vw,28px) 22px;
+}
+.sheet__head{display:flex;align-items:flex-start;gap:12px;margin-bottom:14px}
+.sheet__head h2{margin:0;font:clamp(16px,2.6vw,22px)/1.15 var(--f-display);color:var(--fg);text-wrap:balance}
+.sheet__head p{margin:4px 0 0;color:var(--fg-dim);font-size:14px}
+.sheet__x{margin-left:auto;flex:none;border:1px solid var(--line);background:transparent;border-radius:50%;width:36px;height:36px;font-size:18px;line-height:1}
+.sheet__foot{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:16px}
+.btn{
+  border:0;border-radius:4px;padding:10px 16px;font:700 14px/1 var(--f-body);letter-spacing:.04em;
+  background:linear-gradient(#ffe39a,#f2a91a);color:#2a1300;box-shadow:0 3px 0 #7b4300;
+}
+.btn:active{transform:translateY(2px);box-shadow:0 1px 0 #7b4300}
+.btn--dim{background:transparent;color:var(--fg);border:1px solid var(--line);box-shadow:none}
+.btn--hint{background:linear-gradient(#fff,#ffe9a0);color:#3a2000;box-shadow:0 3px 0 #9a7a20}
+.msg{min-height:1.5em;font-size:14px}
+.msg.ok{color:var(--ok)}.msg.bad{color:var(--bad)}
+.hintbox{margin-top:12px;border-left:3px solid #ffd54a;background:rgba(255,213,74,.07);padding:8px 12px;font:18px/1.35 var(--f-hand);color:#ffe9a8;display:flex;flex-direction:column;gap:6px}
+
+/* — афиша — */
+.afisha{
+  background:#f4ecd4;color:#1d1a3d;border-radius:3px;padding:18px clamp(12px,3vw,24px);
+  box-shadow:inset 0 0 40px rgba(120,80,20,.25);
+  background-image:radial-gradient(rgba(150,100,40,.12) 1px,transparent 1px);background-size:5px 5px;
+}
+.afisha__top{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px;border-bottom:3px double #1d1a3d;padding-bottom:8px;margin-bottom:10px}
+.afisha__top b{font:clamp(16px,3vw,26px)/1 var(--f-display);color:#b0122a}
+.afisha__top span{font:16px/1 var(--f-hand)}
+.slots{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:10px}
+.slot{border:2px dashed rgba(29,26,61,.35);border-radius:4px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.slot.solved{border-style:solid;border-color:#1f8a46;background:rgba(31,138,70,.08)}
+.slot__day{font:700 12px/1 var(--f-body);letter-spacing:.14em;text-transform:uppercase;color:#b0122a}
+.slot__pic{font-size:30px;line-height:1.2;min-height:42px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.slot__rule{font:20px/1 var(--f-hand);color:#1d1a3d}
+.slot input{width:100%;min-width:0;font:20px/1.2 var(--f-hand);color:var(--paper-ink);background:transparent;border:0;border-bottom:2px solid rgba(29,26,61,.4);padding:2px 0}
+.slot.solved input{color:#1f8a46;border-color:transparent}
+.afisha__legend{margin-top:12px;font:17px/1.3 var(--f-hand);color:#4b4672}
+
+/* — наклейки и коробки — */
+.match{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px}
+@media (max-width:640px){.match{grid-template-columns:1fr}}
+.stickers,.boxes{display:flex;flex-direction:column;gap:8px}
+.sticker{
+  text-align:left;border:0;border-radius:2px;padding:10px 12px;background:#fdf6d8;color:#22205a;
+  font:19px/1.2 var(--f-hand);box-shadow:0 2px 0 rgba(0,0,0,.35);position:relative;
+}
+.sticker small{display:block;font:11px/1.3 var(--f-mono);color:#7a6a3a;margin-top:4px}
+.sticker.sel{outline:3px solid var(--neon-2)}
+.sticker.done{opacity:.55;text-decoration:line-through}
+.vbox{
+  display:flex;align-items:center;gap:10px;text-align:left;border:1px solid rgba(255,255,255,.12);
+  border-radius:3px;padding:8px 10px;background:linear-gradient(90deg,var(--c1),var(--c2));color:#fff;
+  font:700 14px/1.2 var(--f-body);text-shadow:0 1px 2px rgba(0,0,0,.7);min-height:46px;
+}
+.vbox i{font:10px/1 var(--f-osd);font-style:normal;opacity:.9;margin-left:auto}
+.vbox.done{filter:grayscale(.6) brightness(.7)}
+.vbox.flash{animation:flash .5s}
+@keyframes flash{30%{box-shadow:0 0 0 4px var(--bad)}}
+
+/* — журнал должников — */
+.ledger{background:#f2ead3;color:#1f1d4f;border-radius:2px;padding:16px clamp(12px,3vw,22px);
+  background-image:linear-gradient(transparent 27px,rgba(80,110,200,.35) 28px);background-size:100% 28px;
+  box-shadow:inset 6px 0 0 #c43b3b;font:19px/28px var(--f-hand)}
+.ledger ol{margin:0;padding-left:22px}
+.ledger li{padding-left:4px}
+.ltable{width:100%;border-collapse:collapse;margin-top:14px;font:15px/1.3 var(--f-body)}
+.ltable th,.ltable td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:left}
+.ltable th{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--fg-dim)}
+.ltable select{width:100%;padding:8px;background:#120c08;color:var(--fg);border:1px solid var(--line);border-radius:4px;font:15px var(--f-body)}
+.tablewrap{overflow-x:auto}
+
+/* — кассета, карандаш, трекинг — */
+.cass-wrap{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:18px;align-items:center}
+@media (max-width:700px){.cass-wrap{grid-template-columns:1fr}}
+.cass svg{width:100%;height:auto;display:block;touch-action:none;user-select:none}
+.meter{height:10px;border-radius:5px;background:#120c08;border:1px solid var(--line);overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffb400,#ff3ea5)}
+.track{position:relative;aspect-ratio:4/3;border-radius:18px/14px;overflow:hidden;background:#06070c;border:8px solid #1a1a1a}
+.track canvas{position:absolute;inset:0;width:100%;height:100%}
+.track__msg{position:absolute;inset:0;display:grid;place-items:center;padding:10%;text-align:center;font:clamp(10px,1.8vw,14px)/1.6 var(--f-osd);color:var(--osd)}
+.range{width:100%;accent-color:#ffb400}
+
+/* — телефон — */
+.phone{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:700px){.phone{grid-template-columns:1fr}}
+.dial svg{width:100%;max-width:320px;height:auto;display:block;margin:0 auto;touch-action:manipulation;user-select:none}
+.dial .hole{cursor:pointer}
+.dial .hole:hover circle{fill:rgba(255,255,255,.18)}
+.dialed{font:22px/1 var(--f-osd);letter-spacing:.2em;color:var(--osd-green);background:#0b1410;padding:12px;border-radius:4px;text-align:center;min-height:46px;text-shadow:0 0 6px rgba(93,255,143,.6)}
+.chat{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow:auto;padding:4px}
+.line{font:15px/1.45 var(--f-body);padding:8px 12px;border-radius:6px;background:rgba(255,255,255,.05);max-width:92%}
+.line.them{border-left:3px solid #ffb400}
+.line.me{align-self:flex-end;background:rgba(54,228,255,.1);border-right:3px solid var(--neon-2)}
+.line.sys{align-self:center;font:11px/1.4 var(--f-osd);color:var(--fg-dim);background:none}
+.choices{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.choice{text-align:left;border:1px solid var(--line);background:rgba(255,220,160,.05);border-radius:4px;padding:9px 12px;font:15px/1.3 var(--f-body)}
+.choice:hover{background:rgba(255,220,160,.12)}
+
+/* — пятнашки — */
+.fifteen{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:700px){.fifteen{grid-template-columns:1fr}}
+.board{position:relative;width:100%;max-width:340px;aspect-ratio:1;background:#0d0805;border:10px solid var(--wood);border-radius:6px;box-shadow:inset 0 0 20px #000,0 10px 30px rgba(0,0,0,.6);margin:0 auto}
+.tile{position:absolute;width:33.333%;height:33.333%;border:0;padding:0;border-radius:3px;background-size:300% 300%;transition:left .14s,top .14s;box-shadow:inset 0 0 0 1px rgba(0,0,0,.6),inset 0 2px 0 rgba(255,255,255,.2)}
+.tile span{position:absolute;top:4px;left:6px;font:12px/1 var(--f-osd);color:#fff;text-shadow:0 1px 2px #000;display:none}
+.board.nums .tile span{display:block}
+.board.peek::after{content:"";position:absolute;inset:0;background:var(--img) center/cover;border-radius:3px}
+
+/* — полка с корешками — */
+.shelf{
+  display:flex;gap:6px;align-items:flex-end;justify-content:center;flex-wrap:wrap;
+  padding:16px 10px 0;background:linear-gradient(#3a2414,#2a190d);border-radius:4px;
+  border-bottom:14px solid var(--wood);box-shadow:inset 0 10px 20px rgba(0,0,0,.6);
+}
+.spine{
+  position:relative;width:clamp(54px,9vw,74px);height:230px;border:0;border-radius:3px 3px 0 0;padding:8px 4px;
+  background:linear-gradient(90deg,rgba(0,0,0,.35),transparent 20%,transparent 80%,rgba(0,0,0,.35)),var(--c);
+  color:#fff;display:flex;flex-direction:column;align-items:center;gap:6px;
+  box-shadow:0 0 0 1px rgba(0,0,0,.5);transition:transform .15s;
+}
+.spine:hover{transform:translateY(-4px)}
+.spine.sel{transform:translateY(-12px);box-shadow:0 0 0 3px var(--neon-2)}
+.spine__t{writing-mode:vertical-rl;transform:rotate(180deg);font:700 13px/1.1 var(--f-body);text-shadow:0 1px 2px #000;flex:1;overflow:hidden;text-align:left}
+.spine__l{width:34px;height:34px;border-radius:50%;background:#fdf6d8;color:#8c1d22;display:grid;place-items:center;font:20px/1 var(--f-hand);font-weight:700;box-shadow:0 1px 2px rgba(0,0,0,.5)}
+.spine__y{font:8px/1 var(--f-osd);opacity:.85;min-height:8px}
+.word{display:flex;gap:6px;justify-content:center;margin-top:14px;flex-wrap:wrap}
+.word b{width:34px;height:42px;display:grid;place-items:center;background:#120c08;border:1px solid var(--line);border-radius:3px;font:20px/1 var(--f-display);color:var(--fg-dim)}
+.word b.on{color:#fff;background:var(--neon);border-color:var(--neon);box-shadow:0 0 12px var(--neon)}
+
+/* — финал — */
+.rew{display:grid;justify-items:center;gap:16px;text-align:center}
+.bigcount{font:clamp(40px,12vw,96px)/1 var(--f-osd);color:var(--osd-green);text-shadow:0 0 16px rgba(93,255,143,.8);background:#050a07;padding:18px 26px;border-radius:8px;border:3px solid #2b2f33;font-variant-numeric:tabular-nums}
+.holdbtn{border:0;border-radius:6px;padding:20px 30px;font:16px/1 var(--f-osd);background:linear-gradient(#3a3d41,#17191c);color:#fff;box-shadow:0 6px 0 #000;touch-action:none;user-select:none;-webkit-user-select:none}
+.holdbtn.on{transform:translateY(5px);box-shadow:0 1px 0 #000;background:linear-gradient(#5a1a1a,#2a0808)}
+.shake{animation:shake .12s linear infinite}
+@keyframes shake{25%{transform:translate(2px,-1px)}50%{transform:translate(-2px,1px)}75%{transform:translate(1px,2px)}}
+.pills{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}
+.pill{border:0;border-radius:40px;padding:16px 22px;font:700 15px/1.2 var(--f-body);color:#fff;max-width:300px}
+.pill--blue{background:linear-gradient(#4a7bff,#1b3ab0);box-shadow:0 0 22px rgba(74,123,255,.6)}
+.pill--red{background:linear-gradient(#ff5a4a,#a3120a);box-shadow:0 0 22px rgba(255,90,74,.6)}
+
+.credits{max-width:640px;margin:0 auto;text-align:center}
+.credits h2{font:clamp(20px,4vw,34px)/1.1 var(--f-display);margin:0 0 10px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:18px 0}
+.stats div{background:rgba(255,220,160,.06);border:1px solid var(--line);border-radius:6px;padding:12px 6px}
+.stats b{display:block;font:18px/1.2 var(--f-osd);color:var(--lamp);font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--fg-dim)}
+.rank{font:22px/1.3 var(--f-hand);color:#ffe9a8}
+
+/* — блокнот — */
+.book{display:flex;flex-direction:column;gap:14px}
+.book .tape{border:1px solid var(--line);border-radius:6px;padding:10px 12px;background:rgba(0,0,0,.2)}
+.book .tape h4{margin:0 0 6px;font:10px/1.4 var(--f-osd);color:var(--lamp)}
+.book .tape div{font:14px/1.55 var(--f-mono);white-space:pre-wrap;color:var(--fg)}
+.wrapcards{display:flex;gap:8px;flex-wrap:wrap}
+.wcard{width:98px;border-radius:3px;overflow:hidden;background:#fff;color:#111;font:10px/1.2 var(--f-body);box-shadow:0 2px 0 rgba(0,0,0,.4)}
+.wcard b{display:block;background:linear-gradient(90deg,#ffde00,#e3001b,#0055b8);color:#fff;font:9px/1 var(--f-display);padding:4px 5px;text-shadow:0 1px 0 #000}
+.wcard i{display:block;height:42px;background:var(--car);}
+.wcard span{display:block;padding:4px 5px}
+
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:80;
+  background:#0b1410;color:var(--osd-green);border:2px solid #2b2f33;border-radius:4px;padding:10px 14px;font:10px/1.5 var(--f-osd);
+  box-shadow:0 10px 30px rgba(0,0,0,.6);max-width:calc(100% - 32px);text-align:center}
+.flashscreen{position:fixed;inset:0;z-index:85;pointer-events:none;background:#fff;opacity:0}
+.flashscreen.go{animation:fs .5s ease-out}
+@keyframes fs{0%{opacity:.8}100%{opacity:0}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition:none!important}
+}
+</style>
+
+<canvas id="grain" aria-hidden="true"></canvas>
+<div class="flashscreen" id="flash" aria-hidden="true"></div>
+
+<header class="deck" id="deck" hidden>
+  <div class="deck__brand"><b>ЭЛЕКТРОНИКА</b><small>ВМ-12 · ВИДЕО</small></div>
+  <div class="lcd" aria-label="Счётчик видеомагнитофона">
+    <span class="lcd__mode" id="lcdMode">STOP ■</span>
+    <span class="lcd__counter" id="lcdCount">1991</span>
+  </div>
+  <span class="deck__sp"></span>
+  <span class="wraps" title="Вкладыши Turbo — ими платят за подсказки"><span class="wraps__ico" aria-hidden="true"></span><span>×&nbsp;<b id="wrapN">3</b></span></span>
+  <div class="deck__btns">
+    <button class="key" id="kBook" type="button">Блокнот</button>
+    <button class="key" id="kSound" type="button" aria-pressed="true"><span class="led"></span>Звук</button>
+    <button class="key" id="kEject" type="button" title="Выйти на титульный экран">⏏ Eject</button>
+  </div>
+</header>
+
+<main id="screen" class="screen"></main>
+
+<div class="modal" id="modal" hidden role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="sheet" id="sheet"></div>
+</div>
+<div class="toast" id="toast" hidden role="status"></div>
+
+<template id="tplRoom">
+<div class="wrap room">
+  <div class="scene" id="scene">
+  <svg viewBox="0 0 1000 620" role="img" aria-labelledby="roomT">
+    <title id="roomT">Видеосалон «Космос»: подвал ДК, ковёр, телевизор, сервант</title>
+    <defs>
+      <pattern id="wp" width="46" height="46" patternUnits="userSpaceOnUse">
+        <rect width="46" height="46" fill="#4f3d26"/>
+        <path d="M0 23h46M23 0v46" stroke="#5b4930" stroke-width="10"/>
+        <g fill="#6d5634"><circle cx="23" cy="23" r="6"/><circle cx="0" cy="0" r="4"/><circle cx="46" cy="0" r="4"/><circle cx="0" cy="46" r="4"/><circle cx="46" cy="46" r="4"/></g>
+        <g fill="#3e2f1c"><circle cx="23" cy="23" r="2.4"/><path d="M23 13c3 4 3 6 0 10-3-4-3-6 0-10zM23 33c3-4 3-6 0-10-3 4-3 6 0 10z"/></g>
+      </pattern>
+      <pattern id="cp" width="44" height="44" patternUnits="userSpaceOnUse">
+        <rect width="44" height="44" fill="#7d151b"/>
+        <path d="M22 2L42 22 22 42 2 22z" fill="#1e2753"/>
+        <path d="M22 9L35 22 22 35 9 22z" fill="#a8262b"/>
+        <path d="M22 16L28 22 22 28 16 22z" fill="#e3b86a"/>
+        <circle cx="0" cy="0" r="3" fill="#e3b86a"/><circle cx="44" cy="0" r="3" fill="#e3b86a"/><circle cx="0" cy="44" r="3" fill="#e3b86a"/><circle cx="44" cy="44" r="3" fill="#e3b86a"/>
+      </pattern>
+      <pattern id="cpb" width="24" height="24" patternUnits="userSpaceOnUse">
+        <rect width="24" height="24" fill="#1e2753"/>
+        <path d="M0 12L12 0 24 12 12 24z" fill="#e3b86a"/><path d="M6 12l6-6 6 6-6 6z" fill="#7d151b"/>
+      </pattern>
+      <pattern id="parq" width="60" height="30" patternUnits="userSpaceOnUse">
+        <rect width="60" height="30" fill="#5a3418"/>
+        <path d="M0 0l30 15M30 15L60 0M0 30l30-15M30 15l30 15" stroke="#3d220f" stroke-width="2"/>
+        <path d="M0 15h60" stroke="#6b3f1e" stroke-width="1"/>
+      </pattern>
+      <linearGradient id="woodg" x1="0" x2="1">
+        <stop offset="0" stop-color="#4a2510"/><stop offset=".5" stop-color="#7a4321"/><stop offset="1" stop-color="#4a2510"/>
+      </linearGradient>
+      <linearGradient id="silver" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#e2e5e8"/><stop offset=".6" stop-color="#a7acb1"/><stop offset="1" stop-color="#6f7479"/>
+      </linearGradient>
+      <radialGradient id="lampg" cx=".5" cy="0" r="1">
+        <stop offset="0" stop-color="#ffcf7a" stop-opacity=".55"/><stop offset=".55" stop-color="#ffb04a" stop-opacity=".12"/><stop offset="1" stop-color="#ff9a2a" stop-opacity="0"/>
+      </radialGradient>
+      <radialGradient id="crtg" cx=".5" cy=".5" r=".7">
+        <stop offset="0" stop-color="#9fb7ff"/><stop offset="1" stop-color="#1b2a8a"/>
+      </radialGradient>
+      <filter id="static" x="0" y="0" width="100%" height="100%">
+        <feTurbulence id="turb" type="fractalNoise" baseFrequency=".9" numOctaves="1" seed="2"/>
+        <feColorMatrix type="saturate" values="0"/>
+        <feComponentTransfer><feFuncA type="table" tableValues="0 .55"/></feComponentTransfer>
+      </filter>
+      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="1">
+        <stop offset="0" stop-color="#bcd3d6" stop-opacity=".22"/><stop offset=".45" stop-color="#ffffff" stop-opacity=".05"/><stop offset=".5" stop-color="#ffffff" stop-opacity=".2"/><stop offset=".55" stop-color="#ffffff" stop-opacity=".05"/><stop offset="1" stop-color="#bcd3d6" stop-opacity=".15"/>
+      </linearGradient>
+    </defs>
+
+    <!-- стена, пол -->
+    <rect width="1000" height="470" fill="url(#wp)"/>
+    <rect y="470" width="1000" height="150" fill="url(#parq)"/>
+    <rect y="462" width="1000" height="12" fill="#2e1a0c"/>
+    <rect width="1000" height="18" fill="#2a1e14"/>
+    <!-- труба под потолком: подвал же -->
+    <rect y="22" width="1000" height="14" rx="7" fill="#5d6a5a"/><rect x="180" y="18" width="10" height="22" fill="#47523f"/><rect x="820" y="18" width="10" height="22" fill="#47523f"/>
+
+    <!-- ковёр -->
+    <g class="hot" data-hot="carpet" tabindex="0" role="button" aria-label="Ковёр на стене">
+      <rect x="318" y="58" width="404" height="300" fill="url(#cpb)" stroke="#120a05" stroke-width="2"/>
+      <rect x="336" y="76" width="368" height="264" fill="url(#cp)"/>
+      <path d="M520 96l90 112-90 112-90-112z" fill="#1e2753" stroke="#e3b86a" stroke-width="4"/>
+      <path d="M520 130l62 78-62 78-62-78z" fill="#a8262b"/>
+      <circle cx="520" cy="208" r="18" fill="#e3b86a"/>
+      <g fill="#d9cdb4"><path d="M318 358v10M330 358v10M342 358v10M354 358v10M366 358v10M378 358v10M390 358v10M402 358v10M414 358v10M426 358v10M438 358v10M450 358v10M462 358v10M474 358v10M486 358v10M498 358v10M510 358v10M522 358v10M534 358v10M546 358v10M558 358v10M570 358v10M582 358v10M594 358v10M606 358v10M618 358v10M630 358v10M642 358v10M654 358v10M666 358v10M678 358v10M690 358v10M702 358v10M714 358v10" stroke="#d9cdb4" stroke-width="3"/></g>
+      <rect class="hl" x="316" y="56" width="408" height="314"/>
+    </g>
+
+    <!-- календарь -->
+    <g class="hot" data-hot="calendar" tabindex="0" role="button" aria-label="Календарь на стене">
+      <rect x="244" y="62" width="60" height="84" fill="#f4efe2" stroke="#1b1b1b"/>
+      <rect x="244" y="62" width="60" height="22" fill="#b0122a"/>
+      <text x="274" y="78" text-anchor="middle" font-family="PT Sans,Arial" font-weight="700" font-size="11" fill="#fff">АВГУСТ</text>
+      <text x="274" y="106" text-anchor="middle" font-family="PT Sans,Arial" font-weight="700" font-size="22" fill="#1b1b1b">19</text>
+      <circle cx="274" cy="99" r="15" fill="none" stroke="#2b2a6e" stroke-width="2"/>
+      <text x="274" y="136" text-anchor="middle" font-family="PT Sans,Arial" font-size="12" fill="#444">1991</text>
+      <rect class="hl" x="240" y="58" width="68" height="92"/>
+    </g>
+
+    <!-- плакат -->
+    <g class="hot" data-hot="poster" tabindex="0" role="button" aria-label="Плакат">
+      <rect x="236" y="166" width="76" height="118" fill="#120b2c" stroke="#000"/>
+      <circle cx="274" cy="222" r="26" fill="#ff3ea5"/>
+      <path d="M248 226h52M250 233h48M253 240h42" stroke="#120b2c" stroke-width="3"/>
+      <path d="M236 250l38-18 38 18v34h-76z" fill="#36e4ff" opacity=".35"/>
+      <path d="M236 262h76M248 250l-8 34M274 250v34M300 250l8 34" stroke="#36e4ff" stroke-width="1"/>
+      <text x="274" y="186" text-anchor="middle" font-family="Rubik Mono One,Arial Black" font-size="11" fill="#fff">ВИДЕО</text>
+      <rect class="hl" x="232" y="162" width="84" height="126"/>
+    </g>
+
+    <!-- афиша -->
+    <g class="hot" data-hot="afisha" tabindex="0" role="button" aria-label="Афиша сеансов">
+      <rect x="38" y="60" width="180" height="250" fill="#2e3a2b" stroke="#6b4a26" stroke-width="8"/>
+      <rect x="48" y="72" width="160" height="226" fill="#efe6cc"/>
+      <text x="128" y="96" text-anchor="middle" font-family="Rubik Mono One,Arial Black" font-size="15" fill="#b0122a">СЕАНСЫ</text>
+      <g font-family="Neucha,cursive" font-size="15" fill="#2b2a6e">
+        <text x="58" y="124">Пн 18:00 👻🚫</text><text x="58" y="150">Вт 20:00 ⛰️ А=ЕЦ</text><text x="58" y="176">Ср 20:00 🛹🚗⚡</text>
+        <text x="58" y="202">Чт 22:00 🦫 1=К</text><text x="58" y="228">Пт 18:00 👦🏠😱</text><text x="58" y="254">Сб 16:00 🤖 Т=КОП</text>
+      </g>
+      <text x="128" y="286" text-anchor="middle" font-family="PT Sans,Arial" font-size="11" fill="#444">ВХОД 1 руб. · после 22:00 — 2</text>
+      <rect class="hl" x="32" y="54" width="192" height="262"/>
+    </g>
+
+    <!-- абажур -->
+    <g class="hot" data-hot="lamp" tabindex="0" role="button" aria-label="Абажур">
+      <path d="M500 36v54" stroke="#222" stroke-width="2"/>
+      <path d="M450 90h100l26 46H424z" fill="#d06a1e"/>
+      <path d="M424 136h152" stroke="#f3c26a" stroke-width="4" stroke-dasharray="2 4"/>
+      <path d="M450 90h100" stroke="#8a3d0c" stroke-width="3"/>
+      <rect class="hl" x="420" y="84" width="160" height="58"/>
+    </g>
+    <path class="lampglow" d="M424 136L230 620h540L576 136z" fill="url(#lampg)"/>
+
+    <!-- тумба, телевизор, видик -->
+    <rect x="392" y="420" width="216" height="110" fill="url(#woodg)" stroke="#2b1408" stroke-width="2"/>
+    <rect x="402" y="470" width="96" height="52" fill="none" stroke="#2b1408"/><rect x="502" y="470" width="96" height="52" fill="none" stroke="#2b1408"/>
+    <circle cx="488" cy="496" r="3" fill="#c9a24e"/><circle cx="512" cy="496" r="3" fill="#c9a24e"/>
+    <rect x="400" y="530" width="10" height="16" fill="#2b1408"/><rect x="590" y="530" width="10" height="16" fill="#2b1408"/>
+
+    <g class="hot" data-hot="tv" tabindex="0" role="button" aria-label="Телевизор «Рубин» и видеомагнитофон">
+      <rect x="402" y="232" width="196" height="150" rx="14" fill="#5a3219" stroke="#2b1408" stroke-width="3"/>
+      <rect x="414" y="244" width="136" height="116" rx="22" fill="#111"/>
+      <rect id="tvGlow" x="420" y="250" width="124" height="104" rx="18" fill="url(#crtg)"/>
+      <rect x="420" y="250" width="124" height="104" rx="18" filter="url(#static)"/>
+      <text id="tvTxt" x="482" y="306" text-anchor="middle" font-family="Press Start 2P,monospace" font-size="9" fill="#e9fff1">AV</text>
+      <rect x="558" y="250" width="32" height="70" fill="#3b200f"/>
+      <circle cx="574" cy="266" r="9" fill="#d8d2c6"/><circle cx="574" cy="292" r="9" fill="#d8d2c6"/>
+      <path d="M560 330h28M560 336h28M560 342h28M560 348h28" stroke="#24120a" stroke-width="2"/>
+      <text x="574" y="372" text-anchor="middle" font-family="Rubik Mono One,Arial Black" font-size="7" fill="#d9c39c">РУБИН</text>
+      <path d="M470 232l-26-40M530 232l30-44" stroke="#9aa" stroke-width="2"/>
+      <!-- видик -->
+      <rect x="402" y="384" width="196" height="36" rx="3" fill="url(#silver)" stroke="#3a3d41"/>
+      <rect x="412" y="392" width="84" height="18" fill="#1d1f22"/>
+      <rect x="506" y="394" width="40" height="12" fill="#0b1410"/>
+      <text id="vcrTxt" x="526" y="403.5" text-anchor="middle" font-family="Press Start 2P,monospace" font-size="6" fill="#5dff8f">1991</text>
+      <g fill="#2d3034"><rect x="552" y="394" width="9" height="12"/><rect x="564" y="394" width="9" height="12"/><rect x="576" y="394" width="9" height="12"/></g>
+      <text x="454" y="404" text-anchor="middle" font-family="PT Sans,Arial" font-size="7" fill="#aaa">ЭЛЕКТРОНИКА ВМ-12</text>
+      <rect class="hl" x="396" y="186" width="208" height="240"/>
+    </g>
+
+    <!-- стеллаж с кассетами -->
+    <g class="hot" data-hot="shelf" tabindex="0" role="button" aria-label="Стеллаж с кассетами">
+      <rect x="34" y="334" width="196" height="232" fill="#3b2212" stroke="#1b0d05" stroke-width="3"/>
+      <rect x="34" y="404" width="196" height="8" fill="#5a3418"/><rect x="34" y="480" width="196" height="8" fill="#5a3418"/>
+      <g id="shelfTapes">
+        <rect x="44" y="346" width="14" height="58" fill="#111"/><rect x="60" y="346" width="14" height="58" fill="#c0392b"/><rect x="76" y="346" width="14" height="58" fill="#222"/><rect x="92" y="346" width="14" height="58" fill="#2a6fdb"/><rect x="108" y="346" width="14" height="58" fill="#111"/><rect x="124" y="346" width="14" height="58" fill="#e0b000"/><rect x="140" y="346" width="14" height="58" fill="#111"/><rect x="156" y="346" width="14" height="58" fill="#7a1fa2"/><rect x="172" y="346" width="14" height="58" fill="#222"/>
+        <rect x="44" y="420" width="14" height="60" fill="#222"/><rect x="60" y="420" width="14" height="60" fill="#111"/><rect x="76" y="420" width="14" height="60" fill="#1c7c54"/><rect x="92" y="420" width="14" height="60" fill="#111"/><rect x="108" y="420" width="14" height="60" fill="#d35400"/><rect x="124" y="420" width="14" height="60" fill="#111"/><rect x="140" y="420" width="14" height="60" fill="#222"/><rect x="156" y="420" width="14" height="60" fill="#111"/>
+        <rect x="44" y="496" width="60" height="16" fill="#111"/><rect x="44" y="514" width="60" height="16" fill="#1d1d1d"/><rect x="44" y="532" width="60" height="16" fill="#111"/>
+        <rect x="120" y="500" width="16" height="16" fill="#e3001b"/><rect x="136" y="500" width="16" height="16" fill="#ffde00"/><rect x="120" y="516" width="16" height="16" fill="#0055b8"/><rect x="136" y="516" width="16" height="16" fill="#1f8a46"/>
+      </g>
+      <g fill="#efe6cc"><rect x="48" y="360" width="6" height="18"/><rect x="64" y="360" width="6" height="18"/><rect x="80" y="360" width="6" height="18"/><rect x="96" y="360" width="6" height="18"/><rect x="112" y="360" width="6" height="18"/><rect x="128" y="360" width="6" height="18"/><rect x="144" y="360" width="6" height="18"/><rect x="160" y="360" width="6" height="18"/><rect x="176" y="360" width="6" height="18"/></g>
+      <rect class="hl" x="28" y="328" width="208" height="244"/>
+    </g>
+
+    <!-- журнальный столик: журнал и кубик -->
+    <rect x="252" y="512" width="150" height="12" fill="#6b3d1e"/>
+    <path d="M262 524l-8 62M392 524l8 62" stroke="#3a1f0d" stroke-width="6"/>
+    <g class="hot" data-hot="ledger" tabindex="0" role="button" aria-label="Журнал выдачи кассет">
+      <path d="M262 512l12-26h74l-6 26z" fill="#1b4f8a" stroke="#0d2a4d"/>
+      <path d="M276 494h60M274 500h60" stroke="#e8e0c8" stroke-width="2"/>
+      <text x="306" y="490" text-anchor="middle" font-family="PT Sans,Arial" font-size="7" fill="#e8e0c8">ЖУРНАЛ</text>
+      <rect class="hl" x="256" y="480" width="98" height="38"/>
+    </g>
+    <g class="hot" data-hot="cube" tabindex="0" role="button" aria-label="Кубик Рубика">
+      <g id="cubeG">
+        <rect x="362" y="484" width="9" height="9" fill="#e3001b"/><rect x="371" y="484" width="9" height="9" fill="#ffffff"/><rect x="380" y="484" width="9" height="9" fill="#1f8a46"/>
+        <rect x="362" y="493" width="9" height="9" fill="#ffde00"/><rect x="371" y="493" width="9" height="9" fill="#0055b8"/><rect x="380" y="493" width="9" height="9" fill="#ff8a00"/>
+        <rect x="362" y="502" width="9" height="9" fill="#1f8a46"/><rect x="371" y="502" width="9" height="9" fill="#e3001b"/><rect x="380" y="502" width="9" height="9" fill="#ffffff"/>
+      </g>
+      <rect x="362" y="484" width="27" height="27" fill="none" stroke="#000" stroke-width="1.5"/>
+      <rect class="hl" x="356" y="478" width="39" height="39"/>
+    </g>
+
+    <!-- тумбочка с телефоном -->
+    <rect x="636" y="440" width="110" height="110" fill="url(#woodg)" stroke="#2b1408" stroke-width="2"/>
+    <rect x="646" y="452" width="90" height="30" fill="none" stroke="#2b1408"/><circle cx="691" cy="467" r="3" fill="#c9a24e"/>
+    <g class="hot" data-hot="phone" tabindex="0" role="button" aria-label="Телефон с диском">
+      <path d="M650 440l10-34h62l10 34z" fill="#c8202a" stroke="#6a0c10" stroke-width="2"/>
+      <circle cx="691" cy="420" r="15" fill="#efe6cc" stroke="#6a0c10"/>
+      <circle cx="691" cy="420" r="5" fill="#c8202a"/>
+      <path d="M646 404c0-14 90-14 90 0v6h-16v-4c-6-6-52-6-58 0v4h-16z" fill="#a81820" stroke="#6a0c10" stroke-width="2"/>
+      <path d="M736 420c18 10 6 40 30 44" fill="none" stroke="#2a0a0a" stroke-width="3"/>
+      <rect class="hl" x="640" y="390" width="104" height="56"/>
+    </g>
+
+    <!-- сервант -->
+    <g class="hot" data-hot="servant" tabindex="0" role="button" aria-label="Сервант">
+      <rect x="760" y="94" width="214" height="440" fill="url(#woodg)" stroke="#2b1408" stroke-width="3"/>
+      <rect x="772" y="112" width="190" height="196" fill="#24160c"/>
+      <!-- хрусталь -->
+      <g fill="#cfe3ea" opacity=".85">
+        <path d="M790 196h22l-4 38h-14z"/><path d="M796 196l5-20 5 20" fill="#e8f3f6"/>
+        <path d="M830 234c-10-22-4-40 12-40s22 18 12 40z"/>
+        <path d="M880 234l-8-26h28l-8 26z"/><rect x="884" y="186" width="4" height="22"/>
+        <path d="M920 234c-6-8-6-24 0-34h18c6 10 6 26 0 34z"/>
+      </g>
+      <rect x="772" y="238" width="190" height="5" fill="#5a3418"/>
+      <g fill="#e8e0d2" opacity=".85"><circle cx="800" cy="282" r="22"/><circle cx="800" cy="282" r="14" fill="none" stroke="#2b5fb0" stroke-width="2"/><circle cx="852" cy="282" r="22"/><circle cx="852" cy="282" r="14" fill="none" stroke="#2b5fb0" stroke-width="2"/></g>
+      <rect x="772" y="112" width="190" height="196" fill="url(#glass)"/>
+      <path d="M867 112v196" stroke="#2b1408" stroke-width="4"/>
+      <!-- нижние дверцы с замком-пятнашками -->
+      <rect x="772" y="320" width="92" height="200" fill="none" stroke="#2b1408" stroke-width="2"/>
+      <rect x="870" y="320" width="92" height="200" fill="none" stroke="#2b1408" stroke-width="2"/>
+      <g id="lockG">
+        <rect x="846" y="398" width="42" height="42" fill="#1b1b1b" stroke="#c9a24e" stroke-width="2"/>
+        <g fill="#c9a24e"><rect x="850" y="402" width="10" height="10"/><rect x="862" y="402" width="10" height="10"/><rect x="874" y="402" width="10" height="10"/><rect x="850" y="414" width="10" height="10"/><rect x="874" y="414" width="10" height="10"/><rect x="850" y="426" width="10" height="10"/><rect x="862" y="426" width="10" height="10"/><rect x="874" y="426" width="10" height="10"/></g>
+      </g>
+      <rect class="hl" x="756" y="90" width="222" height="448"/>
+    </g>
+    <!-- на серванте: банка чая и слоники -->
+    <g class="hot" data-hot="tea" tabindex="0" role="button" aria-label="Банка индийского чая">
+      <rect x="772" y="54" width="34" height="40" fill="#e9b52a" stroke="#6a4a0c"/>
+      <rect x="772" y="62" width="34" height="18" fill="#b0122a"/>
+      <path d="M780 76c2-8 14-8 16 0" stroke="#ffde7a" stroke-width="2" fill="none"/><circle cx="783" cy="70" r="3" fill="#ffde7a"/>
+      <rect class="hl" x="768" y="50" width="42" height="48"/>
+    </g>
+    <g class="hot" data-hot="elephants" tabindex="0" role="button" aria-label="Семь слоников">
+      <g fill="#ecebe5" stroke="#777" stroke-width=".8">
+        <path d="M824 94c0-12 22-12 22 0zM844 86c6 0 6 8 3 8"/><path d="M850 94c0-10 18-10 18 0zM866 88c5 0 5 6 2 6"/><path d="M872 94c0-9 16-9 16 0z"/><path d="M892 94c0-8 14-8 14 0z"/><path d="M910 94c0-7 12-7 12 0z"/><path d="M926 94c0-6 10-6 10 0z"/><path d="M940 94c0-5 8-5 8 0z"/>
+      </g>
+      <rect class="hl" x="820" y="74" width="134" height="24"/>
+    </g>
+
+    <!-- стулья зрительного ряда -->
+    <g fill="#140b05" opacity=".95">
+      <path d="M60 620v-44c0-10 90-10 90 0v44z"/><path d="M190 620v-40c0-10 90-10 90 0v40z"/>
+      <path d="M720 620v-40c0-10 90-10 90 0v40z"/><path d="M850 620v-44c0-10 90-10 90 0v44z"/>
+    </g>
+    <g id="pins"></g>
+  </svg>
+  </div>
+
+  <aside class="side">
+    <div class="note" id="goal"><h3>Записка Гоши</h3><p id="goalTxt"></p></div>
+    <div>
+      <p class="panel-h">Собранные кассеты</p>
+      <div class="shelfrow" id="gotTapes"></div>
+    </div>
+    <div>
+      <p class="panel-h">Что есть в салоне</p>
+      <div class="objects" id="objList"></div>
+    </div>
+  </aside>
+</div>
+</template>
+
+<script>
+(() => {
+"use strict";
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const h = (tag, attrs = {}, ...kids) => {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "class") el.className = v;
+    else if (k === "html") el.innerHTML = v;
+    else if (k.startsWith("on")) el.addEventListener(k.slice(2), v);
+    else if (v !== false && v != null) el.setAttribute(k, v === true ? "" : v);
+  }
+  for (const k of kids.flat()) if (k != null) el.append(k.nodeType ? k : document.createTextNode(k));
+  return el;
+};
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+
+/* ================= СОСТОЯНИЕ ================= */
+const KEY = "peremotka.v1";
+const fresh = () => ({ ch: 0, year: 1991, wraps: 3, hints: 0, debt: 0, miss: 0, tapes: [], cards: [], msgs: [], hintIdx: {}, t0: 0, t1: 0, ending: null, peeked: false, lampDim: false });
+let S = fresh();
+try { const raw = localStorage.getItem(KEY); if (raw) S = Object.assign(fresh(), JSON.parse(raw)); } catch (e) {}
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+
+/* ================= ЗВУК (синтез на месте) ================= */
+const A = {
+  ctx: null, on: true,
+  get c() {
+    if (!this.on) return null;
+    try {
+      if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+      if (this.ctx.state === "suspended") this.ctx.resume();
+    } catch (e) { return null; }
+    return this.ctx;
+  },
+  tone(f, d = .12, type = "square", vol = .06, when = 0, slide) {
+    const c = this.c; if (!c) return;
+    const t = c.currentTime + when, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(slide, t + d);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + d + .02);
+  },
+  noise(d = .1, vol = .08, freq = 2000, when = 0, q = .8) {
+    const c = this.c; if (!c) return;
+    const t = c.currentTime + when, n = c.sampleRate * d | 0, b = c.createBuffer(1, n, c.sampleRate), ch = b.getChannelData(0);
+    for (let i = 0; i < n; i++) ch[i] = Math.random() * 2 - 1;
+    const s = c.createBufferSource(), f = c.createBiquadFilter(), g = c.createGain();
+    s.buffer = b; f.type = "bandpass"; f.frequency.value = freq; f.Q.value = q;
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.0001, t + d);
+    s.connect(f).connect(g).connect(c.destination); s.start(t);
+  },
+  click() { this.noise(.03, .18, 3200, 0, 2); },
+  tick() { this.noise(.015, .2, 1800, 0, 4); },
+  clunk() { this.tone(110, .25, "sine", .3, 0, 45); this.noise(.12, .25, 600); this.noise(.05, .15, 2400, .18); },
+  hiss(d = .6) { this.noise(d, .05, 5000, 0, .3); },
+  ok() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, .16, "square", .05, i * .08)); },
+  big() { [392, 523, 659, 784, 1047, 1319].forEach((f, i) => this.tone(f, .28, "sawtooth", .04, i * .1)); },
+  bad() { this.tone(180, .18, "square", .06); this.tone(140, .28, "square", .06, .14); },
+  page() { this.tone(1200, .03, "square", .02); },
+  gudok(n = 2) { for (let i = 0; i < n; i++) this.tone(425, 1, "sine", .08, i * 2.2); },
+  busy(n = 4) { for (let i = 0; i < n; i++) this.tone(425, .35, "sine", .08, i * .7); },
+  whirr: null,
+  startWhirr(base = 140) {
+    const c = this.c; if (!c || this.whirr) return;
+    const o = c.createOscillator(), l = c.createOscillator(), lg = c.createGain(), g = c.createGain();
+    o.type = "sawtooth"; o.frequency.value = base; l.frequency.value = 9; lg.gain.value = 18;
+    l.connect(lg).connect(o.frequency); g.gain.value = .035;
+    o.connect(g).connect(c.destination); o.start(); l.start();
+    this.whirr = { o, l, g };
+  },
+  setWhirr(f) { if (this.whirr) this.whirr.o.frequency.setTargetAtTime(f, this.c.currentTime, .1); },
+  stopWhirr() { if (!this.whirr) return; const w = this.whirr; this.whirr = null; try { w.g.gain.setTargetAtTime(0, this.ctx.currentTime, .05); w.o.stop(this.ctx.currentTime + .3); w.l.stop(this.ctx.currentTime + .3); } catch (e) {} }
+};
+
+/* ================= ДАННЫЕ ================= */
+const TAPES = {
+  bttf:  { t: "Назад в будущее", y: 1985, c: "#ff7a00" },
+  term:  { t: "Терминатор", y: 1984, c: "#9aa3ad" },
+  ghost: { t: "Охотники за привидениями", y: 1984, c: "#1f8a46" },
+  y2k:   { t: "НЕ СТИРАТЬ. 31.12.1999", y: 1999, c: "#ff3ea5" }
+};
+const CARDS = [
+  { n: 77, car: "DeLorean DMC-12", c: "linear-gradient(160deg,#e8ecef,#8d949a)" },
+  { n: 51, car: "Lamborghini Countach", c: "linear-gradient(160deg,#ff4b3a,#9a0a0a)" },
+  { n: 12, car: "Ferrari Testarossa", c: "linear-gradient(160deg,#e3001b,#5a0010)" },
+  { n: 34, car: "Porsche 959", c: "linear-gradient(160deg,#ffffff,#b7bcc4)" },
+  { n: 90, car: "BMW M1", c: "linear-gradient(160deg,#4aa3ff,#0b2f7a)" },
+  { n: 5,  car: "Lancia Stratos", c: "linear-gradient(160deg,#5ad17a,#0b4a22)" },
+  { n: 61, car: "Ford Mustang", c: "linear-gradient(160deg,#ffe24a,#b07a00)" }
+];
+const GOALS = {
+  1: "Расшифруй афишу на всю неделю. Нужная кассета — в среду, 20:00.",
+  2: "«Назад в будущее» у тебя. Вставь кассету в видик.",
+  3: "Найди кассету того, кто сказал «Я вернусь». Стеллаж, безымянные кассеты с наклейками-цитатами.",
+  4: "«Терминатор» нашёлся. В видик его.",
+  5: "Журнал на столике: кто из жильцов взял «Охотников за привидениями»?",
+  6: "Плёнку зажевало. Подмотай карандашом, вставь в видик, поймай трекинг.",
+  7: "Позвони Лёве-киномеханику. Номер — скорость машины времени и год, куда попал Марти.",
+  8: "Кассета в серванте. Вместо замка — пятнашки.",
+  9: "Кассета «НЕ СТИРАТЬ. 31.12.1999». В видик.",
+  10: "Расставь девять кассет на стеллаже по годам выхода, от старой к новой.",
+  11: "Слово сложилось. Зажми ◄◄ на видике и не отпускай до 1991-го.",
+  12: "Гоша дома. «Космос» снова работает."
+};
+const ACTIVE = { 1: "afisha", 2: "tv", 3: "shelf", 4: "tv", 5: "ledger", 6: "tv", 7: "phone", 8: "servant", 9: "tv", 10: "shelf", 11: "tv" };
+const PINXY = { afisha: [128, 46], tv: [500, 178], shelf: [132, 320], ledger: [306, 470], phone: [691, 380], servant: [930, 120] };
+
+const HINTS = {
+  afisha: [
+    "Где только картинки — это сюжет фильма. Где есть правило вроде «А = ЕЦ» — классический ребус: назови предмет и поменяй буквы.",
+    "Вт: ГОРА, А меняем на ЕЦ. Чт: БОБР, первую букву на К и дописать А. Сб: РОБОТ, Т меняем на КОП.",
+    "Пн — «Охотники за привидениями». Ср — «Назад в будущее». Пт — «Один дома»."
+  ],
+  quotes: [
+    "Начни с самого простого: кто хотел «звонить домой»? Тот самый, что летал на велосипеде на фоне луны.",
+    "«Убить последним» — Шварценеггер, но не «Терминатор». «Маленький друг» — Аль Пачино с гранатомётом.",
+    "«Останется только один» — «Горец». «Первую кровь» пролили не Рэмбо. «Я вернусь» — «Терминатор»."
+  ],
+  ledger: [
+    "Начни с дней. «Грязные танцы» ушли в четверг. Петрович приходил на следующий день после Зины.",
+    "Профессору остаются только «Охотники» или «Танцы», а танцы — в четверг, позже Вовки быть не может. Значит, у Профессора «Охотники».",
+    "Профессор — «Охотники», пн. Зина — «Рэмбо», вт. Петрович — «Кровавый спорт», ср. Вовка — «Грязные танцы», чт."
+  ],
+  rewind: [
+    "Води пальцем или мышью по кругу вокруг правой катушки. Или жми кнопку «Крутить» — медленнее, но тоже работает.",
+    "Трекинг: двигай ползунок медленно и смотри, где снег редеет. Надпись проявится.",
+    () => `Чистый сигнал — около ${TRACK_T}.`
+  ],
+  phone: [
+    "Машина времени — «Делориан». Скорость нужна в милях в час, две цифры.",
+    "88 миль в час. Марти попадает в 1955-й.",
+    "Набирай 8-8-1-9-5-5. Собаку дока зовут Эйнштейн, а босиком Брюс Уиллис бегал по «Накатоми Плаза»."
+  ],
+  fifteen: [
+    "Включи номера на плитках — так проще.",
+    "Сначала собери верхний ряд 1-2-3, потом левый столбец 4 и 7. Оставшиеся четыре клетки крути по кругу.",
+    "Ладно. Гоша собирает сам — смотри и запоминай."
+  ],
+  sort: [
+    "Самая старая — «Империя наносит ответный удар», 1980. Самая новая — «Матрица», 1999.",
+    "«Инопланетянин» — 1982, «Терминатор» — 1984, «Назад в будущее» — 1985, «Крепкий орешек» — 1988.",
+    "«Терминатор 2» — 1991, «Парк Юрского периода» — 1993, «Титаник» — 1997. А ещё можно просто сложить слово из букв."
+  ]
+};
+
+/* ================= ТЕКСТЫ ================= */
+const PROLOGUE = { osd: ["▶ PLAY", "19.08.1991 09:40"], pages: [
+  "19 августа 1991 года.\n\nПо всем трём программам — «Лебединое озеро». Отец крутит антенну и ругается. Мама сказала: из дома ни ногой.\n\nТы, конечно, вышел.",
+  "Подвал ДК «Строитель». Видеосалон «Космос».\n\nДвадцать стульев из актового зала, телевизор «Рубин», видик «Электроника ВМ-12». Вход — рубль. После десяти вечера — два, и тебя туда не пускают.",
+  "Хозяин — дядя Гоша. Он же кассир, киномеханик и переводчик.\n\nЗажимает нос прищепкой и переводит всё подряд одним голосом: «Рэмбо», Брюса Ли, «Кобру» и мультики про утят.",
+  "Вчера «Космос» не открылся. Впервые за три года.\n\nА сегодня утром в почтовом ящике — ключ от подвала на шнурке и записка на листке в клетку."
+]};
+const NOTE = "Малой!\n\nЕсли читаешь — значит, я застрял. Не в лифте. В плёнке.\n\nЯ перепаял видик, чтоб не жевал кассеты. А он теперь мотает не плёнку, а время. Нажал ►► — и привет.\n\nЯ где-то впереди. Связь одна — кассеты. Кассета ведь одна и та же, что у тебя, что у меня через годы. Что я на неё запишу у себя, ты увидишь у себя. Если найдёшь нужную.\n\nПервую ищи по афише, на среду. Афишу я пишу картинками, сам знаешь, — чтоб Петрович к иностранным названиям не цеплялся. Коробки подписаны так же, так что расшифруй всю неделю.\n\nВкладыши в банке из-под индийского чая — твои. Застрянешь — меняй на мои подсказки.\n\nМаме не говори.\nГ.";
+
+const MSG = {
+  1: { year: 1993, tape: "bttf", osd: ["▶ PLAY  SP", "ЗАП. 06.1993"], pages: [
+    "[шипение, полосы]\n\n…раз, раз. Малой, слышно? Это Гоша. Говорю в прищепку — по привычке, не обращай внимания.\n\nУ меня тут июнь девяносто третьего. Ты сядь.",
+    "Вход в салон — пятьсот рублей. Не копеек. Рублей. Жвачка «Турбо» — сто. Видики продают на рынке, как картошку, японские, и у каждого второго дома свой.\n\nА все идут в кино на динозавров. «Парк Юрского периода». Спилберг снял — тот, что «Инопланетянина». Динозавры как живые, малой. Ни одного пластилинового.",
+    "Долго говорить не могу: видик держит меня минуты три, потом снова дёргает вперёд.\n\nСледующее запишу на кассету того, кто сказал «Я вернусь». Ты знаешь, о ком я. Только я с этих кассет коробки снял, когда переписывал, — остались мои наклейки с цитатами. Стеллаж, нижняя полка. Разберёшься.\n\n[щелчок. синий экран]"
+  ]},
+  2: { year: 1994, tape: "term", osd: ["▶ PLAY  SP", "ЗАП. 10.1994"], pages: [
+    "…пишется? Пишется. Октябрь девяносто четвёртого.\n\nУ всех на поясе пейджеры. Это коробочка: звонишь тётке-оператору, она печатает тебе сообщение. Я тоже взял. Мне никто не пишет. Кроме тётки: «Абонент, оплатите».",
+    "Посмотрел «Криминальное чтиво». Там двое бандитов полчаса спорят про гамбургеры, а потом… В общем, Петровичу не показывай.\n\nЕщё «Маска» — один резиновый парень, Джим Керри. Зелёный, как наш Вовка после портвейна.\n\nИ «Форрест Гамп». Я ревел. Никому не говори.",
+    "Слушай. Следующую запишу на «Охотников за привидениями». Но я её, растяпа, кому-то из жильцов выдал — на твоей неделе, в девяносто первом. Журнал на столике. Записывал я, как всегда, по-своему, без фамилий…\n\n[треск. полосы]"
+  ]},
+  3: { year: 1997, tape: "ghost", osd: ["▶ PLAY  SP", "ЗАП. 03.1997"], pages: [
+    "…алло… Девяносто седьмой, март. Кассету зажевало, да? Прости, это я профессору в девяносто первом с браком выдал.\n\nТут все рыдают над «Титаником». Корабль тонет три часа, девчонки ходят по второму разу. Я ходил по третьему. Не смейся.",
+    "Деньги — сплошные миллионы. Буханка — четыре тысячи. Говорят, через год три нуля отрежут. И правильно, у меня в кошельке не помещаются.\n\nУ детей на шее «тамагочи» — электронный цыплёнок. Не покормишь — помрёт. Мой прожил два дня.",
+    "Следующую не прячу. Я её Лёве-киномеханику оставил — в нашем девяносто первом. Позвони ему.\n\nНомер — как я учил: скорость, на которой «Делориан» проваливается во времени, и год, куда попал Марти. Две цифры и четыре.\n\nЛёва осторожный, проверит, что ты свой. Не подведи.\n\n[синий экран]"
+  ]},
+  4: { year: 1999, tape: "y2k", osd: ["▶ PLAY  SP", "ЗАП. 31.12.1999 22:04"], pages: [
+    "Малой. Тридцать первое декабря девяносто девятого. До полуночи два часа.\n\nВсе ждут, что ровно в полночь компьютеры сойдут с ума — «проблема двухтысячного года». Банки встанут, лифты встанут. Я тоже жду, хотя у меня из компьютеров — калькулятор «Электроника».",
+    "Посмотрел «Матрицу». Там парню дают две таблетки. Красная — узнать, как всё устроено на самом деле. Синяя — проснуться дома и всё забыть.\n\nМне бы сейчас синюю. Я восемь лет вперёд проскочил, малой. Насмотрелся. Хочу в свой подвал, к своим двадцати стульям.",
+    "Слушай внимательно. Видик держится на счётчике. На корешки девяти кассет я наклеил по букве — у тебя они уже должны проявиться. Расставь их по годам выхода, от старой к новой. Получится слово.\n\nПотом зажми ◄◄ и не отпускай, пока счётчик не дойдёт до нашего года. Отпустишь раньше — меня отбросит обратно.",
+    "Батарейки садятся. Если видик проскочит полночь, меня размотает по всему двадцать первому веку.\n\nМалой… спасибо. Маме всё-таки не говори.\n\n[синий экран]"
+  ]}
+};
+const PROF = { osd: ["■ STOP", "КВ. 12"], pages: [
+  "Квартира 12. Профессор открывает в халате, с «Наукой и жизнью» под мышкой.\n\n— «Охотники»? Чудесная картина. Совершенно ненаучная, но чудесная.\n— Можно её забрать? Срочно.",
+  "— Увы, молодой человек. Мой видеомагнитофон её зажевал. Возвращаю с извинениями.\n\nОн протягивает кассету — из неё петлёй висит плёнка — и шестигранный карандаш «Конструктор».\n\n— Сами знаете зачем. Идеально входит в катушку."
+]};
+const SERVANT = { osd: ["■ STOP", "СЕРВАНТ"], pages: [
+  "Щелчок. Последняя плитка встала на место, и дверца серванта открылась.\n\nВнутри: сервиз «Мадонна» (только по праздникам), хрусталь (не трогать), коробка «Птичьего молока» без единой конфеты и пачка открыток с олимпийским Мишкой.",
+  "И кассета. Обычная TDK E-180. На наклейке Гошиным почерком, чернила совсем свежие:\n\nНЕ СТИРАТЬ. 31.12.1999\n\nДо этой даты ещё восемь лет."
+]};
+const SHELFCHANGE = { osd: ["■ STOP", "СТЕЛЛАЖ"], pages: [
+  "Ты оборачиваешься на стеллаж.\n\nНа девяти кассетах надписи меняются прямо у тебя на глазах. Почерк Гошин. Половина названий незнакомая. «Титаник»? «Матрица»? «Парк Юрского периода»?\n\nНа каждом корешке — круглая наклейка с буквой."
+]};
+const ENDING_BLUE = { osd: ["■ STOP", "20.08.1991"], pages: [
+  "Счётчик замер на 1991. Видик щёлкнул, выплюнул кассету и затих.\n\nА потом за спиной кто-то чихнул.\n\nДядя Гоша сидел на третьем стуле второго ряда. Седой, в незнакомой куртке, с пейджером на поясе. И улыбался.",
+  "— Малой, — сказал он обычным голосом, без прищепки. — Сколько меня не было?\n— Два дня.\n— А по-моему, восемь лет.\n\nОн помолчал.\n— Слушай, а позавчера я тут… заходил? Седой такой?\n— Лёва говорит, заходил.\n— Значит, мне ещё предстоит туда сгонять. Кассету Лёве отдать. Ох.",
+  "Двадцатого августа «Космос» открылся в шесть вечера. Первый сеанс — «Назад в будущее». Бесплатно.\n\nГоша переводил с прищепкой и иногда замолкал посреди фразы — будто вспоминал то, чего ещё не было.\n\nА видик он разобрал. Почти."
+]};
+const ENDING_RED = { osd: ["►► FF", "10.2026"], pages: [
+  "Ты щёлкаешь ►►. Счётчик срывается: 2000, 2005, 2010, 2020…\n\nИзображение плывёт, и на секунду в «Рубине» появляется другое время.\n\nОКТЯБРЬ 2026.",
+  "Видеосалонов нет. Кассет нет. Видиков нет. Телевизоры плоские, как поднос, и висят на стене — там, где раньше висел ковёр.\n\nВсе фильмы мира лежат в кармане, в стеклянной коробочке без кнопок. Люди листают их по сорок минут и засыпают, так ничего и не выбрав.",
+  "Зато «Назад в будущее» смотрят до сих пор. И «Терминатора». А «Один дома» крутят каждый Новый год, вместе с «Иронией судьбы».\n\nИ где-то там взрослый ты до сих пор помнит, как пахнет подвал ДК «Строитель»: пылью, лампой и чуть-чуть — плёнкой.\n\nВидик взвизгивает и сам мотает назад. 1991."
+]};
+
+const FLAVOR = {
+  carpet: [
+    "Ковёр. Если долго смотреть в узор, проступает лицо. У каждого своё.",
+    "Гоша говорит, ковёр на стене — для звукоизоляции. На самом деле потому что красиво.",
+    "Этот узор ты знаешь наизусть: засыпал под него, когда второй сеанс затягивался."
+  ],
+  calendar: ["19 августа 1991-го обведено ручкой. Сбоку приписка Гоши: «Проверить видик. НЕ ЖАТЬ ►►!!!»\n\nОпоздал, дядя Гоша."],
+  poster: ["Самодельный плакат «ВИДЕО». Гоша рисовал гуашью, срисовывал из «Советского экрана». Солнце вышло розовым: другой краски не было. Получилось даже лучше."],
+  cube: [
+    "Кубик Рубика. Собрать его не может никто. Вовка однажды собрал — переклеив наклейки.",
+    "Ты крутишь грань. Стало хуже. Как всегда.",
+    "Говорят, в Венгрии его собирают за двадцать секунд. Врут, наверное."
+  ],
+  elephants: ["Семь слоников по росту, на счастье. Седьмого, самого маленького, Гоша выменял на кассету с «Коброй»."],
+  lamp: ["Абажур с бахромой. Гоша называет его «осветительный прибор третьей категории». Ты щёлкаешь шнурком."]
+};
+
+/* ================= ОБЩЕЕ ================= */
+const screen = $("#screen"), modal = $("#modal"), sheet = $("#sheet"), deck = $("#deck");
+let timers = [];
+const later = (fn, ms) => { const id = setTimeout(fn, ms); timers.push(id); return id; };
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+let staticTimer = null;
+
+function toast(txt, ms = 2600) {
+  const t = $("#toast"); t.textContent = txt; t.hidden = false;
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.hidden = true, ms);
+}
+function flash() { const f = $("#flash"); f.classList.remove("go"); void f.offsetWidth; f.classList.add("go"); }
+function updDeck() {
+  $("#wrapN").textContent = S.wraps;
+  $("#lcdCount").textContent = S.year;
+  const v = $("#vcrTxt"); if (v) v.textContent = S.year;
+}
+function setMode(m) { $("#lcdMode").textContent = m; }
+
+/* — модальное окно — */
+let onClose = null;
+function openSheet({ title, sub, body, hint, wide, closable = true, after }) {
+  sheet.innerHTML = "";
+  sheet.style.width = wide ? "min(980px,100%)" : "";
+  const head = h("div", { class: "sheet__head" },
+    h("div", {}, h("h2", { id: "sheetTitle" }, title), sub ? h("p", {}, sub) : null),
+    closable ? h("button", { class: "sheet__x", type: "button", "aria-label": "Закрыть", onclick: closeSheet }, "×") : null
+  );
+  sheet.append(head, body);
+  if (hint) sheet.append(hintBlock(hint));
+  modal.hidden = false; modal.dataset.closable = closable ? "1" : "";
+  onClose = after || null;
+  const f = sheet.querySelector("input,button:not(.sheet__x),select"); if (f) setTimeout(() => f.focus({ preventScroll: true }), 30);
+  A.click();
+}
+function closeSheet() {
+  modal.hidden = true; sheet.innerHTML = ""; A.stopWhirr();
+  const cb = onClose; onClose = null; if (cb) cb();
+}
+modal.addEventListener("click", e => { if (e.target === modal && modal.dataset.closable) closeSheet(); });
+addEventListener("keydown", e => { if (e.key === "Escape" && !modal.hidden && modal.dataset.closable) closeSheet(); });
+
+function hintBlock(key) {
+  const wrap = h("div", {});
+  const box = h("div", { class: "hintbox", hidden: true });
+  const btn = h("button", { class: "btn btn--hint", type: "button" });
+  const list = HINTS[key];
+  const paint = () => {
+    const n = S.hintIdx[key] || 0;
+    box.innerHTML = "";
+    for (let i = 0; i < n; i++) { const v = list[i]; box.append(h("div", {}, "— " + (typeof v === "function" ? v() : v))); }
+    box.hidden = n === 0;
+    btn.hidden = n >= list.length;
+    btn.textContent = S.wraps > 0 ? `Подсказка Гоши · 1 вкладыш (${n + 1}/${list.length})` : `Подсказка в долг у Вовки (${n + 1}/${list.length})`;
+  };
+  btn.addEventListener("click", () => {
+    const n = S.hintIdx[key] || 0; if (n >= list.length) return;
+    if (S.wraps > 0) S.wraps--; else S.debt++;
+    S.hints++; S.hintIdx[key] = n + 1; save(); updDeck(); paint(); A.page();
+    if (key === "fifteen" && n + 1 === list.length && FIFTEEN.solveNow) FIFTEEN.solveNow();
+  });
+  paint();
+  wrap.append(h("div", { class: "sheet__foot" }, btn), box);
+  return wrap;
+}
+function giveCard() {
+  const c = CARDS[S.cards.length % CARDS.length];
+  S.cards.push(c.n); S.wraps++; save(); updDeck();
+  toast(`+1 вкладыш Turbo №${c.n} · ${c.car}`);
+}
+function giveTape(id) { if (!S.tapes.includes(id)) S.tapes.push(id); save(); }
+
+/* ================= ЗЕРНО ================= */
+(function grain() {
+  const c = $("#grain"), x = c.getContext("2d"); c.width = 160; c.height = 100;
+  c.style.width = "100%"; c.style.height = "100%";
+  const draw = () => {
+    const d = x.createImageData(160, 100);
+    for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255; }
+    x.putImageData(d, 0, 0);
+  };
+  draw(); if (!RM) setInterval(draw, 110);
+})();
+
+/* ================= ЭКРАНЫ ================= */
+function stopRoomFx() { clearInterval(staticTimer); staticTimer = null; }
+
+function renderTitle() {
+  clearTimers(); stopRoomFx(); deck.hidden = true; setMode("STOP ■");
+  const saved = S.ch > 0;
+  screen.innerHTML = "";
+  const tv = h("div", { class: "tv" },
+    h("div", { class: "tv__glass" },
+      h("div", { class: "tv__screen blue scan" },
+        h("div", { class: "osd-top" }, h("span", { class: "blink" }, "▶ PLAY"), h("span", {}, "SP 0:00:00")),
+        h("h1", { class: "logo" }, "ПЕРЕМОТКА"),
+        h("p", { class: "logo-sub" }, "ВИДЕОСАЛОН «КОСМОС» · 1991"),
+        h("div", { class: "title__actions" },
+          h("button", { class: "btn-play", type: "button", onclick: () => { A.clunk(); saved ? resume() : newGame(); } }, saved ? "► ПРОДОЛЖИТЬ" : "► PLAY"),
+          saved ? h("button", { class: "btn-ghost", type: "button", onclick: () => { S = fresh(); save(); A.clunk(); newGame(); } }, "◄◄ С НАЧАЛА") : null
+        )
+      ),
+      h("div", { class: "noisebar" }), h("div", { class: "tv__glare" }), h("div", { class: "tv__curve" })
+    ),
+    h("div", { class: "tv__panel" }, h("span", { class: "tv__brand" }, "РУБИН"), h("span", { class: "tv__grille" }), h("span", { class: "knob" }), h("span", { class: "knob knob--2" }))
+  );
+  screen.append(h("div", { class: "title" }, h("div", {}, tv,
+    h("p", { class: "title__warn" }, "Кассета записана в видеосалоне «Космос». Перезапись и прокат без ведома дяди Гоши преследуются участковым Петровичем. Квест про западное кино 80-х и 90-х: ребусы, цитаты, логика, телефон с диском и немного путешествий во времени. Звук — кнопкой на панели.")
+  )));
+}
+
+function newGame() {
+  S = fresh(); S.t0 = Date.now(); save(); updDeck();
+  playStory(PROLOGUE, () => showNote());
+}
+function resume() {
+  updDeck();
+  if (S.ch >= 12) renderCredits(); else if (S.ch < 1) newGame(); else renderRoom();
+}
+
+function playStory(story, done, opts = {}) {
+  clearTimers(); stopRoomFx(); closeSheetSilently();
+  deck.hidden = false; setMode(story.osd[0].includes("PLAY") ? "PLAY ►" : story.osd[0].includes("FF") ? "FF ►►" : "STOP ■");
+  flash(); A.clunk(); if (!opts.quiet) A.hiss(.5);
+  let i = 0, typing = false, full = "";
+  const text = h("div", { class: "story__text", "aria-live": "polite" });
+  const glass = h("div", { class: "tv__glass" },
+    h("div", { class: "tv__screen play scan" + (RM ? "" : " roll") },
+      h("div", { class: "story__osd" }, h("span", { class: "blink" }, story.osd[0]), h("span", {}, story.osd[1])),
+      text
+    ),
+    h("div", { class: "noisebar" }), h("div", { class: "tv__glare" }), h("div", { class: "tv__curve" })
+  );
+  const next = h("button", { class: "btn-play", type: "button" }, "► ДАЛЬШЕ");
+  const skip = h("button", { class: "btn-ghost", type: "button" }, "⏩ ВСЁ СРАЗУ");
+  const counter = h("span", { class: "lcd" }, "");
+  screen.innerHTML = "";
+  screen.append(h("div", { class: "story wrap" }, h("div", { style: "width:min(860px,100%)" },
+    h("div", { class: "tv" }, glass, h("div", { class: "tv__panel" }, h("span", { class: "tv__brand" }, "РУБИН"), h("span", { class: "tv__grille" }), counter, h("span", { class: "knob" }))),
+    h("div", { class: "story__nav" }, skip, next)
+  )));
+  const show = () => {
+    full = story.pages[i]; text.textContent = ""; counter.textContent = `${i + 1}/${story.pages.length}`;
+    next.textContent = i === story.pages.length - 1 ? (opts.last || "■ STOP") : "► ДАЛЬШЕ";
+    if (RM) { text.textContent = full; return; }
+    typing = true; let k = 0;
+    const step = () => {
+      if (!typing) return;
+      k += 2; text.textContent = full.slice(0, k);
+      if (k % 12 === 0) A.tick();
+      if (k < full.length) later(step, 22); else typing = false;
+    };
+    step();
+  };
+  next.addEventListener("click", () => {
+    if (typing) { typing = false; text.textContent = full; return; }
+    A.page();
+    if (i < story.pages.length - 1) { i++; show(); } else { setMode("STOP ■"); done && done(); }
+  });
+  skip.addEventListener("click", () => { typing = false; text.textContent = full; });
+  show(); next.focus({ preventScroll: true });
+  scrollTo({ top: 0 });
+}
+function closeSheetSilently() { modal.hidden = true; sheet.innerHTML = ""; onClose = null; A.stopWhirr(); }
+
+function showNote() {
+  renderRoom(true);
+  const body = h("div", { class: "note", style: "transform:none;font-size:20px;white-space:pre-wrap" }, h("h3", {}, "Записка в клетку"), h("p", {}, NOTE));
+  openSheet({ title: "Записка от Гоши", sub: "Лежала в почтовом ящике вместе с ключом.", body, closable: true,
+    after: () => { if (S.ch < 1) { S.ch = 1; save(); } renderRoom(); } });
+  const foot = h("div", { class: "sheet__foot" }, h("button", { class: "btn", type: "button", onclick: closeSheet }, "Спуститься в салон"));
+  sheet.append(foot);
+}
+
+/* ================= КОМНАТА ================= */
+function renderRoom(silent) {
+  clearTimers(); stopRoomFx(); deck.hidden = false; setMode("STOP ■"); updDeck();
+  screen.innerHTML = "";
+  screen.append($("#tplRoom").content.cloneNode(true));
+  const svg = $("#scene svg");
+  $("#goalTxt").textContent = GOALS[S.ch] || GOALS[1];
+  const act = ACTIVE[S.ch];
+  $$(".hot", svg).forEach(g => {
+    g.classList.toggle("active", g.dataset.hot === act);
+    g.addEventListener("click", () => hot(g.dataset.hot));
+    g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); hot(g.dataset.hot); } });
+  });
+  if (act && PINXY[act]) {
+    const [x, y] = PINXY[act];
+    $("#pins", svg).innerHTML = `<g class="pin" style="transform-box:fill-box"><circle cx="${x}" cy="${y}" r="15"/><text x="${x}" y="${y + 8}" text-anchor="middle">!</text></g>`;
+  }
+  const tvTxt = $("#tvTxt", svg);
+  tvTxt.textContent = act === "tv" ? "▶ ВСТАВЬ" : S.ch >= 12 ? "КОСМОС" : "AV";
+  if (S.lampDim) $(".lampglow", svg).style.opacity = .35;
+  if (S.ch >= 9) $("#lockG", svg).style.opacity = .25;
+  // собранные кассеты
+  const got = $("#gotTapes");
+  ["bttf", "term", "ghost", "y2k"].forEach(id => got.append(h("span", { class: "spine-mini" + (S.tapes.includes(id) ? " got" : ""), style: `--c:${TAPES[id].c}`, title: S.tapes.includes(id) ? TAPES[id].t : "Ещё не найдена" })));
+  // список предметов
+  const objs = [["afisha", "Афиша сеансов", "стена слева"], ["tv", "«Рубин» и видик", "тумба"], ["shelf", "Стеллаж с кассетами", "в углу"], ["ledger", "Журнал выдачи", "столик"], ["phone", "Телефон", "тумбочка"], ["servant", "Сервант", "справа"], ["tea", "Банка чая", "вкладыши"], ["carpet", "Ковёр", "на стене"], ["calendar", "Календарь", "август"], ["cube", "Кубик Рубика", "столик"]];
+  const list = $("#objList");
+  objs.forEach(([k, t, s]) => list.append(h("button", { class: "obj" + (k === act ? " active" : ""), type: "button", onclick: () => hot(k) }, t, h("small", {}, s))));
+  // помехи на экране телевизора
+  if (!RM) { const turb = $("#turb", svg); let s = 1; staticTimer = setInterval(() => turb.setAttribute("seed", (s = s % 97 + 1)), 90); }
+  if (!silent) flash();
+}
+
+function say(title, text) {
+  openSheet({ title, body: h("p", { style: "white-space:pre-wrap;font-size:17px;margin:0" }, text) });
+}
+const pick = a => a[Math.random() * a.length | 0];
+
+function hot(k) {
+  A.click();
+  const act = ACTIVE[S.ch];
+  switch (k) {
+    case "afisha": return S.ch === 1 ? puzzleAfisha() : S.ch > 1 ? puzzleAfisha(true) : null;
+    case "tv":
+      if (act === "tv") return ({ 2: () => insertTape(1), 4: () => insertTape(2), 6: puzzleRewind, 9: () => insertTape(4), 11: finale })[S.ch]();
+      return say("«Рубин» и «Электроника»", S.ch >= 12 ? "Видик Гоша разобрал. Почти. Из него торчит отвёртка и бумажка «НЕ ТРОГАТЬ»." : "По всем каналам — «Лебединое озеро». Видик ждёт кассету, но сейчас вставлять нечего.");
+    case "shelf":
+      if (S.ch === 3) return puzzleQuotes();
+      if (S.ch === 10) return puzzleSort();
+      return say("Стеллаж", S.ch > 10 ? "Девять кассет стоят по порядку. ПЕРЕМОТКА. Гоша, ты гений." : "Сотня кассет, подписанных от руки: «Рэмбо-2 (новый перевод)», «Брюс Ли — сборник», «Мультики!!!», «Не смотреть (Петрович)».");
+    case "ledger":
+      if (S.ch === 5) return puzzleLedger();
+      return say("Журнал выдачи", S.ch > 5 ? "Профессор — «Охотники». Зина — «Рэмбо». Петрович — «Кровавый спорт». Вовка — «Грязные танцы». Вовка, кто бы мог подумать." : "Сюда Гоша записывает, кто что взял. Без фамилий: «Профессор», «Зина из 3-й», «Вовка-качок», «Петрович (!!)».");
+    case "phone": return puzzlePhone();
+    case "servant":
+      if (S.ch === 8) return puzzleFifteen();
+      return say("Сервант", S.ch > 8 ? "Сервант открыт. Хрусталь не трогать. Сервиз «Мадонна» — только по праздникам." : "Стеклянные дверцы, хрусталь, сервиз. Нижние дверцы заперты: вместо замка — латунные пятнашки на восемь клеток. Без повода не откроешь.");
+    case "tea": return say("Банка индийского чая", `Банка «со слоном». Чая там нет с восемьдесят девятого. Внутри — вкладыши Turbo: ${S.wraps} шт.\n\nЗа каждый Гоша даёт подсказку. Если кончатся — Вовка выручит, но запомнит.` + (S.cards.length ? `\n\nКоллекция: ${S.cards.map(n => "№" + n).join(", ")}.` : ""));
+    case "lamp": {
+      S.lampDim = !S.lampDim; save();
+      const g = $(".lampglow"); if (g) g.style.opacity = S.lampDim ? .35 : 1;
+      return toast(S.lampDim ? "Щёлк. Полумрак, как на ночном сеансе." : "Щёлк. Светло, как в красном уголке.");
+    }
+    case "cube": {
+      const cols = ["#e3001b", "#ffffff", "#1f8a46", "#ffde00", "#0055b8", "#ff8a00"];
+      $$("#cubeG rect").forEach(r => r.setAttribute("fill", pick(cols)));
+      return toast(pick(FLAVOR.cube), 3600);
+    }
+    default: return say(({ carpet: "Ковёр", calendar: "Календарь", poster: "Плакат", elephants: "Слоники" })[k] || "", pick(FLAVOR[k]));
+  }
+}
+
+/* — вставить кассету и смотреть — */
+function insertTape(n) {
+  const m = MSG[n];
+  A.clunk();
+  playStory(m, () => {
+    S.year = m.year; if (!S.msgs.includes(n)) S.msgs.push(n);
+    S.ch = { 1: 3, 2: 5, 3: 7, 4: 10 }[n]; save(); updDeck();
+    if (n === 4) playStory(SHELFCHANGE, () => renderRoom(), { quiet: true, last: "К СТЕЛЛАЖУ" });
+    else { renderRoom(); toast(`Счётчик видика: ${m.year}`); }
+  }, { last: "■ STOP" });
+}
+
+/* ================= 1. АФИША ================= */
+const norm = s => s.toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]/g, "");
+function lev(a, b) {
+  const d = Array.from({ length: a.length + 1 }, (_, i) => [i]);
+  for (let j = 1; j <= b.length; j++) d[0][j] = j;
+  for (let i = 1; i <= a.length; i++) for (let j = 1; j <= b.length; j++)
+    d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+  return d[a.length][b.length];
+}
+const fits = (val, answers) => { const v = norm(val); if (!v) return false; return answers.some(a => { const n = norm(a); const tol = n.length >= 12 ? 2 : n.length >= 6 ? 1 : 0; return lev(v, n) <= tol; }); };
+
+const AFISHA = [
+  { day: "Пн · 18:00", pic: "👻🚫  ⚡🎒  🚒", ans: ["охотники за привидениями", "охотники за приведениями", "охотники", "ghostbusters"], t: "Охотники за привидениями" },
+  { day: "Вт · 20:00", pic: "⛰️", rule: "А = ЕЦ", ans: ["горец", "highlander"], t: "Горец" },
+  { day: "Ср · 20:00", pic: "🛹  🚗⚡  🕰️ → 1955", ans: ["назад в будущее", "назад в будущие", "back to the future"], t: "Назад в будущее" },
+  { day: "Чт · 22:00", pic: "🦫", rule: "1 = К,  + А", ans: ["кобра", "cobra"], t: "Кобра" },
+  { day: "Пт · 18:00", pic: "👦🏠🎄  😱  🧔🧔", ans: ["один дома", "home alone"], t: "Один дома" },
+  { day: "Сб · 16:00", pic: "🤖", rule: "Т = КОП", ans: ["робокоп", "robocop"], t: "Робокоп" }
+];
+function puzzleAfisha(readOnly) {
+  const solved = new Set(readOnly ? AFISHA.map((_, i) => i) : []);
+  const msg = h("p", { class: "msg" });
+  const slots = AFISHA.map((a, i) => {
+    const inp = h("input", { id: "af" + i, type: "text", autocomplete: "off", spellcheck: "false", placeholder: "название…", "aria-label": `${a.day}: название фильма` });
+    const slot = h("div", { class: "slot" }, h("span", { class: "slot__day" }, a.day), h("div", { class: "slot__pic" }, a.pic, a.rule ? h("span", { class: "slot__rule" }, a.rule) : null), inp);
+    const mark = () => { slot.classList.add("solved"); inp.value = a.t; inp.readOnly = true; };
+    if (solved.has(i)) mark();
+    const check = () => {
+      if (solved.has(i)) return;
+      if (fits(inp.value, a.ans)) {
+        solved.add(i); mark(); A.ok();
+        msg.className = "msg ok"; msg.textContent = `${a.day.split(" ")[0]} — «${a.t}». Осталось ${AFISHA.length - solved.size}.`;
+        const nx = slots.find((s, j) => !solved.has(j)); if (nx) nx.querySelector("input").focus();
+        if (solved.size === AFISHA.length) later(winAfisha, 900);
+      }
+    };
+    inp.addEventListener("input", check);
+    inp.addEventListener("keydown", e => { if (e.key === "Enter") { check(); if (!solved.has(i) && inp.value.trim()) { A.bad(); S.miss++; save(); msg.className = "msg bad"; msg.textContent = "Не то. Гоша бы так не назвал."; } } });
+    return slot;
+  });
+  const body = h("div", {},
+    h("div", { class: "afisha" },
+      h("div", { class: "afisha__top" }, h("b", {}, "СЕАНСЫ НЕДЕЛИ"), h("span", {}, "видеосалон «Космос» · 1 руб.")),
+      h("div", { class: "slots" }, slots),
+      h("p", { class: "afisha__legend" }, "Для своих: картинки — это сюжет. «А = ЕЦ» — поменять А на ЕЦ. «1 = К» — первую букву на К. «+ А» — дописать в конце. Писать по-русски, как в переводе. — Г.")
+    ), msg);
+  openSheet({ title: "Афиша сеансов", sub: readOnly ? "Расшифровано. Петрович так ничего и не понял." : "Впиши название под каждым днём. Верное засчитается само.", body, hint: readOnly ? null : "afisha", wide: true });
+}
+function winAfisha() {
+  if (S.ch !== 1) return;
+  S.ch = 2; giveTape("bttf"); giveCard(); save(); A.big();
+  closeSheetSilently();
+  openSheet({ title: "Кассета найдена", sub: "Коробка на полке «среды», подписана: 🛹🚗⚡",
+    body: h("div", {}, h("p", { style: "font-size:17px" }, "Внутри — «Назад в будущее», 1985. Гоша переписывал её раз двадцать: дома у него на ней женился весь двор. В коробке, как обещано, — вкладыш Turbo."), h("div", { class: "sheet__foot" }, h("button", { class: "btn", type: "button", onclick: closeSheet }, "Взять кассету"))),
+    after: () => renderRoom() });
+}
+
+/* ================= 2. ЦИТАТЫ ================= */
+const QUOTES = [
+  { q: "«Я вернусь».", id: "term" },
+  { q: "«Останется только один!»", id: "high" },
+  { q: "«Поздоровайся с моим маленьким другом!»", id: "scar" },
+  { q: "«Помнишь, я обещал убить тебя последним? Я соврал».", id: "comm" },
+  { q: "«И-Ти… звонить… домой».", id: "et" },
+  { q: "«Они первыми пролили кровь. Не я».", id: "ramb" }
+];
+const BOXES = {
+  term: { t: "Терминатор", y: 1984, c1: "#0b1a3a", c2: "#3a6fd8" },
+  high: { t: "Горец", y: 1986, c1: "#2a2a2a", c2: "#9a7a3a" },
+  scar: { t: "Лицо со шрамом", y: 1983, c1: "#1a1a1a", c2: "#c8102e" },
+  comm: { t: "Коммандо", y: 1985, c1: "#1f3a14", c2: "#7a8a2a" },
+  et:   { t: "Инопланетянин", y: 1982, c1: "#0b0f2a", c2: "#5a3aa8" },
+  ramb: { t: "Рэмбо: Первая кровь", y: 1982, c1: "#3a1a0a", c2: "#d35400" }
+};
+function puzzleQuotes() {
+  const done = new Set(); let sel = null;
+  const msg = h("p", { class: "msg" }, "Выбери наклейку, потом коробку, от которой она.");
+  const st = shuffle(QUOTES).map(q => {
+    const b = h("button", { class: "sticker", type: "button" }, q.q, h("small", {}, "наклейка на кассете без коробки"));
+    b.addEventListener("click", () => { if (done.has(q.id)) return; $$(".sticker", sheet).forEach(x => x.classList.remove("sel")); b.classList.add("sel"); sel = q; A.click(); });
+    q.el = b; return b;
+  });
+  const bx = shuffle(Object.keys(BOXES)).map(id => {
+    const B = BOXES[id];
+    const b = h("button", { class: "vbox", type: "button", style: `--c1:${B.c1};--c2:${B.c2}` }, B.t, h("i", {}, B.y));
+    b.addEventListener("click", () => {
+      if (!sel) { msg.className = "msg"; msg.textContent = "Сначала наклейку, потом коробку."; return; }
+      if (done.has(id)) return;
+      if (sel.id === id) {
+        done.add(id); sel.el.classList.add("done"); sel.el.classList.remove("sel"); b.classList.add("done"); sel = null; A.ok();
+        msg.className = "msg ok"; msg.textContent = `Верно: «${B.t}». Осталось ${6 - done.size}.`;
+        if (done.size === 6) later(winQuotes, 800);
+      } else {
+        S.miss++; save(); A.bad(); b.classList.remove("flash"); void b.offsetWidth; b.classList.add("flash");
+        msg.className = "msg bad"; msg.textContent = `Нет. В «${B.t}» так не говорили.`;
+      }
+    });
+    return b;
+  });
+  const body = h("div", {}, h("div", { class: "match" }, h("div", { class: "stickers" }, h("p", { class: "panel-h" }, "Наклейки Гоши"), st), h("div", { class: "boxes" }, h("p", { class: "panel-h" }, "Пустые коробки"), bx)), msg);
+  openSheet({ title: "Гнусавый перевод", sub: "Шесть кассет без коробок. На каждой — фраза, как Гоша её перевёл в прищепку.", body, hint: "quotes", wide: true });
+}
+function winQuotes() {
+  if (S.ch !== 3) return;
+  S.ch = 4; giveTape("term"); giveCard(); save(); A.big(); closeSheetSilently();
+  openSheet({ title: "«Я вернусь»", sub: "Терминатор, 1984",
+    body: h("div", {}, h("p", { style: "font-size:17px" }, "Кассета с наклейкой «Я вернусь» тяжелее остальных. Гоша всегда говорил, что у Шварценеггера даже кассеты весят больше."), h("div", { class: "sheet__foot" }, h("button", { class: "btn", type: "button", onclick: closeSheet }, "В видик"))),
+    after: () => renderRoom() });
+}
+
+/* ================= 3. ЖУРНАЛ ================= */
+const PEOPLE = ["Профессор (кв. 12)", "Зина из 3-й", "Вовка-качок", "Петрович"];
+const FILMS = ["Рэмбо", "Грязные танцы", "Охотники за привидениями", "Кровавый спорт"];
+const DAYS = ["понедельник", "вторник", "среда", "четверг"];
+const LEDGER_OK = [[2, 0], [0, 1], [1, 3], [3, 2]]; // [фильм, день] по порядку PEOPLE
+function puzzleLedger() {
+  const clues = [
+    "Зина: «Ваших Ван Даммов и танцулек мне не надо!» Взяла другое.",
+    "Петрович пришёл на следующий день после Зины. Про лицензию напомнил.",
+    "«Грязные танцы» ушли в четверг.",
+    "«Охотников» взяли раньше, чем «Рэмбо».",
+    "Вовка: «Рэмбо и привидения — это для детей». Не брал.",
+    "Профессор драк не смотрит. Совсем.",
+    "Петрович «танцульки» не брал: «не по уставу».",
+    "Профессор заходил раньше Вовки."
+  ];
+  const msg = h("p", { class: "msg" });
+  const sels = PEOPLE.map((p, i) => {
+    const f = h("select", { id: "lf" + i, "aria-label": `${p}: какой фильм` }, h("option", { value: "" }, "— фильм —"), FILMS.map((x, j) => h("option", { value: j }, x)));
+    const d = h("select", { id: "ld" + i, "aria-label": `${p}: какой день` }, h("option", { value: "" }, "— день —"), DAYS.map((x, j) => h("option", { value: j }, x)));
+    return { p, f, d };
+  });
+  const table = h("div", { class: "tablewrap" }, h("table", { class: "ltable" },
+    h("thead", {}, h("tr", {}, h("th", {}, "Кто"), h("th", {}, "Что взял"), h("th", {}, "Когда"))),
+    h("tbody", {}, sels.map(s => h("tr", {}, h("td", {}, s.p), h("td", {}, s.f), h("td", {}, s.d))))));
+  const check = h("button", { class: "btn", type: "button" }, "Сверить с журналом");
+  check.addEventListener("click", () => {
+    const vals = sels.map(s => [s.f.value, s.d.value]);
+    if (vals.some(([a, b]) => a === "" || b === "")) { msg.className = "msg bad"; msg.textContent = "Заполни все строки: каждому — фильм и день."; return; }
+    const fset = new Set(vals.map(v => v[0])), dset = new Set(vals.map(v => v[1]));
+    if (fset.size < 4 || dset.size < 4) { msg.className = "msg bad"; msg.textContent = "Каждая кассета и каждый день — ровно один раз."; A.bad(); return; }
+    const right = vals.filter(([a, b], i) => +a === LEDGER_OK[i][0] && +b === LEDGER_OK[i][1]).length;
+    if (right === 4) { A.big(); later(winLedger, 500); msg.className = "msg ok"; msg.textContent = "Сходится! «Охотники» — у Профессора."; }
+    else { S.miss++; save(); A.bad(); msg.className = "msg bad"; msg.textContent = `Верных строк: ${right} из 4. Перечитай записи.`; }
+  });
+  const body = h("div", {},
+    h("div", { class: "ledger" }, h("ol", {}, clues.map(c => h("li", {}, c)))),
+    table, h("div", { class: "sheet__foot" }, check), msg);
+  openSheet({ title: "Журнал выдачи", sub: "Четыре жильца, четыре кассеты, четыре дня. Кто унёс «Охотников за привидениями»?", body, hint: "ledger", wide: true });
+}
+function winLedger() {
+  if (S.ch !== 5) return;
+  S.ch = 6; giveTape("ghost"); giveCard(); save(); closeSheetSilently();
+  playStory(PROF, () => renderRoom(), { quiet: true, last: "ВЕРНУТЬСЯ В САЛОН" });
+}
+
+/* ================= 4. ПЛЁНКА И ТРЕКИНГ ================= */
+let TRACK_T = 60;
+function puzzleRewind() {
+  TRACK_T = S.trackT || (S.trackT = 25 + (Math.random() * 55 | 0)); save();
+  const NEED = Math.PI * 2 * 5;
+  let total = 0, last = null, dragging = false, finished = false;
+  const svgNS = "http://www.w3.org/2000/svg";
+  const wrap = h("div", { class: "cass" });
+  wrap.innerHTML = `<svg viewBox="0 0 400 300" aria-label="Кассета с зажёванной плёнкой">
+    <rect x="10" y="20" width="380" height="200" rx="12" fill="#1c1c1e" stroke="#000" stroke-width="3"/>
+    <rect x="30" y="34" width="340" height="56" rx="4" fill="#efe6cc"/>
+    <text x="200" y="58" text-anchor="middle" font-family="Neucha,cursive" font-size="22" fill="#2b2a6e">Охотники за привидениями</text>
+    <text x="200" y="80" text-anchor="middle" font-family="PT Mono,monospace" font-size="11" fill="#7a6a3a">E-180 · перевод Гоши · НЕ ДАВАТЬ ПРОФЕССОРУ</text>
+    <rect x="90" y="100" width="220" height="70" rx="30" fill="#0a0a0a" stroke="#333"/>
+    <circle id="spLc" cx="130" cy="135" r="34" fill="#4a3320"/>
+    <circle id="spRc" cx="270" cy="135" r="20" fill="#4a3320"/>
+    <g id="hubR"><circle cx="270" cy="135" r="13" fill="#eee"/>${[0,60,120,180,240,300].map(a=>`<rect x="268" y="122" width="4" height="7" fill="#1c1c1e" transform="rotate(${a} 270 135)"/>`).join("")}</g>
+    <circle cx="130" cy="135" r="13" fill="#eee"/>
+    <rect x="60" y="220" width="280" height="22" fill="#1c1c1e"/>
+    <path id="loop" fill="none" stroke="#3a2a1a" stroke-width="7" stroke-linecap="round"/>
+    <g id="pencil"><rect x="262" y="40" width="16" height="96" fill="#e9b52a" stroke="#6a4a0c"/><rect x="262" y="40" width="16" height="10" fill="#d47a8a"/><path d="M262 136l8 14 8-14z" fill="#f1d3a0"/></g>
+  </svg>`;
+  const svg = wrap.querySelector("svg");
+  const loop = svg.querySelector("#loop"), hub = svg.querySelector("#hubR"), spR = svg.querySelector("#spRc"), spL = svg.querySelector("#spLc"), pencil = svg.querySelector("#pencil");
+  const meter = h("div", { class: "meter" }, h("i", {}));
+  const status = h("p", { class: "msg" }, "Плёнка висит петлёй. Крути карандашом правую катушку.");
+  const turnBtn = h("button", { class: "btn btn--dim", type: "button" }, "Крутить ↻");
+  const paint = () => {
+    const p = Math.min(1, total / NEED);
+    const L = 150 * (1 - p);
+    loop.setAttribute("d", `M150 228 C 150 ${228 + L}, 250 ${228 + L}, 250 228`);
+    loop.style.opacity = p >= 1 ? 0 : 1;
+    const ang = total * 180 / Math.PI;
+    hub.setAttribute("transform", `rotate(${ang} 270 135)`);
+    pencil.setAttribute("transform", `rotate(${ang} 270 135)`);
+    spR.setAttribute("r", 20 + 14 * p); spL.setAttribute("r", 34 - 4 * p);
+    meter.firstChild.style.width = (p * 100) + "%";
+    if (p >= 1 && !finished) { finished = true; A.stopWhirr(); A.ok(); status.className = "msg ok"; status.textContent = "Плёнка внутри. Теперь в видик — и лови трекинг."; later(stageTracking, 900); }
+  };
+  const toLocal = e => { const pt = svg.createSVGPoint(); pt.x = e.clientX; pt.y = e.clientY; return pt.matrixTransform(svg.getScreenCTM().inverse()); };
+  svg.addEventListener("pointerdown", e => { if (finished) return; dragging = true; svg.setPointerCapture(e.pointerId); const p = toLocal(e); last = Math.atan2(p.y - 135, p.x - 270); A.startWhirr(90); });
+  svg.addEventListener("pointermove", e => {
+    if (!dragging || finished) return;
+    const p = toLocal(e), a = Math.atan2(p.y - 135, p.x - 270);
+    let d = a - last; if (d > Math.PI) d -= 2 * Math.PI; if (d < -Math.PI) d += 2 * Math.PI;
+    last = a; total += Math.min(Math.abs(d), .7); A.setWhirr(90 + Math.min(200, Math.abs(d) * 600)); paint();
+  });
+  const up = () => { dragging = false; A.stopWhirr(); };
+  svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
+  turnBtn.addEventListener("click", () => { if (finished) return; total += Math.PI / 3; A.tick(); paint(); });
+  paint();
+
+  const right = h("div", {}, h("p", { style: "margin-top:0;font-size:16px" }, "Шестигранный карандаш входит в катушку, как ключ. Пять оборотов — и плёнка дома."), meter, h("div", { class: "sheet__foot" }, turnBtn), status);
+  const body = h("div", { class: "cass-wrap" }, wrap, right);
+  openSheet({ title: "Зажёванная плёнка", sub: "«Охотники за привидениями» из квартиры 12", body, hint: "rewind", wide: true });
+
+  function stageTracking() {
+    if (modal.hidden) return;
+    A.clunk();
+    const cv = h("canvas", { width: 160, height: 120 });
+    const txt = h("div", { class: "track__msg" }, "ЗАП. 03.1997\n\n▶ ГОША НА СВЯЗИ");
+    txt.style.whiteSpace = "pre-wrap";
+    const scr = h("div", { class: "track scan" }, cv, txt);
+    const rng = h("input", { id: "tracking", class: "range", type: "range", min: 0, max: 100, value: 0, "aria-label": "Ручка трекинга" });
+    const st = h("p", { class: "msg" }, "Сплошной снег. Крути трекинг.");
+    const x = cv.getContext("2d"); let lock = 0, raf = 0, ok = false;
+    const draw = () => {
+      const dist = Math.abs(+rng.value - TRACK_T), n = Math.min(1, dist / 22);
+      const d = x.createImageData(160, 120);
+      for (let i = 0; i < d.data.length; i += 4) { const v = Math.random() * 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 255 * (.15 + .85 * n); }
+      x.putImageData(d, 0, 0);
+      x.fillStyle = `rgba(255,255,255,${.5 * n})`;
+      for (let k = 0; k < 4; k++) x.fillRect(0, Math.random() * 120, 160, 1 + Math.random() * 4 * n);
+      txt.style.opacity = 1 - n; txt.style.transform = `translateX(${(Math.random() - .5) * 30 * n}px)`;
+      if (dist <= 3 && !ok) { lock += 1; if (lock > 35) { ok = true; A.ok(); st.className = "msg ok"; st.textContent = "Чисто! Гоша на связи."; later(() => { closeSheetSilently(); insertTape(3); giveCard(); }, 900); } }
+      else if (!ok) lock = 0;
+      if (!modal.hidden && !ok) raf = requestAnimationFrame(draw);
+    };
+    rng.addEventListener("input", () => { A.noise(.04, .05, 4000); });
+    right.innerHTML = ""; right.append(h("p", { style: "margin-top:0;font-size:16px" }, "Кассета в видике. Изображение — как метель в Норильске. Ручка трекинга на передней панели."), rng, st);
+    wrap.innerHTML = ""; wrap.append(scr);
+    if (RM) { const tick = () => { draw(); if (!ok && !modal.hidden) later(tick, 120); }; tick(); } else draw();
+    rng.focus();
+  }
+}
+
+/* ================= 5. ТЕЛЕФОН ================= */
+const DIAL_ANG = k => -30 - 27 * (k - 1); // k: 1..10 (10 = ноль)
+function puzzlePhone() {
+  let buf = "", busy = false, inCall = false;
+  const disp = h("div", { class: "dialed", "aria-live": "polite" }, "—");
+  const chat = h("div", { class: "chat", "aria-live": "polite" });
+  const choices = h("div", { class: "choices" });
+  const wrap = h("div", { class: "dial" });
+  const cx = 160, cy = 160;
+  let holes = "", digits = "";
+  for (let k = 1; k <= 10; k++) {
+    const a = DIAL_ANG(k) * Math.PI / 180, x = cx + 104 * Math.cos(a), y = cy + 104 * Math.sin(a), d = k % 10;
+    digits += `<text x="${x}" y="${y + 8}" text-anchor="middle" font-family="PT Sans,Arial" font-weight="700" font-size="22" fill="#1b1b1b">${d}</text>`;
+    holes += `<g class="hole" data-d="${d}" data-k="${k}"><circle cx="${x}" cy="${y}" r="21" fill="rgba(255,255,255,0)" stroke="#5a0c10" stroke-width="2"/></g>`;
+  }
+  wrap.innerHTML = `<svg viewBox="0 0 320 320" aria-label="Диск телефона">
+    <circle cx="160" cy="160" r="152" fill="#a81820" stroke="#5a0c10" stroke-width="4"/>
+    <circle cx="160" cy="160" r="132" fill="#efe6cc"/>
+    ${digits}
+    <g id="wheel" style="transform-origin:160px 160px">
+      <path fill-rule="evenodd" fill="rgba(25,25,25,.94)" d="M160 30a130 130 0 1 1 0 260a130 130 0 1 1 0-260z ${Array.from({length:10},(_,i)=>{const a=DIAL_ANG(i+1)*Math.PI/180,x=cx+104*Math.cos(a),y=cy+104*Math.sin(a);return `M${x-20} ${y}a20 20 0 1 0 40 0a20 20 0 1 0 -40 0z`}).join(" ")}"/>
+      <circle cx="160" cy="160" r="48" fill="#efe6cc" stroke="#222" stroke-width="3"/>
+      <text x="160" y="152" text-anchor="middle" font-family="PT Mono,monospace" font-size="11" fill="#333">САЛОН</text>
+      <text x="160" y="170" text-anchor="middle" font-family="PT Mono,monospace" font-size="11" fill="#333">«КОСМОС»</text>
+      ${holes}
+    </g>
+    <path d="M${cx + 150 * Math.cos(Math.PI / 3)} ${cy + 150 * Math.sin(Math.PI / 3)} L${cx + 118 * Math.cos(Math.PI / 3)} ${cy + 118 * Math.sin(Math.PI / 3)}" stroke="#c9c9c9" stroke-width="8" stroke-linecap="round"/>
+  </svg>`;
+  const wheel = wrap.querySelector("#wheel");
+  const line = (who, t) => { chat.append(h("div", { class: "line " + who }, t)); chat.scrollTop = 1e6; };
+  const hang = () => { buf = ""; inCall = false; disp.textContent = "—"; choices.innerHTML = ""; };
+  const dialAnim = (k, cb) => {
+    if (RM) { cb(); return; }
+    const travel = 60 - DIAL_ANG(k); const t0 = performance.now(), fwd = 120 + travel * 1.2, back = travel * 2.2;
+    let clicks = 0;
+    const step = now => {
+      const t = now - t0;
+      let a;
+      if (t < fwd) a = travel * (t / fwd);
+      else if (t < fwd + back) { const p = (t - fwd) / back; a = travel * (1 - p); const c = Math.floor(p * (k)); while (clicks < c) { clicks++; A.tick(); } }
+      else { wheel.style.transform = ""; cb(); return; }
+      wheel.style.transform = `rotate(${a}deg)`; requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  };
+  const SPECIAL = {
+    "01": () => { A.gudok(1); later(() => { line("them", "Пожарная охрана слушает! Что горит?"); line("me", "Ничего… плёнка, кажется, не горит."); line("them", "Хулиганьё. Ещё раз — и номер вычислим."); hang(); }, 1200); },
+    "02": () => { A.gudok(1); later(() => { line("them", "Дежурная часть… А, это Петрович, я трубку взял. Малой, ты? Опять в салоне сидишь? Смотри у меня: «Кобру» после десяти не крутить."); hang(); }, 1200); },
+    "03": () => { A.gudok(1); later(() => { line("them", "Скорая. Что случилось?"); line("me", "У друга плёнку зажевало."); line("them", "Это не к нам. Это к Профессору."); hang(); }, 1200); },
+    "04": () => { A.gudok(1); later(() => { line("them", "Горгаз. Пахнет газом? Не пахнет? Тогда не звоните."); hang(); }, 1200); },
+    "09": () => { A.gudok(1); later(() => { line("them", "Справочная, девятая слушает. Киномеханик Лёва? Домашние номера не даём. Вам что, Гоша не говорил?"); hang(); }, 1300); },
+    "100": () => { later(() => { const d = new Date(); line("them", `Московское время — ${d.getHours()} часов ${d.getMinutes()} минут.`); A.tone(1000, .12, "sine", .08); A.tone(1000, .12, "sine", .08, .5); A.tone(1000, .4, "sine", .08, 1); hang(); }, 600); },
+    "881955": () => { A.gudok(2); later(() => S.ch >= 7 ? leva() : (line("them", "Алло. Киноаппаратная. Кто это? Не знаю никаких малых."), line("sys", "короткие гудки"), A.busy(3), hang()), 4200); }
+  };
+  const evalBuf = () => {
+    if (SPECIAL[buf]) { inCall = true; line("sys", `набрано: ${buf} · соединение…`); SPECIAL[buf](); return; }
+    if (!Object.keys(SPECIAL).some(n => n.startsWith(buf)) || buf.length >= 6) {
+      inCall = true; later(() => { line("sys", `${buf}: неправильно набран номер`); A.busy(3); S.miss++; save(); hang(); }, 500);
+    }
+  };
+  const dial = k => {
+    if (busy || inCall) return; busy = true; A.click();
+    dialAnim(k, () => { busy = false; buf += String(k % 10); disp.textContent = buf; evalBuf(); });
+  };
+  wrap.querySelectorAll(".hole").forEach(g => g.addEventListener("click", () => dial(+g.dataset.k)));
+  const keyH = e => { if (modal.hidden) { removeEventListener("keydown", keyH); return; } if (/^[0-9]$/.test(e.key)) { dial(e.key === "0" ? 10 : +e.key); } };
+  addEventListener("keydown", keyH);
+
+  function leva() {
+    line("them", "Алло. Киноаппаратная ДК, Лёва.");
+    ask([["Лёва, я от Гоши.", () => q1()], ["Это кинотеатр? Почём билет на «Рэмбо»?", () => { line("them", "Тут не кинотеатр, тут ДК. Звони в «Ударник». …Стой. А ты не Гошин малой?"); ask([["Гошин. Он пропал.", q1]]); }]]);
+  }
+  function q1() {
+    line("them", "От какого ещё Гоши… Ладно. Если от Гоши — скажи: как звали собаку дока Брауна?");
+    ask(shuffle([
+      ["Эйнштейн", () => { line("them", "Допустим."); q2(); }, true],
+      ["Коперник", () => { S.miss++; save(); A.bad(); line("them", "Коперник — это в пятьдесят пятом, умник. А в восемьдесят пятом?"); q1again(); }],
+      ["Ньютон", () => wrongQ(q1again)],
+      ["Тесла", () => wrongQ(q1again)]
+    ]));
+  }
+  function q1again() { ask(shuffle([["Эйнштейн", () => { line("them", "То-то же."); q2(); }], ["Коперник", () => wrongQ(q1again)], ["Ньютон", () => wrongQ(q1again)], ["Тесла", () => wrongQ(q1again)]])); }
+  function wrongQ(retry) { S.miss++; save(); A.bad(); line("them", "Нет. Не от Гоши ты. …Ладно, даю ещё попытку."); retry(); }
+  function q2() {
+    line("them", "Второй вопрос. Где Брюс Уиллис бегал босиком по стеклу?");
+    const opts = () => ask(shuffle([
+      ["В небоскрёбе «Накатоми Плаза»", () => win()],
+      ["В «Трамп-тауэр»", () => wrongQ(opts)],
+      ["Во Всемирном торговом центре", () => wrongQ(opts)],
+      ["В Эмпайр-стейт-билдинг", () => wrongQ(opts)]
+    ]));
+    opts();
+  }
+  function win() {
+    line("them", "Свой. Слушай. Гоша позавчера заходил. Странный был: постаревший какой-то, седой, на поясе коробочка пищит. Сунул кассету и говорит: позвонит малой — пусть ищет в серванте.");
+    later(() => {
+      line("them", "Я её в сервант и положил. А он его закрыл на свою головоломку — пятнашки вместо замка. Не спрашивай. Всё, у меня «Индиана Джонс» рвётся. Пока.");
+      line("sys", "короткие гудки"); A.busy(3);
+      if (S.ch === 7) { S.ch = 8; giveCard(); save(); A.big(); }
+      choices.innerHTML = ""; choices.append(h("button", { class: "btn", type: "button", onclick: closeSheet }, "Положить трубку"));
+    }, 1600);
+  }
+  function ask(list) {
+    choices.innerHTML = "";
+    list.forEach(([t, fn]) => choices.append(h("button", { class: "choice", type: "button", onclick: () => { A.click(); line("me", t); choices.innerHTML = ""; later(fn, 500); } }, t)));
+  }
+
+  const body = h("div", { class: "phone" },
+    h("div", {}, wrap, h("p", { class: "msg", style: "text-align:center;color:var(--fg-dim);font-size:13px" }, "Крути диск: нажми на цифру. С клавиатуры тоже можно.")),
+    h("div", { style: "min-width:0;display:flex;flex-direction:column;gap:10px" }, disp, h("div", { class: "sheet__foot", style: "margin:0" }, h("button", { class: "btn btn--dim", type: "button", onclick: () => { line("sys", "трубка на рычаге"); hang(); } }, "Положить трубку")), chat, choices));
+  openSheet({ title: "Телефон с диском", sub: S.ch === 7 ? "Позвони Лёве. Номер — из «Назад в будущее»." : "Красный, тяжёлый, с трещиной на трубке. Работает.", body, hint: S.ch === 7 ? "phone" : null, wide: true, after: () => { removeEventListener("keydown", keyH); if (S.ch === 8) renderRoom(); } });
+}
+
+/* ================= 6. ПЯТНАШКИ ================= */
+const FIFTEEN = { solveNow: null };
+let POSTER = null;
+function posterImg() {
+  if (POSTER) return POSTER;
+  const c = document.createElement("canvas"); c.width = c.height = 600; const x = c.getContext("2d");
+  let g = x.createLinearGradient(0, 0, 0, 380); g.addColorStop(0, "#12052e"); g.addColorStop(.6, "#5a0f6e"); g.addColorStop(1, "#ff3ea5");
+  x.fillStyle = g; x.fillRect(0, 0, 600, 380);
+  for (let i = 0; i < 90; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * .8})`; x.fillRect(Math.random() * 600, Math.random() * 220, 2, 2); }
+  g = x.createLinearGradient(0, 170, 0, 380); g.addColorStop(0, "#ffe24a"); g.addColorStop(1, "#ff3ea5");
+  x.save(); x.beginPath(); x.arc(300, 330, 150, Math.PI, 0); x.closePath(); x.clip(); x.fillStyle = g; x.fillRect(150, 170, 300, 170);
+  x.fillStyle = "#5a0f6e"; for (let i = 0; i < 7; i++) x.fillRect(150, 250 + i * 13, 300, 2 + i * 1.3); x.restore();
+  x.fillStyle = "#1b0634"; x.beginPath(); x.moveTo(0, 380); [[60, 300], [130, 340], [200, 270], [270, 350], [340, 310], [420, 260], [500, 330], [560, 290], [600, 320], [600, 380]].forEach(p => x.lineTo(...p)); x.fill();
+  g = x.createLinearGradient(0, 380, 0, 600); g.addColorStop(0, "#1b0634"); g.addColorStop(1, "#06010f"); x.fillStyle = g; x.fillRect(0, 380, 600, 220);
+  x.strokeStyle = "#36e4ff"; x.lineWidth = 2; x.shadowColor = "#36e4ff"; x.shadowBlur = 8;
+  for (let i = -12; i <= 12; i++) { x.beginPath(); x.moveTo(300 + i * 12, 380); x.lineTo(300 + i * 90, 600); x.stroke(); }
+  for (let i = 0; i < 9; i++) { const y = 380 + Math.pow(i / 8, 1.9) * 220; x.beginPath(); x.moveTo(0, y); x.lineTo(600, y); x.stroke(); }
+  x.shadowBlur = 0;
+  x.font = "62px 'Rubik Mono One', 'Arial Black', sans-serif"; x.textAlign = "center";
+  g = x.createLinearGradient(0, 70, 0, 140); g.addColorStop(0, "#ffffff"); g.addColorStop(.48, "#9fd0ff"); g.addColorStop(.52, "#2a3f7a"); g.addColorStop(1, "#ffd1ee");
+  x.lineWidth = 8; x.strokeStyle = "#2a0738"; x.strokeText("КОСМОС", 300, 130); x.fillStyle = g; x.fillText("КОСМОС", 300, 130);
+  x.font = "20px 'Press Start 2P', monospace"; x.fillStyle = "#ffe24a"; x.fillText("ВИДЕОСАЛОН", 300, 172);
+  x.font = "14px 'Press Start 2P', monospace"; x.fillStyle = "#fff"; x.fillText("ВХОД 1 РУБ.", 300, 560);
+  return (POSTER = c.toDataURL("image/png"));
+}
+function puzzleFifteen() {
+  const img = posterImg();
+  let st = [1, 2, 3, 4, 5, 6, 7, 8, 0], won = false;
+  const nb = i => { const r = i / 3 | 0, c = i % 3, out = []; if (r > 0) out.push(i - 3); if (r < 2) out.push(i + 3); if (c > 0) out.push(i - 1); if (c < 2) out.push(i + 1); return out; };
+  let prev = -1;
+  for (let k = 0; k < 160 || st.join() === "1,2,3,4,5,6,7,8,0"; k++) { const e = st.indexOf(0); const opts = nb(e).filter(n => n !== prev); const n = opts[Math.random() * opts.length | 0]; [st[e], st[n]] = [st[n], st[e]]; prev = e; }
+  const board = h("div", { class: "board nums", style: `--img:url(${img})` });
+  const tiles = {};
+  for (let v = 1; v <= 8; v++) {
+    const r = (v - 1) / 3 | 0, c = (v - 1) % 3;
+    const t = h("button", { class: "tile", type: "button", "aria-label": "Плитка " + v, style: `background-image:url(${img});background-position:${c * 50}% ${r * 50}%` }, h("span", {}, v));
+    t.addEventListener("click", () => move(st.indexOf(v)));
+    tiles[v] = t; board.append(t);
+  }
+  const msg = h("p", { class: "msg" }, "Щёлкай по плитке рядом с пустой клеткой. Стрелки тоже работают.");
+  const place = () => st.forEach((v, i) => { if (v) { tiles[v].style.left = (i % 3) * 33.333 + "%"; tiles[v].style.top = (i / 3 | 0) * 33.333 + "%"; } });
+  const move = i => {
+    if (won) return; const e = st.indexOf(0); if (!nb(e).includes(i)) return;
+    [st[e], st[i]] = [st[i], st[e]]; A.tick(); place();
+    if (st.join() === "1,2,3,4,5,6,7,8,0") { won = true; A.big(); msg.className = "msg ok"; msg.textContent = "Щёлк! Замок открыт."; later(winFifteen, 1100); }
+  };
+  const keyH = e => {
+    if (modal.hidden) { removeEventListener("keydown", keyH); return; }
+    const em = st.indexOf(0), map = { ArrowUp: em + 3, ArrowDown: em - 3, ArrowLeft: em + 1, ArrowRight: em - 1 };
+    if (!(e.key in map)) return; e.preventDefault();
+    const t = map[e.key]; if (t < 0 || t > 8) return;
+    if ((e.key === "ArrowLeft" || e.key === "ArrowRight") && (t / 3 | 0) !== (em / 3 | 0)) return;
+    move(t);
+  };
+  addEventListener("keydown", keyH);
+  FIFTEEN.solveNow = () => { st = [1, 2, 3, 4, 5, 6, 7, 8, 0]; place(); won = true; A.big(); msg.className = "msg ok"; msg.textContent = "Гоша собрал. Щёлк!"; later(winFifteen, 1300); };
+  place();
+  const numBtn = h("button", { class: "btn btn--dim", type: "button", "aria-pressed": "true" }, "Номера: вкл");
+  numBtn.addEventListener("click", () => { const on = board.classList.toggle("nums"); numBtn.textContent = on ? "Номера: вкл" : "Номера: выкл"; numBtn.setAttribute("aria-pressed", on); });
+  const peek = h("button", { class: "btn btn--dim", type: "button" }, "Подсмотреть картинку");
+  peek.addEventListener("click", () => { board.classList.add("peek"); setTimeout(() => board.classList.remove("peek"), 1400); });
+  const body = h("div", { class: "fifteen" }, board, h("div", { style: "min-width:0" },
+    h("p", { style: "margin-top:0;font-size:16px" }, "Латунный замок-головоломка на нижних дверцах серванта. Восемь плиток и одна дырка. Собери картинку — замок откроется."),
+    h("div", { class: "sheet__foot", style: "margin-top:0" }, numBtn, peek), msg));
+  openSheet({ title: "Сервант на пятнашках", sub: "Гоша уверял, что так надёжнее любого ключа.", body, hint: "fifteen", wide: true, after: () => { removeEventListener("keydown", keyH); FIFTEEN.solveNow = null; } });
+}
+function winFifteen() {
+  if (S.ch !== 8) return;
+  S.ch = 9; giveTape("y2k"); giveCard(); save(); closeSheetSilently();
+  playStory(SERVANT, () => renderRoom(), { quiet: true, last: "ВЗЯТЬ КАССЕТУ" });
+}
+
+/* ================= 7. ПОЛКА ПО ГОДАМ ================= */
+const SHELF = [
+  { t: "Империя наносит ответный удар", y: 1980, l: "П", c: "#1a1a2e" },
+  { t: "Инопланетянин", y: 1982, l: "Е", c: "#3a2a7a" },
+  { t: "Терминатор", y: 1984, l: "Р", c: "#3a6fd8" },
+  { t: "Назад в будущее", y: 1985, l: "Е", c: "#ff7a00" },
+  { t: "Крепкий орешек", y: 1988, l: "М", c: "#b0122a" },
+  { t: "Терминатор 2", y: 1991, l: "О", c: "#5a6470" },
+  { t: "Парк Юрского периода", y: 1993, l: "Т", c: "#c9a200" },
+  { t: "Титаник", y: 1997, l: "К", c: "#1b4f8a" },
+  { t: "Матрица", y: 1999, l: "А", c: "#1f8a46" }
+];
+function puzzleSort() {
+  let order = shuffle(SHELF.map((_, i) => i)); while (order.every((v, i) => v === i)) order = shuffle(order);
+  let sel = -1, won = false;
+  const shelf = h("div", { class: "shelf" }), word = h("div", { class: "word", "aria-label": "Буквы на корешках по порядку" });
+  const msg = h("p", { class: "msg" }, "Щёлкни по кассете, потом по другой — они поменяются местами.");
+  const paint = () => {
+    shelf.innerHTML = ""; word.innerHTML = "";
+    order.forEach((si, pos) => {
+      const s = SHELF[si];
+      const b = h("button", { class: "spine" + (pos === sel ? " sel" : ""), type: "button", style: `--c:${s.c}`, "aria-label": `${s.t}, позиция ${pos + 1}` },
+        h("span", { class: "spine__l" }, s.l), h("span", { class: "spine__t" }, s.t), h("span", { class: "spine__y" }, won ? s.y : ""));
+      b.addEventListener("click", () => {
+        if (won) return;
+        if (sel < 0) { sel = pos; A.click(); }
+        else if (sel === pos) sel = -1;
+        else { [order[sel], order[pos]] = [order[pos], order[sel]]; sel = -1; A.tick(); }
+        paint(); shelf.children[pos].focus();
+      });
+      shelf.append(b);
+      word.append(h("b", { class: won ? "on" : "" }, s.l));
+    });
+  };
+  const check = h("button", { class: "btn", type: "button" }, "Проверить порядок");
+  check.addEventListener("click", () => {
+    const right = order.filter((v, i) => v === i).length;
+    if (right === 9) { won = true; paint(); A.big(); msg.className = "msg ok"; msg.textContent = "1980 → 1999. Буквы вспыхнули: ПЕРЕМОТКА."; later(winSort, 1600); }
+    else { A.bad(); S.miss++; save(); msg.className = "msg bad"; msg.textContent = `На своём месте: ${right} из 9.`; }
+  });
+  paint();
+  const body = h("div", {}, h("p", { style: "margin-top:0;font-size:16px" }, "Девять кассет с новыми надписями. Расставь слева направо: от самой старой к самой новой по году выхода."), shelf, word, h("div", { class: "sheet__foot" }, check), msg);
+  openSheet({ title: "Стеллаж: по годам", sub: "Буквы на корешках сложатся в команду.", body, hint: "sort", wide: true });
+}
+function winSort() {
+  if (S.ch !== 10) return;
+  S.ch = 11; giveCard(); save(); closeSheetSilently(); renderRoom();
+  toast("Слово — команда. К видику: зажми ◄◄.", 4000);
+}
+
+/* ================= ФИНАЛ ================= */
+function finale() {
+  let y = S.year >= 1991 ? Math.max(S.year, 1999) : 1999, hold = false, timer = null, done = false;
+  const cnt = h("div", { class: "bigcount", "aria-live": "polite" }, y);
+  const btn = h("button", { class: "holdbtn", type: "button" }, "◄◄ REW · держать");
+  const msg = h("p", { class: "msg" }, "Зажми и держи. Отпустишь раньше — Гошу отбросит обратно.");
+  const pills = h("div", { class: "pills", hidden: true });
+  const tickF = () => {
+    if (done) return;
+    if (hold) { y--; A.setWhirr(160 + (1999 - y) * 30); }
+    else if (y < 1999) y++;
+    cnt.textContent = y; S.year = y; updDeck();
+    if (y <= 1991) { done = true; stop(); A.big(); flash(); finish(); return; }
+    if (!hold && y >= 1999) { clearInterval(timer); timer = null; }
+  };
+  const start = e => { if (done) return; e && e.preventDefault(); hold = true; btn.classList.add("on"); sheet.classList.add("shake"); A.startWhirr(160); setMode("REW ◄◄"); msg.className = "msg"; msg.textContent = "Мотает… не отпускай!"; if (!timer) timer = setInterval(tickF, RM ? 300 : 520); };
+  const stop = () => { if (!hold) return; hold = false; btn.classList.remove("on"); sheet.classList.remove("shake"); A.stopWhirr(); setMode("STOP ■"); if (!done) { msg.className = "msg bad"; msg.textContent = "Отпустил! Счётчик ползёт назад к 1999-му. Жми снова."; } };
+  btn.addEventListener("pointerdown", start); ["pointerup", "pointerleave", "pointercancel"].forEach(ev => btn.addEventListener(ev, stop));
+  btn.addEventListener("keydown", e => { if ((e.key === " " || e.key === "Enter") && !e.repeat) start(e); });
+  btn.addEventListener("keyup", e => { if (e.key === " " || e.key === "Enter") stop(); });
+  btn.addEventListener("contextmenu", e => e.preventDefault());
+  function finish() {
+    clearInterval(timer); sheet.classList.remove("shake");
+    btn.hidden = true; msg.className = "msg ok"; msg.textContent = "1991. Видик щёлкнул и замер. На экране «Рубина» две кнопки — как две таблетки.";
+    pills.hidden = false;
+  }
+  pills.append(
+    h("button", { class: "pill pill--blue", type: "button", onclick: () => endGame("blue") }, "◄◄ Остановить на 1991-м и вернуть Гошу"),
+    h("button", { class: "pill pill--red", type: "button", onclick: () => endGame("red") }, "►► Одним глазом глянуть, что будет дальше")
+  );
+  const body = h("div", { class: "rew" }, h("p", { class: "panel-h", style: "margin:0" }, "Счётчик «Электроники»"), cnt, btn, msg, pills);
+  openSheet({ title: "ПЕРЕМОТКА", sub: "Команда принята. Остался один шаг.", body, closable: true, after: () => { clearInterval(timer); A.stopWhirr(); sheet.classList.remove("shake"); if (!done) { S.year = 1999; save(); updDeck(); } } });
+}
+function endGame(kind) {
+  S.ending = kind; S.year = 1991; S.ch = 12; S.t1 = Date.now(); save(); updDeck(); closeSheetSilently();
+  if (kind === "red") { S.peeked = true; save(); playStory(ENDING_RED, () => playStory(ENDING_BLUE, renderCredits, { last: "КОНЕЦ ФИЛЬМА" }), { last: "◄◄ НАЗАД В 1991" }); }
+  else playStory(ENDING_BLUE, renderCredits, { last: "КОНЕЦ ФИЛЬМА" });
+}
+
+/* ================= ТИТРЫ ================= */
+function renderCredits() {
+  clearTimers(); stopRoomFx(); deck.hidden = false; setMode("STOP ■"); updDeck();
+  const secs = Math.max(0, Math.round(((S.t1 || Date.now()) - (S.t0 || Date.now())) / 1000));
+  const mm = Math.floor(secs / 60), ss = String(secs % 60).padStart(2, "0");
+  const score = 100 - S.hints * 6 - S.miss * 2 - S.debt * 4;
+  const rank = score >= 85 ? ["Почётный киномеханик «Космоса»", "Гоша выдаёт тебе запасной ключ и личную прищепку."]
+    : score >= 65 ? ["Завсегдатай второго ряда", "Пускают на сеанс после десяти. Иногда."]
+    : score >= 40 ? ["Зритель с первого сеанса", "Кино знаешь. Вкладыши тратишь щедро."]
+    : ["Безбилетник с душой", "Зато Гоша дома. А это главное."];
+  screen.innerHTML = "";
+  screen.append(h("div", { class: "wrap credits" },
+    h("div", { class: "tv" }, h("div", { class: "tv__glass" }, h("div", { class: "tv__screen blue scan" },
+      h("div", { class: "osd-top" }, h("span", {}, "■ STOP"), h("span", {}, "END")),
+      h("h1", { class: "logo", style: "font-size:clamp(24px,6vw,52px)" }, "КОНЕЦ ФИЛЬМА"),
+      h("p", { class: "logo-sub" }, "ПЕРЕВОД — ДЯДЯ ГОША · ПРОКАТ — «КОСМОС»")
+    ), h("div", { class: "tv__glare" }), h("div", { class: "tv__curve" })),
+      h("div", { class: "tv__panel" }, h("span", { class: "tv__brand" }, "РУБИН"), h("span", { class: "tv__grille" }), h("span", { class: "knob" }))),
+    h("div", { class: "stats" },
+      h("div", {}, h("b", {}, `${mm}:${ss}`), h("span", {}, "время в салоне")),
+      h("div", {}, h("b", {}, S.hints), h("span", {}, "подсказок Гоши")),
+      h("div", {}, h("b", {}, S.miss), h("span", {}, "промахов"))),
+    h("p", { class: "rank" }, rank[0]), h("p", { style: "color:var(--fg-dim)" }, rank[1] + (S.peeked ? " И ты видел 2026-й. Никому не рассказывай." : "")),
+    h("div", { class: "title__actions" },
+      h("button", { class: "btn", type: "button", onclick: () => renderRoom() }, "Побродить по салону"),
+      h("button", { class: "btn btn--dim", type: "button", onclick: openBook }, "Блокнот"),
+      h("button", { class: "btn btn--dim", type: "button", onclick: () => { S = fresh(); save(); renderTitle(); } }, "◄◄ Сначала"))
+  ));
+  scrollTo({ top: 0 });
+}
+
+/* ================= БЛОКНОТ ================= */
+function openBook() {
+  const tapes = S.msgs.slice().sort().map(n => h("div", { class: "tape" }, h("h4", {}, `${TAPES[MSG[n].tape].t} · ${MSG[n].osd[1]}`), h("div", {}, MSG[n].pages.join("\n\n"))));
+  const cards = S.cards.map(n => { const c = CARDS.find(x => x.n === n); return h("div", { class: "wcard" }, h("b", {}, "TURBO №" + c.n), h("i", { style: `--car:${c.c}` }), h("span", {}, c.car)); });
+  const body = h("div", { class: "book" },
+    h("div", { class: "note", style: "transform:none" }, h("h3", {}, "Сейчас"), h("p", {}, GOALS[S.ch] || "Нажми ► PLAY.")),
+    h("div", {}, h("p", { class: "panel-h" }, "Вкладыши Turbo"), cards.length ? h("div", { class: "wrapcards" }, cards) : h("p", { style: "color:var(--fg-dim);margin:0" }, `Пока только три безымянных из банки. Новые лежат в коробках с кассетами.`)),
+    h("div", {}, h("p", { class: "panel-h" }, "Записи Гоши"), tapes.length ? tapes : h("p", { style: "color:var(--fg-dim);margin:0" }, "Ещё ни одной. Сначала найди кассету.")),
+    h("details", {}, h("summary", { style: "cursor:pointer;color:var(--fg-dim)" }, "Записка в клетку"), h("p", { style: "white-space:pre-wrap;font-family:var(--f-hand);font-size:19px" }, NOTE))
+  );
+  openSheet({ title: "Блокнот", sub: `Подсказок взято: ${S.hints}${S.debt ? ` (в долг у Вовки: ${S.debt})` : ""} · промахов: ${S.miss}`, body, wide: true });
+}
+
+/* ================= ПАНЕЛЬ ================= */
+$("#kBook").addEventListener("click", openBook);
+$("#kSound").addEventListener("click", e => { A.on = !A.on; if (!A.on) A.stopWhirr(); e.currentTarget.setAttribute("aria-pressed", A.on); if (A.on) A.click(); });
+$("#kEject").addEventListener("click", () => { A.clunk(); closeSheetSilently(); renderTitle(); });
+
+/* ================= СТАРТ ================= */
+const boot = data => {
+  if (data && data.S) { S = Object.assign(fresh(), data.S); save(); }
+  updDeck();
+  if (data && data.S && S.ch >= 1) resume(); else renderTitle();
+};
+try { window.claude?.hot?.snapshot?.(() => ({ S })); } catch (e) {}
+window.claude?.hot?.ready ? window.claude.hot.ready(boot) : boot(window.claude?.hot?.data ?? {});
+})();
+</script>
