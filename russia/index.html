@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Терминал российской экономики: ВВП и его структура, отрасли, внешняя торговля, ставка и инфляция, бюджет, налоги, регионы и прогноз.">
+<meta name="theme-color" content="#0e141b">
+<style>*{box-sizing:border-box}html,body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>Терминал «Экономика России»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Golos+Text:wght@400;500;600&family=JetBrains+Mono:wght@400;500;700&display=swap">
+<style>
+/* Макет: терминал из панелей. Сверху — лента ключевых цифр, слева мнемоники разделов
+   (как функции в торговом терминале), ниже — механизм экономики и восемь экранов. */
+:root{
+  color-scheme:dark;
+  --bg:#0e141b;        /* фон терминала: синеватый графит */
+  --panel:#141c25;     /* панели */
+  --panel-2:#1a2430;   /* подсветка, шапки */
+  --line:#253241;      /* волосяные линии и сетка */
+  --fg:#e6ebf0;        /* основной текст */
+  --fg-2:#a7b3c0;      /* вторичный */
+  --fg-3:#6f7d8c;      /* подписи, оси */
+  --accent:#6fb4ff;    /* акцент интерфейса: холодный «экранный» синий */
+  --s1:#3987e5; --s2:#d95926; --s3:#199e70; --s4:#c98500; --s5:#d55181; --s7:#9085e9; --s8:#e66767;
+  --pos:#3fae7a; --neg:#e66767; --warn:#d9a12a;
+  --mid:#383835;
+  --font-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --font-body:"Golos Text",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --font-mono:"JetBrains Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    color-scheme:light;
+    --bg:#eef1f4; --panel:#fbfcfd; --panel-2:#f1f4f7; --line:#d9e0e7;
+    --fg:#111820; --fg-2:#46525f; --fg-3:#6c7884; --accent:#1f62b8;
+    --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s7:#4a3aa7; --s8:#e34948;
+    --pos:#1e8a57; --neg:#d23f3f; --warn:#b07a00; --mid:#f0efec;
+  }
+}
+:root[data-theme="light"]{
+  color-scheme:light;
+  --bg:#eef1f4; --panel:#fbfcfd; --panel-2:#f1f4f7; --line:#d9e0e7;
+  --fg:#111820; --fg-2:#46525f; --fg-3:#6c7884; --accent:#1f62b8;
+  --s1:#2a78d6; --s2:#eb6834; --s3:#1baf7a; --s4:#eda100; --s5:#e87ba4; --s7:#4a3aa7; --s8:#e34948;
+  --pos:#1e8a57; --neg:#d23f3f; --warn:#b07a00; --mid:#f0efec;
+}
+
+body{background:var(--bg);color:var(--fg);font:400 14px/1.55 var(--font-body);-webkit-font-smoothing:antialiased}
+.wrap{max-width:1440px;margin:0 auto;padding-inline:clamp(16px,2.4vw,32px);padding-block:0 48px}
+h1,h2,h3{margin:0;text-wrap:balance}
+p{margin:0}
+a{color:var(--accent)}
+.num,.mono{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* шапка */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--bg);border-bottom:1px solid var(--line)}
+.top-in{max-width:1440px;margin:0 auto;padding-inline:clamp(16px,2.4vw,32px);display:flex;align-items:center;gap:16px;padding-block:10px;flex-wrap:wrap}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand h1{font:700 15px/1 var(--font-display);letter-spacing:.02em}
+.brand .stamp{font:500 11px/1 var(--font-mono);color:var(--fg-3);letter-spacing:.04em}
+.nav{display:flex;gap:4px;flex-wrap:wrap;margin-left:auto}
+.nav a{font:500 11px/1 var(--font-mono);letter-spacing:.06em;color:var(--fg-2);text-decoration:none;padding:6px 8px;border:1px solid var(--line);border-radius:3px}
+.nav a:hover,.nav a:focus-visible{color:var(--fg);border-color:var(--accent);outline:none}
+.nav a b{color:var(--accent);font-weight:700}
+@media (max-width:760px){.nav{flex-wrap:nowrap;overflow-x:auto;margin-left:0;width:100%;padding-bottom:2px;scrollbar-width:none}.nav a{flex:none}.brand .stamp{display:none}}
+@media (max-width:640px){.bar-in{display:none}}
+
+/* лента */
+.tape{display:grid;grid-template-columns:repeat(auto-fit,minmax(136px,1fr));border:1px solid var(--line);background:var(--panel);margin-top:18px}
+.tick{padding:12px 14px;border-right:1px solid var(--line);border-bottom:1px solid var(--line);min-width:0}
+.tick .k{font:500 10.5px/1.2 var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--fg-3)}
+.tick .v{font:500 22px/1.15 var(--font-mono);font-variant-numeric:tabular-nums;margin-top:6px;white-space:nowrap}
+.tick .v small{font-size:12px;color:var(--fg-2);margin-left:3px}
+.tick .d{font:400 11.5px/1.35 var(--font-body);color:var(--fg-2);margin-top:4px}
+.chip{display:inline-flex;align-items:center;gap:4px;font:500 10.5px/1 var(--font-mono);padding:3px 6px;border-radius:2px;border:1px solid currentColor;white-space:nowrap}
+.chip.up{color:var(--pos)} .chip.down{color:var(--neg)} .chip.warn{color:var(--warn)} .chip.flat{color:var(--fg-3)}
+
+/* тезис */
+.lede{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:28px;margin-top:28px;align-items:start}
+.lede h2{font:700 clamp(22px,2.6vw,32px)/1.18 var(--font-display);letter-spacing:-.005em}
+.lede h2 em{font-style:normal;color:var(--accent)}
+.lede .txt{color:var(--fg-2);font-size:15px;max-width:62ch;display:grid;gap:10px}
+.lede .txt b{color:var(--fg);font-weight:600}
+@media (max-width:860px){.lede{grid-template-columns:1fr}}
+
+/* разделы и панели */
+section.sec{margin-top:40px;scroll-margin-top:72px}
+.sec-h{display:flex;align-items:baseline;gap:12px;border-bottom:1px solid var(--line);padding-bottom:10px;flex-wrap:wrap}
+.sec-h .code{font:700 12px/1 var(--font-mono);color:var(--bg);background:var(--accent);padding:5px 7px;border-radius:2px;letter-spacing:.06em}
+.sec-h h2{font:700 19px/1.2 var(--font-display)}
+.sec-h .q{color:var(--fg-3);font-size:13px;margin-left:auto}
+.grid{display:grid;gap:14px;margin-top:14px;grid-template-columns:repeat(12,minmax(0,1fr))}
+.p{background:var(--panel);border:1px solid var(--line);padding:16px 16px 14px;min-width:0;display:flex;flex-direction:column;gap:10px}
+.c12{grid-column:span 12}.c8{grid-column:span 8}.c7{grid-column:span 7}.c6{grid-column:span 6}.c5{grid-column:span 5}.c4{grid-column:span 4}
+@media (max-width:1080px){.c8,.c7,.c6,.c5{grid-column:span 12}.c4{grid-column:span 6}}
+@media (max-width:640px){.c4{grid-column:span 12}}
+.p h3{font:600 14px/1.3 var(--font-body);color:var(--fg)}
+.p .sub{font-size:12.5px;color:var(--fg-3);margin-top:-6px}
+.p .note{font-size:12.5px;color:var(--fg-2);line-height:1.5}
+.p .note b{color:var(--fg);font-weight:600}
+.src{font:400 11px/1.4 var(--font-mono);color:var(--fg-3);margin-top:auto;padding-top:6px;border-top:1px solid var(--line)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--fg-2)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.legend i.ln{height:2px;width:14px;border-radius:1px;vertical-align:3px}
+.legend i.hatch{background:repeating-linear-gradient(135deg,var(--fg-2) 0 2px,transparent 2px 5px)!important;border:1px solid var(--fg-2)}
+.chart{width:100%;position:relative}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart text{font-family:var(--font-mono);font-size:11px;fill:var(--fg-3)}
+.chart .lbl{fill:var(--fg-2)}
+.chart .val{fill:var(--fg);font-weight:500}
+.chart .grid-l{stroke:var(--line);stroke-width:1}
+.chart .axis{stroke:var(--fg-3);stroke-width:1;opacity:.6}
+.chart .hit{fill:transparent;cursor:crosshair}
+.chart .mk{transition:opacity .15s}
+.chart .mk:hover,.chart .mk.on{opacity:.75}
+
+/* стат-плитки внутри панели */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.stat{background:var(--panel);padding:10px 12px;min-width:0}
+.stat .k{font-size:11.5px;color:var(--fg-3);line-height:1.3}
+.stat .v{font:500 19px/1.2 var(--font-mono);font-variant-numeric:tabular-nums;margin-top:4px}
+.stat .v small{font-size:11px;color:var(--fg-2);margin-left:2px}
+.stat .d{font-size:11.5px;color:var(--fg-2);margin-top:2px}
+
+/* таблицы */
+.tbl-wrap{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left;white-space:normal}
+th{font:500 10.5px/1.3 var(--font-mono);color:var(--fg-3);letter-spacing:.06em;text-transform:uppercase;cursor:default}
+th.sortable{cursor:pointer}
+th.sortable:hover{color:var(--fg)}
+td.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+td .pos{color:var(--pos)} td .neg{color:var(--neg)}
+tr:hover td{background:var(--panel-2)}
+.bar-in{display:inline-block;height:6px;background:var(--s1);border-radius:0 2px 2px 0;vertical-align:middle;margin-left:6px}
+
+/* механизм */
+.mech{overflow-x:auto}
+.mech svg{min-width:860px;width:100%;height:auto;display:block}
+.mech .node rect{fill:var(--panel-2);stroke:var(--line)}
+.mech .node.hot rect{stroke:var(--accent)}
+.mech .node .t{font:600 13px var(--font-body);fill:var(--fg)}
+.mech .node .n{font:500 12px var(--font-mono);fill:var(--accent)}
+.mech .node .s{font:400 11px var(--font-body);fill:var(--fg-2)}
+.mech .edge{fill:none;stroke:var(--fg-3);stroke-width:1.4}
+.mech .edge.neg{stroke:var(--neg);stroke-dasharray:5 4}
+.mech .elab{font:500 10.5px var(--font-mono);fill:var(--fg-2)}
+.mech .arrow{fill:var(--fg-3)}
+.mech .arrow.neg{fill:var(--neg)}
+
+/* карта ФО */
+.fo-map{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));grid-template-rows:repeat(3,minmax(82px,auto));gap:4px}
+@media (max-width:520px){.fo .vv{font-size:13px}.fo .nm{font-size:11px}.fo{padding:6px}}
+.fo{border:1px solid var(--line);padding:10px;min-height:82px;display:flex;flex-direction:column;justify-content:space-between;color:var(--fg);cursor:default;min-width:0}
+.fo .nm{font:700 13px/1 var(--font-mono);letter-spacing:.04em}
+.fo .vv{font:500 18px/1.1 var(--font-mono);font-variant-numeric:tabular-nums}
+.fo .ss{font-size:11px;opacity:.85}
+.fo.dark-ink{color:#0b0f14}
+.fo.light-ink{color:#f4f7fa}
+.scale{display:flex;align-items:center;gap:8px;font:400 11px var(--font-mono);color:var(--fg-3)}
+.scale .ramp{flex:1;height:8px;border-radius:2px;background:linear-gradient(90deg,#cde2fb,#86b6ef,#3987e5,#1c5cab,#0d366b)}
+
+/* прогноз и риски */
+.risks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:14px}
+@media (max-width:1000px){.risks{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:640px){.risks{grid-template-columns:1fr}}
+.risk{background:var(--panel);border:1px solid var(--line);padding:14px 16px;display:grid;gap:8px;align-content:start}
+.risk h4{margin:0;font:600 14px/1.3 var(--font-body)}
+.risk p{font-size:13px;color:var(--fg-2)}
+.risk .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.vec{font:500 11px/1 var(--font-mono);color:var(--fg-3);letter-spacing:.04em}
+
+.foot{margin-top:40px;border-top:1px solid var(--line);padding-top:16px;display:grid;gap:10px;font-size:12px;color:var(--fg-3)}
+.foot ul{margin:0;padding-left:18px;display:grid;gap:4px;columns:2;column-gap:32px}
+@media (max-width:760px){.foot ul{columns:1}}
+.foot a{color:var(--fg-2)}
+
+/* тултип */
+#tip{position:fixed;z-index:50;pointer-events:none;background:var(--panel-2);border:1px solid var(--line);padding:8px 10px;font-size:12px;box-shadow:0 6px 18px rgba(0,0,0,.25);max-width:260px;display:none}
+#tip .tv{font:600 14px var(--font-mono);color:var(--fg)}
+#tip .tl{color:var(--fg-2)}
+#tip .tr{display:flex;align-items:center;gap:8px;margin-top:3px}
+#tip .tr i{width:12px;height:2px;display:inline-block}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand"><h1>ТЕРМИНАЛ · РФ</h1><span class="stamp">ДАННЫЕ НА 02.10.2026</span></div>
+    <nav class="nav" aria-label="Разделы">
+      <a href="#mech"><b>MCH</b> механизм</a>
+      <a href="#gdp"><b>GDP</b> ВВП</a>
+      <a href="#ind"><b>IND</b> отрасли</a>
+      <a href="#ext"><b>EXT</b> внешний сектор</a>
+      <a href="#mon"><b>MON</b> деньги и цены</a>
+      <a href="#bdg"><b>BDG</b> бюджет</a>
+      <a href="#tax"><b>TAX</b> налоги</a>
+      <a href="#reg"><b>REG</b> регионы</a>
+      <a href="#fwd"><b>FWD</b> прогноз</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <div class="tape" id="tape"></div>
+
+  <div class="lede">
+    <h2>Экономика размером <em>214 трлн ₽</em>, которая перешла от разгона к торможению: рост ВВП упал с 4,3% до 1%, а бюджет держится на налогах, а не на нефти.</h2>
+    <div class="txt">
+      <p><b>Где мы.</b> После двух лет военного бума (2023–2024) экономика упёрлась в предел: безработица 2,3%, свободных рук нет, ставка ЦБ выше 14%. В I квартале 2026 года ВВП впервые с 2023-го ушёл в минус (−0,2% г/г), во II квартале отскочил на +1,3%.</p>
+      <p><b>На чём держится.</b> Половина ВВП — потребление домохозяйств, которое разогнали зарплаты. Рост 2025 года дали обрабатывающая промышленность (прежде всего ОПК) и госсектор. Нефтегаз — по-прежнему крупнейший экспорт (54%), но его доля в доходах федерального бюджета упала до 23%.</p>
+      <p><b>Куда движется.</b> Правительство закладывает 1,4% роста в 2027 году, дефицит бюджета 2,2% ВВП и рост оборонных расходов до 17 трлн ₽. Деньги ищут в налогах: НДС уже 22%. Сентябрьский скачок Urals выше $110 даёт передышку, но бюджет на неё не рассчитывает.</p>
+    </div>
+  </div>
+
+  <!-- MCH -->
+  <section class="sec" id="mech">
+    <div class="sec-h"><span class="code">MCH</span><h2>Механизм: как устроена экономика сейчас</h2><span class="q">Откуда деньги, куда текут и что их тормозит</span></div>
+    <div class="grid">
+      <div class="p c12">
+        <div class="mech" id="mechbox"></div>
+        <div class="legend"><span><i class="ln" style="background:var(--fg-3)"></i>поток денег и спроса</span><span><i class="ln" style="background:var(--neg)"></i>тормозящая связь</span></div>
+        <p class="note">Схема читается слева направо. Экспорт сырья приносит валюту и налоги. Бюджет через оборонный заказ и выплаты накачивает зарплаты. Зарплаты превращаются в потребление, а потребление при нехватке рабочих рук — в инфляцию. ЦБ отвечает высокой ставкой, и она душит кредит и частные инвестиции. Петля замыкается: чтобы закрыть дефицит, государство поднимает налоги.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GDP -->
+  <section class="sec" id="gdp">
+    <div class="sec-h"><span class="code">GDP</span><h2>ВВП: объём, динамика, структура</h2><span class="q">Сколько производим и кто это тратит</span></div>
+    <div class="grid">
+      <div class="p c7">
+        <h3>Реальный рост ВВП, % г/г</h3>
+        <p class="sub">2019–2025 факт · 2026 I п/г факт и оценка МЭР · 2027–2029 прогноз МЭР</p>
+        <div class="legend"><span><i style="background:var(--s1)"></i>факт</span><span><i class="hatch"></i>оценка и прогноз</span><span><i style="background:var(--neg)"></i>спад</span></div>
+        <div class="chart" id="ch-gdp-growth"></div>
+        <p class="note">2021 и 2023–2024 — восстановительный и военный разгон. 2025 — резкое охлаждение под ставкой 16–21%. 2026 — «техническая стагнация»: <b>−0,2%</b> в I квартале и <b>+1,3%</b> во II.</p>
+        <div class="src">Росстат: оценки ВВП (2-я оценка 2025 г. — 10.04.2026; II кв. 2026 — 11.09.2026); МЭР, сценарные условия, сент. 2026</div>
+      </div>
+      <div class="p c5">
+        <h3>Номинальный ВВП, трлн ₽</h3>
+        <p class="sub">В текущих ценах</p>
+        <div class="chart" id="ch-gdp-nom"></div>
+        <div class="stats">
+          <div class="stat"><div class="k">ВВП 2025</div><div class="v">214,3<small>трлн ₽</small></div><div class="d">дефлятор 104,9%</div></div>
+          <div class="stat"><div class="k">ВВП I п/г 2026</div><div class="v">106,0<small>трлн ₽</small></div><div class="d">+0,6% г/г реально</div></div>
+          <div class="stat"><div class="k">На душу, 2025</div><div class="v">≈1,47<small>млн ₽</small></div><div class="d">при населении ≈146 млн</div></div>
+        </div>
+        <div class="src">Росстат; расчёт на душу — по оценке численности населения</div>
+      </div>
+
+      <div class="p c12">
+        <h3>Кто тратит ВВП: структура по использованию, 2025</h3>
+        <p class="sub">Доля в ВВП, %. Наведите на сегмент, чтобы увидеть сумму</p>
+        <div class="chart" id="ch-gdp-use"></div>
+        <div class="legend" id="lg-gdp-use"></div>
+        <div class="stats">
+          <div class="stat"><div class="k">Конечное потребление</div><div class="v">71,0%</div><div class="d"><span class="chip up">▲ с 68,7% в 2024</span></div></div>
+          <div class="stat"><div class="k">Валовое накопление</div><div class="v">26,4%</div><div class="d"><span class="chip down">▼ с 26,9%</span></div></div>
+          <div class="stat"><div class="k">Чистый экспорт</div><div class="v">2,6%</div><div class="d"><span class="chip down">▼ с 4,4%</span></div></div>
+          <div class="stat"><div class="k">Потребление домохозяйств</div><div class="v">108,5<small>трлн ₽</small></div><div class="d">главный двигатель</div></div>
+        </div>
+        <p class="note">Модель роста сменилась. Раньше ВВП тянули экспорт и инвестиции, теперь его тянут потребление и госрасходы. В 2025 году рост обеспечило только потребление, а накопление и чистый экспорт сократились. Это рост «на проедание»: он быстро даёт цифру, но не наращивает производственный потенциал.</p>
+        <div class="src">Росстат, «О производстве и использовании ВВП в 2025 году» (06.02.2026)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- IND -->
+  <section class="sec" id="ind">
+    <div class="sec-h"><span class="code">IND</span><h2>Ключевые сектора</h2><span class="q">Кто создаёт добавленную стоимость и кто тянет рост</span></div>
+    <div class="grid">
+      <div class="p c6">
+        <h3>Вклад отраслей в рост ВВП 2025 года, п.п.</h3>
+        <p class="sub">Рост валовой добавленной стоимости +1,1%: кто прибавил, кто отнял</p>
+        <div class="chart" id="ch-contrib"></div>
+        <p class="note">Три мотора — <b>обработка</b> (прежде всего ОПК: «прочие транспортные средства» +27–32%, готовые металлоизделия +18–19%), <b>госуправление и оборона</b> и <b>финансы</b>. Тормозят добыча, торговля и недвижимость: всё, что зависит от нефти, частного спроса и ставки.</p>
+        <div class="src">Росстат; расчёт вкладов — по индексам физобъёма ВДС и структуре 2024 г.</div>
+      </div>
+      <div class="p c6">
+        <h3>Отрасли: доля в ВДС и динамика</h3>
+        <p class="sub">Нажмите на заголовок столбца, чтобы отсортировать</p>
+        <div class="tbl-wrap"><table id="tbl-ind"></table></div>
+        <p class="note">Доли приблизительные (≈): восстановлены по вкладам в рост и структуре ВДС 2024 года. Это не опубликованная Росстатом таблица долей за 2025 год. «н/д» — нет данных в открытых релизах.</p>
+        <div class="src">Росстат: ВВП 2025 (2-я оценка), ВВП II кв. 2026</div>
+      </div>
+      <div class="p c4">
+        <h3>Нефтегаз в экономике</h3>
+        <div class="stats">
+          <div class="stat"><div class="k">Добыча в ВДС</div><div class="v">≈12%</div><div class="d">2025: −1,7%</div></div>
+          <div class="stat"><div class="k">Минеральное сырьё в экспорте</div><div class="v">53,9%</div><div class="d">$225 млрд, −14,8%</div></div>
+          <div class="stat"><div class="k">НГД в доходах ФБ</div><div class="v">22,7%</div><div class="d">2025; в 2022 — 41,7%</div></div>
+        </div>
+        <p class="note">Нефтегаз — меньше восьмой части ВВП, но через экспорт и налоги он задаёт курс рубля и устойчивость бюджета. Его вес падает: дешевле нефть, крепче рубль, санкционный дисконт.</p>
+      </div>
+      <div class="p c4">
+        <h3>Обработка и ОПК</h3>
+        <div class="stats">
+          <div class="stat"><div class="k">Доля в ВДС</div><div class="v">≈15%</div><div class="d">крупнейшая отрасль</div></div>
+          <div class="stat"><div class="k">Рост 2025</div><div class="v">+3,9%</div><div class="d">II кв. 2026: +1,2%</div></div>
+          <div class="stat"><div class="k">Вклад в рост 2025</div><div class="v">+0,6<small>п.п.</small></div><div class="d">больше половины роста</div></div>
+        </div>
+        <p class="note">Рост обработки двухскоростной. Оборонные и импортозамещающие отрасли растут двузначными темпами, гражданские (металлургия, химия, автопром, стройматериалы) стагнируют под ставкой и падающим экспортом.</p>
+      </div>
+      <div class="p c4">
+        <h3>Сервисы и внутренний рынок</h3>
+        <div class="stats">
+          <div class="stat"><div class="k">Гостиницы и общепит</div><div class="v">+8,9%</div><div class="d">2025; II кв. 2026: +5,8%</div></div>
+          <div class="stat"><div class="k">ИТ и связь</div><div class="v">+5,5%</div><div class="d">II кв. 2026</div></div>
+          <div class="stat"><div class="k">Торговля</div><div class="v">+2,8%</div><div class="d">II кв. 2026 (2025: −1,1%)</div></div>
+        </div>
+        <p class="note">Внутренний рынок живёт на зарплатах: средняя в июле 2026 года — <b>109,5 тыс. ₽</b>. Самые быстрые отрасли — потребительские сервисы и цифровая экономика, а не капиталоёмкие.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- EXT -->
+  <section class="sec" id="ext">
+    <div class="sec-h"><span class="code">EXT</span><h2>Внешний сектор: экспорт, импорт, партнёры</h2><span class="q">Что продаём, что покупаем и с кем</span></div>
+    <div class="grid">
+      <div class="p c7">
+        <h3>Структура экспорта, 2025, млрд $</h3>
+        <p class="sub">Всего $418,3 млрд (−3,7%). Подпись справа — изменение к 2024 году</p>
+        <div class="chart" id="ch-exp"></div>
+        <p class="note">Сырьевая часть сжимается (−14,8%), несырьевая растёт: металлы +17%, химия +22%, машины +27%. Часть этого роста — переориентация на Азию и ценовой эффект, а не новый экспортный сектор.</p>
+        <div class="src">ФТС, итоги внешней торговли за 2025 год</div>
+      </div>
+      <div class="p c5">
+        <h3>Торговый баланс 2025</h3>
+        <div class="stats">
+          <div class="stat"><div class="k">Экспорт</div><div class="v">418,3<small>млрд $</small></div><div class="d"><span class="chip down">▼ 3,7%</span></div></div>
+          <div class="stat"><div class="k">Импорт</div><div class="v">279,4<small>млрд $</small></div><div class="d"><span class="chip flat">≈ уровень 2024</span></div></div>
+          <div class="stat"><div class="k">Сальдо</div><div class="v">+138,9<small>млрд $</small></div><div class="d">валютная подушка рубля</div></div>
+          <div class="stat"><div class="k">Расчёты в рублях</div><div class="v">≈54%</div><div class="d">исторический максимум</div></div>
+        </div>
+        <h3 style="margin-top:6px">География товарооборота, $697,7 млрд</h3>
+        <div class="chart" id="ch-geo"></div>
+        <div class="legend" id="lg-geo"></div>
+        <p class="note"><b>Китай</b> — $228,1 млрд (−6,9%): треть всей торговли, экспорт $124,8 млрд, импорт $103,3 млрд. Почти половина импорта (48,6%) — машины и оборудование, в основном китайские.</p>
+        <div class="src">ФТС; ГТУ КНР</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MON -->
+  <section class="sec" id="mon">
+    <div class="sec-h"><span class="code">MON</span><h2>Деньги, цены, труд</h2><span class="q">Ставка, инфляция, рубль, рынок труда</span></div>
+    <div class="grid">
+      <div class="p c8">
+        <h3>Ключевая ставка и инфляция, %</h3>
+        <p class="sub">Ставка — на дату решения; инфляция — г/г на конец месяца, сентябрь 2026 — недельная оценка на 28.09</p>
+        <div class="legend"><span><i class="ln" style="background:var(--s1)"></i>ключевая ставка</span><span><i class="ln" style="background:var(--s2)"></i>инфляция г/г</span><span><i class="ln" style="background:var(--fg-3)"></i>цель ЦБ 4%</span></div>
+        <div class="chart" id="ch-rate"></div>
+        <p class="note">ЦБ снижал ставку с 21% до 14% за 13 месяцев, но 11 сентября 2026 года взял паузу: инфляция снова пошла вверх (6,26% г/г). Реальная ставка — около <b>7,7 п.п.</b>, одна из самых жёстких в мире. Следующее заседание — 23 октября.</p>
+        <div class="src">Банк России (решения по ставке); Росстат (ИПЦ), расчёт г/г по месячным индексам</div>
+      </div>
+      <div class="p c4">
+        <h3>Сводка</h3>
+        <div class="stats" style="grid-template-columns:1fr 1fr">
+          <div class="stat"><div class="k">Ключевая ставка</div><div class="v">14,00%</div><div class="d"><span class="chip flat">пауза 11.09</span></div></div>
+          <div class="stat"><div class="k">Инфляция г/г</div><div class="v">6,26%</div><div class="d"><span class="chip warn">▲ цель 4%</span></div></div>
+          <div class="stat"><div class="k">С начала года</div><div class="v">4,93%</div><div class="d">на 28.09.2026</div></div>
+          <div class="stat"><div class="k">USD/RUB, ЦБ</div><div class="v">83,56</div><div class="d">на 01.10.2026</div></div>
+          <div class="stat"><div class="k">Безработица</div><div class="v">2,3%</div><div class="d">июль 2026, рекорд</div></div>
+          <div class="stat"><div class="k">Средняя зарплата</div><div class="v">109,5<small>тыс ₽</small></div><div class="d">июль 2026</div></div>
+        </div>
+        <p class="note">На рынке труда появилась трещина: при рекордно низкой безработице доля ищущих работу больше года выросла с 9,7% до <b>13,3%</b>. Это первый признак структурной безработицы: людей не хватает в одних отраслях и регионах, а в других для них нет работы.</p>
+        <div class="src">ЦБ; Росстат</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BDG -->
+  <section class="sec" id="bdg">
+    <div class="sec-h"><span class="code">BDG</span><h2>Федеральный бюджет</h2><span class="q">Доходы, расходы, дефицит, резервы</span></div>
+    <div class="grid">
+      <div class="p c7">
+        <h3>Доходы и расходы федерального бюджета, трлн ₽</h3>
+        <p class="sub">2021–2025 исполнение · 2026 ожидаемое · 2027–2029 проект бюджета (внесён 30.09.2026)</p>
+        <div class="legend"><span><i style="background:var(--s1)"></i>доходы</span><span><i style="background:var(--s2)"></i>расходы</span><span><i class="hatch"></i>оценка и проект</span></div>
+        <div class="chart" id="ch-bdg"></div>
+        <p class="note">Расходы за пять лет выросли вдвое: с 24,8 до 48,6 трлн ₽. Дефицит стал хроническим: 5,6 трлн ₽ в 2025 году и ожидаемые 7,3 трлн ₽ (3,2% ВВП) в 2026-м при плане 3,8 трлн. За январь–август 2026 года он уже составил 5,8 трлн ₽.</p>
+        <div class="src">Минфин: исполнение ФБ; проект закона о ФБ на 2027–2029 гг.</div>
+      </div>
+      <div class="p c5">
+        <h3>Нефтегазовые и прочие доходы, трлн ₽</h3>
+        <p class="sub">Доля нефтегаза в доходах — подпись над столбцом</p>
+        <div class="legend"><span><i style="background:var(--s4)"></i>нефтегазовые</span><span><i style="background:var(--s3)"></i>ненефтегазовые</span></div>
+        <div class="chart" id="ch-ngd"></div>
+        <p class="note">Главный сдвиг десятилетия: бюджет слез с нефтяной иглы, но пересел на налоговую. Ненефтегазовые доходы за 2021–2025 годы выросли с 16,2 до 28,8 трлн ₽. В январе–августе 2026 года НГД упали ещё на 16,7%, ненефтегазовые выросли на 18,1%.</p>
+        <div class="src">Минфин, оценки исполнения ФБ</div>
+      </div>
+
+      <div class="p c6">
+        <h3>Оборона в расходах, трлн ₽</h3>
+        <p class="sub">Раздел «Национальная оборона». 2026 — закон; 2027–2029 — проект (по данным Reuters, часть приложений закрыта)</p>
+        <div class="chart" id="ch-def"></div>
+        <div class="stats">
+          <div class="stat"><div class="k">Оборона, 2026</div><div class="v">29%</div><div class="d">расходов ФБ</div></div>
+          <div class="stat"><div class="k">+ безопасность</div><div class="v">≈38%</div><div class="d">оборона и правоохрана</div></div>
+          <div class="stat"><div class="k">Проект 2027</div><div class="v">≈44%</div><div class="d">оборона и безопасность</div></div>
+        </div>
+        <div class="src">Минфин, закон о ФБ-2026; Reuters / The Moscow Times о проекте ФБ-2027</div>
+      </div>
+      <div class="p c6">
+        <h3>Подушка и долг</h3>
+        <div class="stats">
+          <div class="stat"><div class="k">ФНБ всего</div><div class="v">13,19<small>трлн ₽</small></div><div class="d">5,6% ВВП, на 01.09.2026</div></div>
+          <div class="stat"><div class="k">ФНБ ликвидный</div><div class="v">4,0<small>трлн ₽</small></div><div class="d">1,7% ВВП · ≈$46,7 млрд</div></div>
+          <div class="stat"><div class="k">Госдолг 2027</div><div class="v">21,7%</div><div class="d">ВВП, проект</div></div>
+          <div class="stat"><div class="k">Госдолг 2029</div><div class="v">24,1%</div><div class="d">ВВП, проект</div></div>
+        </div>
+        <div class="chart" id="ch-def-gdp"></div>
+        <p class="note">Ликвидной части ФНБ хватит примерно на полгода дефицита в нынешнем темпе. Поэтому дефицит всё больше закрывают долгом (ОФЗ), а цену отсечения для бюджетного правила снижают: с $59 в 2026 году до <b>$50</b> в 2027-м.</p>
+        <div class="src">Минфин (ФНБ); проект ФБ-2027–2029</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TAX -->
+  <section class="sec" id="tax">
+    <div class="sec-h"><span class="code">TAX</span><h2>Налоги</h2><span class="q">Что платят и как меняются правила</span></div>
+    <div class="grid">
+      <div class="p c6">
+        <h3>Что собирает ФНС, 2025, трлн ₽</h3>
+        <p class="sub">Всего 61,2 трлн ₽ (+8,8%) во все уровни бюджетной системы</p>
+        <div class="chart" id="ch-fns"></div>
+        <p class="note">Налоги на труд — НДФЛ и страховые взносы — дают уже <b>40%</b> поступлений и растут на 15–16% в год. НДПИ упал на 26,6%. Казна перешла с ренты на зарплатную ведомость.</p>
+        <div class="src">ФНС, итоги 2025 года. В «НДС, прибыль, НДД и прочие» объединены налоги без отдельных итоговых сумм в релизе</div>
+      </div>
+      <div class="p c6">
+        <h3>Основные ставки, 2026</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Налог</th><th>Ставка</th><th>Что изменилось</th></tr></thead>
+          <tbody>
+            <tr><td>НДС</td><td class="num">22% / 10%</td><td>с 01.01.2026, было 20%</td></tr>
+            <tr><td>НДС для УСН</td><td class="num">порог 20 млн ₽</td><td>2027 — 15 млн, 2028 — 10 млн</td></tr>
+            <tr><td>Налог на прибыль</td><td class="num">25%</td><td>с 2025, было 20%</td></tr>
+            <tr><td>НДФЛ</td><td class="num">13–22%</td><td>прогрессия с 2025, пять ступеней</td></tr>
+            <tr><td>Страховые взносы</td><td class="num">30% / 15,1%</td><td>льготы МСП сужены с 2026</td></tr>
+            <tr><td>Дивиденды нерезидентам</td><td class="num">35%</td><td>проект пакета 2027</td></tr>
+            <tr><td>Прибыль ПИФов</td><td class="num">15%</td><td>проект пакета 2027</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note">Налоговый пакет к бюджету 2027–2029: пассивные доходы (+450 млрд ₽ за три года), сверхприбыль добывающих компаний (+200 млрд ₽ в год), индексация акцизов (+80 млрд ₽ в год), НДС 22% для трансграничной электронной торговли (+75 млрд ₽ в год).</p>
+        <div class="src">НК РФ; проект бюджетного пакета 2027–2029 (Коммерсантъ, 01.10.2026)</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REG -->
+  <section class="sec" id="reg">
+    <div class="sec-h"><span class="code">REG</span><h2>Регионы</h2><span class="q">Где создаётся ВВП</span></div>
+    <div class="grid">
+      <div class="p c7">
+        <h3>Федеральные округа: ВРП на душу, индекс к среднему по РФ</h3>
+        <p class="sub">Схема с запада на восток; цвет — богатство на душу, цифра — доля в суммарном ВРП. Наведите на округ</p>
+        <div class="fo-map" id="fomap"></div>
+        <div class="scale"><span>0,3</span><div class="ramp"></div><span>1,6×</span></div>
+        <h3 style="margin-top:6px">Крупнейшие регионы по ВРП, ≈ доля в сумме ВРП, %</h3>
+        <div class="chart" id="ch-top-reg"></div>
+        <p class="note">Экономика сверхконцентрирована. Москва и нефтегазовая Тюменская область с округами дают около трети ВРП страны. Северный Кавказ при 7% населения производит около 2%.</p>
+        <div class="src">Росстат, ВРП 2023 и численность населения; доли округлены (≈), без учёта новых регионов</div>
+      </div>
+      <div class="p c5">
+        <h3>Доля в ВРП и в населении, %</h3>
+        <div class="legend"><span><i style="background:var(--s1)"></i>доля в ВРП</span><span><i style="background:var(--s7)"></i>доля в населении</span></div>
+        <div class="chart" id="ch-fo"></div>
+        <p class="note">ЦФО даёт 36% ВРП при 27% населения, ПФО и Юг — наоборот. Уральский округ (нефть и газ ХМАО и ЯНАО) — самый богатый на душу: в 1,6 раза выше среднего.</p>
+        <div class="src">Росстат, ВРП 2023, оценка долей</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FWD -->
+  <section class="sec" id="fwd">
+    <div class="sec-h"><span class="code">FWD</span><h2>Куда движется</h2><span class="q">Официальный прогноз и тенденции, которые важнее него</span></div>
+    <div class="grid">
+      <div class="p c12">
+        <h3>Прогноз правительства (база бюджета 2027–2029)</h3>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Показатель</th><th>2025 факт</th><th>2026 оценка</th><th>2027</th><th>2028</th><th>2029</th></tr></thead>
+          <tbody>
+            <tr><td>Рост ВВП, %</td><td class="num">1,0</td><td class="num">0,6</td><td class="num">1,4</td><td class="num">н/д</td><td class="num">2,4</td></tr>
+            <tr><td>Urals, $/барр.</td><td class="num">≈57</td><td class="num">—</td><td class="num">53</td><td class="num">52</td><td class="num">51</td></tr>
+            <tr><td>Цена отсечения, $/барр.</td><td class="num">60</td><td class="num">59</td><td class="num">50</td><td class="num">50</td><td class="num">50</td></tr>
+            <tr><td>USD/RUB, среднегодовой</td><td class="num">≈83</td><td class="num">—</td><td class="num">87,4</td><td class="num">н/д</td><td class="num">н/д</td></tr>
+            <tr><td>Доходы ФБ, трлн ₽</td><td class="num">37,3</td><td class="num">≈41,3</td><td class="num">43,3</td><td class="num">45,8</td><td class="num">48,6</td></tr>
+            <tr><td>Расходы ФБ, трлн ₽</td><td class="num">42,9</td><td class="num">≈48,6</td><td class="num">48,8</td><td class="num">50,9</td><td class="num">53,9</td></tr>
+            <tr><td>Дефицит, % ВВП</td><td class="num">2,6</td><td class="num">3,2</td><td class="num">2,2</td><td class="num">1,9</td><td class="num">1,9</td></tr>
+          </tbody>
+        </table></div>
+        <p class="note">ЦБ осторожнее МЭР: на 2026 год он ждёт роста 0–1%. Urals 2025 года и курс 2025 года приведены как оценки (≈). Цена Urals в сентябре 2026 года — разовый шок после атаки на нефтяную инфраструктуру Саудовской Аравии, в прогноз он не заложен.</p>
+        <div class="src">Минфин и МЭР, бюджетный пакет 30.09.2026; Банк России, среднесрочный прогноз</div>
+      </div>
+    </div>
+    <div class="risks" id="risks"></div>
+  </section>
+
+  <footer class="foot">
+    <p>Терминал собран по официальной статистике и отчётности: Росстат, Банк России, Минфин, ФНС, ФТС, МЭР. Знак ≈ отмечает оценки и расчёты, а не опубликованные цифры. Данные после 2022 года публикуются с изъятиями: часть внешнеторговой и бюджетной статистики засекречена.</p>
+    <ul>
+      <li><a href="https://rosstat.gov.ru/folder/313/document/281270" target="_blank" rel="noopener">Росстат: вторая оценка ВВП 2025</a></li>
+      <li><a href="https://rosstat.gov.ru/storage/mediabank/14_06-02-2026.html" target="_blank" rel="noopener">Росстат: производство и использование ВВП 2025</a></li>
+      <li><a href="https://www.interfax.ru/business/1115594" target="_blank" rel="noopener">Интерфакс: ВВП II кв. 2026</a></li>
+      <li><a href="https://www.cbr.ru/press/keypr/" target="_blank" rel="noopener">Банк России: решение по ставке 11.09.2026</a></li>
+      <li><a href="https://www.audit-it.ru/inform/inflation/" target="_blank" rel="noopener">ИПЦ по месяцам (Росстат)</a></li>
+      <li><a href="https://www.interfax.ru/business/1068331" target="_blank" rel="noopener">Минфин: исполнение ФБ 2025</a></li>
+      <li><a href="https://www.interfax.ru/business/1114021" target="_blank" rel="noopener">Минфин: ФБ январь–август 2026</a></li>
+      <li><a href="https://www.kommersant.ru/doc/8991082" target="_blank" rel="noopener">Коммерсантъ: проект бюджета 2027–2029</a></li>
+      <li><a href="https://ru.themoscowtimes.com/2026/09/28/eksklyuziv-vlasti-rf-zalozhili-rekordnyy-rost-voennykh-raskhodov-v-27-28g-a207221" target="_blank" rel="noopener">The Moscow Times / Reuters: оборона 2027–2029</a></li>
+      <li><a href="https://www.interfax.ru/business/1113682" target="_blank" rel="noopener">Минфин: ФНБ на 01.09.2026</a></li>
+      <li><a href="https://expert.ru/news/fns-perechislila-v-byudzhet-za-2025-god-61-2-trln-rubley" target="_blank" rel="noopener">ФНС: поступления 2025</a></li>
+      <li><a href="https://portnews.ru/news/387878/" target="_blank" rel="noopener">ФТС: внешняя торговля 2025</a></li>
+      <li><a href="https://www.infranews.ru/vneshnyaya-torgovlya/69477-tovarooborot-rossii-i-kitaya-po-itogam-2025-goda-sokratilsya-na-7-do-228-mlrd-dollarov/" target="_blank" rel="noopener">Торговля с Китаем 2025</a></li>
+      <li><a href="https://www.fontanka.ru/2026/09/17/76647413/" target="_blank" rel="noopener">Фонтанка: Urals выше $120</a></li>
+      <li><a href="https://ru.themoscowtimes.com/2026/09/29/v-rossii-nachala-rasti-zastoinaya-bezrabotitsa-a207233" target="_blank" rel="noopener">Росстат: безработица, июль 2026</a></li>
+    </ul>
+  </footer>
+</main>
+
+<div id="tip" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+"use strict";
+const NS="http://www.w3.org/2000/svg";
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt=(v,d=1)=>v.toLocaleString("ru-RU",{minimumFractionDigits:d,maximumFractionDigits:d});
+const sgn=(v,d=1)=>(v>0?"+":v<0?"−":"")+fmt(Math.abs(v),d);
+
+/* ---------- ДАННЫЕ ---------- */
+const TAPE=[
+  {k:"ВВП 2025",v:"214,3",u:"трлн ₽",d:"реальный рост +1,0%",c:["down","▼ с 4,3%"]},
+  {k:"ВВП II кв. 2026",v:"+1,3%",u:"г/г",d:"I кв.: −0,2%",c:["up","▲ отскок"]},
+  {k:"Ключевая ставка",v:"14,00%",u:"",d:"пауза 11.09; далее 23.10",c:["flat","■ пауза"]},
+  {k:"Инфляция г/г",v:"6,26%",u:"",d:"на 28.09; цель 4%",c:["warn","▲ ускорение"]},
+  {k:"Безработица",v:"2,3%",u:"",d:"июль 2026, исторический минимум",c:["warn","! перегрев"]},
+  {k:"USD/RUB",v:"83,56",u:"₽",d:"курс ЦБ на 01.10",c:["up","▲ рубль крепче"]},
+  {k:"Urals",v:"≈121",u:"$/барр.",d:"пик 17.09; в бюджете 2027 — $53",c:["up","▲ шок"]},
+  {k:"Дефицит ФБ",v:"5,8",u:"трлн ₽",d:"янв–авг 2026, 2,5% ВВП",c:["down","▼ план 3,8"]},
+  {k:"ФНБ, ликвидный",v:"4,0",u:"трлн ₽",d:"1,7% ВВП, на 01.09",c:["flat","■ тонкий"]}
+];
+
+const GDP_G=[
+  {y:"2019",v:2.2},{y:"2020",v:-2.7},{y:"2021",v:5.9},{y:"2022",v:-1.2},{y:"2023",v:4.1},{y:"2024",v:4.3},{y:"2025",v:1.0},
+  {y:"2026",v:0.6,f:1,note:"оценка МЭР; I п/г факт +0,6%"},{y:"2027",v:1.4,f:1,note:"прогноз МЭР"},{y:"2029",v:2.4,f:1,note:"прогноз МЭР (2028 — н/д)"}
+];
+const GDP_N=[{y:"2019",v:109.6},{y:"2020",v:107.7},{y:"2021",v:135.8},{y:"2022",v:156.9},{y:"2023",v:172.1},{y:"2024",v:201.2},{y:"2025",v:214.3}];
+
+const USE=[
+  {n:"Потребление домохозяйств",v:51.1,a:108.5,c:"--s1"},
+  {n:"Госпотребление",v:19.4,a:41.2,c:"--s2"},
+  {n:"НКО",v:0.5,a:1.1,c:"--s5"},
+  {n:"Инвестиции в основной капитал",v:23.6,a:50.3,c:"--s3"},
+  {n:"Запасы",v:2.8,a:6.1,c:"--s4"},
+  {n:"Чистый экспорт",v:2.6,a:5.6,c:"--s7"}
+];
+
+const CONTRIB=[
+  ["Обрабатывающие производства",0.60],["Госуправление, оборона, соцобеспечение",0.37],["Финансы и страхование",0.25],
+  ["Строительство",0.14],["Гостиницы и общепит",0.09],["Сельское хозяйство",0.09],["ИТ и связь",0.07],
+  ["Здравоохранение",-0.01],["Водоснабжение, отходы",-0.02],["Энергоснабжение",-0.03],["Административные услуги",-0.05],
+  ["Научная и проф. деятельность",-0.06],["Операции с недвижимостью",-0.10],["Торговля",-0.12],["Добыча полезных ископаемых",-0.20]
+];
+
+// [отрасль, доля ВДС ≈, рост 2025, рост II кв 2026]
+const IND=[
+  ["Обрабатывающие производства",15.3,3.9,1.2],
+  ["Добыча полезных ископаемых",11.8,-1.7,-1.6],
+  ["Оптовая и розничная торговля",11.4,-1.1,2.8],
+  ["Операции с недвижимостью",10.1,-1.0,null],
+  ["Госуправление и оборона",7.7,4.8,null],
+  ["Транспорт и хранение",6.5,null,4.0],
+  ["Финансы и страхование",6.5,3.9,2.9],
+  ["Строительство",5.2,2.7,null],
+  ["Научная и проф. деятельность",4.0,-1.5,null],
+  ["Сельское хозяйство",3.9,2.3,null],
+  ["ИТ и связь",3.2,2.2,5.5],
+  ["Образование",3.0,null,null],
+  ["Здравоохранение",2.6,-0.4,null],
+  ["Административные услуги",2.3,-2.2,null],
+  ["Энергоснабжение",1.9,-1.6,-1.3],
+  ["Гостиницы и общепит",1.0,8.9,5.8],
+  ["Водоснабжение, отходы",0.5,-3.7,-3.3]
+];
+
+const EXP=[
+  ["Минеральное сырьё",225.3,-14.8],["Металлы и изделия",74.7,17.4],["Продовольствие и агросырьё",40.9,-4.1],
+  ["Химия и каучук",33.6,21.6],["Машины и оборудование",29.6,26.6],["Древесина и целлюлоза",10.6,4.9],["Текстиль и обувь",3.4,49.1]
+];
+const GEO=[
+  {n:"Азия",v:511.9,c:"--s1"},{n:"Европа",v:129.7,c:"--s2"},{n:"Африка",v:27.1,c:"--s3"},{n:"Прочие",v:29.0,c:"--s4"}
+];
+
+// ставка: [год, месяц(1-12), значение] — дата вступления решения
+const RATE=[
+  [2025,1,21],[2025,6,20],[2025,7,18],[2025,9,17],[2025,10,16.5],[2025,12,16],
+  [2026,2,15.5],[2026,3,15],[2026,4,14.5],[2026,6,14.25],[2026,7,14],[2026,9,14]
+];
+const INFL=[9.92,10.06,10.34,10.23,9.89,9.41,8.8,8.14,7.99,7.73,6.65,5.6, 6.01,5.92,5.87,5.6,5.32,6.03,6.0,6.34,6.26];
+const MON=["янв","фев","мар","апр","май","июн","июл","авг","сен","окт","ноя","дек"];
+
+const BDG=[
+  {y:"2021",r:25.3,e:24.8},{y:"2022",r:27.8,e:31.1},{y:"2023",r:29.1,e:32.4},{y:"2024",r:36.7,e:40.2},{y:"2025",r:37.3,e:42.9},
+  {y:"2026",r:41.3,e:48.6,f:1},{y:"2027",r:43.3,e:48.8,f:1},{y:"2028",r:45.8,e:50.9,f:1},{y:"2029",r:48.6,e:53.9,f:1}
+];
+const NGD=[{y:"2021",o:9.1,n:16.2},{y:"2022",o:11.6,n:16.2},{y:"2023",o:8.8,n:20.3},{y:"2024",o:11.1,n:25.6},{y:"2025",o:8.5,n:28.8},{y:"8м 2026",o:5.0,n:20.9}];
+const DEF=[{y:"2026",v:12.9,note:"закон"},{y:"2027",v:17.1,f:1,note:"проект"},{y:"2028",v:16.6,f:1,note:"проект"},{y:"2029",v:16.3,f:1,note:"проект"}];
+const DEFGDP=[{y:"2024",v:-1.7},{y:"2025",v:-2.6},{y:"2026",v:-3.2,f:1},{y:"2027",v:-2.2,f:1},{y:"2028",v:-1.9,f:1},{y:"2029",v:-1.9,f:1}];
+
+const FNS=[["Страховые взносы",14.9,16.4],["НДФЛ",9.7,16.3],["НДПИ",9.3,-26.6],["НДС, прибыль, НДД, акцизы и прочие",27.3,null]];
+
+// ФО: код, имя, доля ВРП, доля населения, позиция в схеме [col,row,colspan]
+const FO=[
+  {k:"СЗФО",n:"Северо-Западный",g:11.8,p:9.5,pos:[1,1,2,1]},
+  {k:"ЦФО",n:"Центральный",g:35.9,p:27.0,pos:[1,2,1,1]},
+  {k:"ПФО",n:"Приволжский",g:14.4,p:19.9,pos:[2,2,1,1]},
+  {k:"УФО",n:"Уральский",g:13.3,p:8.4,pos:[3,1,1,3]},
+  {k:"СФО",n:"Сибирский",g:9.6,p:11.4,pos:[4,1,1,3]},
+  {k:"ДФО",n:"Дальневосточный",g:6.9,p:5.4,pos:[5,1,1,3]},
+  {k:"ЮФО",n:"Южный",g:6.6,p:11.4,pos:[1,3,1,1]},
+  {k:"СКФО",n:"Северо-Кавказский",g:1.9,p:6.9,pos:[2,3,1,1]}
+];
+const TOPREG=[["Москва",22.0],["Тюменская обл. с ХМАО и ЯНАО",10.0],["Санкт-Петербург",6.8],["Московская обл.",5.4],["Татарстан",2.7],["Красноярский край",2.5],["Свердловская обл.",2.2]];
+
+const RISKS=[
+  {h:"Стагфляция",c:["warn","высокий"],t:"Рост около нуля при инфляции 6% и ставке 14%. Если ЦБ продлит паузу до конца года, а бюджет добавит спроса, экономика рискует надолго застрять в режиме «дорого и без роста»."},
+  {h:"Бюджет как главный заказчик",c:["warn","усиливается"],t:"Оборона и безопасность — около 44% расходов в проекте на 2027 год. Госзаказ поддерживает обработку, но вытесняет частные инвестиции и разгоняет зарплаты в ОПК."},
+  {h:"Налоговая консолидация",c:["warn","идёт"],t:"НДС 22%, прогрессивный НДФЛ, сужение льгот МСП, налог на пассивные доходы. Нагрузка смещается на бизнес и средний класс: бюджет становится устойчивее, малый бизнес и обеление — нет."},
+  {h:"Нефтяная волатильность",c:["up","в плюс сейчас"],t:"Сентябрьский шок поднял Urals выше $110. При цене отсечения $50–59 сверхдоходы идут в ФНБ. Но прогноз МЭР ($51–53) консервативен, и откат цен может быть таким же резким."},
+  {h:"Кадровый потолок",c:["down","жёсткое ограничение"],t:"Безработица 2,3% — это не успех, а предел. Без роста производительности, а не числа работников, роста выше 1–1,5% не будет. Структурная безработица (13% ищут работу больше года) показывает, что люди не там, где спрос."},
+  {h:"Разворот на Восток",c:["flat","завершён"],t:"73% торговли — Азия, 54% расчётов — в рублях. Зависимость от Китая (треть оборота, основа импорта машин) — новая концентрация риска, а не диверсификация."}
+];
+
+/* ---------- ТУЛТИП ---------- */
+const tip=document.getElementById("tip");
+function showTip(e,rows,title){
+  tip.textContent="";
+  if(title){const t=document.createElement("div");t.className="tl";t.textContent=title;tip.appendChild(t);}
+  rows.forEach(r=>{
+    const row=document.createElement("div");row.className="tr";
+    if(r.c){const i=document.createElement("i");i.style.background=r.c;row.appendChild(i);}
+    const v=document.createElement("span");v.className="tv";v.textContent=r.v;row.appendChild(v);
+    if(r.l){const l=document.createElement("span");l.className="tl";l.textContent=r.l;row.appendChild(l);}
+    tip.appendChild(row);
+  });
+  tip.style.display="block";moveTip(e);
+}
+function moveTip(e){
+  let x,y;
+  if(e && e.clientX!=null && e.clientX!==0){x=e.clientX;y=e.clientY;}
+  else if(e && e.target && e.target.getBoundingClientRect){const r=e.target.getBoundingClientRect();x=r.left+r.width/2;y=r.top;}
+  else return;
+  const w=tip.offsetWidth,h=tip.offsetHeight;
+  let L=x+14,T=y-h-12;
+  if(L+w>window.innerWidth-8)L=x-w-14;
+  if(T<8)T=y+16;
+  tip.style.left=Math.max(8,L)+"px";tip.style.top=T+"px";
+}
+function hideTip(){tip.style.display="none";}
+function bindTip(el,rows,title){
+  el.setAttribute("tabindex","0");
+  el.addEventListener("pointermove",e=>showTip(e,rows,title));
+  el.addEventListener("pointerleave",hideTip);
+  el.addEventListener("focus",e=>showTip(e,rows,title));
+  el.addEventListener("blur",hideTip);
+}
+
+/* ---------- SVG-хелперы ---------- */
+function S(tag,attrs,parent){const el=document.createElementNS(NS,tag);for(const k in attrs)el.setAttribute(k,attrs[k]);if(parent)parent.appendChild(el);return el;}
+function T(parent,x,y,txt,attrs){const t=S("text",Object.assign({x,y},attrs||{}),parent);t.textContent=txt;return t;}
+function svgFor(host,w,h){host.textContent="";const s=S("svg",{viewBox:`0 0 ${w} ${h}`,width:w,height:h,role:"img"});host.appendChild(s);
+  s._defs=S("defs",{},s);s._n=0;
+  return s;}
+function hatch(s,col){
+  const id="h"+Math.random().toString(36).slice(2,8);
+  const p=S("pattern",{id,width:6,height:6,patternUnits:"userSpaceOnUse",patternTransform:"rotate(45)"},s._defs);
+  S("rect",{width:6,height:6,fill:css("--panel")},p);
+  S("rect",{width:2.6,height:6,fill:col},p);
+  return `url(#${id})`;}
+// столбик с закруглённым торцом 4px у конца данных, прямым у базовой линии
+function barPath(x,y0,y1,w){
+  const r=Math.min(4,w/2,Math.abs(y1-y0));
+  if(y1<y0){ // вверх
+    return `M${x},${y0}V${y1+r}Q${x},${y1} ${x+r},${y1}H${x+w-r}Q${x+w},${y1} ${x+w},${y1+r}V${y0}Z`;
+  } else {
+    return `M${x},${y0}V${y1-r}Q${x},${y1} ${x+r},${y1}H${x+w-r}Q${x+w},${y1} ${x+w},${y1-r}V${y0}Z`;
+  }
+}
+function hbarPath(x0,x1,y,h){
+  const r=Math.min(4,h/2,Math.abs(x1-x0));
+  if(x1>=x0) return `M${x0},${y}H${x1-r}Q${x1},${y} ${x1},${y+r}V${y+h-r}Q${x1},${y+h} ${x1-r},${y+h}H${x0}Z`;
+  return `M${x0},${y}H${x1+r}Q${x1},${y} ${x1},${y+r}V${y+h-r}Q${x1},${y+h} ${x1+r},${y+h}H${x0}Z`;
+}
+function niceTicks(min,max,n){
+  const span=max-min, step0=span/n, mag=Math.pow(10,Math.floor(Math.log10(step0)));
+  const err=step0/mag; const step=(err>=7.5?10:err>=3.5?5:err>=1.5?2:1)*mag;
+  const lo=Math.floor(min/step)*step, hi=Math.ceil(max/step)*step, out=[];
+  for(let v=lo;v<=hi+1e-9;v+=step)out.push(+v.toFixed(6));
+  return out;
+}
+const W=host=>Math.max(280,Math.floor(host.clientWidth||600));
+
+/* ---------- ВЕРТИКАЛЬНЫЕ СТОЛБИКИ (одна серия) ---------- */
+function vbars(host,data,o){
+  const w=W(host),h=o.h||240,m={t:22,r:8,b:26,l:36};
+  const s=svgFor(host,w,h);
+  const vals=data.map(d=>d.v);
+  const ticks=niceTicks(Math.min(0,...vals),Math.max(0,...vals),4);
+  const y0=ticks[0],y1=ticks[ticks.length-1];
+  const Y=v=>m.t+(h-m.t-m.b)*(1-(v-y0)/(y1-y0));
+  ticks.forEach(t=>{S("line",{x1:m.l,x2:w-m.r,y1:Y(t),y2:Y(t),class:t===0?"axis":"grid-l"},s);T(s,m.l-6,Y(t)+4,fmt(t,o.td||0),{"text-anchor":"end"});});
+  const bw=(w-m.l-m.r)/data.length, gap=Math.max(2,bw*0.28);
+  data.forEach((d,i)=>{
+    const x=m.l+i*bw+gap/2, bwi=bw-gap;
+    const col=d.v<0&&o.negColor?css("--neg"):css(o.color||"--s1");
+    const g=S("g",{class:"mk",style:`color:${col}`},s);
+    const fill=d.f?hatch(s,col):col;
+    S("path",{d:barPath(x,Y(0),Y(d.v),bwi),fill},g);
+    if(d.f)S("path",{d:barPath(x,Y(0),Y(d.v),bwi),fill:"none",stroke:col,"stroke-width":1},g);
+    const ly=d.v>=0?Y(d.v)-6:Y(d.v)+14;
+    if(o.labels!==false)T(s,x+bwi/2,ly,(o.signed?sgn(d.v,o.d??1):fmt(d.v,o.d??1)),{"text-anchor":"middle",class:"val"});
+    T(s,x+bwi/2,h-8,d.y,{"text-anchor":"middle"});
+    const hit=S("rect",{x:m.l+i*bw,y:m.t,width:bw,height:h-m.t-m.b,class:"hit"},s);
+    bindTip(hit,[{v:(o.signed?sgn(d.v,o.d??1):fmt(d.v,o.d??1))+(o.unit||""),l:d.note||(d.f?"прогноз":"факт"),c:col}],d.y);
+  });
+}
+
+/* ---------- ГРУППОВЫЕ СТОЛБИКИ ---------- */
+function gbars(host,data,keys,o){
+  const w=W(host),h=o.h||260,m={t:14,r:8,b:26,l:36};
+  const s=svgFor(host,w,h);
+  const all=data.flatMap(d=>keys.map(k=>d[k.k]));
+  const ticks=niceTicks(0,Math.max(...all),4);const y1=ticks[ticks.length-1];
+  const Y=v=>m.t+(h-m.t-m.b)*(1-v/y1);
+  ticks.forEach(t=>{S("line",{x1:m.l,x2:w-m.r,y1:Y(t),y2:Y(t),class:t===0?"axis":"grid-l"},s);T(s,m.l-6,Y(t)+4,fmt(t,0),{"text-anchor":"end"});});
+  const gw=(w-m.l-m.r)/data.length, pad=Math.max(4,gw*0.2), bw=(gw-pad)/keys.length-2;
+  data.forEach((d,i)=>{
+    keys.forEach((k,j)=>{
+      const x=m.l+i*gw+pad/2+j*(bw+2);const col=css(k.c);
+      const g=S("g",{class:"mk",style:`color:${col}`},s);
+      S("path",{d:barPath(x,Y(0),Y(d[k.k]),bw),fill:d.f?hatch(s,col):col},g);
+      if(d.f)S("path",{d:barPath(x,Y(0),Y(d[k.k]),bw),fill:"none",stroke:col,"stroke-width":1},g);
+    });
+    T(s,m.l+i*gw+gw/2,h-8,d.y,{"text-anchor":"middle"});
+    const hit=S("rect",{x:m.l+i*gw,y:m.t,width:gw,height:h-m.t-m.b,class:"hit"},s);
+    const rows=keys.map(k=>({v:fmt(d[k.k])+" трлн ₽",l:k.n,c:css(k.c)}));
+    if(o.extra)rows.push(o.extra(d));
+    bindTip(hit,rows,d.y+(d.f?" · оценка/проект":""));
+  });
+  if(o.endLabels){const d=data[data.length-1];keys.forEach((k,j)=>{});}
+}
+
+/* ---------- СТЕК ПО ГОДАМ ---------- */
+function sbars(host,data,keys,o){
+  const w=W(host),h=o.h||240,m={t:22,r:8,b:26,l:36};
+  const s=svgFor(host,w,h);
+  const tot=data.map(d=>keys.reduce((a,k)=>a+d[k.k],0));
+  const ticks=niceTicks(0,Math.max(...tot),4);const y1=ticks[ticks.length-1];
+  const Y=v=>m.t+(h-m.t-m.b)*(1-v/y1);
+  ticks.forEach(t=>{S("line",{x1:m.l,x2:w-m.r,y1:Y(t),y2:Y(t),class:t===0?"axis":"grid-l"},s);T(s,m.l-6,Y(t)+4,fmt(t,0),{"text-anchor":"end"});});
+  const bw=(w-m.l-m.r)/data.length,gap=Math.max(4,bw*0.3);
+  data.forEach((d,i)=>{
+    let acc=0;const x=m.l+i*bw+gap/2,bwi=bw-gap;
+    keys.forEach((k,j)=>{
+      const a=Y(acc),b=Y(acc+d[k.k]);
+      const top=j===keys.length-1;
+      const p=top?barPath(x,a-(j?1:0),b,bwi):`M${x},${a-(j?1:0)}V${b+1}H${x+bwi}V${a-(j?1:0)}Z`;
+      S("path",{d:p,fill:css(k.c),class:"mk"},s);
+      acc+=d[k.k];
+    });
+    T(s,x+bwi/2,Y(acc)-6,Math.round(d[keys[0].k]/(acc)*100)+"%",{"text-anchor":"middle",class:"val"});
+    T(s,x+bwi/2,h-8,d.y,{"text-anchor":"middle"});
+    const hit=S("rect",{x:m.l+i*bw,y:m.t,width:bw,height:h-m.t-m.b,class:"hit"},s);
+    bindTip(hit,keys.map(k=>({v:fmt(d[k.k])+" трлн ₽",l:k.n,c:css(k.c)})).concat([{v:fmt(acc)+" трлн ₽",l:"всего"}]),d.y);
+  });
+}
+
+/* ---------- ГОРИЗОНТАЛЬНЫЕ (с подписью и опц. вторым числом) ---------- */
+function hbars(host,rows,o){
+  const w=W(host);const narrow=w<520;
+  const lw=o.lw!=null?o.lw:(narrow?0:Math.min(230,w*0.36));
+  const rh=narrow?40:26,bh=narrow?10:12;
+  const h=rows.length*rh+8;
+  const s=svgFor(host,w,h);
+  const right=o.right?120:50;
+  const max=Math.max(...rows.map(r=>r[1]));
+  const X=v=>lw+(w-lw-right)*(v/max);
+  rows.forEach((r,i)=>{
+    const yb=narrow?i*rh+20:i*rh+(rh-bh)/2;
+    const col=css(o.color||"--s1");
+    if(narrow)T(s,0,i*rh+13,r[0],{class:"lbl"});
+    else T(s,lw-8,yb+bh-2,r[0],{"text-anchor":"end",class:"lbl"});
+    S("path",{d:hbarPath(lw,X(r[1]),yb,bh),fill:col,class:"mk"},s);
+    T(s,X(r[1])+6,yb+bh-1,fmt(r[1],o.d??1),{class:"val"});
+    if(o.right&&r[2]!=null){T(s,w,yb+bh-1,sgn(r[2],1)+"%",{"text-anchor":"end",style:`fill:${r[2]>=0?css("--pos"):css("--neg")}`});}
+    const hit=S("rect",{x:0,y:i*rh,width:w,height:rh,class:"hit"},s);
+    const tr=[{v:fmt(r[1],o.d??1)+(o.unit||""),l:r[0],c:col}];
+    if(r[2]!=null)tr.push({v:sgn(r[2],1)+"%",l:o.rlab||"к прошлому году"});
+    bindTip(hit,tr);
+  });
+}
+
+/* ---------- ДИВЕРГИРУЮЩИЕ ---------- */
+function divbars(host,rows){
+  const w=W(host);const narrow=w<520;
+  const rh=narrow?36:22,bh=narrow?10:12;
+  const lw=narrow?0:Math.min(230,w*0.4);
+  const h=rows.length*rh+20;
+  const s=svgFor(host,w,h);
+  const max=Math.max(...rows.map(r=>Math.abs(r[1])));
+  const mn=Math.min(0,...rows.map(r=>r[1])),mx=Math.max(0,...rows.map(r=>r[1]));
+  const x0=lw+(narrow?44:52),x1=w-50;const k=(x1-x0)/(mx-mn);
+  const X=v=>x0+(v-mn)*k;const cx=X(0);
+  S("line",{x1:cx,x2:cx,y1:0,y2:h-16,class:"axis"},s);
+  rows.forEach((r,i)=>{
+    const yb=narrow?i*rh+18:i*rh+(rh-bh)/2;
+    const col=r[1]>=0?css("--s1"):css("--neg");
+    if(narrow)T(s,0,i*rh+12,r[0],{class:"lbl"});
+    else T(s,lw-8,yb+bh-2,r[0],{"text-anchor":"end",class:"lbl"});
+    S("path",{d:hbarPath(cx,X(r[1]),yb,bh),fill:col,class:"mk"},s);
+    T(s,r[1]>=0?X(r[1])+5:X(r[1])-5,yb+bh-1,sgn(r[1],2),{"text-anchor":r[1]>=0?"start":"end",class:"val"});
+    const hit=S("rect",{x:0,y:i*rh,width:w,height:rh,class:"hit"},s);
+    bindTip(hit,[{v:sgn(r[1],2)+" п.п.",l:r[0],c:col}],"Вклад в рост ВДС 2025");
+  });
+  T(s,cx,h-2,"0",{"text-anchor":"middle"});
+}
+
+/* ---------- 100% ПОЛОСА ---------- */
+function stack100(host,parts,legendHost,o){
+  const w=W(host),h=o&&o.h||46;
+  const s=svgFor(host,w,h);
+  const tot=parts.reduce((a,p)=>a+p.v,0);
+  let x=0;
+  parts.forEach((p,i)=>{
+    const pw=w*(p.v/tot)-(i<parts.length-1?2:0);
+    const col=css(p.c);
+    const r=S("rect",{x,y:0,width:Math.max(1,pw),height:h-18,fill:col,class:"mk",rx:i===0||i===parts.length-1?3:0},s);
+    if(pw>56)T(s,x+6,(h-18)/2+4,(p.abs?"$"+fmt(p.v,1):fmt(p.v,1)+"%"),{style:"fill:#0b0f14;font-weight:600"});
+    bindTip(r,[{v:p.abs?`$${fmt(p.v,1)} млрд · ${fmt(p.v/tot*100,1)}%`:fmt(p.v,1)+"%"+(p.a?` · ${fmt(p.a,1)} трлн ₽`:""),l:p.n,c:col}]);
+    x+=pw+2;
+  });
+  if(legendHost){legendHost.textContent="";parts.forEach(p=>{const sp=document.createElement("span");const i=document.createElement("i");i.style.background=css(p.c);sp.appendChild(i);sp.appendChild(document.createTextNode(p.n+" "+(o&&o.money?("$"+fmt(p.v,1)+" млрд"):(fmt(p.v,1)+"%"))));legendHost.appendChild(sp);});}
+}
+
+/* ---------- ЛИНИИ: ставка и инфляция ---------- */
+function rateChart(host){
+  const w=W(host),h=280,m={t:14,r:44,b:26,l:32};
+  const s=svgFor(host,w,h);
+  const N=21; // янв 2025 .. сен 2026
+  const X=i=>m.l+(w-m.l-m.r)*(i/(N-1));
+  const ticks=[0,4,8,12,16,20,24];const ymax=24;
+  const Y=v=>m.t+(h-m.t-m.b)*(1-v/ymax);
+  ticks.forEach(t=>{S("line",{x1:m.l,x2:w-m.r,y1:Y(t),y2:Y(t),class:t===0?"axis":"grid-l"},s);T(s,m.l-6,Y(t)+4,t,{"text-anchor":"end"});});
+  // цель
+  S("line",{x1:m.l,x2:w-m.r,y1:Y(4),y2:Y(4),stroke:css("--fg-3"),"stroke-width":1.5},s);
+  // ставка по месяцам (значение, действующее на конец месяца)
+  const rateM=[];for(let i=0;i<N;i++){const yr=2025+Math.floor(i/12),mo=i%12+1;let v=21;RATE.forEach(r=>{if(r[0]<yr||(r[0]===yr&&r[1]<=mo))v=r[2];});rateM.push(v);}
+  let d=`M${X(0)},${Y(rateM[0])}`;for(let i=1;i<N;i++)d+=`H${X(i)}V${Y(rateM[i])}`;
+  S("path",{d,fill:"none",stroke:css("--s1"),"stroke-width":2},s);
+  let di="";INFL.forEach((v,i)=>{di+=(i?"L":"M")+X(i)+","+Y(v);});
+  S("path",{d:di,fill:"none",stroke:css("--s2"),"stroke-width":2,"stroke-linejoin":"round"},s);
+  // концевые точки и подписи
+  const last=N-1;
+  S("circle",{cx:X(last),cy:Y(rateM[last]),r:4,fill:css("--s1"),stroke:css("--panel"),"stroke-width":2},s);
+  S("circle",{cx:X(last),cy:Y(INFL[last]),r:4,fill:css("--s2"),stroke:css("--panel"),"stroke-width":2},s);
+  T(s,X(last)+8,Y(rateM[last])+4,"14,0",{class:"val"});
+  T(s,X(last)+8,Y(INFL[last])+4,"6,26",{class:"val"});
+  T(s,X(2),Y(10.34)-8,"10,3 пик",{class:"lbl","text-anchor":"middle"});
+  // ось X
+  for(let i=0;i<N;i+=3){const mo=i%12;T(s,X(i),h-8,MON[mo]+(mo===0?" "+(2025+Math.floor(i/12)).toString().slice(2):""),{"text-anchor":"middle"});}
+  // кроссхейр
+  const cross=S("line",{x1:0,x2:0,y1:m.t,y2:h-m.b,stroke:css("--fg-3"),"stroke-width":1,opacity:0},s);
+  const hit=S("rect",{x:m.l,y:m.t,width:w-m.l-m.r,height:h-m.t-m.b,class:"hit"},s);
+  const at=e=>{const r=s.getBoundingClientRect();const px=(e.clientX-r.left)*(w/r.width);return Math.max(0,Math.min(N-1,Math.round((px-m.l)/((w-m.l-m.r)/(N-1)))));};
+  const show=(e,i)=>{cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));cross.setAttribute("opacity",1);
+    const yr=2025+Math.floor(i/12);
+    showTip(e,[{v:fmt(rateM[i],2)+"%",l:"ключевая ставка",c:css("--s1")},{v:fmt(INFL[i],2)+"%",l:i===N-1?"инфляция, 28.09":"инфляция г/г",c:css("--s2")},{v:sgn(rateM[i]-INFL[i],1)+" п.п.",l:"реальная ставка"}],MON[i%12]+" "+yr);};
+  hit.setAttribute("tabindex","0");
+  let ki=N-1;
+  hit.addEventListener("pointermove",e=>show(e,at(e)));
+  hit.addEventListener("pointerleave",()=>{hideTip();cross.setAttribute("opacity",0);});
+  hit.addEventListener("focus",e=>show(e,ki));
+  hit.addEventListener("keydown",e=>{if(e.key==="ArrowLeft"){ki=Math.max(0,ki-1);show({target:hit},ki);}if(e.key==="ArrowRight"){ki=Math.min(N-1,ki+1);show({target:hit},ki);}});
+  hit.addEventListener("blur",()=>{hideTip();cross.setAttribute("opacity",0);});
+}
+
+/* ---------- ЛИНИЯ: номинальный ВВП ---------- */
+function lineArea(host,data,o){
+  const w=W(host),h=o.h||170,m={t:20,r:44,b:24,l:34};
+  const s=svgFor(host,w,h);
+  const ticks=niceTicks(0,Math.max(...data.map(d=>d.v)),4);const y1=ticks[ticks.length-1];
+  const X=i=>m.l+(w-m.l-m.r)*(i/(data.length-1));
+  const Y=v=>m.t+(h-m.t-m.b)*(1-v/y1);
+  ticks.forEach(t=>{S("line",{x1:m.l,x2:w-m.r,y1:Y(t),y2:Y(t),class:t===0?"axis":"grid-l"},s);T(s,m.l-6,Y(t)+4,t,{"text-anchor":"end"});});
+  const col=css("--s1");
+  let d="";data.forEach((p,i)=>d+=(i?"L":"M")+X(i)+","+Y(p.v));
+  S("path",{d:d+`L${X(data.length-1)},${Y(0)}L${X(0)},${Y(0)}Z`,fill:col,opacity:.14},s);
+  S("path",{d,fill:"none",stroke:col,"stroke-width":2},s);
+  data.forEach((p,i)=>{T(s,X(i),h-6,"’"+p.y.slice(2),{"text-anchor":"middle"});});
+  const L=data.length-1;
+  S("circle",{cx:X(L),cy:Y(data[L].v),r:4,fill:col,stroke:css("--panel"),"stroke-width":2},s);
+  T(s,X(L)+8,Y(data[L].v)+4,fmt(data[L].v,1),{class:"val"});
+  const cross=S("line",{x1:0,x2:0,y1:m.t,y2:h-m.b,stroke:css("--fg-3"),opacity:0},s);
+  const hit=S("rect",{x:m.l,y:m.t,width:w-m.l-m.r,height:h-m.t-m.b,class:"hit"},s);hit.setAttribute("tabindex","0");
+  const show=(e,i)=>{cross.setAttribute("x1",X(i));cross.setAttribute("x2",X(i));cross.setAttribute("opacity",1);showTip(e,[{v:fmt(data[i].v,1)+" трлн ₽",l:"номинальный ВВП",c:col}],data[i].y);};
+  hit.addEventListener("pointermove",e=>{const r=s.getBoundingClientRect();const px=(e.clientX-r.left)*(w/r.width);const i=Math.max(0,Math.min(L,Math.round((px-m.l)/((w-m.l-m.r)/L))));show(e,i);});
+  hit.addEventListener("pointerleave",()=>{hideTip();cross.setAttribute("opacity",0);});
+  hit.addEventListener("focus",e=>show(e,L));hit.addEventListener("blur",()=>{hideTip();cross.setAttribute("opacity",0);});
+}
+
+/* ---------- МЕХАНИЗМ ---------- */
+function mechanism(host){
+  const w=1180,h=460;
+  host.textContent="";
+  const s=S("svg",{viewBox:`0 0 ${w} ${h}`,role:"img","aria-label":"Схема потоков в российской экономике"});host.appendChild(s);
+  const defs=S("defs",{},s);
+  const mk=(id,cls)=>{const m=S("marker",{id,viewBox:"0 0 10 10",refX:9,refY:5,markerWidth:7,markerHeight:7,orient:"auto-start-reverse"},defs);S("path",{d:"M0,0L10,5L0,10z",class:"arrow "+cls},m);};
+  mk("ar","");mk("arn","neg");
+  const N={
+    exp:{x:20,y:40,t:"Сырьевой экспорт",n:"$225 млрд",s:"54% экспорта: нефть, газ, уголь"},
+    rub:{x:20,y:200,t:"Рубль и валюта",n:"83,6 ₽/$",s:"сальдо торговли +$139 млрд"},
+    ngd:{x:20,y:350,t:"Нефтегазовые доходы",n:"8,5 трлн ₽",s:"23% доходов ФБ (2025)"},
+    def:{x:310,y:40,t:"Оборонзаказ и ОПК",n:"12,9 → 17,1 трлн ₽",s:"оборона: 2026 → проект 2027"},
+    bdg:{x:310,y:270,t:"Федеральный бюджет",n:"48,6 трлн ₽",s:"расходы 2026, дефицит 3,2% ВВП",hot:1},
+    lab:{x:600,y:40,t:"Рынок труда",n:"2,3% безработица",s:"дефицит кадров, зарплата 109,5 тыс."},
+    con:{x:600,y:200,t:"Потребление",n:"51% ВВП",s:"108,5 трлн ₽ домохозяйств",hot:1},
+    tax:{x:600,y:350,t:"Налоги",n:"НДС 22%",s:"ненефтегазовые 28,8 трлн ₽"},
+    cbr:{x:890,y:40,t:"Ключевая ставка",n:"14%",s:"реальная ≈ 7,7 п.п."},
+    inf:{x:890,y:200,t:"Инфляция",n:"6,26% г/г",s:"цель ЦБ — 4%"},
+    inv:{x:890,y:350,t:"Кредит и инвестиции",n:"23,6% ВВП",s:"накопление сокращается"}
+  };
+  const BW=230,BH=82;
+  const c=(k,side)=>{const n=N[k];return side==="r"?[n.x+BW,n.y+BH/2]:side==="l"?[n.x,n.y+BH/2]:side==="t"?[n.x+BW/2,n.y]:[n.x+BW/2,n.y+BH];};
+  const E=[
+    ["exp","b","rub","t","валюта"],
+    ["rub","b","ngd","t","налоги ×курс"],
+    ["ngd","r","bdg","l",""],
+    ["tax","l","bdg","b","",0],
+    ["bdg","t","def","b","госзаказ"],
+    ["def","r","lab","l","спрос на людей"],
+    ["bdg","r","con","l","выплаты, соцрасходы"],
+    ["lab","b","con","t","зарплаты"],
+    ["con","r","inf","l","спрос > предложения"],
+    ["inf","t","cbr","b","реакция ЦБ"],
+    ["con","b","tax","t","НДС, НДФЛ"],
+    ["cbr","r","inv","r","дорогой кредит",1]
+  ];
+  E.forEach(e=>{
+    const [a,sa,b,sb,lab,neg]=e;const p=c(a,sa),q=c(b,sb);
+    let d;
+    if(a==="cbr"&&b==="inv"){d=`M${p[0]},${p[1]}C${p[0]+44},${p[1]} ${q[0]+44},${q[1]} ${q[0]+2},${q[1]}`;}
+    else if(a==="tax"){d=`M${p[0]},${p[1]}C${p[0]-50},${p[1]} ${q[0]},${q[1]+40} ${q[0]},${q[1]+2}`;}
+    else if(sa==="r"&&sb==="l"){const mx=(p[0]+q[0])/2;d=`M${p[0]},${p[1]}C${mx},${p[1]} ${mx},${q[1]} ${q[0]-2},${q[1]}`;}
+    else if(sa==="t"&&sb==="b"){d=`M${p[0]},${p[1]}C${p[0]},${p[1]-40} ${q[0]},${q[1]+40} ${q[0]},${q[1]+2}`;}
+    else {d=`M${p[0]},${p[1]}C${p[0]},${p[1]+30} ${q[0]},${q[1]-30} ${q[0]},${q[1]-2}`;}
+    S("path",{d,class:"edge"+(neg?" neg":""),"marker-end":`url(#${neg?"arn":"ar"})`},s);
+    if(lab){
+      let lx=(p[0]+q[0])/2,ly=(p[1]+q[1])/2+4, anchor="middle";
+      if(a==="cbr"){lx=q[0]+40;ly=(N.inf.y+BH+N.inv.y)/2+4;anchor="end";}
+      else if(sa==="r"&&sb==="l"){ly=Math.min(p[1],q[1])-BH/2-8;}
+      else if(sa==="b"&&sb==="t"){lx=p[0]+8;anchor="start";}
+      else if(sa==="t"&&sb==="b"){lx=p[0]+8;anchor="start";}
+      const t=T(s,lx,ly,lab,{class:"elab","text-anchor":anchor});
+      if(neg)t.setAttribute("style","fill:var(--neg)");
+    }
+  });
+  // тормоз: ставка → потребление
+  const p=c("cbr","l"),q=c("con","r");
+  S("path",{d:`M${p[0]},${p[1]+20}C${p[0]-60},${p[1]+40} ${q[0]+50},${q[1]-40} ${q[0]+2},${q[1]-20}`,class:"edge neg","marker-end":"url(#arn)"},s);
+  T(s,(p[0]+q[0])/2,(p[1]+q[1])/2+4,"охлаждает спрос",{class:"elab",style:"fill:var(--neg)","text-anchor":"middle"});
+  Object.values(N).forEach(n=>{
+    const g=S("g",{class:"node"+(n.hot?" hot":"")},s);
+    S("rect",{x:n.x,y:n.y,width:BW,height:BH,rx:3},g);
+    T(g,n.x+12,n.y+22,n.t,{class:"t"});
+    T(g,n.x+12,n.y+44,n.n,{class:"n"});
+    T(g,n.x+12,n.y+66,n.s,{class:"s"});
+  });
+}
+
+/* ---------- КАРТА ФО ---------- */
+function foMap(){
+  const host=document.getElementById("fomap");host.textContent="";
+  const ramp=["#cde2fb","#86b6ef","#3987e5","#1c5cab","#0d366b"];
+  FO.forEach(f=>{
+    const idx=f.g/f.p; // ВРП на душу к среднему
+    const step=Math.max(0,Math.min(4,Math.floor((idx-0.25)/0.3)));
+    const d=document.createElement("div");d.className="fo "+(step<=1?"dark-ink":"light-ink");
+    d.style.background=ramp[step];
+    d.style.gridColumn=`${f.pos[0]} / span ${f.pos[2]}`;d.style.gridRow=`${f.pos[1]} / span ${f.pos[3]}`;
+    const a=document.createElement("div");a.className="nm";a.textContent=f.k;
+    const b=document.createElement("div");b.className="vv";b.textContent=fmt(idx,2)+"×";
+    const c2=document.createElement("div");c2.className="ss";c2.textContent=fmt(f.g,1)+"% ВРП";
+    d.append(a,b,c2);
+    bindTip(d,[{v:fmt(idx,2)+"×",l:"ВРП на душу к среднему"},{v:fmt(f.g,1)+"%",l:"доля в ВРП"},{v:fmt(f.p,1)+"%",l:"доля в населении"}],f.n+" ФО");
+    host.appendChild(d);
+  });
+}
+
+/* ---------- ПАРНЫЕ ГОРИЗОНТАЛЬНЫЕ (ФО) ---------- */
+function pairH(host){
+  const w=W(host),rh=34,bh=10;const lw=56;const h=FO.length*rh+4;
+  const s=svgFor(host,w,h);
+  const max=36;const X=v=>lw+(w-lw-96)*(v/max);
+  FO.forEach((f,i)=>{
+    const y=i*rh+4;
+    T(s,0,y+15,f.k,{class:"lbl"});
+    S("path",{d:hbarPath(lw,X(f.g),y,bh),fill:css("--s1"),class:"mk"},s);
+    S("path",{d:hbarPath(lw,X(f.p),y+bh+2,bh),fill:css("--s7"),class:"mk"},s);
+    T(s,X(Math.max(f.g,f.p))+6,y+15,fmt(f.g,1)+" / "+fmt(f.p,1),{class:"val"});
+    const hit=S("rect",{x:0,y:i*rh,width:w,height:rh,class:"hit"},s);
+    bindTip(hit,[{v:fmt(f.g,1)+"%",l:"доля в ВРП",c:css("--s1")},{v:fmt(f.p,1)+"%",l:"доля в населении",c:css("--s7")}],f.n+" ФО");
+  });
+}
+
+/* ---------- ТАБЛИЦА ОТРАСЛЕЙ ---------- */
+let sortKey=1,sortDir=-1;
+function indTable(){
+  const t=document.getElementById("tbl-ind");t.textContent="";
+  const th=document.createElement("thead");const tr=document.createElement("tr");
+  const cols=["Отрасль","Доля ВДС ≈","2025","II кв. 2026"];
+  cols.forEach((c,i)=>{const h=document.createElement("th");h.textContent=c+(i===sortKey?(sortDir<0?" ↓":" ↑"):"");h.className="sortable";h.tabIndex=0;
+    const go=()=>{if(sortKey===i)sortDir*=-1;else{sortKey=i;sortDir=i===0?1:-1;}indTable();};
+    h.addEventListener("click",go);h.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}});tr.appendChild(h);});
+  th.appendChild(tr);t.appendChild(th);
+  const rows=IND.slice().sort((a,b)=>{
+    const x=a[sortKey],y=b[sortKey];
+    if(sortKey===0)return sortDir*x.localeCompare(y,"ru");
+    if(x==null)return 1;if(y==null)return -1;return sortDir*(x-y);});
+  const tb=document.createElement("tbody");
+  const max=Math.max(...IND.map(r=>r[1]));
+  rows.forEach(r=>{
+    const row=document.createElement("tr");
+    const a=document.createElement("td");a.textContent=r[0];row.appendChild(a);
+    const b=document.createElement("td");b.className="num";b.textContent=fmt(r[1],1);
+    const bar=document.createElement("span");bar.className="bar-in";bar.style.width=Math.round(r[1]/max*48)+"px";b.appendChild(bar);row.appendChild(b);
+    [r[2],r[3]].forEach(v=>{const c=document.createElement("td");c.className="num";
+      if(v==null){c.textContent="н/д";c.style.color="var(--fg-3)";}
+      else{const sp=document.createElement("span");sp.className=v>=0?"pos":"neg";sp.textContent=(v>=0?"▲ ":"▼ ")+sgn(v,1)+"%";c.appendChild(sp);}
+      row.appendChild(c);});
+    tb.appendChild(row);
+  });
+  t.appendChild(tb);
+}
+
+/* ---------- ЛЕНТА и РИСКИ ---------- */
+function tape(){
+  const h=document.getElementById("tape");h.textContent="";
+  TAPE.forEach(x=>{
+    const d=document.createElement("div");d.className="tick";
+    const k=document.createElement("div");k.className="k";k.textContent=x.k;
+    const v=document.createElement("div");v.className="v";v.textContent=x.v;
+    if(x.u){const sm=document.createElement("small");sm.textContent=x.u;v.appendChild(sm);}
+    const dd=document.createElement("div");dd.className="d";dd.textContent=x.d;
+    const c=document.createElement("span");c.className="chip "+x.c[0];c.textContent=x.c[1];
+    const cw=document.createElement("div");cw.style.marginTop="6px";cw.appendChild(c);
+    d.append(k,v,dd,cw);h.appendChild(d);
+  });
+}
+function risks(){
+  const h=document.getElementById("risks");h.textContent="";
+  RISKS.forEach(r=>{
+    const d=document.createElement("div");d.className="risk";
+    const row=document.createElement("div");row.className="row";
+    const h4=document.createElement("h4");h4.textContent=r.h;
+    const c=document.createElement("span");c.className="chip "+r.c[0];c.textContent=r.c[1];
+    row.append(h4,c);
+    const p=document.createElement("p");p.textContent=r.t;
+    d.append(row,p);h.appendChild(d);
+  });
+}
+
+/* ---------- РЕНДЕР ---------- */
+function renderCharts(){
+  vbars(document.getElementById("ch-gdp-growth"),GDP_G,{h:250,signed:true,negColor:true,unit:"%"});
+  lineArea(document.getElementById("ch-gdp-nom"),GDP_N,{h:180});
+  stack100(document.getElementById("ch-gdp-use"),USE,document.getElementById("lg-gdp-use"),{h:58});
+  divbars(document.getElementById("ch-contrib"),CONTRIB);
+  hbars(document.getElementById("ch-exp"),EXP,{right:true,unit:" млрд $",d:1});
+  stack100(document.getElementById("ch-geo"),GEO.map(g=>Object.assign({},g,{abs:1})),document.getElementById("lg-geo"),{h:40,money:true});
+  rateChart(document.getElementById("ch-rate"));
+  gbars(document.getElementById("ch-bdg"),BDG,[{k:"r",n:"доходы",c:"--s1"},{k:"e",n:"расходы",c:"--s2"}],{h:270,extra:d=>({v:sgn(d.r-d.e,1)+" трлн ₽",l:"сальдо",c:css("--neg")})});
+  sbars(document.getElementById("ch-ngd"),NGD,[{k:"o",n:"нефтегазовые",c:"--s4"},{k:"n",n:"ненефтегазовые",c:"--s3"}],{h:250});
+  vbars(document.getElementById("ch-def"),DEF,{h:190,unit:" трлн ₽",color:"--s2"});
+  vbars(document.getElementById("ch-def-gdp"),DEFGDP,{h:170,signed:true,negColor:true,unit:"% ВВП"});
+  hbars(document.getElementById("ch-fns"),FNS,{right:true,unit:" трлн ₽",rlab:"к 2024 году"});
+  pairH(document.getElementById("ch-fo"));
+  hbars(document.getElementById("ch-top-reg"),TOPREG,{unit:"% ВРП",color:"--s1"});
+}
+function boot(){
+  tape();risks();indTable();foMap();
+  mechanism(document.getElementById("mechbox"));
+  renderCharts();
+  let rt;window.addEventListener("resize",()=>{clearTimeout(rt);rt=setTimeout(renderCharts,120);});
+  // перерисовка при смене темы (цвета берутся из токенов)
+  const mq=window.matchMedia("(prefers-color-scheme: dark)");
+  if(mq.addEventListener)mq.addEventListener("change",renderCharts);
+  new MutationObserver(renderCharts).observe(document.documentElement,{attributes:true,attributeFilter:["data-theme"]});
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",boot);else boot();
+})();
+</script>
+
+</body>
+</html>
