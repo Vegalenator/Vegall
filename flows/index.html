@@ -522,7 +522,7 @@ function segmentBlock(m,r){
     var unitP=m.id==="pipegas"?" за тыс. м³":" за тонну",kP=m.id==="pipegas"?GAS_M3/1000:1;p/=kP;avg/=kP;
     pts.push("Средняя цена: $"+nf0.format(p)+unitP+(m.id==="lng"?" ($"+nf0.format(p/(GAS_M3/1000))+" за тыс. м³)":"")+" — "+(Math.abs(dv)<0.03?"на уровне рынка":"на "+nf0.format(Math.abs(dv)*100)+"% "+(dv>0?"дороже":"дешевле")+" среднего по рынку ($"+nf0.format(avg)+")")+(r.method==="mirror"?" (в ценах покупателей, с фрахтом)":"")+".")}
   if(r.buyers&&r.buyers.length){var b0=r.buyers[0],t3=r.buyers.slice(0,3).reduce(function(a,x){return a+x[1]},0);
-    pts.push(b0[1]>=0.4?"Сильная зависимость от одного покупателя: "+cname(b0[0])+" берёт "+pct(b0[1])+".":"Покупатели диверсифицированы: на тройку крупнейших приходится "+pct(t3)+".")}
+    pts.push(b0[1]>=0.4?"Сильная зависимость от одного покупателя: "+cname(b0[0])+" берёт "+pct(b0[1])+".":t3>=0.65?"Покупатели сосредоточены: тройка крупнейших берёт "+pct(t3)+".":"Покупатели диверсифицированы: на тройку крупнейших приходится "+pct(t3)+".")}
   var im=(m.importers||[]).findIndex(function(x){return x[0]===r.iso});
   if(im>=0)pts.push("Одновременно №"+(im+1)+" импортёр мира ("+pct(m.importers[im][2])+" импорта): страна перепродаёт или перерабатывает поток.");
   var rl=refLine(m,r);if(rl)pts.unshift(rl);
