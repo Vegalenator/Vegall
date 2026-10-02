@@ -544,17 +544,10 @@ def build_history(cmd, year, prev, cur, old, ranked, mirrors, top):
 
 
 # ------------------------------------------------------- газопроводы -----
-def build_pipelines():
-    """Газопроводы для карты: редакционный паспорт трубы (data/pipelines.json)
-    плюс торговля газом между странами по данным UN Comtrade. Для каждой пары
-    [экспортёр, импортёр] берётся импорт газа (HS 271121) по отчёту импортёра:
-    так учитывается и российский газ. Если импортёр не сдал данные за прошлый
-    год, берётся позапрошлый, это помечается."""
-    path = os.path.join(DATA, "pipelines.json")
-    if not os.path.exists(path):
-        return None
-    with open(path, encoding="utf-8") as f:
-        spec = json.load(f)
+def pair_lookup(hs):
+    """Возвращает функцию (экспортёр, импортёр) → торговля товаром hs за
+    последний доступный год по UN Comtrade: сначала отчёт импортёра, а если
+    он скрывает происхождение товара — отчёт экспортёра."""
     pref = {"US": 842, "FR": 251, "IN": 699, "CH": 757, "NO": 579, "TW": 490}
     code = {}
     for k, v in AREAS.items():
@@ -562,65 +555,70 @@ def build_pipelines():
             code[v[0]] = int(k)
     code.update(pref)
     y0 = TODAY.year - 1
-    cache_imp = {}
+    memo = {}
 
-    def imports_of(iso):
-        if iso in cache_imp:
-            return cache_imp[iso]
-        res = None
-        for y in (y0, y0 - 1):
-            rows = comtrade("A", y, "M", "271121", reporter=code.get(iso), ttl=10) or []
-            rows = [r for r in rows if is_country(r[1])]
-            if rows:
-                res = (y, {iso2(r[1]): (r[3], r[4]) for r in rows})
-                break
-        cache_imp[iso] = res
-        return res
+    def partners(flow, iso):
+        key = (flow, iso)
+        if key not in memo:
+            memo[key] = None
+            if iso in code:
+                for y in (y0, y0 - 1):
+                    rows = comtrade("A", y, flow, hs, reporter=code[iso], ttl=10) or []
+                    rows = [r for r in rows if is_country(r[1])]
+                    if rows:
+                        memo[key] = (y, {iso2(r[1]): (r[3], r[4]) for r in rows})
+                        break
+        return memo[key]
 
-    cache_exp = {}
+    def lookup(exp, imp):
+        got = partners("M", imp)
+        if got and got[1].get(exp, (0, 0))[0] > 0:
+            return {"from": exp, "to": imp, "year": got[0], "usd": round(got[1][exp][0]), "by": "importer"}
+        got = partners("X", exp)
+        if got and got[1].get(imp, (0, 0))[0] > 0:
+            return {"from": exp, "to": imp, "year": got[0], "usd": round(got[1][imp][0]), "by": "exporter"}
+        return {"from": exp, "to": imp, "year": None}
+    return lookup
 
-    def exports_of(iso):
-        if iso in cache_exp:
-            return cache_exp[iso]
-        res = None
-        for y in (y0, y0 - 1):
-            rows = comtrade("A", y, "X", "271121", reporter=code.get(iso), ttl=10) or []
-            rows = [r for r in rows if is_country(r[1])]
-            if rows:
-                res = (y, {iso2(r[1]): (r[3], r[4]) for r in rows})
-                break
-        cache_exp[iso] = res
-        return res
 
-    def plausible_t(usd, kg):
-        # Масса, дающая цену вне $30–1500 за тыс. м³, считается ошибкой отчёта.
-        if not kg or kg <= 0 or not usd:
-            return None
-        per_tcm = usd / (kg / 1000 * 1.36)
-        return round(kg / 1000) if 30 <= per_tcm <= 1500 else None
-
+def build_pipelines():
+    """Газопроводы для карты: редакционный паспорт трубы (data/pipelines.json)
+    плюс стоимость торговли газом (HS 271121) между странами-участниками.
+    Объёмы из таможенной статистики по газу ненадёжны и не выводятся."""
+    path = os.path.join(DATA, "pipelines.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as f:
+        spec = json.load(f)
+    look = pair_lookup("271121")
     out = []
     for p in spec.get("list", []):
-        stats = []
-        for exp, imp in p.get("pairs", []):
-            row = None
-            got = imports_of(imp)
-            if got and got[1].get(exp, (0, 0))[0] > 0:
-                y, partners = got
-                usd, kg = partners[exp]
-                row = {"year": y, "usd": round(usd), "t": plausible_t(usd, kg), "by": "importer"}
-            else:
-                # Импортёр скрывает происхождение газа — берём отчёт экспортёра.
-                got = exports_of(exp)
-                if got and got[1].get(imp, (0, 0))[0] > 0:
-                    y, partners = got
-                    usd, kg = partners[imp]
-                    row = {"year": y, "usd": round(usd), "t": plausible_t(usd, kg), "by": "exporter"}
-            stats.append(dict({"from": exp, "to": imp}, **(row or {"year": None})))
         q = dict(p)
-        q["trade"] = stats
+        q["trade"] = [look(a, b) for a, b in p.get("pairs", [])]
         out.append(q)
     return {"reviewed": spec.get("_reviewed"), "list": out}
+
+
+def build_routes():
+    """Маршруты сырья (data/routes.json) по рынкам с той же стоимостью
+    торговли по парам стран — по коду HS соответствующего рынка."""
+    path = os.path.join(DATA, "routes.json")
+    if not os.path.exists(path):
+        return None
+    with open(path, encoding="utf-8") as f:
+        spec = json.load(f)
+    hs = {c["id"]: c["hs"] for c in COMMODITIES}
+    out = {}
+    for mid, lst in spec.get("markets", {}).items():
+        look = pair_lookup(hs[mid])
+        rows = []
+        for r in lst:
+            q = dict(r)
+            q["trade"] = [look(a, b) for a, b in r.get("pairs", [])]
+            rows.append(q)
+        out[mid] = rows
+        print(f"  маршруты {mid}: {len(rows)}", file=sys.stderr)
+    return {"reviewed": spec.get("_reviewed"), "markets": out}
 
 
 # ------------------------------------------------------------- EIA -------
@@ -788,6 +786,12 @@ def main():
     except Exception as e:
         print(f"  ! газопроводы: {e}", file=sys.stderr)
 
+    routes = None
+    try:
+        routes = build_routes()
+    except Exception as e:
+        print(f"  ! маршруты: {e}", file=sys.stderr)
+
     gold = None
     try:
         gold = imf_gold()
@@ -811,7 +815,7 @@ def main():
 
     out = {
         "updated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%MZ"),
-        "markets": markets, "pulses": pulses, "cbgold": gold, "pipelines": pipelines, "notes": notes, "insights": insights, "countries": countries,
+        "markets": markets, "pulses": pulses, "cbgold": gold, "pipelines": pipelines, "routes": routes, "notes": notes, "insights": insights, "countries": countries,
         "stats": STATS,
     }
     with open(OUT, "w") as f:

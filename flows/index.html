@@ -11,7 +11,7 @@
   --paper:#eef1f2; --sheet:#fbfcfc; --ink:#14212b; --ink-2:#4a5a66; --ink-3:#7d8b95;
   --rule:#d5dde1; --bar:#6c8799; --bar-soft:#d9e3e8; --land:#dfe6ea;
   --signal:#b5560f; --signal-soft:#f6e3d3;
-  --up:#1f7a4d; --down:#b3261e;
+  --up:#1f7a4d; --down:#b3261e; --sea:#2f6f9f; --shadowc:#8a3fa8;
   --f-display:"Unbounded","Arial Black",system-ui,sans-serif;
   --f-body:"Onest",system-ui,-apple-system,"Segoe UI",sans-serif;
   --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
@@ -21,12 +21,12 @@
   --paper:#0f171d; --sheet:#16212a; --ink:#e4ebef; --ink-2:#a9b7c0; --ink-3:#74838d;
   --rule:#26343e; --bar:#7f9fb3; --bar-soft:#22313b; --land:#22303a;
   --signal:#f0954a; --signal-soft:#3a2716;
-  --up:#5cc08a; --down:#f07a70; color-scheme:dark}}
+  --up:#5cc08a; --down:#f07a70; --sea:#6fb0e0; --shadowc:#c98ae6; color-scheme:dark}}
 :root[data-theme="dark"]{
   --paper:#0f171d; --sheet:#16212a; --ink:#e4ebef; --ink-2:#a9b7c0; --ink-3:#74838d;
   --rule:#26343e; --bar:#7f9fb3; --bar-soft:#22313b; --land:#22303a;
   --signal:#f0954a; --signal-soft:#3a2716;
-  --up:#5cc08a; --down:#f07a70; color-scheme:dark}
+  --up:#5cc08a; --down:#f07a70; --sea:#6fb0e0; --shadowc:#c98ae6; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.45 var(--f-body)}
@@ -251,6 +251,14 @@ header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background
 .pinfo th{font:500 10.5px var(--f-body);text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);text-align:left;border-bottom:1px solid var(--rule);padding:2px 4px}
 .pinfo td{padding:3px 4px;border-bottom:1px dashed var(--rule)}
 .pinfo td.num{text-align:right;font-family:var(--f-mono)}
+
+.pl.m-sea{stroke:var(--sea)}
+.pl.m-pipe{stroke:var(--signal)}
+.pl.m-rail{stroke:var(--ink-2);stroke-dasharray:5 3}
+.pl.shadow{stroke:var(--shadowc)}
+.pl.stopped.m-pipe,.pl.stopped{stroke:var(--ink-3);stroke-dasharray:2 4}
+.pst.shadowb{color:var(--shadowc)}
+.pchips button.shadow{border-color:var(--shadowc);color:var(--shadowc)}
 /* золото ЦБ */
 .gold-cols{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}
 @media (max-width:900px){.gold-cols{grid-template-columns:1fr}}
@@ -583,48 +591,71 @@ function openCard(id){var c=document.getElementById(id);if(c&&!c.classList.conta
 var PSTATUS={operating:"работает",stopped:"остановлен",planned:"проект"};
 var PREG={world:[-180,84,180,-58],europe:[-12,66,52,28],eurasia:[18,70,135,10],america:[-128,58,-34,-36]};
 function pproj(lon,lat){var H=WORLD.h;return[(lon+180)/360*WORLD.w,(84-lat)/142*H]}
-function pipelinesBlock(data){
-  var P=data.pipelines;if(!P||!P.list||!WORLD)return null;
+function mapBlock(o){
+  /* Общий движок карты маршрутов: o.title, o.list, o.reviewed, o.region, o.sel,
+     o.cls(p) — классы линии, o.legend, o.info(p) — строки паспорта, o.tradeNote */
+  if(!o.list||!o.list.length||!WORLD)return null;
   var el=document.createElement("div");el.className="pipes";
-  var region="europe",sel="ts";
-  el.innerHTML='<div class="pipes-h"><h4>Магистральные газопроводы</h4><div class="seg" role="group" aria-label="Регион карты">'+
+  var region=o.region||"world",sel=o.sel||o.list[0].id;
+  el.innerHTML='<div class="pipes-h"><h4>'+esc(o.title)+'</h4><div class="seg" role="group" aria-label="Регион карты">'+
     [["world","Мир"],["europe","Европа"],["eurasia","Евразия"],["america","Америка"]].map(function(x){return'<button type="button" data-r="'+x[0]+'" aria-pressed="'+(x[0]===region)+'">'+x[1]+"</button>"}).join("")+"</div></div>"+
-    '<div class="pmap"></div><div class="plegend"><span><i style="border-color:var(--signal)"></i>работает</span><span><i style="border-color:var(--ink-3);border-top-style:dashed"></i>остановлен</span><span><i style="border-color:var(--bar);border-top-style:dotted"></i>проект</span><span>Нажмите на трубу или выберите из списка</span></div>'+
-    '<div class="pchips">'+P.list.map(function(p){return'<button type="button" class="'+p.status+'" data-p="'+p.id+'" aria-pressed="false">'+esc(p.name)+"</button>"}).join("")+'</div><div class="pinfo" aria-live="polite"></div>';
+    '<div class="pmap"></div><div class="plegend">'+o.legend+'<span>Нажмите на маршрут или выберите из списка</span></div>'+
+    '<div class="pchips">'+o.list.map(function(p){return'<button type="button" class="'+(p.status||"")+(p.shadow?" shadow":"")+'" data-p="'+p.id+'" aria-pressed="false">'+esc(p.name)+"</button>"}).join("")+'</div><div class="pinfo" aria-live="polite"></div>';
   var land=Object.keys(WORLD.countries).map(function(k){return'<path class="land" d="'+WORLD.countries[k]+'"/>'}).join("");
   function line(p){return p.route.map(function(pt,i){var q=pproj(pt[0],pt[1]);return(i?"L":"M")+q[0].toFixed(1)+","+q[1].toFixed(1)}).join("")}
-  var lines=P.list.map(function(p){var d=line(p),w=p.capacity?Math.max(1.6,Math.min(4,1.2+p.capacity/20)):1.8;
+  var lines=o.list.map(function(p){var d=line(p),w=p.capacity?Math.max(1.6,Math.min(4,1.2+p.capacity/20)):2;
     var a=pproj(p.route[0][0],p.route[0][1]),b=pproj(p.route[p.route.length-1][0],p.route[p.route.length-1][1]);
-    return'<path class="pl '+p.status+'" data-p="'+p.id+'" d="'+d+'" stroke-width="'+w.toFixed(1)+'"/><circle class="pdot" cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="1.1"/><circle class="pdot" cx="'+b[0].toFixed(1)+'" cy="'+b[1].toFixed(1)+'" r="1.1"/>'+
+    return'<path class="pl '+o.cls(p)+'" data-p="'+p.id+'" d="'+d+'" stroke-width="'+w.toFixed(1)+'"/><circle class="pdot" cx="'+a[0].toFixed(1)+'" cy="'+a[1].toFixed(1)+'" r="1.1"/><circle class="pdot" cx="'+b[0].toFixed(1)+'" cy="'+b[1].toFixed(1)+'" r="1.1"/>'+
       '<path class="ph" data-p="'+p.id+'" d="'+d+'" tabindex="0" role="button" aria-label="'+esc(p.name)+'"><title>'+esc(p.name)+"</title></path>"}).join("");
   var mapBox=el.querySelector(".pmap");
-  mapBox.innerHTML='<svg viewBox="0 0 '+WORLD.w+" "+WORLD.h+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="Карта магистральных газопроводов">'+land+lines+"</svg>";
+  mapBox.innerHTML='<svg viewBox="0 0 '+WORLD.w+" "+WORLD.h+'" preserveAspectRatio="xMidYMid meet" role="img" aria-label="'+esc(o.title)+'">'+land+lines+"</svg>";
   var svg=mapBox.querySelector("svg");
   function setRegion(r){region=r;var b=PREG[r],p1=pproj(b[0],b[1]),p2=pproj(b[2],b[3]);var w=p2[0]-p1[0],h=p2[1]-p1[1];
     if(w/h<2){var nw=h*2;p1[0]-=(nw-w)/2;w=nw}else{var nh=w/2;p1[1]-=(nh-h)/2;h=nh}
     svg.setAttribute("viewBox",p1[0].toFixed(1)+" "+p1[1].toFixed(1)+" "+w.toFixed(1)+" "+h.toFixed(1));
     el.querySelectorAll(".pipes-h button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.r===r?"true":"false")});}
-  function fmtUsd(v){return v==null?"—":money(v)}
   function show(id){
-    sel=id;var p=P.list.find(function(x){return x.id===id});if(!p)return;
+    sel=id;var p=o.list.find(function(x){return x.id===id});if(!p)return;
     el.querySelectorAll(".pl").forEach(function(x){x.classList.toggle("sel",x.dataset.p===id)});
     el.querySelectorAll(".pchips button").forEach(function(x){x.setAttribute("aria-pressed",x.dataset.p===id?"true":"false")});
     var hl=svg.querySelector('.pl[data-p="'+id+'"]');if(hl)hl.parentNode.insertBefore(hl,svg.querySelector(".ph"));
     var tr=(p.trade||[]),yr=tr.map(function(t){return t.year}).filter(Boolean)[0];
-    var tbl=tr.length?'<table><thead><tr><th>Поток</th><th style="text-align:right">'+(yr||"")+', $</th><th>Чей отчёт</th></tr></thead><tbody>'+tr.map(function(t){return"<tr><td>"+flag(t.from)+" "+esc(cname(t.from))+" → "+flag(t.to)+" "+esc(cname(t.to))+'</td><td class="num">'+(t.year?fmtUsd(t.usd):"нет данных")+"</td><td>"+(t.year?(t.by==="importer"?"импортёр":"экспортёр")+(t.year!==yr?", "+t.year:""):'<span class="note-s">обе страны не раскрывают</span>')+"</td></tr>"}).join("")+"</tbody></table>"+
-      '<div class="note-s">Стоимость всей торговли газом между странами по данным UN Comtrade (HS 271121). Если страны связаны несколькими трубами, сумма относится ко всем сразу. Объёмы из таможенной статистики по газу ненадёжны (массу страны указывают по-разному), поэтому ориентир по объёму — мощность и известная прокачка.</div>':'<div class="note-s">Торговых данных нет: труба не работает или ещё не построена.</div>';
-    el.querySelector(".pinfo").innerHTML='<h5>'+esc(p.name)+' <span class="pst '+p.status+'">'+PSTATUS[p.status]+"</span></h5><dl>"+
-      "<dt>Маршрут</dt><dd>"+flag(p.from)+" "+esc(cname(p.from))+" → "+flag(p.to)+" "+esc(cname(p.to))+"</dd>"+
-      "<dt>Оператор</dt><dd>"+esc(p.operator)+(p.since?" · с "+p.since+" года":"")+"</dd>"+
-      (p.capacity?"<dt>Мощность</dt><dd>"+nf1.format(p.capacity).replace(",0","")+" млрд м³ в год</dd>":"")+
-      (p.flow?"<dt>Прокачка</dt><dd>"+esc(p.flow)+"</dd>":"")+
-      (p.note?"<dt>Важно</dt><dd>"+esc(p.note)+"</dd>":"")+
-      "</dl>"+tbl+'<div class="note-s">Паспорт трубы — редакция терминала, проверено '+new Date((P.reviewed||"2026-10-02")+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+"; маршрут на карте схематичный.</div>";
+    var tbl=tr.length?'<table><thead><tr><th>Поток</th><th style="text-align:right">'+(yr||"")+', $</th><th>Чей отчёт</th></tr></thead><tbody>'+tr.map(function(t){return"<tr><td>"+flag(t.from)+" "+esc(cname(t.from))+" → "+flag(t.to)+" "+esc(cname(t.to))+'</td><td class="num">'+(t.year?money(t.usd):"нет данных")+"</td><td>"+(t.year?(t.by==="importer"?"импортёр":"экспортёр")+(t.year!==yr?", "+t.year:""):'<span class="note-s">обе страны не раскрывают</span>')+"</td></tr>"}).join("")+"</tbody></table>"+
+      '<div class="note-s">'+o.tradeNote+'</div>':'<div class="note-s">Торговых данных по парам стран для этого маршрута нет'+(p.status==="stopped"?": маршрут не работает":"")+".</div>";
+    el.querySelector(".pinfo").innerHTML='<h5>'+esc(p.name)+' '+o.badges(p)+"</h5><dl>"+o.info(p)+"</dl>"+tbl+
+      '<div class="note-s">Паспорт маршрута — редакция терминала, проверено '+new Date((o.reviewed||"2026-10-02")+"T00:00:00").toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"})+"; линия на карте схематичная.</div>";
   }
   el.addEventListener("click",function(e){var b=e.target.closest("[data-r]");if(b){setRegion(b.dataset.r);return}var t=e.target.closest("[data-p]");if(t){show(t.dataset.p)}});
   el.addEventListener("keydown",function(e){var t=e.target.closest(".ph");if(t&&(e.key==="Enter"||e.key===" ")){e.preventDefault();show(t.dataset.p)}});
   setRegion(region);show(sel);
   return el;
+}
+function pipelinesBlock(data){
+  var P=data.pipelines;if(!P)return null;
+  return mapBlock({title:"Магистральные газопроводы",list:P.list,reviewed:P.reviewed,region:"europe",sel:"ts",
+    cls:function(p){return p.status},
+    badges:function(p){return'<span class="pst '+p.status+'">'+PSTATUS[p.status]+"</span>"},
+    legend:'<span><i style="border-color:var(--signal)"></i>работает</span><span><i style="border-color:var(--ink-3);border-top-style:dashed"></i>остановлен</span><span><i style="border-color:var(--bar);border-top-style:dotted"></i>проект</span>',
+    info:function(p){return"<dt>Маршрут</dt><dd>"+flag(p.from)+" "+esc(cname(p.from))+" → "+flag(p.to)+" "+esc(cname(p.to))+"</dd>"+
+      "<dt>Оператор</dt><dd>"+esc(p.operator)+(p.since?" · с "+p.since+" года":"")+"</dd>"+
+      (p.capacity?"<dt>Мощность</dt><dd>"+nf1.format(p.capacity).replace(",0","")+" млрд м³ в год</dd>":"")+
+      (p.flow?"<dt>Прокачка</dt><dd>"+esc(p.flow)+"</dd>":"")+(p.note?"<dt>Важно</dt><dd>"+esc(p.note)+"</dd>":"")},
+    tradeNote:"Стоимость всей торговли газом между странами по данным UN Comtrade (HS 271121). Если страны связаны несколькими трубами, сумма относится ко всем сразу. Объёмы из таможенной статистики по газу ненадёжны (массу страны указывают по-разному), поэтому ориентир по объёму — мощность и известная прокачка."});
+}
+var MODE={sea:"море",pipe:"трубопровод",rail:"железная дорога"};
+var RTITLE={crude:"Пути нефти: танкеры и нефтепроводы",products:"Пути нефтепродуктов",lng:"Маршруты газовозов СПГ",coal:"Пути угля: суда и железные дороги"};
+var RREG={crude:"world",products:"world",lng:"world",coal:"world"};
+function routesBlock(m,data){
+  var R=data.routes&&data.routes.markets&&data.routes.markets[m.id];if(!R)return null;
+  var first=R.find(function(r){return r.shadow})||R[0];
+  return mapBlock({title:RTITLE[m.id]||"Торговые пути",list:R,reviewed:data.routes.reviewed,region:RREG[m.id],sel:first.id,
+    cls:function(p){return p.status==="stopped"?"stopped":p.shadow?"shadow":"m-"+p.mode},
+    badges:function(p){return'<span class="pst operating" style="color:var(--ink-2)">'+MODE[p.mode]+"</span>"+(p.shadow?' <span class="pst shadowb">теневой флот</span>':"")+(p.status==="stopped"?' <span class="pst stopped">остановлен</span>':"")},
+    legend:'<span><i style="border-color:var(--sea)"></i>море</span><span><i style="border-color:var(--shadowc)"></i>теневой флот</span><span><i style="border-color:var(--signal)"></i>трубопровод</span><span><i style="border-color:var(--ink-2);border-top-style:dashed"></i>железная дорога</span><span><i style="border-color:var(--ink-3);border-top-style:dotted"></i>остановлен</span>',
+    info:function(p){return"<dt>Направление</dt><dd>"+flag(p.from)+" "+esc(cname(p.from))+" → "+flag(p.to)+" "+esc(cname(p.to))+"</dd>"+
+      (p.via&&p.via.length?"<dt>Через</dt><dd>"+esc(p.via.join(" · "))+"</dd>":"")+
+      (p.flow?"<dt>Поток</dt><dd>"+esc(p.flow)+"</dd>":"")+(p.note?"<dt>Важно</dt><dd>"+esc(p.note)+"</dd>":"")},
+    tradeNote:"Стоимость торговли товаром «"+esc(m.name)+"» (HS "+esc(m.hs)+") между странами по данным UN Comtrade за год. Это вся торговля пары, а не только этот маршрут. Импорт Китая из Ирана в таможне почти не виден: нефть декларируется как малайзийская."});
 }
 function concentration(m){var t=m.top3_share;if(t>=0.6)return['hi',"высокая концентрация"];if(t>=0.4)return['mid',"умеренная концентрация"];return['lo',"рынок раздроблен"]}
 
@@ -715,6 +746,7 @@ function marketCard(m,data){
   var nM=ex.filter(function(r){return r.method==="mirror"}).length;
   rank.insertAdjacentHTML("beforeend",'<div class="note-s" style="padding:8px 10px 0">Доли — от мирового итога '+m.year+'. В него вошли: стран, сдавших экспорт в ООН, — '+m.reporters+'; зеркальных оценок — '+(m.mirrors_n||nM)+'. <b>≈</b> — зеркальная оценка: экспорт страны, не сдающей статистику, восстановлен по импорту её покупателей (цены CIF, учтены только покупатели, сдающие данные, — оценка снизу). <b>хаб</b> — реэкспортный центр, товар во многом чужого происхождения. Колонка объёма — масса нетто'+(m.id==="pipegas"?", пересчитанная в м³":"")+'; «—» — страна её не указала.</div>');
   if(m.id==="pipegas"){var pb=pipelinesBlock(data);if(pb)rank.appendChild(pb)}
+  else{var rb=routesBlock(m,data);if(rb)rank.appendChild(rb)}
   var dos=document.createElement("div");dos.className="dossier";
   body.appendChild(rank);body.appendChild(dos);card.appendChild(body);
   function select(iso){
