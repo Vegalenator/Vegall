@@ -504,9 +504,9 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function phase(e, now) {
     const { s, end } = times(e);
     if (e.dateStatus === 'cancelled') return 'cancelled';
+    if (s && now >= s && now <= end) return 'live';
     if (e.outcome && e.outcome.decided) return 'closed';
     if (!s || now < s) return 'upcoming';
-    if (now <= end) return 'live';
     return 'awaiting';
   }
   function plural(n, a, b, c) { n = Math.abs(n) % 100; const m = n % 10; if (n > 10 && n < 20) return c; if (m > 1 && m < 5) return b; if (m === 1) return a; return c; }
@@ -796,7 +796,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     wikiUsed = new Set();
     let outcome = '';
     if (o && o.decided) {
-      outcome = `<section class="blk res">${lab('Итог')}<div class="outcome">
+      outcome = `<section class="blk res">${lab(ph === 'live' ? 'Итог на текущий момент' : 'Итог')}<div class="outcome">
         <div><b class="caps">Ожидали</b>${wl(o.expected || '—')}</div><div class="arr">→</div>
         <div class="dec"><b class="caps">Решили</b>${wl(o.decided)}</div><div class="arr">→</div>
         <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${wl(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
@@ -853,6 +853,17 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
       <table class="ctab"><thead><tr><th>Показатель</th><th>Было</th><th>Ожидание</th>${hasAct ? '<th>Факт</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>
       ${meta ? `<dl class="cmeta">${meta}</dl>` : ''}
       <div class="small">${c.asOf ? 'Ожидания на ' + esc(fDay.format(parseDay(c.asOf))) + '. ' : ''}${src ? 'Источники: ' + src : ''}</div></section>`;
+  }
+  /* защита от кривых данных: лишние пробелы в датах, неразбираемые даты, не-массивы */
+  const fixIso = v => typeof v === 'string' ? v.trim().replace(/\s+(?=[+-]\d{2}:?\d{2}$|Z$)/, '') : v;
+  const okDate = v => typeof v === 'string' && !isNaN(new Date(v));
+  const arr = v => Array.isArray(v) ? v : [];
+  function cleanEvent(e) {
+    ['start', 'end', 'liveCheckedAt'].forEach(k => { if (e[k] != null) { e[k] = fixIso(e[k]); if (!okDate(e[k])) e[k] = null; } });
+    ['agenda', 'scenarios', 'sources', 'statements'].forEach(k => { e[k] = arr(e[k]); });
+    e.changes = arr(e.changes).filter(c => c && typeof c === 'object').map(c => ({ ...c, at: fixIso(c.at) })).filter(c => okDate(c.at));
+    if (e.outcome && e.outcome.filledAt) { e.outcome.filledAt = fixIso(e.outcome.filledAt); }
+    return e;
   }
   /* ------------------------------------------------------ изменения */
   const KIND = {
@@ -1065,7 +1076,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     if (!db) { $('#feed').innerHTML = '<div class="empty"><b>База событий недоступна в этом просмотре</b>Карточки и итоги хранятся в базе терминала. Откройте страницу по ссылке claude.ai, войдя в аккаунт.</div>'; return; }
     db.collection('events').onSnapshot(snap => {
       const first = !state.loaded;
-      state.events = snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(e => e.title);
+      state.events = snap.docs.map(d => cleanEvent({ id: d.id, ...d.data() })).filter(e => e.title);
       state.loaded = true; if (first) state.animate = true;
       if (!state.events.length) { $('#feed').innerHTML = '<div class="empty"><b>Карта пока пуста</b>События появятся после первого прогона наполнения.</div>'; return; }
       const h = location.hash.slice(1);
