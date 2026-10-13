@@ -10,10 +10,11 @@ const stage = document.querySelector(".rr-stage");
 const readout = document.querySelector("[data-readout]");
 const $ = (name) => svg.querySelector(`[data-live="${name}"]`);
 const el = {
-  tank: $("tank"), needle: $("needle"), oil: $("oil-pointer"), cut: $("cut-pointer"), sight: $("sight"), xhead: $("xhead"),
+  tank: $("tank"), needle: $("needle"), oil: $("oil-pointer"), cut: $("cut-pointer"),  xhead: $("xhead"),
   stemSanc: $("stem-sanc"), stemImp: $("stem-import"), stemCap: $("stem-capital"), sub: $("sump-sub"), ripples: $("sump-ripples"),
   streamImp: $("stream-import"), streamCap: $("stream-capital"),
   recGrid: $("rec-grid"), recTrace: $("rec-trace"), recPen: $("rec-pen"),
+  vol: $("vol-pointer"), gain: $("gain-pointer"), cutMark: $("cut-mark"), lever: $("lever-imp"), stemCb: $("stem-cb"),
 };
 const spin = Object.fromEntries(Object.keys(D.SPIN).map((id) => [id, { els: [...svg.querySelectorAll(`[data-live="${id}"]`)], frames: D.SPIN[id], shown: -1 }]));
 el.sub.innerHTML = D.SUMP_SUB;
@@ -83,6 +84,20 @@ function pointer(centre, z, r0, r1, share) {
   const [x, y] = centre;
   return lineOnTop([x - Math.sin(angle) * r0, y + Math.cos(angle) * r0], [x + Math.sin(angle) * r1, y - Math.cos(angle) * r1], z, P);
 }
+function leverSvg(pivot, share) {
+  // рычаг: вдоль трубы (+y) — кран открыт, поперёк — прикрыт
+  const angle = (1 - share) * (Math.PI / 2) * 0.95;
+  const [x, y, z] = pivot;
+  const dx = Math.sin(angle);
+  const dy = Math.cos(angle);
+  const L = 18;
+  const w = 1.3;
+  const ringPts = [[x - dy * w, y + dx * w], [x + dx * L - dy * w, y + dy * L + dx * w], [x + dx * L + dy * w, y + dy * L - dx * w], [x + dy * w, y - dx * w]];
+  const bar = extrude(ringPts, z, 1.4, P, { bevel: 0.2 });
+  const grip = cylinder(x + dx * (L - 1), y + dy * (L - 1), 2, z + 1.4, 2.2, P, 16);
+  const hub = cylinder(x, y, 2.4, z - 0.2, 2, P, 16);
+  return solidSvg(hub, { tone: "mid" }) + solidSvg(bar, { tone: "hi" }) + solidSvg(grip, { tone: "hi" });
+}
 function stemSvg(x, y, z0, z1, lit) {
   if (z1 - z0 < 0.2) return "";
   return solid(cylinder(x, y, 1.2, z0, z1 - z0, P, 12), { tone: "hi", lit, crease: "none" }) + `<path class="iso-line" data-tone="lo" d="${ring(x, y, 0.6, z1, P, 8)}"/>`;
@@ -99,14 +114,15 @@ function drainStream(drain, flow) {
   }
   return { d: flow > 0.01 ? `<path class="rr-stream" d="${ribbon(points, r * 2 * KS)}"/>` : "", land: [drain.x, D.DRAIN_END + v * Math.sqrt((D.DRAIN_Z - D.SUMP_WATER) / 9.8 * 2) * 0.35] };
 }
-function drawSight(n) {
-  const [x, y] = D.SIGHT_AT;
-  const z0 = D.SIGHT.z0 - 3;
-  const z1 = D.SIGHT.z1 + 3;
-  const level = D.SIGHT.z0 + (D.SIGHT.z1 - D.SIGHT.z0) * n;
+function drawSight(sight, level01) {
+  const node = $(sight.live);
+  const [x, y] = sight.at;
+  const z0 = sight.z0 - 3;
+  const z1 = sight.z1 + 3;
+  const level = sight.z0 + (sight.z1 - sight.z0) * level01;
   const tube = cylinder(x, y, 2.6, z0, z1 - z0, P, 20);
   const col = cylinder(x, y, 2, z0, level - z0, P, 20);
-  el.sight.innerHTML = `<path class="rr-glass" d="${tube.fill}"/><path class="rr-water rr-deep" d="${col.fill}"/><path class="rr-water-top" d="${col.top}"/><path class="iso-line" data-tone="lit" style="stroke-width:1" d="${sideArc(x, y, 2.2, level, P, 10)}"/><path class="iso-line" data-tone="faint" d="${tube.outline}"/>`;
+  node.innerHTML = `<path class="rr-glass" d="${tube.fill}"/><path class="rr-water rr-deep" d="${col.fill}"/><path class="rr-water-top" d="${col.top}"/><path class="iso-line" data-tone="lit" style="stroke-width:1" d="${sideArc(x, y, 2.2, level, P, 10)}"/><path class="iso-line" data-tone="faint" d="${tube.outline}"/>`;
 }
 // самописец: история курса на движущейся ленте
 const REC = D.REC;
@@ -141,40 +157,43 @@ function setSpin(id, phase) {
 }
 
 // ── состояние, тур, панель ───────────────────────────────────────────────────
+const S0 = START;
 const SCENES = [
-  { key: "base", name: "База", say: "нефть ~62 $, ставка 16%: приток и отток в равновесии", input: { oil: 62, rate: 16, sanc: 40 } },
-  { key: "boom", name: "Нефтяной бум", say: "нефть 100 $: насос экспорта гонит валюту, но Минфин уводит излишек в ФНБ", input: { oil: 100, rate: 16, sanc: 40 } },
-  { key: "crash", name: "Обвал нефти", say: "нефть 35 $: Минфин продаёт валюту из ФНБ, пока бак не опустеет", input: { oil: 35, rate: 16, sanc: 40 } },
-  { key: "hawk", name: "Жёсткая ставка", say: "ставка 21%: траверса прижимает задвижки импорта и вывода капитала", input: { oil: 62, rate: 21, sanc: 40 } },
-  { key: "dove", name: "Смягчение", say: "ставка 9%: сливы открываются шире, уровень и рубль снижаются", input: { oil: 62, rate: 9, sanc: 40 } },
-  { key: "sanc", name: "Санкции", say: "санкционная задвижка почти закрыта: приток валюты пересыхает", input: { oil: 62, rate: 16, sanc: 90 } },
+  { key: "base", say: "Нефть ~62 $, ставка 16%, правило работает: приток и отток в равновесии.", input: { ...S0 } },
+  { key: "boom", say: "Нефть 100 $: насос экспорта разгоняется, но Минфин уводит излишек в ФНБ, и рубль крепнет умеренно.", input: { ...S0, oil: 100 } },
+  { key: "pause", say: "Нефть 100 $, правило на паузе: весь приток остаётся на рынке, рубль резко крепнет, как в 2022 году.", input: { ...S0, oil: 100, mscale: 0 } },
+  { key: "crash", say: "Нефть 35 $: Минфин продаёт валюту из ФНБ и держит курс, пока бак не опустеет.", input: { ...S0, oil: 35 } },
+  { key: "cbsell", say: "Нефть 45 $ и продажи из резервов ЦБ: курс поддержан, но бак «Резервы ЦБ» тает.", input: { ...S0, oil: 45, cb: 70 } },
+  { key: "imports", say: "Спрос на импорт +40%: рычаг крана открыт до упора, слив растёт, рубль слабеет.", input: { ...S0, dem: 140 } },
+  { key: "hawk", say: "Ставка 21%: траверса прижимает задвижки импорта и вывода капитала, рубль крепнет.", input: { ...S0, rate: 21 } },
+  { key: "dove", say: "Ставка 9%: сливы открываются шире, уровень и рубль снижаются.", input: { ...S0, rate: 9 } },
+  { key: "sanc", say: "Санкционное трение 90%: задвижка почти закрыта, выручка застревает за рубежом, приток пересыхает.", input: { ...S0, sanc: 90 } },
 ];
-const TOUR = ["base", "boom", "base", "crash", "base", "hawk", "dove", "sanc"];
+const TOUR = ["base", "boom", "pause", "base", "crash", "cbsell", "base", "imports", "hawk", "sanc"];
+const KEYS = Object.keys(RANGE);
 const input = { ...START };
 const want = { ...START };
-const state = { h: LEVEL0, n: FUND0 };
-const phase = { cpl: 0, m: { "m-exp": 0, "m-imp": 0, "m-cap": 0, "m-min": 0 }, fan: 0, clock: 0 };
+const state = { h: LEVEL0, n: FUND0, c: RESERVE0 };
+const phase = { cpl: 0, m: { "m-exp": 0, "m-imp": 0, "m-cap": 0, "m-min": 0, "m-cb": 0 }, fan: 0, clock: 0 };
 let touring = !still.matches;
 let tourAt = 0;
 let tourIndex = 0;
 let idle = 0;
 let scene = SCENES[0];
-let flows = flowsOf(input, state.h, state.n);
+let flows = flowsOf(input, state.h, state.n, state.c);
 
 const ui = {
-  oil: document.querySelector('[data-in="oil"]'),
-  rate: document.querySelector('[data-in="rate"]'),
-  sanc: document.querySelector('[data-in="sanc"]'),
+  ...Object.fromEntries(KEYS.map((key) => [key, document.querySelector(`[data-in="${key}"]`)])),
+  reset: document.querySelector("[data-reset]"),
   out: Object.fromEntries([...document.querySelectorAll("[data-out]")].map((node) => [node.dataset.out, node])),
   scenes: [...document.querySelectorAll("[data-scene]")],
   tour: document.querySelector("[data-tour]"),
   say: document.querySelector("[data-say]"),
 };
 function syncUi() {
-  for (const key of ["oil", "rate", "sanc"]) if (ui[key] && document.activeElement !== ui[key]) ui[key].value = String(Math.round(want[key]));
-  ui.out.oil.textContent = `${Math.round(input.oil)} $`;
-  ui.out.rate.textContent = `${fmt(input.rate)}%`;
-  ui.out.sanc.textContent = `${Math.round(input.sanc)}%`;
+  for (const key of KEYS) if (ui[key] && document.activeElement !== ui[key]) ui[key].value = String(want[key]);
+  const shown = { oil: `${Math.round(input.oil)} $`, vol: `${Math.round(input.vol)}%`, sanc: `${Math.round(input.sanc)}%`, dem: `${Math.round(input.dem)}%`, rate: `${fmt(input.rate)}%`, cutoff: `${Math.round(input.cutoff)} $`, mscale: `${Math.round(input.mscale)}%`, cb: `${Math.round(input.cb)}%` };
+  for (const key of KEYS) if (ui.out[key] && ui.out[key].textContent !== shown[key]) ui.out[key].textContent = shown[key];
   ui.scenes.forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.scene === scene?.key)));
   ui.tour.setAttribute("aria-pressed", String(touring));
   ui.tour.textContent = touring ? "Тур идёт" : "Запустить тур";
@@ -191,7 +210,7 @@ function stopTour() {
   touring = false;
   idle = 0;
 }
-for (const key of ["oil", "rate", "sanc"]) {
+for (const key of KEYS) {
   ui[key]?.addEventListener("input", () => {
     want[key] = Number(ui[key].value);
     scene = null;
@@ -202,6 +221,11 @@ for (const key of ["oil", "rate", "sanc"]) {
   });
 }
 ui.scenes.forEach((b) => b.addEventListener("click", () => chooseScene(b.dataset.scene)));
+ui.reset?.addEventListener("click", () => {
+  state.n = FUND0;
+  state.c = RESERVE0;
+  chooseScene("base");
+});
 ui.tour.addEventListener("click", () => {
   touring = !touring;
   if (touring) { tourAt = 0; tourIndex = 0; chooseScene(TOUR[0], true); }
@@ -219,6 +243,12 @@ function draw(dt) {
   const oilShare = (input.oil - RANGE.oil[0]) / (RANGE.oil[1] - RANGE.oil[0]);
   el.oil.setAttribute("d", pointer(D.OIL_KNOB, D.OIL_TOP + 4, 0, 6, oilShare));
   el.cut.setAttribute("d", pointer(D.CUT_DIAL, D.CUT_TOP + 0.6, 1.6, 7.4, oilShare));
+  el.cutMark.setAttribute("d", pointer(D.CUT_DIAL, D.CUT_TOP + 0.6, -4.6, 8.4, (input.cutoff - RANGE.oil[0]) / (RANGE.oil[1] - RANGE.oil[0])));
+  el.vol.setAttribute("d", pointer(D.VOL_KNOB, D.OIL_TOP + 4, 0, 5, (input.vol - RANGE.vol[0]) / (RANGE.vol[1] - RANGE.vol[0])));
+  el.gain.setAttribute("d", pointer(D.GAIN_KNOB, D.CUT_TOP + 3.4, 0, 3.8, input.mscale / RANGE.mscale[1]));
+  el.lever.innerHTML = leverSvg(D.BALL, input.dem / RANGE.dem[1]);
+  el.stemCb.innerHTML = stemSvg(D.CBV.x, D.CBV.y, D.CBV.z, D.CBV.z + 2 + (D.CBV.max - 2) * (input.cb / 100), false);
+  setSpin("hw-cb", (input.cb / 100) * 2);
   // санкционная задвижка: шток поднят пропорционально пропуску
   const pass = throttleOf(input.sanc);
   el.stemSanc.innerHTML = stemSvg(D.SV.x, D.SV.y, D.SV.z, D.SV.z + 2 + (D.SV.max - 2) * clamp((pass - 0.55) / 0.45, 0, 1), false);
@@ -235,7 +265,7 @@ function draw(dt) {
   setSpin("cpl", phase.cpl);
   setSpin("fan", phase.fan);
   for (const id of Object.keys(phase.m)) setSpin(id, phase.m[id]);
-  drawSight(state.n);
+  for (const sight of D.SIGHTS) drawSight(sight, state[sight.key]);
   drawRecorder(rub);
   setSpin("roller", paperShift / (TAU * 3.4) * 1);
   // струи и круги на воде бассейна
@@ -255,9 +285,10 @@ function draw(dt) {
   rings += `<path class="iso-line" data-tone="lo" d="${ring(sx, sy, sr, D.SUMP_WATER, P, 24)}"/>`;
   el.ripples.innerHTML = rings;
   // табло
-  const text = `1 $ = ${fmt(rub)} ₽ · ФНБ ${Math.round(state.n * 100)}%`;
+  const text = `1 $ = ${fmt(rub)} ₽ · ФНБ ${Math.round(state.n * 100)}% · резервы ЦБ ${Math.round(state.c * 100)}%`;
   if (text !== lastText) { readout.textContent = text; lastText = text; }
   ui.out.exp.textContent = fmt(flows.exp, 2);
+  ui.out.cbflow.textContent = fmt(flows.cb, 2);
   ui.out.minfin.textContent = (flows.minfin >= 0 ? "в ФНБ " : "из ФНБ ") + fmt(Math.abs(flows.minfin), 2);
   ui.out.imp.textContent = fmt(flows.imp, 2);
   ui.out.cap.textContent = fmt(flows.cap, 2);
@@ -280,7 +311,7 @@ function tick(now) {
       chooseScene(TOUR[tourIndex], true);
     }
   }
-  for (const key of ["oil", "rate", "sanc"]) input[key] = calm ? want[key] : input[key] + (want[key] - input[key]) * (1 - Math.exp(-dt / 0.6));
+  for (const key of KEYS) input[key] = calm ? want[key] : input[key] + (want[key] - input[key]) * (1 - Math.exp(-dt / 0.6));
   // модель шагает чаще кадра для устойчивости
   const sub = 4;
   for (let i = 0; i < sub; i++) flows = step(state, input, calm ? (dt * 6) / sub : dt / sub);
@@ -292,6 +323,7 @@ function tick(now) {
     phase.m["m-cap"] += dt * flows.cap * 2.2;
     phase.m["m-min"] += dt * flows.minfin * 3;
     phase.fan += dt * flows.minfin * 4;
+    phase.m["m-cb"] += dt * flows.cb * 3;
   }
   paperShift += dt * PAPER_SPEED;
   const sample = history[history.length - 1];

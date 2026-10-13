@@ -54,8 +54,9 @@ const DRAIN_Z = 19;
 const IMP_X = -36;
 const CAP_X = 16;
 const DRAIN_END = 80;
-const VALVE_Y = 32;
-const METER_Y = 52;
+const VALVE_Y = 34;
+const METER_Y = 17;
+const BALL_Y = 53;
 const BRIDGE_Z = 88;
 
 const FY = -24; // линия Минфина (вдоль x)
@@ -227,6 +228,26 @@ function meterAt(centre, axis, face, live, { r = 6, name } = {}) {
   return Math.abs(axis[2]) > 0.5 ? 4.2 : axis[0] ? ext(0) : ext(1);
 }
 
+// шаровой кран с рычагом: рычаг рисуется вживую
+function ballValve(pipeMade, along, r, live, { name }) {
+  const centre = G.pointAlong(pipeMade.line, along);
+  const tangent = G.tangentAlong(pipeMade.line, along);
+  const F = G.frameAlong(centre, tangent);
+  const R = r * 1.35;
+  const id = nameFor(name);
+  put(centre, S(G.sphereOf(centre, R, P), { tone: "hi" }), { name: id, shapes: [record(A.ball(centre, R, { name: id, owner: pipeMade.id }))] });
+  for (const sign of [-1, 1]) {
+    const s0 = sign * Math.sqrt(R * R - (r * 1.3) ** 2) - (sign < 0 ? 0 : 0);
+    const a = sign < 0 ? -R * 1.25 : s0;
+    const b = sign < 0 ? s0 : R * 1.25;
+    discAt(F, a, b, r * 1.3, { tone: "mid" }, { name: `${id}.end`, owner: pipeMade.id, extra: "" });
+  }
+  const [x, y, z] = centre;
+  postAt(x, y, 1.6, z + R - 0.6, 4.2, { tone: "mid" }, { name: `${id}.stem`, steps: 12 });
+  put([x, y, z + R + 4], `<g data-live="${live}"></g>`, { name: `${id}.lever`, bias: 0.3 });
+  return { gap: [along - R * 1.25, along + R * 1.25], pivot: [x, y, z + R + 3.6] };
+}
+
 // маховик: обод-трубка, ступица, спицы (спицы вращаются)
 function handwheel(x, y, z, r, live, { name, spokes = 5 } = {}) {
   const F = UP([x, y, z]);
@@ -266,7 +287,7 @@ back.push(Dots(PLATE_SCREWS.map(([x, y]) => at([x, y, 0])), { size: 0.55 }));
 const SIDE = k.sideTicks(PLATE.y + 24, PLATE.y + PLATE.d - 24, 8, 5, PLATE.x + PLATE.w, 0, [2.2, 4.2], P, "y");
 back.push(Ln(SIDE.minor, { tone: "lo" }), Ln(SIDE.major, { tone: "mid" }));
 // шильдик на дальнем углу стола
-const LABEL = { x: 140, y: -118, w: 70, d: 14, r: 1.5 };
+const LABEL = { x: -212, y: -122, w: 62, d: 14, r: 1.5 };
 back.push(S(k.slabOf(LABEL, 0, 0.8, P, 3), { tone: "mid", crease: "none" }));
 back.push(Ln(k.planOutline(k.insetPlan(LABEL, 1.6), 0.8, P, 3), { tone: "faint" }));
 back.push(Ln(k.lineOnTop([LABEL.x + 5, LABEL.y + 5], [LABEL.x + 48, LABEL.y + 5], 0.8, P), { tone: "lo", free: true }));
@@ -371,23 +392,30 @@ meterAt([PX, -33, riserMeterZ], [0, 0, 1], [1, 0, 0], "m-exp", { name: "export.m
 postAt(PX - 20, -33, 3, 6, TOP_Z - 40, { tone: "mid" }, { name: "export.mast", inner: Ln(k.sideArc(PX - 20, -33, 3, 80, P, 12), { tone: "faint" }) });
 boxAt({ x: PX - 17, y: -36, w: 12.4, d: 6, r: 1 }, TOP_Z - 52, 5, { tone: "mid" }, { name: "export.clamp-arm" });
 // санкционная задвижка: стойки, траверса, маховик
+function yokeWheel(gv, stemLive, wheelLive, name, { across = "y", wheel = 11, height = 22 } = {}) {
+  const [x, y] = gv.centre;
+  for (const d of [-6.5, 6.5]) postAt(across === "y" ? x : x + d, across === "y" ? y + d : y, 1.4, gv.top - 1.6, height, { tone: "mid" }, { name: `${name}.yoke-post`, steps: 12 });
+  boxAt(across === "y" ? { x: x - 4, y: y - 9, w: 8, d: 18, r: 1.2 } : { x: x - 9, y: y - 4, w: 18, d: 8, r: 1.2 }, gv.top + height - 1.6, 3.4, { tone: "mid" }, { name: `${name}.yoke-top` });
+  put([x, y, gv.top + 10], `<g data-live="${stemLive}"></g>`, { name: `${name}.stem`, bias: 0.1, shapes: [record(A.cylinder(x, y, 1.2, gv.top, height - 4, { name: `${name}.stem` }))] });
+  handwheel(x, y, gv.top + height + 6.2, wheel, wheelLive, { name: `${name}.wheel` });
+}
 const [svx, svy] = [sv.centre[0], sv.centre[1]];
-for (const dy of [-6.5, 6.5]) postAt(svx, svy + dy, 1.4, sv.top - 1.6, 22, { tone: "mid" }, { name: "sanctions.yoke-post", steps: 12 });
-boxAt({ x: svx - 4, y: svy - 9, w: 8, d: 18, r: 1.2 }, sv.top + 20.4, 3.4, { tone: "mid" }, { name: "sanctions.yoke-top" });
-put([svx, svy, sv.top + 10], `<g data-live="stem-sanc"></g>`, { name: "sanctions.stem", bias: 0.1, shapes: [record(A.cylinder(svx, svy, 1.2, sv.top, 18, { name: "sanctions.stem" }))] });
-handwheel(svx, svy, sv.top + 28.2, 11, "hw-sanc", { name: "sanctions.wheel" });
+yokeWheel(sv, "stem-sanc", "hw-sanc", "sanctions");
 // пульт «Нефть»: коробка с ручкой и шкалой
-const OIL = { x: -132, y: -6, w: 28, d: 28, r: 2 };
+const OIL = { x: -142, y: -6, w: 44, d: 26, r: 2 };
 const OIL_TOP = 30;
-const OIL_KNOB = [OIL.x + 13, OIL.y + 17];
-const oilTicks = k.radialTicks(OIL_KNOB[0], OIL_KNOB[1], 10.5, 18, 3, OIL_TOP, [1.1, 2.2], P, -135 * DEG, 270 * DEG);
+const OIL_KNOB = [OIL.x + 12, OIL.y + 13];
+const VOL_KNOB = [OIL.x + 32, OIL.y + 13];
+const oilTicks = k.radialTicks(OIL_KNOB[0], OIL_KNOB[1], 10, 18, 3, OIL_TOP, [1.1, 2.2], P, -135 * DEG, 270 * DEG);
+const volTicks = k.radialTicks(VOL_KNOB[0], VOL_KNOB[1], 9, 10, 5, OIL_TOP, [1.1, 2.2], P, -135 * DEG, 270 * DEG);
 boxAt(OIL, 0, OIL_TOP, { tone: "mid" }, {
   name: "oil.box",
   bevel: 0.6,
   inner: Ln(k.sideSeam(OIL, 24, P, 3), { tone: "faint" }),
-  extra: Ln(oilTicks.minor, { tone: "lo" }) + Ln(oilTicks.major, { tone: "mid" }) + Dots(k.corners(OIL, 2.4).map(([x, y]) => at([x, y, OIL_TOP])), { size: 0.4 }),
+  extra: Ln(oilTicks.minor + volTicks.minor, { tone: "lo" }) + Ln(oilTicks.major + volTicks.major, { tone: "mid" }) + Ln(k.lineOnTop([OIL.x + 22, OIL.y + 3], [OIL.x + 22, OIL.y + OIL.d - 3], OIL_TOP, P), { tone: "faint" }) + Dots(k.corners(OIL, 2.4).map(([x, y]) => at([x, y, OIL_TOP])), { size: 0.4 }),
 });
 postAt(OIL_KNOB[0], OIL_KNOB[1], 6, OIL_TOP, 4, { tone: "hi" }, { name: "oil.knob", steps: 32, extra: Ln(k.knurl(OIL_KNOB[0], OIL_KNOB[1], 6, OIL_TOP, OIL_TOP + 4, 36, P), { tone: "lo" }) + `<path data-live="oil-pointer" class="iso-line" data-tone="hi" data-free="end" style="stroke-width:1" d=""/>` });
+postAt(VOL_KNOB[0], VOL_KNOB[1], 5, OIL_TOP, 4, { tone: "hi" }, { name: "vol.knob", steps: 28, extra: Ln(k.knurl(VOL_KNOB[0], VOL_KNOB[1], 5, OIL_TOP, OIL_TOP + 4, 30, P), { tone: "lo" }) + `<path data-live="vol-pointer" class="iso-line" data-tone="hi" data-free="end" style="stroke-width:1" d=""/>` });
 // кабель от пульта к клеммной коробке мотора
 const CABLE_R = 0.7;
 function cable(points, { name, bend = 5 }) {
@@ -404,14 +432,21 @@ const DRAINS = [
   { x: CAP_X, r: 3.4, name: "capital", live: "m-cap" },
 ];
 const STEMS = [];
+let BALL = null;
 for (const drain of DRAINS) {
   const control = [[drain.x, BASE.y + BASE.d, DRAIN_Z], [drain.x, DRAIN_END, DRAIN_Z]];
   const line = G.fillet(control, 3, 4);
   const made = { line, total: G.pathLength(line), id: `${drain.name}.pipe` };
   const gv = gateValve(made, VALVE_Y - (BASE.y + BASE.d), drain.r, { name: `${drain.name}.valve`, bonnetTop: DRAIN_Z + 22 });
+  const extraGaps = [];
+  if (drain.name === "import") {
+    const bv = ballValve(made, BALL_Y - (BASE.y + BASE.d), drain.r, "lever-imp", { name: "import.ball" });
+    extraGaps.push(bv.gap);
+    BALL = bv.pivot;
+  }
   const ext = meterAt([drain.x, METER_Y, DRAIN_Z], [0, 1, 0], [1, 0, 0], drain.live, { name: `${drain.name}.meter`, r: drain.r + 1.4 });
   const mAlong = METER_Y - (BASE.y + BASE.d);
-  pipe(control, drain.r, { name: `${drain.name}.pipe`, flanges: [true, false], gaps: [gv.gap, [mAlong - ext, mAlong + ext]], lip: true });
+  pipe(control, drain.r, { name: `${drain.name}.pipe`, flanges: [true, false], gaps: [gv.gap, [mAlong - ext, mAlong + ext], ...extraGaps], lip: true });
   STEMS.push({ x: drain.x, y: VALVE_Y, z: gv.top, live: `stem-${drain.name}` });
   sumpRipples.push([drain.x, DRAIN_END + 9, 3]);
 }
@@ -454,21 +489,22 @@ const bossF = G.frameAlong([fundWall + 1.2, FY, DRAIN_Z], [-1, 0, 0]);
 discAt(bossF, 0, 5, 7, { tone: "mid" }, { name: "fund.boss" });
 pipe([[PUMP2.x + PUMP2.w, FY, DRAIN_Z], [fundWall - 3.8, FY, DRAIN_Z]], 3.6, { name: "minfin.pipe-b" });
 // пульт отсечения: стрелка нефти против метки 59 $
-const CUT = { x: 84, y: 16, w: 22, d: 20, r: 2 };
+const CUT = { x: 84, y: 16, w: 34, d: 20, r: 2 };
 const CUT_TOP = 18;
 const CUT_DIAL = [CUT.x + 11, CUT.y + 10];
 const cutTicks = k.radialTicks(CUT_DIAL[0], CUT_DIAL[1], 7.6, 18, 3, CUT_TOP + 0.6, [1, 2], P, -135 * DEG, 270 * DEG);
-const cutAngle = -135 + 270 * ((M.CUTOFF - M.RANGE.oil[0]) / (M.RANGE.oil[1] - M.RANGE.oil[0]));
-const cutMark = (r0, r1) => k.lineOnTop([CUT_DIAL[0] + Math.sin(cutAngle * DEG) * r0, CUT_DIAL[1] - Math.cos(cutAngle * DEG) * r0], [CUT_DIAL[0] + Math.sin(cutAngle * DEG) * r1, CUT_DIAL[1] - Math.cos(cutAngle * DEG) * r1], CUT_TOP + 0.6, P);
-boxAt(CUT, 0, CUT_TOP, { tone: "mid" }, { name: "cut.box", bevel: 0.6, inner: Ln(k.sideSeam(CUT, 13, P, 3), { tone: "faint" }), extra: Dots(k.corners(CUT, 2.2).map(([x, y]) => at([x, y, CUT_TOP])), { size: 0.4 }) });
+const GAIN_KNOB = [CUT.x + 27, CUT.y + 10];
+const gainTicks = k.radialTicks(GAIN_KNOB[0], GAIN_KNOB[1], 6.4, 8, 4, CUT_TOP, [0.9, 1.8], P, -135 * DEG, 270 * DEG);
+boxAt(CUT, 0, CUT_TOP, { tone: "mid" }, { name: "cut.box", bevel: 0.6, inner: Ln(k.sideSeam(CUT, 13, P, 3), { tone: "faint" }), extra: Ln(gainTicks.minor, { tone: "lo" }) + Ln(gainTicks.major, { tone: "mid" }) + Dots(k.corners(CUT, 2.2).map(([x, y]) => at([x, y, CUT_TOP])), { size: 0.4 }) });
+postAt(GAIN_KNOB[0], GAIN_KNOB[1], 3.8, CUT_TOP, 3.4, { tone: "hi" }, { name: "cut.gain", steps: 24, extra: Ln(k.knurl(GAIN_KNOB[0], GAIN_KNOB[1], 3.8, CUT_TOP, CUT_TOP + 3.4, 24, P), { tone: "lo" }) + `<path data-live="gain-pointer" class="iso-line" data-tone="hi" data-free="end" style="stroke-width:1" d=""/>` });
 postAt(CUT_DIAL[0], CUT_DIAL[1], 8.6, CUT_TOP, 0.6, { tone: "hi" }, {
   name: "cut.face",
   steps: 40,
-  extra: Ln(cutTicks.minor, { tone: "lo" }) + Ln(cutTicks.major, { tone: "mid" }) + `<path class="iso-line" data-tone="red" style="stroke-width:1.1" d="${cutMark(4.6, 8.4)}"/>` + `<path data-live="cut-pointer" class="iso-line" data-tone="lit" data-free="start" style="stroke-width:1" d=""/>` + Ln(k.ring(CUT_DIAL[0], CUT_DIAL[1], 1, CUT_TOP + 0.6, P, 12), { tone: "mid" }),
+  extra: Ln(cutTicks.minor, { tone: "lo" }) + Ln(cutTicks.major, { tone: "mid" }) + `<path data-live="cut-mark" class="iso-line" data-tone="red" data-free="start" style="stroke-width:1.1" d=""/>` + `<path data-live="cut-pointer" class="iso-line" data-tone="lit" data-free="start" style="stroke-width:1" d=""/>` + Ln(k.ring(CUT_DIAL[0], CUT_DIAL[1], 1, CUT_TOP + 0.6, P, 12), { tone: "mid" }),
 });
 // сигнальный кабель «цена нефти» по столу от пульта нефти к пульту отсечения
 cable([[OIL.x + 8, OIL.y, 6], [OIL.x + 8, -116, 6], [OIL.x + 8, -116, 1.2], [66, -116, 1.2], [66, CUT.y + 10, 1.2], [66, CUT.y + 10, 6], [CUT.x, CUT.y + 10, 6]], { name: "cut.cable", bend: 4 });
-cable([[CUT.x + CUT.w - 2.5, CUT.y, 12], [CUT.x + CUT.w - 2.5, PUMP2.y + PUMP2.d + 7, 12], [CUT.x + CUT.w - 2.5, PUMP2.y + PUMP2.d + 7, 27], [CUT.x + CUT.w - 2.5, PUMP2.y + PUMP2.d, 27]], { name: "cut.cable-pump", bend: 4 });
+cable([[104, CUT.y, 12], [104, PUMP2.y + PUMP2.d + 7, 12], [104, PUMP2.y + PUMP2.d + 7, 27], [104, PUMP2.y + PUMP2.d, 27]], { name: "cut.cable-pump", bend: 4 });
 
 // бак ФНБ: юбка, обечайка с поясами, купол, люк, смотровое стекло
 const FC = FUND.c;
@@ -482,7 +518,7 @@ put(
 const dome = (s) => FUND.r * Math.sqrt(Math.max(0, 1 - (s / 16) ** 2));
 {
   const F = UP([FC[0], FC[1], FUND.z1]);
-  const knots = Array.from({ length: 25 }, (_, index) => { const s = 15.999 * Math.sin((index / 24) * (Math.PI / 2)); return [s, dome(s)]; });
+  const knots = Array.from({ length: 25 }, (_, index) => { const s = 15.999 * Math.sin((index / 24) * (Math.PI / 2)); return [s, dome(s), index && index < 24 ? 1 : 0]; });
   const domeSlope = (s) => (-FUND.r * (s / 256)) / Math.sqrt(Math.max(1e-6, 1 - (s / 16) ** 2));
   const profile = [[0, 0], ...knots, [16, 0]];
   const id = nameFor("fund.dome");
@@ -499,6 +535,46 @@ for (const z of [SIGHT.z0 - 6, SIGHT.z1 + 6]) {
 postAt(gx, gy, 4, SIGHT.z0 - 9, 6, { tone: "mid" }, { name: "fund.sight-low", steps: 6 });
 postAt(gx, gy, 4, SIGHT.z1 + 3, 6, { tone: "mid" }, { name: "fund.sight-high", steps: 6 });
 put([gx, gy, (SIGHT.z0 + SIGHT.z1) / 2], `<g data-live="sight"></g>`, { name: "fund.sight", bias: 0.1, shapes: [record(A.cylinder(gx, gy, 2.6, SIGHT.z0 - 3, SIGHT.z1 - SIGHT.z0 + 6, { name: "fund.sight" }))] });
+
+// ── резервы ЦБ: бак, задвижка продаж, расходомер, смотровое стекло ─────────────
+const CB = { c: [203, -96], r: 18, z0: 6, z1: 74, y: -96, z: 14 };
+postAt(CB.c[0], CB.c[1], CB.r - 2, 0, CB.z0, { tone: "lo" }, { name: "cb.skirt", steps: 48 });
+put(
+  [CB.c[0], CB.c[1], (CB.z0 + CB.z1) / 2],
+  S(k.cylinder(CB.c[0], CB.c[1], CB.r, CB.z0, CB.z1 - CB.z0, P, 64), { tone: "hi", crease: "none", inner: Ln([28, 52].map((z) => k.sideArc(CB.c[0], CB.c[1], CB.r, z, P, 32)).join(""), { tone: "faint" }) }),
+  { name: "cb.shell", shapes: [record(A.cylinder(CB.c[0], CB.c[1], CB.r, CB.z0, CB.z1 - CB.z0, { name: "cb.shell" }))] },
+);
+{
+  const H2 = 10;
+  const F = UP([CB.c[0], CB.c[1], CB.z1]);
+  const r = (s) => CB.r * Math.sqrt(Math.max(0, 1 - (s / H2) ** 2));
+  const knots = Array.from({ length: 21 }, (_, index) => { const s = (H2 - 0.001) * Math.sin((index / 20) * (Math.PI / 2)); return [s, r(s), index && index < 20 ? 1 : 0]; });
+  const slope = (s) => (-CB.r * (s / (H2 * H2))) / Math.sqrt(Math.max(1e-6, 1 - (s / H2) ** 2));
+  const profile = [[0, 0], ...knots, [H2, 0]];
+  const id = nameFor("cb.dome");
+  put([CB.c[0], CB.c[1], CB.z1 + 5], S(G.lathe(profile, F, P, { smooth: { slope, rows: 6 } }), { tone: "hi" }), { name: id, shapes: [record(A.solid(F, profile, { name: id }))] });
+  postAt(CB.c[0], CB.c[1], 3, CB.z1 + H2 - 0.4, 3, { tone: "mid" }, { name: "cb.vent", steps: 16, bias: 30 });
+}
+const CB_TAG = { x: CB.c[0] - 14, y: CB.c[1] + CB.r - 1.7, w: 28, d: 2.2, r: 0.6 };
+boxAt(CB_TAG, 50, 8, { tone: "mid" }, { name: "cb.tag", bias: 40, bevel: 0.3 });
+const CB_SIGHT = { out: CB.r + 8, z0: 16, z1: 60 };
+const CB_SIGHT_AT = [CB.c[0] + SIGHT.d[0] * CB_SIGHT.out, CB.c[1] + SIGHT.d[1] * CB_SIGHT.out];
+for (const z of [CB_SIGHT.z0 - 6, CB_SIGHT.z1 + 6]) {
+  const o = [CB.c[0] + SIGHT.d[0] * (CB.r - 1), CB.c[1] + SIGHT.d[1] * (CB.r - 1), z];
+  discAt(G.frameAlong(o, [SIGHT.d[0], SIGHT.d[1], 0]), 0, CB_SIGHT.out - CB.r - 2.6, 2, { tone: "mid" }, { name: "cb.sight-stub" });
+}
+postAt(CB_SIGHT_AT[0], CB_SIGHT_AT[1], 3.6, CB_SIGHT.z0 - 9, 6, { tone: "mid" }, { name: "cb.sight-low", steps: 6 });
+postAt(CB_SIGHT_AT[0], CB_SIGHT_AT[1], 3.6, CB_SIGHT.z1 + 3, 6, { tone: "mid" }, { name: "cb.sight-high", steps: 6 });
+put([CB_SIGHT_AT[0], CB_SIGHT_AT[1], (CB_SIGHT.z0 + CB_SIGHT.z1) / 2], `<g data-live="cb-sight"></g>`, { name: "cb.sight", bias: 0.1, shapes: [record(A.cylinder(CB_SIGHT_AT[0], CB_SIGHT_AT[1], 2.6, CB_SIGHT.z0 - 3, CB_SIGHT.z1 - CB_SIGHT.z0 + 6, { name: "cb.sight" }))] });
+// линия продаж: от стенки бака к основанию резервуара
+const cbWall = CB.c[0] - CB.r;
+discAt(G.frameAlong([cbWall + 1.2, CB.y, CB.z], [-1, 0, 0]), 0, 5, 6, { tone: "mid" }, { name: "cb.boss" });
+const CB_LINE = [[BASE.x + BASE.w, CB.y, CB.z], [cbWall - 3.8, CB.y, CB.z]];
+const cbMade = { line: G.fillet(CB_LINE, 3, 4), id: "cb.pipe" };
+const cbValve = gateValve(cbMade, 162 - (BASE.x + BASE.w), 3, { name: "cb.valve", bonnetTop: CB.z + 18 });
+const cbExt = meterAt([143, CB.y, CB.z], [1, 0, 0], [0, 1, 0], "m-cb", { name: "cb.meter", r: 4.6 });
+pipe(CB_LINE, 3, { name: "cb.pipe", gaps: [cbValve.gap, [143 - (BASE.x + BASE.w) - cbExt, 143 - (BASE.x + BASE.w) + cbExt]] });
+yokeWheel(cbValve, "stem-cb", "hw-cb", "cb", { wheel: 9, height: 20 });
 
 // ── самописец курса: лента на столе, перо на каретке ──────────────────────────
 const REC = { x: 72, y: 50, w: 136, d: 54, r: 4 };
@@ -534,10 +610,12 @@ const engrave = (host, face, at, z, text, size = 4, tone = "mid") => ENGRAVE.pus
 engrave("sump", "left", [SUMP.x + SUMP.w / 2, SUMP.y + SUMP.d], 4, "ОСТАЛЬНОЙ МИР", 6);
 engrave("tank.base", "right", [BASE.x + BASE.w, -66], PLINTH_H + 6, "ВАЛЮТНЫЙ РЫНОК", 4.2);
 engrave("export.skid", "left", [PX, -14], 1.4, "ЭКСПОРТ", 4.4);
-engrave("oil.box", "left", [OIL.x + OIL.w / 2, OIL.y + OIL.d], 16, "НЕФТЬ", 5);
+engrave("oil.box", "left", [OIL_KNOB[0], OIL.y + OIL.d], 15, "НЕФТЬ", 4.4);
+engrave("oil.box", "left", [VOL_KNOB[0], OIL.y + OIL.d], 15, "ОБЪЁМ", 4.4);
 engrave("rate.beam", "left", [BEAM.x + BEAM.w - 19, BEAM.y + BEAM.d], BRIDGE_Z + 1.1, "СТАВКА ЦБ", 3.4);
 engrave("minfin.pump", "left", [MCX, PUMP2.y + PUMP2.d], 11, "МИНФИН", 4.6);
-engrave("cut.box", "left", [CUT.x + CUT.w / 2, CUT.y + CUT.d], 5.5, "59 $", 5);
+engrave("cut.box", "left", [CUT.x + CUT.w / 2, CUT.y + CUT.d], 5.5, "ПРАВИЛО", 4.6);
+engrave("cb.tag", "left", [CB.c[0], CB_TAG.y + CB_TAG.d], 52.4, "РЕЗЕРВЫ ЦБ", 3.8, "hi");
 engrave("rec.body", "left", [REC.x + 40, REC.y + REC.d], 3.6, "САМОПИСЕЦ КУРСА", 4.4);
 // табличка «ФНБ» на обечайке и табличка «САНКЦИИ» на стойке задвижки
 const FUND_TAG = { x: FC[0] - 10, y: FC[1] + FUND.r - 1.7, w: 20, d: 2.2, r: 0.6 };
@@ -558,7 +636,7 @@ for (const e of ENGRAVE) {
 // подписи сливов — гравировка на столе под трубами
 for (const drain of DRAINS) {
   const text = drain.name === "import" ? "ИМПОРТ" : "КАПИТАЛ";
-  back.push(k.faceTextSvg(k.topMatrix([drain.x + 9, 49], 0, P, "y"), text, { size: 4.2, tone: "mid", anchor: "middle" }));
+  back.push(k.faceTextSvg(k.topMatrix([drain.x + 9, 46], 0, P, "y"), text, { size: 4.2, tone: "mid", anchor: "middle" }));
 }
 const front = items.map((item) => `<g class="it">${item.svg}</g>`).join("") + DRAINS.map((drain) => `<g data-live="stream-${drain.name}"></g>`).join("");
 const LABEL_TEXT =
@@ -568,41 +646,83 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" class="iso-svg rr-svg" view
 const DATA = {
   P, C, GLASS_R, BASE_TOP, GLASS_TOP, LEVEL, WATER_FLOOR, FLOAT, GAUGE, GAUGE_TOP, INLET, RISER_Y,
   SUMP_WATER, SUMP_SUB: SUMP_SUB.join(""), RIPPLES: sumpRipples, DRAINS: DRAINS.map((d) => ({ x: d.x, r: d.r })), DRAIN_Z, DRAIN_END,
-  OIL_KNOB, OIL_TOP, CUT_DIAL, CUT_TOP, SPIN, STEMS, XHEAD_Z: [DRAIN_Z + 26 + 2, BRIDGE_Z - 10],
+  OIL_KNOB, VOL_KNOB, GAIN_KNOB, BALL, OIL_TOP, CUT_DIAL, CUT_TOP, SPIN, STEMS, RANGE: M.RANGE,
+  CBV: { x: cbValve.centre[0], y: cbValve.centre[1], z: cbValve.top, max: 15 },
+  SIGHTS: [
+    { live: "sight", at: SIGHT_AT, z0: SIGHT.z0, z1: SIGHT.z1, key: "n" },
+    { live: "cb-sight", at: CB_SIGHT_AT, z0: CB_SIGHT.z0, z1: CB_SIGHT.z1, key: "c" },
+  ], XHEAD_Z: [DRAIN_Z + 26 + 2, BRIDGE_Z - 10],
   SV: { x: svx, y: svy, z: sv.top, max: 18 }, SIGHT_AT, SIGHT, FUND, REC: { paper: PAPER, z: REC_H, penX: PEN_X },
 };
 const kitSource = readFileSync(join(HERE, "kit", "iso-kit.mjs"), "utf8").replace(/^export /gm, "");
 const modelSource = readFileSync(join(HERE, "model.mjs"), "utf8").replace(/^export /gm, "");
 const live = readFileSync(join(HERE, "live.js"), "utf8").replace("__DATA__", () => JSON.stringify(DATA)).replace("__MODEL__", () => modelSource);
-const slider = (key, label, [lo, hi], stepBy, unit) =>
-  `<label class="rr-knob"><span class="rr-knob-label">${label}</span><input type="range" data-in="${key}" min="${lo}" max="${hi}" step="${stepBy}" value="${M.START[key]}" aria-label="${label}"><output data-out="${key}"></output></label>`;
+const slider = (key, label, stepBy, hint, where) =>
+  `<div class="rr-knob"><label class="rr-knob-label" for="rr-${key}">${label}</label><input id="rr-${key}" type="range" data-in="${key}" min="${M.RANGE[key][0]}" max="${M.RANGE[key][1]}" step="${stepBy}" value="${M.START[key]}" aria-describedby="rr-${key}-hint"><output data-out="${key}" for="rr-${key}"></output><p class="rr-knob-hint" id="rr-${key}-hint">${hint} <span class="rr-where">На машине: ${where}.</span></p></div>`;
+const GROUPS = [
+  {
+    title: "Приток валюты",
+    knobs: [
+      slider("oil", "Нефть Urals, $/барр", 1, "Цена, по которой экспортёры продают сырьё.", "левая ручка пульта у насоса"),
+      slider("vol", "Объём экспорта, %", 1, "Физические поставки нефти, газа, металлов, угля, зерна. 100% — текущий уровень.", "правая ручка того же пульта"),
+      slider("sanc", "Санкционное трение, %", 1, "Доля экспортной выручки, которая теряется или застревает по дороге домой: платёжные ограничения, банки-посредники, скидки за риск, задержки расчётов. 0% — деньги возвращаются без потерь.", "задвижка «Санкции» на напорной трубе"),
+    ],
+  },
+  {
+    title: "Отток валюты",
+    knobs: [
+      slider("dem", "Спрос на импорт, %", 1, "Сколько валюты нужно импортёрам при текущем курсе: потребительский спрос, инвестиции, госзаказ. 100% — текущий уровень.", "шаровой кран с рычагом на трубе «Импорт»"),
+      slider("rate", "Ключевая ставка, %", 0.5, "Дорогой кредит сжимает импорт, а рублёвые вклады удерживают капитал внутри страны.", "маховик траверсы над двумя сливами"),
+    ],
+  },
+  {
+    title: "Государство",
+    knobs: [
+      slider("cutoff", "Цена отсечения, $/барр", 1, "Порог бюджетного правила: выше него Минфин покупает валюту в ФНБ, ниже — продаёт из ФНБ.", "красная метка на циферблате пульта «Правило»"),
+      slider("mscale", "Операции Минфина, % от правила", 5, "Масштаб покупок и продаж по правилу. 0% — правило на паузе, как в 2022 году; 200% — вдвое больше.", "малая ручка пульта «Правило», скорость насоса Минфина"),
+      slider("cb", "Продажи валюты ЦБ, %", 1, "Прямые продажи из резервов Банка России сверх бюджетного правила. Резервы конечны: бак пустеет.", "задвижка на линии из бака «Резервы ЦБ»"),
+    ],
+  },
+];
 const flowsRow = [
-  ["exp", "Экспорт → резервуар"],
+  ["exp", "Экспорт →"],
+  ["cbflow", "ЦБ →"],
   ["minfin", "Минфин"],
-  ["imp", "Импорт → мир"],
-  ["cap", "Капитал → мир"],
+  ["imp", "Импорт ←"],
+  ["cap", "Капитал ←"],
   ["rub", "Курс"],
 ].map(([key, label]) => `<span class="rr-flow"><span>${label}</span><b data-out="${key}"></b></span>`).join("");
-const sceneButtons = ["base", "boom", "crash", "hawk", "dove", "sanc"].map((key, index) => `<button type="button" class="rr-scene" data-scene="${key}" aria-pressed="false">${["База", "Нефтяной бум", "Обвал нефти", "Жёсткая ставка", "Смягчение", "Санкции"][index]}</button>`).join("");
+const SCENE_LIST = [
+  ["base", "База"],
+  ["boom", "Нефтяной бум"],
+  ["pause", "Правило на паузе"],
+  ["crash", "Обвал нефти"],
+  ["cbsell", "Продажи ЦБ"],
+  ["imports", "Импортный бум"],
+  ["hawk", "Жёсткая ставка"],
+  ["dove", "Смягчение"],
+  ["sanc", "Санкции"],
+];
+const sceneButtons = SCENE_LIST.map(([key, label]) => `<button type="button" class="rr-scene" data-scene="${key}" aria-pressed="false">${label}</button>`).join("");
 const panel = `<div class="rr-panel">
-  <div class="rr-knobs">${slider("oil", "Нефть Urals, $/барр", M.RANGE.oil, 1)}${slider("rate", "Ключевая ставка, %", M.RANGE.rate, 0.5)}${slider("sanc", "Санкционное трение, %", M.RANGE.sanc, 1)}</div>
-  <div class="rr-scenes">${sceneButtons}<button type="button" class="rr-scene rr-tour" data-tour aria-pressed="true">Тур идёт</button></div>
+  <div class="rr-groups">${GROUPS.map((group) => `<fieldset class="rr-group"><legend>${group.title}</legend>${group.knobs.join("")}</fieldset>`).join("")}</div>
+  <div class="rr-scenes">${sceneButtons}<button type="button" class="rr-scene rr-tour" data-tour aria-pressed="true">Тур идёт</button><button type="button" class="rr-scene" data-reset>Сброс</button></div>
   <p class="rr-say" aria-live="polite" data-say></p>
-  <div class="rr-flows">${flowsRow}</div>
+  <div class="rr-flows" aria-label="Потоки валюты, условные единицы">${flowsRow}</div>
 </div>`;
 const KEYS = [
   { mark: "lit", label: "Поплавок, шток и стрелка: курс рубля" },
-  { mark: "raised", label: "Насос «Экспорт» и задвижка «Санкции»: приток валюты" },
-  { mark: "edge", label: "Траверса ставки: задвижки импорта и вывода капитала" },
-  { mark: "flat", label: "Насос Минфина и бак ФНБ: бюджетное правило" },
+  { mark: "raised", label: "Насос «Экспорт», пульт цены и объёма, задвижка «Санкции»: приток" },
+  { mark: "edge", label: "Кран спроса на импорт и траверса ставки: отток" },
+  { mark: "flat", label: "Насос Минфина, пульт правила и бак ФНБ; бак «Резервы ЦБ»" },
   { mark: "dotted", label: "Самописец: курс за последние 20 секунд" },
 ];
 const CAPTION =
   "Валютный рынок как гидравлическая машина. Уровень в стеклянном резервуаре — предложение валюты внутри страны; поплавок через шток поворачивает стрелку: чем выше уровень, тем дешевле доллар. " +
-  "Насос «Экспорт» качает валюту из «Остального мира», его скорость задаёт цена нефти, а санкционная задвижка душит этот поток. " +
-  "Импорт и вывод капитала сливают валюту обратно; их задвижки висят на одной траверсе, и чем выше ключевая ставка, тем ниже траверса и уже щель. " +
+  "Насос «Экспорт» качает валюту из «Остального мира»; его обороты — это цена нефти, умноженная на физический объём поставок, а санкционная задвижка срезает часть потока. " +
+  "Импорт и вывод капитала сливают валюту обратно. Шаровой кран задаёт спрос на импорт, а обе задвижки сливов висят на одной траверсе: чем выше ключевая ставка, тем ниже траверса и уже щель. " +
   "Слив растёт с напором: крепкий рубль сам разгоняет импорт, поэтому у машины есть равновесие. " +
-  `Минфин по бюджетному правилу откачивает выручку сверх цены отсечения (${M.CUTOFF} $) в бак ФНБ и возвращает её, когда нефть дешевле, — пока бак не опустеет. ` +
+  "Минфин по бюджетному правилу откачивает выручку сверх цены отсечения в бак ФНБ и возвращает её, когда нефть дешевле, пока бак не опустеет. Банк России может доливать валюту из своих резервов. " +
   "Модель качественная: она показывает направления и порядок связей, а не прогноз курса.";
 const figure = k.plateHtml({
   fig: "Рис. 1",
@@ -613,7 +733,7 @@ const figure = k.plateHtml({
   caption: CAPTION,
   body: `<div class="iso-stage rr-stage">${svg}</div>`,
 });
-const header = `<header class="rr-head"><p class="rr-kicker">Как устроен курс</p><h1>Резервуар рубля</h1><p class="rr-lede">Нефть, ставка, санкции и бюджетное правило — четыре рычага одной машины. Крутите ручки или смотрите тур: стрелка на крышке показывает, сколько рублей стоит доллар.</p></header>`;
+const header = `<header class="rr-head"><p class="rr-kicker">Как устроен курс</p><h1>Резервуар рубля</h1><p class="rr-lede">Экспорт, импорт, ставка, санкции, бюджетное правило и резервы ЦБ — восемь рычагов одной машины. Крутите ручки или смотрите тур: стрелка на крышке показывает, сколько рублей стоит доллар.</p></header>`;
 const body = header + figure.replace('<figcaption class="iso-legend">', `${panel}<figcaption class="iso-legend">`);
 const page = `<style>${readFileSync(join(HERE, "ruble.css"), "utf8")}</style><div class="rr">${body}</div>`;
 const name = THEME === "light" ? "index.html" : "index-dark.html";
