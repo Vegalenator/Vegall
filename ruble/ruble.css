@@ -1,0 +1,90 @@
+.rr {
+  --rr-glass: #eef3f6;
+  --rr-water: #a9c0cf;
+  --rr-water-top: #d3e0e9;
+  --rr-deep: #8eabbf;
+  --rr-stream: #9db7c8;
+  --rr-cavity: #d9dcdc;
+  --rr-void: #6f7378;
+  --rr-window: #e9eff2;
+  --rr-ring: #7f9aad;
+  --rr-accent: #18181a;
+}
+.iso[data-theme="dark"] .rr,
+.rr[data-theme="dark"],
+.iso[data-theme="dark"].rr {
+  --rr-glass: #1a1e21;
+  --rr-water: #2b3d4a;
+  --rr-water-top: #3a5062;
+  --rr-deep: #33495a;
+  --rr-stream: #3d5869;
+  --rr-cavity: #0e0f10;
+  --rr-void: #050505;
+  --rr-window: #1c2125;
+  --rr-ring: #6a8aa0;
+  --rr-accent: #e6e6e6;
+}
+.rr-glass { fill: var(--rr-glass); opacity: .5; stroke: none; }
+.rr-water { fill: var(--rr-water); opacity: .62; stroke: none; }
+.rr-water.rr-sea { opacity: .8; }
+.rr-water.rr-deep { fill: var(--rr-deep); opacity: .9; }
+.rr-water-top { fill: var(--rr-water-top); opacity: .75; stroke: none; }
+.rr-stream { fill: var(--rr-stream); opacity: .8; stroke: none; }
+.rr-cavity { fill: var(--rr-cavity); stroke: none; }
+.rr-void { fill: var(--rr-void); stroke: none; }
+.rr-window { fill: var(--rr-window); stroke: none; }
+.rr-ring { stroke: var(--rr-ring); }
+.rr-glint { stroke: var(--anatomy-face); stroke-width: 1.1; opacity: .9; }
+
+.rr-stage { position: relative; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.rr-stage > svg { display: block; width: 100%; height: auto; }
+
+.rr-panel {
+  margin: 14px 0 0;
+  padding: 16px 18px 14px;
+  border-radius: 14px;
+  background: var(--anatomy-card);
+  box-shadow: var(--anatomy-lift);
+  color: var(--anatomy-text);
+  font: 13px/1.45 var(--anatomy-mono);
+}
+.rr-knobs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 22px; }
+.rr-knob { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px 10px; }
+.rr-knob-label { grid-column: 1 / -1; font-size: 11px; letter-spacing: .06em; text-transform: uppercase; color: var(--anatomy-muted); }
+.rr-knob input { width: 100%; accent-color: var(--rr-accent); }
+.rr-knob output { min-width: 4.2em; text-align: right; color: var(--anatomy-strong); }
+.rr-scenes { display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; }
+.rr-scene {
+  font: inherit; font-size: 12px; color: var(--anatomy-text); background: transparent;
+  border: 1px solid var(--anatomy-faint, #d4d4d6); border-radius: 999px; padding: 4px 11px; cursor: pointer;
+}
+.rr-scene[aria-pressed="true"] { color: var(--anatomy-card); background: var(--anatomy-strong); border-color: var(--anatomy-strong); }
+.rr-scene:focus-visible, .rr-knob input:focus-visible { outline: 1px solid var(--anatomy-muted); outline-offset: 3px; }
+.rr-tour { margin-left: auto; }
+.rr-say { margin: 10px 0 0; min-height: 1.45em; color: var(--anatomy-strong); }
+.rr-flows { display: flex; flex-wrap: wrap; gap: 6px 20px; margin: 10px 0 0; padding-top: 10px; border-top: 1px solid var(--anatomy-faint, #d4d4d6); font-size: 12px; }
+.rr-flow { display: inline-flex; gap: 8px; }
+.rr-flow b { font-weight: 500; color: var(--anatomy-strong); }
+
+@media (max-width: 640px) {
+  .rr-knobs { grid-template-columns: 1fr; }
+  .rr-tour { margin-left: 0; }
+}
+.rr-spoke { fill: none; stroke: var(--anatomy-mid); stroke-width: 2.1; stroke-linecap: round; }
+.rr-spoke-hi { fill: none; stroke: var(--anatomy-top); stroke-width: .8; stroke-linecap: round; }
+.rr { --rr-paper: #ffffff; --rr-grid: #e3e1da; --rr-trace: #18181a; }
+.iso[data-theme="dark"] .rr, .iso[data-theme="dark"].rr { --rr-paper: #1d1d1d; --rr-grid: #2b2b2b; --rr-trace: #f0f0f0; }
+.rr-paper { fill: var(--rr-paper); stroke: none; }
+.rr-grid { fill: none; stroke: var(--rr-grid); stroke-width: .5; }
+.rr-trace { fill: none; stroke: var(--rr-trace); stroke-width: 1.1; stroke-linejoin: round; stroke-linecap: round; }
+.rr-trace-ref { fill: none; stroke: var(--anatomy-red); stroke-width: .6; stroke-dasharray: 2 2; opacity: .7; }
+.rr-head { margin: 0 0 22px; }
+.rr-kicker { margin: 0 0 4px; font: 11px/1.4 var(--anatomy-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--anatomy-muted); }
+.rr-head h1 { margin: 0 0 8px; font-size: 28px; line-height: 1.15; font-weight: 600; color: var(--anatomy-strong); letter-spacing: -.01em; }
+.rr-lede { margin: 0; max-width: 62ch; color: var(--anatomy-text); }
+.rr .iso-legend { margin-top: 16px; }
+@media (max-width: 640px) {
+  .rr .iso-plate { overflow: hidden; }
+  .rr-stage > svg { width: 118%; margin: -7% -12% -3% -6%; }
+  .rr-head h1 { font-size: 24px; }
+}
