@@ -1,0 +1,1125 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+<title>Карта событий</title>
+<meta name="description" content="Редакционный календарь событий: заседания, выборы, форумы и публикации данных со статусом даты, повесткой, сценариями и итогами.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap">
+<style>
+/* Карта событий — лист консалтингового отчёта.
+   Две колонки: слева лента дней, справа постоянно открытая карточка выбранного события.
+   На узком экране карточка выезжает листом поверх ленты. Один акцент (глубокий ультрамарин),
+   статусы — приглушённые и кодируются ещё и формой знака. */
+:root {
+  --ground:#eef0f3;            /* фон вокруг листа */
+  --sheet:#ffffff;             /* лист */
+  --sheet-2:#f6f7f9;           /* тихая подложка внутри листа */
+  --glass:rgba(255,255,255,.72);
+  --scrim:rgba(18,24,38,.28);
+  --ink:#131a26;               /* основной текст */
+  --ink-2:#4b5363;             /* вторичный */
+  --muted:#8a91a0;             /* подписи */
+  --hair:rgba(19,26,38,.09);   /* волосяные линии */
+  --hair-2:rgba(19,26,38,.16);
+  --accent:#243f9c;            /* ультрамарин */
+  --accent-2:rgba(36,63,156,.08);
+  --accent-3:rgba(36,63,156,.16);
+  /* типы событий: пыльная приглушённая гамма, разнесённая по тону */
+  --tint:14%; --tint-h:20%; --tint-a:25%;
+  --t-monetary:#5c6fa3; --t-elections:#a96a87; --t-summits:#4e8783; --t-state:#ad7057; --t-data:#83854f; --t-energy:#b08a45; --t-corp:#7b68a3; --t-tech:#5a8a66;
+  --st-confirmed:#1f7a52;
+  --st-preliminary:#a3690f;
+  --st-expected:#6d7686;
+  --st-cancelled:#a8423a;
+  --live:#c8412c;
+  --shadow-lg:0 24px 60px -20px rgba(18,24,38,.35), 0 2px 8px rgba(18,24,38,.06);
+  --shadow-sm:0 1px 2px rgba(18,24,38,.05), 0 4px 16px -8px rgba(18,24,38,.10);
+
+  --ff-display:'Source Serif 4', 'PT Serif', Georgia, 'Times New Roman', serif;
+  --ff-ui:'Golos Text', 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+  --ff-mono:'IBM Plex Mono', ui-monospace, 'SF Mono', Consolas, monospace;
+  --ease:cubic-bezier(.2,.8,.2,1);
+  --ease-in:cubic-bezier(.4,0,.8,.3);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
+    --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
+    --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
+    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6; --t-tech:#93c49e;
+    --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
+    --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"] {
+  --ground:#0a0d13; --sheet:#11151d; --sheet-2:#161b25; --glass:rgba(17,21,29,.72); --scrim:rgba(0,0,0,.5);
+  --ink:#eceff4; --ink-2:#b4bbc7; --muted:#7c8493; --hair:rgba(236,239,244,.08); --hair-2:rgba(236,239,244,.15);
+  --accent:#8ea6ff; --accent-2:rgba(142,166,255,.09); --accent-3:rgba(142,166,255,.18);
+    --tint:17%; --tint-h:23%; --tint-a:29%; --t-monetary:#9aabd8; --t-elections:#d59bb6; --t-summits:#86bdb8; --t-state:#d9a088; --t-data:#b9bb84; --t-energy:#d9b777; --t-corp:#af9dd6; --t-tech:#93c49e;
+  --st-confirmed:#5cc493; --st-preliminary:#e3a84a; --st-expected:#98a1b0; --st-cancelled:#ec8a7f; --live:#ff7a62;
+  --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7), 0 2px 8px rgba(0,0,0,.3);
+  --shadow-sm:0 1px 2px rgba(0,0,0,.3), 0 4px 16px -8px rgba(0,0,0,.5);
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:var(--toph,56px)}
+body{margin:0;background:var(--ground);color:var(--ink);font-family:var(--ff-ui);font-size:14px;line-height:1.55;-webkit-font-smoothing:antialiased}
+body.locked{overflow:hidden}
+a{color:var(--accent);text-decoration-color:var(--accent-3);text-underline-offset:3px}
+a:hover{text-decoration-color:currentColor}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:3px}
+.mono{font-family:var(--ff-mono);font-variant-numeric:tabular-nums}
+.caps{font-size:10.5px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:500}
+
+/* ------------------------------------------------------- шапка из стекла */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:30;background:var(--glass);-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);border-bottom:1px solid var(--hair)}
+.top-in{max-width:1440px;margin:0 auto;padding:0 28px;display:flex;align-items:center;gap:22px;min-height:54px}
+.mark{margin:0;font-family:var(--ff-display);font-weight:500;font-size:19px;letter-spacing:-.01em;line-height:1;white-space:nowrap}
+.grow{flex:1 1 auto}
+.status{display:flex;align-items:center;gap:12px;white-space:nowrap;font-size:12px;color:var(--ink-2)}
+.status .dot{width:6px;height:6px;border-radius:50%;background:var(--st-confirmed);display:inline-block;margin-right:7px;box-shadow:0 0 0 3px color-mix(in srgb, var(--st-confirmed) 18%, transparent)}
+.status .dot.stale{background:var(--st-preliminary);box-shadow:0 0 0 3px color-mix(in srgb, var(--st-preliminary) 18%, transparent)}
+.status .dot.off{background:var(--muted);box-shadow:none}
+.ghost{display:grid;place-items:center;min-width:28px;height:28px;font-size:13px;font-weight:500;color:var(--ink-2);padding:0 6px;border-radius:6px;transition:background .2s,color .2s}
+.ghost:hover{background:var(--accent-2);color:var(--ink)}
+
+.tabs{position:relative;display:flex;gap:20px;align-self:stretch}
+.tabs button{padding:0;height:100%;font-size:14px;color:var(--ink-2);transition:color .2s;white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--ink);font-weight:500}
+.tabs button sup{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:4px;vertical-align:super}
+.tabs .ink{position:absolute;bottom:-1px;height:2px;background:var(--accent);border-radius:2px;transition:left .35s var(--ease),width .35s var(--ease)}
+.search{display:flex;align-items:center;gap:8px;border-bottom:1px solid var(--hair-2);padding:4px 2px;min-width:0;flex:0 1 200px;min-width:130px;transition:border-color .2s}
+.search:focus-within{border-color:var(--accent)}
+.search svg{flex:none;color:var(--muted)}
+.search input{border:0;background:none;font:inherit;font-size:13px;color:var(--ink);width:100%;min-width:0;outline:none}
+
+/* --------------------------------------------------------------- каркас */
+.wrap{max-width:1440px;margin:0 auto;padding:22px 28px 40px;display:grid;grid-template-columns:minmax(440px,5fr) minmax(0,6fr);gap:22px;align-items:start}
+.sheet{background:var(--sheet);border-radius:10px;box-shadow:var(--shadow-sm);min-width:0}
+
+/* ---- темы */
+.topics{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;gap:4px;align-items:center;padding:10px 16px;border-bottom:1px solid var(--hair)}
+.topics .caps{margin-right:8px}
+.tgl{flex:none;white-space:nowrap;font-size:12.5px;color:var(--ink-2);padding:5px 11px;border-radius:999px;transition:background .25s,color .25s,box-shadow .25s}
+.tgl:hover{color:var(--ink);background:var(--sheet-2)}
+.tgl[aria-pressed="true"]{color:var(--accent);background:var(--accent-2);box-shadow:inset 0 0 0 1px var(--accent-3)}
+.tgl .c{font-family:var(--ff-mono);font-size:10px;color:var(--muted);margin-left:5px}
+.tgl.clear{color:var(--muted)}
+
+/* ---- лента */
+.feed{padding:4px 0 10px}
+.day{display:grid;grid-template-columns:78px minmax(0,1fr);gap:0 6px;padding:16px 14px 6px 20px}
+.day + .day{border-top:1px solid var(--hair)}
+.dh{position:sticky;top:calc(var(--toph,56px) + 10px);align-self:start;padding-top:8px}
+.dh .d{font-family:var(--ff-display);font-size:34px;line-height:.9;font-weight:400;letter-spacing:-.03em}
+.dh .mw{margin-top:6px}
+.dh .rel{font-size:12px;color:var(--ink-2);margin-top:2px}
+.dh.now .d{font-size:19px;line-height:1.1;color:var(--live)}
+.dh.nodate .d{font-size:17px;line-height:1.15}
+.rows{min-width:0}
+.rows{display:grid;gap:5px}
+.row{--tc:var(--muted);position:relative;display:grid;grid-template-columns:70px minmax(0,1fr) 16px;gap:12px;align-items:start;width:100%;text-align:left;padding:12px 12px 12px 12px;border-radius:9px;background:color-mix(in srgb,var(--tc) var(--tint),var(--sheet));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tc) 80%,transparent);transition:background .25s var(--ease),box-shadow .25s var(--ease)}
+.row:hover{background:color-mix(in srgb,var(--tc) var(--tint-h),var(--sheet))}
+.row:hover .go{opacity:1;transform:translateX(0)}
+.row.cancelled .t{text-decoration:line-through;text-decoration-color:var(--st-cancelled);color:var(--ink-2)}
+.row[aria-current="true"]{background:color-mix(in srgb,var(--tc) var(--tint-a),var(--sheet));box-shadow:inset 5px 0 0 var(--tc),inset 0 0 0 1px color-mix(in srgb,var(--tc) 60%,transparent)}
+@keyframes barIn{from{transform:scaleY(0)}to{transform:none}}
+.row[aria-current="true"] .go{opacity:1;transform:none;color:var(--tc)}
+.row.enter{animation:rowIn .45s var(--ease) both}
+@keyframes rowIn{from{opacity:.25;transform:translateY(6px)}to{opacity:1;transform:none}}
+.tm{display:grid;gap:3px;padding-top:1px}
+.tm .h{font-family:var(--ff-mono);font-size:14px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.tm .h.approx{color:var(--st-preliminary)}
+.tm .h.none{font-family:var(--ff-ui);font-size:12px;font-weight:400;font-style:italic;color:var(--st-expected);line-height:1.3}
+.st{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;color:var(--c);white-space:nowrap}
+.st svg{flex:none}
+.s-confirmed{--c:var(--st-confirmed)} .s-preliminary{--c:var(--st-preliminary)} .s-expected{--c:var(--st-expected)} .s-cancelled{--c:var(--st-cancelled)}
+.t{font-size:14.5px;font-weight:500;line-height:1.35;letter-spacing:-.005em;text-wrap:balance}
+.sub{margin-top:4px;font-size:12.5px;color:var(--muted)}
+.ty{display:inline-flex;align-items:center;gap:6px;color:var(--tc);font-weight:500;white-space:nowrap}
+.ty i{width:7px;height:7px;border-radius:2px;background:var(--tc);flex:none}
+.detail::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--tc,transparent);opacity:.85;z-index:3;transition:background .4s var(--ease)}
+.hero .k .ty{margin-right:2px}
+.tlegend{display:grid;gap:8px}
+.tlegend div{display:grid;grid-template-columns:170px minmax(0,1fr);gap:12px;font-size:13px;align-items:baseline}
+.tlegend span.d{color:var(--ink-2)}
+.gist{margin-top:5px;font-size:12.5px;color:var(--ink-2)}
+.flags{display:inline-flex;flex-wrap:wrap;gap:4px 6px;margin-left:8px;vertical-align:2px;max-width:100%}
+.flag{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;padding:2px 7px;border-radius:999px;white-space:nowrap}
+.flag.live{color:#fff;background:var(--live);animation:pulse 2.4s var(--ease) infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--live) 40%,transparent)}50%{box-shadow:0 0 0 5px transparent}}
+.flag.await{color:var(--accent);background:var(--accent-2)}
+.flag.risk{white-space:normal;color:var(--st-cancelled);background:color-mix(in srgb,var(--st-cancelled) 10%,transparent)}
+.go{color:var(--muted);opacity:0;transform:translateX(-4px);transition:opacity .25s,transform .25s var(--ease);padding-top:2px}
+
+.empty{padding:56px 24px;text-align:center;color:var(--ink-2)}
+.empty b{display:block;font-family:var(--ff-display);font-weight:500;font-size:20px;color:var(--ink);margin-bottom:6px}
+
+/* ------------------------------------------------------------- панель */
+.scrim{position:fixed;inset:0;z-index:50;background:var(--scrim);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);opacity:0;transition:opacity .3s var(--ease)}
+.scrim.open{opacity:1}
+.detail{position:sticky;top:calc(var(--toph,56px) + 16px);height:calc(100vh - var(--toph,56px) - 32px);display:flex;flex-direction:column;overflow:hidden;padding:0;position:sticky}
+.dtools{display:inline-flex;gap:2px;margin-left:auto}
+#drClose{display:none}
+.dr-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:22px 26px 30px;display:grid;gap:12px;align-content:start}
+.dr-body > .hero{margin-bottom:8px}
+.dr-body.swap > *{animation:secIn .42s var(--ease) both}
+.dr-body.swap > *:nth-child(2){animation-delay:.03s}.dr-body.swap > *:nth-child(3){animation-delay:.06s}.dr-body.swap > *:nth-child(4){animation-delay:.09s}.dr-body.swap > *:nth-child(n+5){animation-delay:.12s}
+@keyframes secIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.hero .k{font-size:12.5px;color:var(--muted)}
+.hero{display:grid;grid-template-columns:minmax(0,1fr) 196px;gap:18px;align-items:start}
+.hero .main{min-width:0;padding-top:2px}
+.geo{margin:0;display:grid;gap:5px}
+.geo svg{display:block;width:100%;height:auto;border-radius:8px;background:var(--sheet-2);box-shadow:inset 0 0 0 1px var(--hair)}
+.geo .land{fill:color-mix(in srgb,var(--ink) 17%,transparent)}
+.geo .grid{stroke:var(--hair);stroke-width:.5;fill:none}
+.geo .cross{stroke:var(--tc,var(--accent));stroke-width:.8;stroke-dasharray:2 2.5;opacity:.6}
+.geo .pin{fill:var(--tc,var(--accent));stroke:var(--sheet);stroke-width:2.4}
+.geo .ring{fill:none;stroke:var(--tc,var(--accent));stroke-width:2.2;transform-box:fill-box;transform-origin:center;animation:ping 2.2s var(--ease) infinite}
+@keyframes ping{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.6);opacity:0}}
+.geo figcaption{font-size:12px;color:var(--ink-2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.geo figcaption.off{color:var(--muted);font-style:italic}
+.hero h2{margin:0 0 10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--ff-display);font-weight:500;font-size:22px;line-height:1.15;letter-spacing:-.015em}
+.when{display:flex;align-items:center;gap:10px 12px;flex-wrap:wrap}
+.when .st,.when .flag{flex:none}
+.when .big{font-family:var(--ff-mono);font-size:14.5px;white-space:nowrap;font-weight:500;letter-spacing:-.01em}
+.when .big.none{font-family:var(--ff-ui);font-style:italic;font-weight:400;color:var(--st-expected)}
+.lab.caps{margin:0 0 10px;font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--ink-2)}
+.blk{padding:16px 18px;border-radius:10px;background:var(--sheet-2)}
+.blk.cpb{background:var(--accent-2)}
+.blk.cpb .lab.caps{color:var(--accent)}
+.blk.res{background:color-mix(in srgb,var(--st-confirmed) 7%,var(--sheet-2))}
+.blk.res .outcome{background:none;padding:0}
+.blk.cons{background:color-mix(in srgb,var(--tc) 7%,var(--sheet-2))}
+.ctab{width:100%;border-collapse:collapse;font-size:13.5px;margin:2px 0 4px}
+.ctab th{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--muted);text-align:left;padding:0 10px 6px 0;border-bottom:1px solid var(--hair)}
+.ctab td{padding:8px 10px 8px 0;border-bottom:1px dashed var(--hair);vertical-align:top;color:var(--ink)}
+.ctab tr:last-child td{border-bottom:0}
+.ctab td:first-child{color:var(--ink-2);width:34%}
+.ctab .num{font-family:var(--ff-mono);font-size:13px;white-space:nowrap}
+.ctab .cv{font-weight:600}
+.ctab .rg{display:block;font-family:var(--ff-ui);font-size:11.5px;color:var(--muted);white-space:normal;font-weight:400;margin-top:2px}
+.ctab .act{font-weight:600;color:var(--st-confirmed)}
+.ctab .act.off{color:var(--st-cancelled)}
+.cmeta{display:grid;grid-template-columns:96px minmax(0,1fr);gap:6px 14px;font-size:13px;line-height:1.5;margin:10px 0 0}
+.cmeta dt{font-size:10px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;color:var(--muted);padding-top:3px}
+.cmeta dd{margin:0}
+.verdict{display:inline-block;font-size:10.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;padding:3px 9px;border-radius:999px;color:var(--vc);background:color-mix(in srgb,var(--vc) 13%,transparent);margin:0 0 10px}
+.verdict + span{font-size:13px;color:var(--ink-2);margin-left:8px}
+.csh{color:var(--ink-2);font-family:var(--ff-mono);font-size:11.5px}
+@media (max-width:720px){.cmeta{grid-template-columns:minmax(0,1fr);gap:2px}.cmeta dd{margin-bottom:8px}.ctab td:first-child{width:auto}}
+.disc{display:grid;grid-template-columns:92px minmax(0,1fr);gap:12px 16px;margin:0;font-size:13.5px;line-height:1.5}
+.disc dt{color:var(--muted);font-size:12.5px;padding-top:1px}
+.disc dd{margin:0;min-width:0}
+.wl{color:inherit;text-decoration:underline dotted;text-decoration-thickness:1px;text-decoration-color:color-mix(in srgb,var(--tc,var(--accent)) 70%,transparent);text-underline-offset:3px;transition:color .2s,text-decoration-color .2s}
+.wl:hover{color:var(--accent);text-decoration-style:solid;text-decoration-color:var(--accent)}
+.say figcaption b .wl{text-decoration-color:color-mix(in srgb,var(--ink) 35%,transparent)}
+.chgbtn{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;padding:0 10px}
+.chgbtn b{min-width:18px;height:18px;padding:0 5px;border-radius:999px;background:var(--st-preliminary);color:#fff;font-size:10.5px;font-weight:600;display:inline-grid;place-items:center;font-family:var(--ff-mono)}
+.chgbtn[aria-pressed="true"]{background:var(--accent-2);color:var(--ink)}
+.flag.chg{color:var(--st-preliminary);background:color-mix(in srgb,var(--st-preliminary) 13%,transparent)}
+.flag.new{color:var(--accent);background:var(--accent-2)}
+.clog{display:grid}
+.citem{display:grid;grid-template-columns:64px minmax(0,1fr);gap:2px 12px;padding:11px 0;border-top:1px dashed var(--hair)}
+.citem:first-child{border-top:0;padding-top:2px}
+.citem .ct{font-family:var(--ff-mono);font-size:12px;white-space:nowrap;color:var(--ink-2);padding-top:2px}
+.citem .ck{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.citem .ck button{font-weight:600;font-size:13.5px;text-align:left;color:var(--ink)}
+.citem .ck button:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.kchip{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:600;padding:2px 7px;border-radius:999px;white-space:nowrap;color:var(--kc);background:color-mix(in srgb,var(--kc) 12%,transparent)}
+.citem .cd{grid-column:2;font-size:13.5px;line-height:1.5;color:var(--ink)}
+.citem .cd s{color:var(--muted);text-decoration-color:color-mix(in srgb,var(--muted) 60%,transparent)}
+.citem .cn{grid-column:2;font-size:12.5px;color:var(--ink-2)}
+.citem .cn a{font-size:12px}
+.cday{font-family:var(--ff-mono);font-size:11.5px;color:var(--ink-2);padding:6px 0;border-bottom:1px solid var(--hair);margin:10px 0 2px}
+.cday:first-child{margin-top:0}
+.briefbtn{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px;border-radius:999px;background:var(--accent);color:#fff;font-size:12.5px;font-weight:600;white-space:nowrap;box-shadow:0 1px 2px rgba(0,0,0,.08);transition:transform .2s var(--ease),box-shadow .2s,background .2s}
+.briefbtn:hover{transform:translateY(-1px);box-shadow:0 6px 16px -6px var(--accent)}
+.briefbtn[aria-pressed="true"]{background:var(--ink);color:var(--sheet)}
+.brief-meta{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:center;font-size:12px;color:var(--muted);margin-top:4px}
+.brief-meta .src{padding:2px 8px;border-radius:999px;background:var(--accent-2);color:var(--accent);font-weight:500}
+.brief-lead{margin:0;font-family:var(--ff-display);font-size:17px;line-height:1.55;color:var(--ink)}
+.bitem{display:grid;grid-template-columns:28px minmax(0,1fr);gap:4px 12px;padding:12px 0;border-top:1px solid var(--hair)}
+.bitem:first-of-type{border-top:0;padding-top:4px}
+.bitem .num{font-family:var(--ff-display);font-size:20px;line-height:1.1;color:var(--tc,var(--accent))}
+.bitem .bt{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.bitem .bt button{font-weight:600;font-size:14px;text-align:left;color:var(--ink)}
+.bitem .bt button:hover{color:var(--accent);text-decoration:underline;text-underline-offset:3px}
+.bitem .bt .tm2{font-family:var(--ff-mono);font-size:12px;color:var(--ink-2)}
+.bitem p{grid-column:2;margin:2px 0 0;font-family:var(--ff-display);font-size:15.5px;line-height:1.55;color:var(--ink)}
+.bitem .who{grid-column:2;font-size:12.5px;color:var(--ink-2)}
+.dash{margin:0;padding:0;list-style:none;display:grid;gap:8px;font-size:13.5px;line-height:1.5}
+.dash li{position:relative;padding-left:18px}
+.dash li::before{content:"";position:absolute;left:1px;top:.72em;width:9px;height:1.5px;border-radius:1px;background:var(--tc,var(--accent));opacity:.9}
+.ref{padding:14px 18px 4px;border-top:1px solid var(--hair)}
+.ref + .ref{border-top:1px dashed var(--hair)}
+.ref .kv,.ref .srcs{font-size:12.5px}
+.onair{position:relative;margin:4px 0 8px;padding:18px 20px 20px 22px;border-radius:10px;background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3)}
+.onair::before{content:"";position:absolute;left:0;top:16px;bottom:16px;width:3px;border-radius:3px;background:var(--accent)}
+.says{display:grid;gap:4px}
+.says-empty{margin:0;font-size:13px;color:var(--ink-2)}
+.says-live{margin:-4px 0 10px;font-size:12px;color:var(--ink-2)}
+.says-live::before{content:'';display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--live);margin-right:7px;vertical-align:1px}
+.says-day + .says-day{margin-top:14px}
+.says-h{display:flex;align-items:baseline;gap:8px;font-family:var(--ff-mono);font-size:11.5px;color:var(--ink-2);padding-bottom:6px;border-bottom:1px solid var(--hair);margin-bottom:4px}
+.says-h span{color:var(--muted);font-size:10.5px}
+.say{margin:0;padding:10px 0;display:grid;gap:4px}
+.say + .say{border-top:1px dashed var(--hair)}
+.say figcaption{display:flex;flex-wrap:wrap;gap:2px 8px;align-items:baseline;font-size:13px}
+.say figcaption b{font-weight:600}
+.say figcaption span{font-size:12px;color:var(--muted)}
+.say blockquote{margin:0;font-family:var(--ff-display);font-size:15.5px;line-height:1.5;color:var(--ink)}
+.say p{margin:0;font-size:13.5px;line-height:1.5;color:var(--ink-2)}
+.say-src{font-size:11.5px;justify-self:start}
+.onair-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.onair-h .lab.caps{margin:0;color:var(--accent)}
+.onair-b{display:flex;align-items:center;gap:6px}
+.onair-b .ghost{font-weight:400;font-size:12px}
+.onair p{margin:0;font-family:var(--ff-display);font-size:16.5px;line-height:1.6;color:var(--ink);max-width:62ch}
+.pillbtn{font-size:12px;padding:6px 12px;border-radius:999px;color:var(--accent);background:var(--sheet);box-shadow:inset 0 0 0 1px var(--accent-3);transition:background .2s,box-shadow .2s;white-space:nowrap}
+.pillbtn:hover{box-shadow:inset 0 0 0 1px var(--accent)}
+.pillbtn[aria-pressed="true"]{background:var(--accent);color:#fff;box-shadow:none}
+.kv{display:grid;grid-template-columns:120px minmax(0,1fr);gap:8px 16px;font-size:13px;margin:0}
+.kv dt{color:var(--muted)}
+.kv dd{margin:0;color:var(--ink)}
+.items{margin:0;padding:0;list-style:none;display:grid;gap:10px}
+.items li{display:grid;grid-template-columns:74px minmax(0,1fr);gap:12px;align-items:baseline;font-size:13.5px}
+.bs{font-size:9.5px;text-transform:uppercase;letter-spacing:.1em;font-weight:500;white-space:nowrap}
+.bs.agenda{color:var(--st-confirmed)}
+.bs.analysis{color:var(--muted)}
+.bs.analysis::after{content:" ~"}
+.three{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0}
+.three > div{padding:2px 16px 2px 0;font-size:13px;min-width:0}
+.three > div + div{padding-left:16px;border-left:1px solid var(--hair)}
+.three b{display:block;margin-bottom:5px}
+.cp{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;font-size:13.5px}
+.cp .w{font-family:var(--ff-mono);font-size:12.5px;color:var(--accent)}
+.srcs{display:flex;flex-direction:column;gap:6px;font-size:13px}
+.keysays{margin-top:14px;padding-top:12px;border-top:1px solid var(--hair)}
+.keysays b.caps{display:block;margin-bottom:8px;color:var(--st-confirmed)}
+.keysays ul{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.keysays li{font-size:13.5px;line-height:1.5;color:var(--ink)}
+.keysays li span{color:var(--ink-2);font-size:12.5px}
+.gist.q{font-style:italic}
+.outcome{display:grid;grid-template-columns:minmax(0,1fr) 20px minmax(0,1.3fr) 20px minmax(0,1fr);align-items:stretch}
+.outcome .arr{display:grid;place-items:center;color:var(--muted)}
+.outcome > div{min-width:0;font-size:13px}
+.outcome b{display:block;margin-bottom:6px}
+.outcome .dec{color:var(--ink)}
+.outcome .dec b{color:var(--st-confirmed)}
+.outcome ul{margin:0;padding-left:15px;display:grid;gap:4px}
+.small{font-size:11.5px;color:var(--muted);margin-top:8px}
+.pending{padding:14px 16px;border-radius:10px;border:1px dashed var(--accent-3);font-size:13px;color:var(--ink-2)}
+.dr-foot{display:flex;gap:8px;flex-wrap:wrap;padding:12px 26px;border-top:1px solid var(--hair)}
+
+.legend{display:grid;gap:14px}
+.legend div{display:grid;gap:3px}
+.legend p{margin:0;font-size:13px;color:var(--ink-2)}
+.legend .ex{font-family:var(--ff-mono);font-size:11.5px;color:var(--muted)}
+
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));z-index:70;transform:translate(-50%,12px);opacity:0;background:var(--ink);color:var(--sheet);padding:9px 16px;border-radius:999px;font-size:13px;transition:opacity .25s,transform .35s var(--ease);pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:1560px){
+  .status .clock{display:none}
+  .autorun .lbl{display:none}
+}
+@media (max-width:1300px){
+  .top-in{gap:18px}
+  .tabs{gap:16px}
+  .chgbtn span,.briefbtn span{display:none}
+  .briefbtn{padding:0 9px}
+  .search{flex-basis:160px;min-width:110px}
+}
+@media (max-width:1100px){
+  .tabs button sup{display:none}
+  .wrap{grid-template-columns:minmax(0,1fr)}
+  .detail{position:fixed;z-index:51;top:0;right:0;bottom:0;left:auto;width:min(640px,100vw);height:auto;border-radius:0;box-shadow:var(--shadow-lg);transform:translateX(104%);transition:transform .42s var(--ease);padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .detail.open{transform:none}
+  .detail.closing{transition:transform .28s var(--ease-in)}
+  #drClose{display:grid}
+  .row[aria-current="true"]{background:color-mix(in srgb,var(--tc) var(--tint),var(--sheet));box-shadow:inset 3px 0 0 color-mix(in srgb,var(--tc) 80%,transparent)}
+}
+@media (max-width:1000px){
+  .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
+  .tabs{order:5;flex:1 1 100%;height:40px;overflow-x:auto;scrollbar-width:none}
+  .tabs button sup{display:inline}
+  .search{flex:1 1 120px}
+}
+@media (max-width:720px){
+  .chgbtn span{display:none}
+  .briefbtn span{display:none}
+  .briefbtn{padding:0 9px}
+  .top-in{padding:8px 16px 0;flex-wrap:wrap;gap:6px 16px;min-height:0}
+  .tabs{order:5;flex:1 1 100%;height:40px;overflow-x:auto;scrollbar-width:none}
+  .search{flex:1 1 120px}
+  .autorun .lbl{display:none}
+  .wrap{padding:16px 16px 60px;gap:20px}
+  .status .clock{display:none}
+  .topics{padding-left:16px;padding-right:16px}
+  .day{grid-template-columns:minmax(0,1fr);padding:14px 10px 6px}
+  .dh{position:static;display:flex;align-items:baseline;gap:10px;padding:0 6px 6px}
+  .dh .d{font-size:26px}
+  .dh .mw,.dh .rel{margin:0}
+  .row{grid-template-columns:62px minmax(0,1fr) 14px;gap:10px;padding:11px 6px}
+  .dr-body{padding:20px 18px 32px}
+  .hero{grid-template-columns:minmax(0,1fr) 128px;gap:12px}
+  .three,.outcome{grid-template-columns:minmax(0,1fr)}
+  .three > div + div{border-left:0;padding-left:0;padding-top:10px;margin-top:10px;border-top:1px solid var(--hair)}
+  .outcome .arr{transform:rotate(90deg);padding:4px 0}
+  .kv{grid-template-columns:minmax(0,1fr)}
+  .kv dt{margin-top:6px}
+  .items li{grid-template-columns:minmax(0,1fr);gap:2px}
+  .disc{grid-template-columns:minmax(0,1fr);gap:4px}
+  .disc dd + dt{margin-top:8px}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <pattern id="hatch" width="4" height="4" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="1.4" height="4" fill="var(--st-expected)" opacity=".55"/></pattern>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="top-in">
+    <h1 class="mark" title="Редакционный календарь · время московское">Карта событий</h1>
+    <nav class="tabs" role="tablist" id="tabs" aria-label="Горизонт"></nav>
+    <div class="grow"></div>
+    <label class="search"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.5"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Поиск" aria-label="Поиск по событиям"></label>
+    <div class="status">
+      <span class="clock mono" id="clock">—</span>
+      <span id="autorun" class="autorun"><i class="dot off"></i><span class="lbl">автоитоги</span></span>
+      <button class="ghost chgbtn" type="button" id="chgBtn" title="Лента изменений: переносы, смена статуса, новые события"><span>Изменения</span><b id="chgCount" hidden></b></button>
+      <button class="briefbtn" type="button" id="briefBtn" title="Бриф к эфиру: главное на сегодня одним текстом"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v7M5 6.5a3 3 0 006 0V4a3 3 0 00-6 0z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M3.5 7.5a4.5 4.5 0 009 0M8 12v2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><span>Бриф к эфиру</span></button>
+      <button class="ghost" type="button" id="helpBtn" title="Как читать карту" aria-label="Как читать карту">?</button>
+      <button class="ghost" type="button" id="themeBtn" title="Сменить тему" aria-label="Сменить тему"><svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="8" r="5.5" stroke="currentColor" stroke-width="1.4"/><path d="M8 2.5a5.5 5.5 0 010 11z" fill="currentColor"/></svg></button>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <main class="sheet" id="sheet">
+    <div class="topics" id="topics"></div>
+    <div class="feed" id="feed" aria-live="polite">
+      <div class="empty"><b>Загружаю события</b>Карточки хранятся в базе терминала и обновляются автоматически.</div>
+    </div>
+  </main>
+  <aside class="sheet detail" id="detail" aria-labelledby="drTitle">
+    <div class="dr-body" id="drBody"><div class="empty"><b>Карточка события</b>Выберите событие в списке слева.</div></div>
+    <div class="dr-foot" id="drFoot" hidden></div>
+  </aside>
+</div>
+<div class="scrim" id="scrim" hidden></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(() => {
+  const MSK = 'Europe/Moscow';
+  const H = 3600e3, D = 24 * H;
+  const HORIZONS = [
+    { id: 'h72', label: '72 часа', ms: 72 * H },
+    { id: 'w2', label: '2 недели', ms: 14 * D },
+    { id: 'm1', label: '1 месяц', ms: 31 * D },
+    { id: 'm3', label: '3 месяца', ms: 92 * D },
+    { id: 'hist', label: 'История' },
+  ];
+  const CATS = [
+    { id: 'russia', label: 'RUS', full: 'Россия' },
+    { id: 'intl', label: 'INT', full: 'Международные организации' },
+    { id: 'elections', label: 'Выборы', full: 'Выборы' },
+    { id: 'cb', label: 'ЦБ', full: 'Центробанки' },
+    { id: 'business', label: 'CORP', full: 'Крупный бизнес' },
+    { id: 'tech', label: 'TECH', full: 'Технологии и отраслевые события' },
+  ];
+  const STATUSES = [
+    { id: 'confirmed', label: 'Подтверждена', short: 'подтв.' },
+    { id: 'preliminary', label: 'Предварительная', short: 'предв.' },
+    { id: 'expected', label: 'Без даты', short: 'без даты' },
+    { id: 'cancelled', label: 'Не состоится', short: 'отменено' },
+  ];
+  const CAT_LABEL = Object.fromEntries(CATS.map(c => [c.id, c.full]));
+  const ST = Object.fromEntries(STATUSES.map(s => [s.id, s]));
+  const TYPES = [
+    { id: 'monetary', label: 'Денежная политика', d: 'Решения ЦБ, ФРС, ЕЦБ и выступления их глав' },
+    { id: 'elections', label: 'Выборы', d: 'Национальные выборы и референдумы' },
+    { id: 'summits', label: 'Саммиты и форумы', d: 'Встречи лидеров и министров, международные форумы' },
+    { id: 'state', label: 'Власть и бюджет', d: 'Парламенты, правительства, бюджетные сроки' },
+    { id: 'data', label: 'Статистика', d: 'Публикации макроэкономических данных' },
+    { id: 'energy', label: 'Нефть и энергетика', d: 'ОПЕК плюс, энергетические форумы' },
+    { id: 'corp', label: 'Компании', d: 'Корпоративная отчётность' },
+    { id: 'tech', label: 'Технологии и отрасли', d: 'Технологические и отраслевые форумы, конференции, выставки' },
+  ];
+  const TY = Object.fromEntries(TYPES.map(t => [t.id, t]));
+  function typeOf(e) {
+    if (e.type && TY[e.type]) return e.type;
+    const k = (e.kind || '').toLowerCase(), c = e.cats || [];
+    if (k.includes('выбор')) return 'elections';
+    if (c.includes('cb')) return 'monetary';
+    if (k.includes('данн')) return 'data';
+    if (k.includes('отчёт')) return 'corp';
+    if (k.includes('саммит') || k.includes('форум')) return 'summits';
+    return 'state';
+  }
+  const tyTag = e => { const t = typeOf(e); return `<span class="ty" style="--tc:var(--t-${t})"><i></i>${TY[t].label}</span>`; };
+
+  const store = {
+    get(k, d) { try { const v = localStorage.getItem('em.' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+    set(k, v) { try { localStorage.setItem('em.' + k, JSON.stringify(v)); } catch (e) {} },
+  };
+  const state = {
+    events: [], meta: null, loaded: false,
+    horizon: store.get('horizon', 'h72'),
+    cats: new Set(store.get('cats', [])),
+    q: '', openId: null, order: [], animate: true, help: false, pane: '', briefs: {},
+  };
+  const $ = s => document.querySelector(s);
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const reduced = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ------------------------------------------------------------ время */
+  const fmt = o => new Intl.DateTimeFormat('ru-RU', { timeZone: MSK, ...o });
+  const fDay = fmt({ day: 'numeric', month: 'long' });
+  const fNum = fmt({ day: 'numeric' });
+  const fMon = fmt({ month: 'long' });
+  const fMonS = fmt({ month: 'short' });
+  const fWd = fmt({ weekday: 'short' });
+  const fWdLong = fmt({ weekday: 'long' });
+  const fTime = fmt({ hour: '2-digit', minute: '2-digit', hour12: false });
+  const fShort = fmt({ day: 'numeric', month: 'short' });
+  const fHour = fmt({ hour: '2-digit', hour12: false });
+  const dayKey = d => { const p = fmt({ year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d); const g = t => p.find(x => x.type === t).value; return `${g('year')}-${g('month')}-${g('day')}`; };
+  const parseDay = s => s ? new Date(s + 'T23:59:59+03:00') : null;
+  const dayStart = d => new Date(dayKey(d) + 'T00:00:00+03:00');
+
+  function times(e) {
+    const s = e.start ? new Date(e.start) : null;
+    let end = e.end ? new Date(e.end) : null;
+    if (s && !end) end = e.allDay ? new Date(dayKey(s) + 'T23:59:59+03:00') : new Date(s.getTime() + 2 * H);
+    return { s, end, w: parseDay(e.window) };
+  }
+  const when = e => { const t = times(e); return (t.s || t.w || new Date(8.64e15)).getTime(); };
+  function phase(e, now) {
+    const { s, end } = times(e);
+    if (e.dateStatus === 'cancelled') return 'cancelled';
+    if (s && now >= s && now <= end) return 'live';
+    if (e.outcome && e.outcome.decided) return 'closed';
+    if (!s || now < s) return 'upcoming';
+    return 'awaiting';
+  }
+  function plural(n, a, b, c) { n = Math.abs(n) % 100; const m = n % 10; if (n > 10 && n < 20) return c; if (m > 1 && m < 5) return b; if (m === 1) return a; return c; }
+  function relDays(d, now) {
+    const n = Math.round((dayStart(d) - dayStart(now)) / D);
+    if (n === 0) return 'сегодня'; if (n === 1) return 'завтра'; if (n === -1) return 'вчера';
+    return n > 0 ? `через ${n} ${plural(n, 'день', 'дня', 'дней')}` : `${-n} ${plural(n, 'день', 'дня', 'дней')} назад`;
+  }
+
+  /* ---------------------------------------------------------- отбор */
+  function inHorizon(e, now, hz) {
+    const { s, end, w } = times(e);
+    const ph = phase(e, now);
+    if (hz.id === 'hist') return ph === 'closed' || ph === 'awaiting' || (ph === 'cancelled' && w && w < now);
+    if (ph === 'closed' || ph === 'awaiting') return false;
+    const lim = now.getTime() + hz.ms;
+    if (s) return end >= now && s.getTime() <= lim;
+    if (!w || w < now) return false;
+    return w.getTime() <= lim + (hz.id === 'h72' ? 0 : 20 * D);
+  }
+  function passTopic(e) {
+    if (state.cats.size && !(e.cats || []).some(c => state.cats.has(c))) return false;
+    if (state.q) {
+      const hay = [e.title, e.where, e.kind, e.participants, (e.agenda || []).map(a => a.text).join(' ')].join(' ').toLowerCase();
+      if (!state.q.split(/\s+/).every(t => hay.includes(t))) return false;
+    }
+    return true;
+  }
+
+  /* ------------------------------------------------------- знаки статуса */
+  function glyph(st, size = 10) {
+    const s = size, r = s / 2 - 1, c = s / 2;
+    if (st === 'confirmed') return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r}" fill="currentColor"/></svg>`;
+    if (st === 'preliminary') return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r - .3}" fill="none" stroke="currentColor" stroke-width="1.4" stroke-dasharray="2 1.6"/></svg>`;
+    if (st === 'expected') return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><rect x="1" y="1" width="${s - 2}" height="${s - 2}" rx="1.5" fill="url(#hatch)" stroke="currentColor" stroke-width="1"/></svg>`;
+    return `<svg width="${s}" height="${s}" viewBox="0 0 ${s} ${s}" aria-hidden="true"><circle cx="${c}" cy="${c}" r="${r - .3}" fill="none" stroke="currentColor" stroke-width="1.3"/><path d="M${c - r * .7} ${c + r * .7}L${c + r * .7} ${c - r * .7}" stroke="currentColor" stroke-width="1.3"/></svg>`;
+  }
+  const stTag = (st, long) => `<span class="st s-${st}">${glyph(st)}${long ? ST[st].label : ST[st].short}</span>`;
+
+  /* -------------------------------------------------------- «в эфире» */
+  const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+  function airLine(e) {
+    const { s, end } = times(e);
+    const d = s ? fDay.format(s) : '';
+    const t = s && !e.allDay ? fTime.format(s) : '';
+    const multi = s && e.end && dayKey(s) !== dayKey(end);
+    const w = e.dateWording || (multi ? `с ${d} по ${fDay.format(end)}` : t ? `${d}, в ${t} по Москве` : d);
+    switch (e.dateStatus) {
+      case 'confirmed': return { c: 'var(--st-confirmed)', hint: e.risk ? 'Дата назначена, но есть риск переноса — оговорите это.' : 'Дату можно называть уверенно.', text: `${cap(w)} — ${e.title}.` };
+      case 'preliminary': return { c: 'var(--st-preliminary)', hint: 'Не называйте число без оговорки.', text: `Ориентировочно ${d} — ${e.title}. Дата официально не закреплена.` };
+      case 'expected': return { c: 'var(--st-expected)', hint: 'Конкретного дня нет — говорите об окне.', text: `${e.title}: ожидается ${e.dateWording || 'позже'}, конкретная дата пока не назначена.` };
+      default: return { c: 'var(--st-cancelled)', hint: 'Событие в ожидавшиеся сроки не состоится.', text: `${e.title} в ожидавшиеся сроки не состоятся.` };
+    }
+  }
+
+  function airText(e) {
+    if (e.airBrief) return e.airBrief;
+    const a = airLine(e).text;
+    const ag = (e.agenda || [])[0], sc = (e.scenarios || [])[0];
+    return [a, ag ? 'На повестке: ' + ag.text.replace(/\.$/, '') + '.' : '', sc ? 'Чего ждать: ' + sc.text.replace(/\.$/, '') + '.' : ''].filter(Boolean).join(' ');
+  }
+  const LAND = 'M112 138 115 138.5 114.5 139 113 139 112 139.5 109 139 106.5 138 105.5 137 109 138 109.5 137 111.5 136.5 112 138ZM121.5 135 122.5 135.5 120.5 136 119 136 121.5 135ZM250.5 133.5 248.5 134 249 132.5 250.5 133 250.5 133.5ZM325.5 125 326.5 125 328.5 125 328 127 326 127.5 324.5 125 325.5 125ZM353 125 354 125 354 126 352.5 127.5 353 128 351.5 128 350.5 130 349.5 130.5 346.5 130 347 129 348.5 128 350.5 127 353 124.5 353 125ZM354.5 120 355.5 121 357.5 122 358.5 121.5 358 123 357 123 356 125.5 354.5 125.5 355 124.5 354 123.5 354.5 123 354.5 120.5 352.5 118.5 354.5 119.5 354.5 120ZM347 106 345.5 105.5 344 104 345 104.5 347 106ZM358.5 101.5 358.5 102 357.5 102 358.5 101.5ZM0 100.5M359.5 101 359.5 100.5M0 100 0 100.5ZM230 97.5 230.5 99 229.5 102 227 109 225.5 109.5 224 109 223.5 106 224.5 104 224 101.5 224.5 100 226.5 100 227.5 98.5 229 96 230 97.5ZM323.5 98 325.5 99 325.5 101 326.5 103 329 104.5 329.5 106.5 330.5 106.5 331 107.5 333 109.5 333 111.5 333.5 112 333 115.5 331.5 117 330 120.5 330 121.5 328.5 122 326.5 123 325 122.5 323.5 123 320.5 122 319.5 120 318 119.5 318 118.5 317 119.5 318 117.5 318 117 316 119 314 117 314.5 116.5 311.5 115.5 309.5 115.5 307 116.5 306 116 304 117 303.5 118 300 118 298 119 296.5 119 295 118 296 116 295 113.5 294 112 293.5 109.5 294 110 293.5 108.5 294 106 294.5 106 296.5 104.5 297.5 104.5 301 103.5 302 102 303 100.5 303.5 101.5 304 100 305.5 98 307 98 308.5 99 309.5 98.5 310.5 96.5 312.5 96 312.5 95 315.5 96 316.5 96 317 96.5 315.5 98.5 319.5 101.5 321 101.5 321.5 99 321.5 96.5 322.5 94.5 323.5 97 323.5 98ZM300.5 94 299 93.5 300 93.5 300.5 94ZM304.5 94 303.5 94.5 304 93.5 305 92.5 307 92.5 305 93.5 304.5 94ZM298 92 299 92.5 296.5 93 298 92ZM303 92 303 92.5 300 93 303 92ZM288.5 91 290.5 91 291 90.5 292.5 91 293 91.5 295.5 92.5 294.5 93 293.5 92.5 291.5 92.5 288.5 92 285.5 91 286 90 287.5 90 288.5 91ZM332 89.5 330 90.5 328.5 89.5 331 89.5 332.5 88.5 332 89.5ZM310.5 87 310 87.5 308 87.5 308 87 310.5 87ZM333 88.5 330.5 86.5 332 87 333 88.5ZM314 85 314.5 87 315.5 87.5 316.5 86.5 318.5 85.5 324.5 88 326 89.5 327.5 90 327 90.5 328.5 93 331 94.5 328 94 326 92 324.5 91.5 323.5 92 322.5 93.5 321 93 320 92.5 317.5 92.5 318.5 91.5 318 89.5 315 88.5 313.5 87.5 313 88 312 87 313.5 86 312 86 310.5 85 312.5 84.5 314 85ZM305 82.5 304.5 83.5 300 84 300 84.5 301 85.5 303.5 84.5 301.5 86 302.5 87 303 89.5 302 89.5 300.5 87 300.5 89.5 299.5 89.5 299.5 87.5 299 87 300 83.5 301 82.5 304 83 305 82.5ZM308.5 83 308 85 307.5 83 308 82 308.5 83ZM286 90 284.5 90 282.5 88 281.5 87 280 84.5 279.5 84 278.5 82 275.5 79 275.5 78.5 277.5 79 280.5 82 281.5 82 284 84 283.5 84.5 284.5 85 285 86.5 286 87 286 90ZM298 82 299 83 298 83 297.5 85 296.5 85.5 296 88 295 88 293.5 87 292 87.5 290 87 290 85.5 289 84.5 289 82.5 289.5 82 291 82 291.5 81.5 293 81 294 79.5 297 77 297.5 78 299 78.5 298.5 79 297.5 81 298 82ZM306.5 75.5 306 77.5 306 76.5 305.5 78.5 304 78 304 76.5 303.5 76 302 77 302.5 76 303.5 75.5 304 76 306 74.5 306.5 75.5ZM261 78 260.5 78 259.5 76 260 74 262 76.5 261 78ZM304 73.5 303 75 302.5 74.5 303 73 304 73 304 73.5ZM298.5 74.5 297 75.5 299 73.5 298.5 74.5ZM302 72 303 72.5 302 73.5 302 72ZM305.5 72 306 73 305 72.5 305 74 304.5 71.5 305.5 72ZM301.5 71 301.5 72 300.5 70.5 301.5 71ZM301.5 65.5 302.5 67 301.5 68 301.5 69.5 304 70 304 71.5 303 70.5 300.5 70 300 69 300.5 65.5 301.5 65.5ZM114.5 66 113 66 113 65.5 114.5 66ZM103 66 101.5 66 103 65.5 103 66ZM107.5 64 109 64 111.5 65.5 108.5 66 105.5 65.5 107.5 65.5 107.5 64ZM290.5 65.5 288.5 65.5 289 64 291 64 290.5 65.5ZM24.5 65 24 64 25 64.5 24.5 65ZM100.5 61 101.5 61.5 103.5 63 106 63.5 104.5 64 102 64 103 63.5 102 63.5 101.5 62.5 98 62 97 61.5 96 62 96 61.5 97.5 61 100.5 61ZM102.5 60 101.5 59.5 102 59 102.5 60ZM301 61 300.5 62 300 60.5 301.5 58.5 302 59 301 61ZM314.5 50 313 51.5 312.5 51 313 50 314.5 50ZM214.5 48.5 213 49.5 212.5 49 214.5 48.5ZM203.5 48.5 206.5 48.5 204.5 49 203.5 48.5ZM195.5 46 195 47.5 192.5 46.5 192.5 46 195.5 46ZM189 43 190 43.5 189.5 45 188.5 45 188 43 189 43ZM321 47 320.5 49 319 49.5 317 49.5 316 50.5 315 49.5 311 50 312 51 311.5 52.5 310 52.5 310.5 51.5 309.5 50.5 312.5 48.5 314.5 48.5 315.5 48.5 316.5 46.5 317.5 47 319.5 46 320 44.5 320.5 43 321.5 42.5 322 45 321 46 321 47ZM189.5 42 189 42.5 188.5 41.5 189.5 41 189.5 42ZM324 40 325.5 39.5 325.5 40.5 324 41 323 42 321.5 41.5 321 42.5 320 42.5 320.5 40.5 321.5 40.5 322 38.5 324 40ZM116.5 37.5 118 37.5 117 38 116.5 37.5ZM118 35 115.5 34 117 34.5 118 35ZM56.5 35.5 54.5 35 53 34 52 34 51.5 33 54 33.5 56.5 35.5ZM124 33.5 124 34.5 126.5 35 127.5 36.5 127 37.5 126 37 126 36 120.5 36.5 121 35.5 121.5 35 123.5 32.5 124.5 32.5 124 33.5ZM47.5 30 48.5 30 48 31 47 30.5 47.5 30ZM323.5 33.5 324.5 35 323 34.5 322.5 36 323.5 37 322 38 322 35 322 33 321.5 32 321.5 30.5 322.5 30 323.5 31.5 323.5 33.5ZM173 31.5 171.5 32.5 170 32 171 31 170.5 30 172.5 29 174.5 29.5 174 31 173 31.5ZM192.5 28.5 192 29 191 28 192.5 28 192.5 28.5ZM27 27 26 27.5 25.5 26.5 27 26 28 26.5 27 27ZM177 25.5 176 26.5 178 26.5 177 28 178 28 179 29.5 179.5 29.5 180.5 31 181.5 31.5 180.5 33 179 33 176.5 34 174 34 175.5 33 174.5 32 176 31.5 175.5 30.5 177 30.5 176.5 29.5 174.5 28.5 174 27 175 25.5 177 25.5ZM98 21.5 97 22 97 21 98 21.5ZM8.5 20 11.5 20.5 10.5 21 8 20.5 8.5 20ZM95 18.5 98.5 19.5 100 20.5 99 20.5 97 20 94.5 21 93.5 20 94 18.5 95 18.5ZM165.5 17.5 165.5 18 166.5 19 165 19.5 161.5 20.5 157 20 158 19.5 156 19 158 18.5 155.5 18.5 156.5 17.5 158 17.5 159.5 18.5 161 17.5 162 18 164 17.5 165.5 17.5ZM104 17 103 17 103 16 105 16 104 17ZM0 15 5.5 17 8 17 10 18 7.5 18.5 7.5 19.5 6 19.5 4 19 4 18.5 1.5 18.5 1.5 18 0 18 0 19M360 19 357.5 19.5 359.5 21 359 21.5 357.5 21.5 353.5 22.5 350.5 23.5 350.5 24 349 23.5 346.5 24 343.5 24 342 26 343 26.5 343 28 342 28 342 29 340.5 29.5 340 31 338.5 31 338 32 337 33 335.5 28.5 336 27 337 26 338.5 26 342 23.5 343.5 23 344.5 21.5 343.5 21.5 342.5 22.5 340 23.5 339.5 22 336.5 22.5 334 24 335 25 331.5 25 331.5 24.5 330 24.5 328.5 25 325.5 24.5 322 25 315 29.5 316.5 29.5 318 30 320 30 321.5 31 320.5 33 320 35.5 318 37.5 315 40.5 313.5 41 312.5 40.5 309.5 42.5 309.5 43 307.5 44 309.5 47 309 49 306.5 49.5 306 47.5 307 47 306 46.5 304.5 46 305.5 44.5 304.5 44 301 45 302 43.5 301.5 43 297.5 45.5 299.5 47 301 46 302.5 46.5 302.5 47 301 47.5 299 49 300 49.5 302 52.5 301.5 53.5 302 54 301.5 56 301 56 298.5 59.5 296 61 294 61.5 293 62 291 62.5 290 63.5 290 62.5 288.5 62.5 286.5 63.5 285.5 65 287.5 67.5 289 68.5 289.5 70.5 289 72.5 287 73.5 285 75.5 285 74 283.5 73.5 282.5 72 281 71.5 280 70.5 280 71.5 279 74 280 75 280.5 76.5 281.5 77.5 283.5 79 283.5 81 284 82.5 283.5 83 281.5 81 280 78.5 280.5 78 279.5 76.5 278 75.5 279 72.5 277.5 68 277 67 275.5 68.5 274 68 274.5 66 272 63 271.5 61 270.5 61 270.5 62 267 62.5 266.5 64 265 64.5 262 67 262 67.5 260.5 68 260 69 260.5 71 260 72 260 73.5 257.5 76 256.5 75 255.5 72.5 255 71.5 254.5 69.5 253.5 68 253 65 252.5 62.5 250.5 63 249 62 249.5 61.5 247.5 60 246.5 58.5 241.5 59 237.5 58.5 236.5 57 234.5 57.5 231.5 56 230 54 228 54 229 56.5 230 57.5 230.5 58.5 231.5 58 232 60 234 60 236.5 57.5 236.5 59 237.5 60 238.5 60.5 240 61.5 238 65 236.5 65.5 235.5 67 232.5 67.5 232 68.5 229.5 69.5 228.5 70 225.5 70.5 225 71.5 223.5 71.5 222.5 67 221 64.5 219 62.5 219 61.5 215 56 215 54.5 214 56.5 212.5 55.5 214 58 215.5 60 215.5 61 217 62 217.5 65.5 218.5 66 219.5 68 221 69.5 223.5 71.5 222.5 72.5 224 73.5 226.5 73 231 72 231 73.5 229.5 77 228.5 78.5 226.5 81 223 83.5 221.5 85.5 220.5 86.5 219 88.5 219 90.5 219.5 91 219 92.5 220.5 95 221 98.5 219.5 100.5 217.5 101.5 215 104 214.5 104.5 215.5 106 215.5 107.5 215 108.5 213 109.5 212.5 112.5 210 115 208 117 206 118 202.5 118 199.5 119 198 118 198 115.5 196.5 112.5 195 111 194.5 108 194.5 106 193.5 105 192.5 103 192 102 191.5 100.5 192.5 97 193.5 96 193.5 94.5 193 93 193 92.5 192 89 189.5 86 189 85 189.5 83 190 81 188.5 79 186 79.5 184.5 77.5 181 78 178 79.5 176 79 174 79 172.5 79.5 171 79 167 76 167 75 165 73 163.5 72 163.5 70.5 162.5 69.5 163.5 68 164 66 163.5 64 163 63 163 62 164 60.5 165 59.5 165.5 57.5 167.5 56 168.5 56 170.5 54 170 53 171.5 51 173 50 174 48 175.5 48.5 178 49 181.5 47.5 186.5 47 188.5 47 189.5 46.5 190.5 47.5 191 49 190 49.5 191 50.5 195 51.5 195.5 52.5 199 53.5 200 53 200 52 201 51.5 203 51.5 203 52 206.5 52.5 209 53 210 52.5 214 53 214.5 53 216 49.5 216 48 214.5 47 214 48 212.5 48 210.5 47.5 209.5 48 207.5 47.5 206.5 46 207 45 206 44.5 207.5 43.5 209 43.5 209 43 211 43 213.5 42 215 42 218.5 43 220.5 43 221.5 42.5 221.5 41.5 216.5 39 218 38 217.5 37.5 219 36.5 216 37.5 215 38.5 216.5 38.5 214 39.5 212.5 38.5 213.5 38 210.5 37.5 209 39 208.5 40.5 207.5 41.5 209 43 207.5 43 206.5 44 206 43 203 43.5 203 45 204 46 203 46.5 203 47.5 201.5 47 201 45.5 199.5 43.5 199.5 42.5 199 41.5 196 40.5 195 39 193 38.5 192.5 38.5 192.5 40 194 41 196 42.5 198.5 43.5 198.5 44 197 43.5 197 44.5 196 46 195.5 44 193.5 43 193 42.5 190.5 41 190 40 189 39.5 186.5 41 184.5 40.5 183 41 183 42 181 43 179.5 44.5 180 45.5 179.5 46.5 178 47.5 175.5 47.5 174.5 48 173.5 47 171 47 171 45.5 170.5 45.5 171 43 170.5 41 172 40.5 175.5 40.5 178 40.5 178.5 40 179 38 177 36.5 175.5 36 175.5 35.5 178.5 35.5 178 34 179 34.5 181.5 34 181.5 33 184 32.5 184.5 31 189 30 188 28.5 188.5 27 190.5 26.5 191 27.5 189.5 28.5 190 29.5 191 30 192.5 29.5 194 30 197.5 29 199.5 29.5 201.5 29 201 27 202.5 26 204 27 204.5 25.5 203.5 25 206 24.5 208 24.5 209 24 208 23.5 206.5 23.5 203 24 201.5 23.5 201 21.5 202.5 20 205.5 19 204 18 202 18.5 201.5 19.5 198 21.5 197 22.5 199 24 198 25 197 25.5 196 28 194.5 28 194 28.5 193 28.5 191 25 190.5 24.5 188.5 25.5 187 26 185.5 25.5 185 22 186 21.5 188.5 20.5 190.5 19.5 195 16 199 14 201.5 13.5 203 14 204.5 13 208 13 211.5 13.5 210 14 211 14.5 212 14 214 14.5 216.5 15 220.5 16 221 17 218.5 18 214 17 213 17.5 215 18 215 19.5 217 20 216.5 19 217 19 219.5 19.5 220.5 19 220 18.5 222 17.5 224 18 224.5 17 223.5 16.5 224 16 223.5 15.5 226.5 16 227 16.5 225.5 16.5 226.5 17.5 228 17 228 16.5 233.5 15 233.5 16 237.5 15.5 239 15 240 15.5 241 15 240.5 14 243.5 14.5 248.5 16 249 15.5 247.5 14 246.5 13 248.5 12 250 11 252.5 11 252 12.5 253 13.5 252.5 15 253.5 15.5 251.5 17.5 252.5 18 254 17 255 16 255 15 253.5 14.5 254.5 13.5 253 12.5 255.5 11.5 256 12 257.5 11.5 259.5 11.5 261.5 12.5 260.5 11.5 260.5 10.5 262.5 10 267 10 266 9.5 267 9 273 8 276.5 8 279 7.5 281 7.5 282 6.5 284.5 6.5 286 6.5 284.5 7 288 7.5 291 7.5 294 8 294 8.5 289.5 10 293.5 10.5 295.5 10 299 10.5 299 11 303 11 303.5 10.5 307 10.5 308.5 11 308.5 12 309.5 13 311.5 13 312.5 12 314 12.5 315.5 12.5 317.5 12.5 320 12.5 319 11.5 320.5 11 329.5 12 330.5 12.5 333 13 337 13 339 13 339.5 14.5 341 14.5 344 14.5 348 14.5 349.5 15.5 351 15 350.5 14 353.5 14 355.5 14 358.5 14.5M0 15ZM229 42.5 229.5 43.5 229 45 229 46.5 231 47 234 47 234 45 232.5 44 233 43 234.5 43 233.5 42 233 42 232.5 41 231.5 41 230.5 39.5 231.5 39.5 231.5 39 233 38.5 233 37 231 37 227.5 38.5 226.5 39.5 227.5 40.5 227.5 41 229 42.5ZM84.5 15 83.5 15 81.5 15 80 14.5 82 14 84.5 15ZM0 12.5M360 13 358.5 13M0 12.5ZM0 12.5 2.5 12.5 0 13 0 12.5ZM89.5 14.5 89.5 15.5 91 14.5 92 15.5 91.5 16 92.5 17 94.5 15 94.5 14 97.5 14.5 98.5 15 98 16 98.5 17 96.5 17.5 94 17.5 92.5 19 91.5 20 90 20 89 21 88 21 86 23 85.5 25 87 25 87.5 27 89 26.5 91 27 92.5 28 95 28.5 97.5 29 97.5 29.5 98.5 32 100 33 101.5 31.5 101 30 100 29.5 102 29 103.5 27.5 102.5 26 101.5 25 102.5 24 102 21.5 102.5 21.5 105.5 22 106 21.5 108.5 23 110.5 23 110.5 25 112.5 26 114 25 115.5 23.5 118.5 27 118 27.5 120.5 29 122.5 29.5 123 30 124 30.5 124.5 32 121 33 120 34 118.5 34 113.5 34 111.5 35 109 37 109.5 37 111.5 35.5 113.5 35 115 35 116 35.5 115 36 115.5 38 117 38.5 118.5 38 119.5 37 120 38 119 38.5 116.5 39.5 114.5 40.5 114 39.5 115.5 38.5 113 39 110 40.5 109 41 110 42.5 107 43 108 43 106 43.5 106 44.5 104.5 46 103.5 45.5 104.5 48.5 103.5 49 101.5 50 98.5 52.5 98.5 53.5 100 57 99.5 59 99 59 97 56 97.5 55.5 96.5 54 95 54.5 93.5 53.5 90.5 54 90.5 55 89 55 88.5 54.5 85.5 54.5 83.5 55.5 82.5 56.5 83 58 82.5 59.5 82 61.5 83 63.5 84 65 85.5 66 88.5 65 89 64.5 89.5 63 93 62.5 91.5 67.5 91 68 95.5 68 97 69 96 72.5 96.5 73.5 98.5 75 100.5 74.5 103 75.5 104.5 74.5 104.5 73.5 106.5 73 108 71.5 108 72.5 108.5 75 109 74 108.5 73 111 72.5 112 73.5 114 73.5 115 74 115.5 73.5 118 73.5 117.5 74 119 74.5 119.5 75.5 121 76 123 78 125 78 127 78.5 128.5 80 130 83 129.5 84 131.5 84 131.5 85 132 84.5 135 85.5 135.5 86.5 136.5 86.5 138.5 87 140 87 143 89 145 89.5 145.5 91.5 145 93 143 95 141 98 141 99.5 140 103.5 139 105 139 106 138 107 135.5 107.5 133.5 108 131.5 110 131 112.5 129.5 115 127.5 116 126 118.5 125 119 121.5 118.5 123 119.5 123 121 122.5 122 121 122.5 117.5 123 118 124.5 116 125 115 125 115 126 116.5 126.5 115 127.5 114.5 129 113.5 129 112.5 130.5 114.5 131 114 132 113 132.5 112 134 111 134.5 112 136.5 110.5 136.5 109 137 109 138 107.5 137.5 105 136.5 104.5 132.5 106 131 104.5 130.5 105.5 130 105.5 128 107 128.5 107.5 126.5 106.5 126 106.5 127.5 105.5 127 106.5 124 107 123.5 106.5 121 107 121 108.5 116.5 108.5 115 108.5 113 109 111.5 110 105.5 109.5 102.5 108.5 101.5 106.5 100.5 104 98.5 103 96 100 91 98.5 90 98.5 88.5 100 86.5 99 86 100 83 101 82.5 101.5 81.5 103 80 102.5 77.5 102 75.5 101 75 99.5 76 100 76.5 97 76 96.5 75 94 74 94.5 73 92.5 71 89 70 86.5 68.5 85.5 68 83.5 68.5 79 67 78 66 76.5 65.5 75 64.5 74.5 63.5 74.5 62.5 74 61 71.5 59 70.5 58 70.5 57.5 68 55 67 53 65 52 65.5 54 68.5 57.5 69.5 59 70.5 60.5 69.5 60.5 68 59.5 67.5 58 65.5 57 66 55.5 64.5 54.5 62.5 51 61.5 50 59.5 49.5 56.5 45 55.5 43.5 55.5 41 56 38.5 55.5 35.5 57 36 57 35 54.5 33.5 52.5 33 52 31.5 51 31 50.5 30.5 49.5 29 48 28.5 48 27.5 46.5 27 46 26 43.5 26 40 24.5 37.5 24 36 24 33 23 32 23.5 32 24 28.5 25 28.5 23.5 26 24.5 26.5 25 26 26 23.5 26.5 21.5 28 19.5 28.5 17 29.5 15 29.5 18 28 19.5 28 22.5 26.5 23 25 21 25.5 19.5 25 18 25.5 18 24.5 16 24 14.5 23.5 14 22.5 15.5 21 17 21 19 20 18.5 19.5 19 19 15 19.5 13.5 19.5 12 18.5 15.5 17.5 16 18 18.5 18 14.5 16 13 15.5 14 15 15.5 15 18 13.5 23.5 12.5 27.5 13.5 30.5 13.5 35 14 36.5 14 41 14.5 43.5 15 45.5 14.5 47 14.5 50 14 51 14 52 13.5 54 14.5 55.5 14 55.5 14.5 57.5 14 66 15.5 64.5 16 66.5 16.5 70 16 71 16.5 72 16 71 15.5 74 15 75.5 16 78.5 16.5 81.5 16 81.5 15.5 85.5 16 86 15 83.5 14 83.5 13 85 12 87 12.5 88.5 14 87.5 14.5 89.5 14.5ZM66 11 65.5 11.5 67.5 11 69 11.5 70 11 72 12.5 72.5 12 71.5 11 72.5 11 74.5 11.5 75.5 13 79 14 79 14.5 77.5 14.5 77.5 15 74 15 71 15 66.5 15.5 66 15 64 15 62.5 14 67.5 13.5 65.5 13.5 62 13.5 61.5 13 64 12.5 60.5 12.5 62 11.5 65 10.5 66 11ZM75.5 10.5 74.5 11 73 10.5 75.5 10.5ZM103.5 11 100.5 11.5 99 10.5 99.5 10 102 10.5 103.5 11ZM93.5 11 94 11.5 95 10.5 97.5 10 99.5 11.5 99 12 102 11 106 12 106 12.5 108 12.5 109 13 111 13.5 113 15 111 15.5 115 16 116.5 17 118 17 118 18 116 19 113.5 17.5 112 17.5 112 18.5 114.5 19.5 115.5 20.5 115 21.5 111 20.5 114 22 111 21.5 108 20.5 105 19.5 102.5 20 101.5 19.5 102 18.5 106 18.5 106 17.5 107.5 16.5 106.5 16 103 15 104 15 101 14 98.5 14.5 95 14 91.5 13.5 90.5 13 90 12 91.5 10.5 94 10 93.5 11ZM79.5 10 82.5 10 82 11 83.5 11.5 83.5 12.5 81.5 12.5 77.5 11.5 79.5 11.5 78.5 10.5 79.5 10ZM323.5 11 320 10.5 322 10 323.5 11ZM87 11 85.5 12 84.5 12 84 11 84.5 10 85.5 10 89.5 10 88 11 87 11ZM59.5 12.5 57 13 56.5 12.5 54 12 56 10.5 55 9.5 58.5 9.5 62.5 10 64.5 10.5 61 11.5 59.5 12.5ZM330.5 9 329.5 9.5 326 9 326.5 8.5 330.5 9ZM86.5 9 86 9.5 83 9 85 8.5 86.5 9ZM325 8.5 324.5 9 320.5 9 319 9.5 317 8.5 317.5 8 321.5 8 325 8.5ZM81.5 7.5 82.5 7.5 82 9 79 9 79 8.5 77.5 8.5 77.5 7.5 81.5 7.5ZM72 8 74 8 73.5 9 70.5 9 68 9.5 66 9.5 68 9 63.5 9 62.5 9 64.5 7.5 67.5 8 69 8.5 71 8.5 69.5 7.5 70.5 7 72 8ZM237.5 13.5 233.5 13 231.5 12.5 232.5 11 234.5 10.5 233.5 10 236 9.5 235.5 9 241 7.5 244.5 7.5 248 7 248 8 241.5 8.5 238.5 9.5 235.5 11.5 235.5 12.5 237.5 13.5ZM85.5 7 88.5 7 89 8 91 8.5 93.5 8.5 95 8.5 99 8.5 100 9 98 9.5 97 9.5 92 9.5 87.5 9 87 8 86 7.5 83 7 83.5 7 85.5 7ZM64 6.5 63.5 7 60 8 57 8 61 6.5 64 6.5ZM70 6.5 68 6.5 66.5 6.5 67.5 6 70 6 70 6.5ZM204.5 6 202.5 6.5 200.5 6.5 201 5.5 203 5.5 204.5 6ZM70.5 5.5 67.5 5.5 68.5 5 70.5 5.5ZM84 6 82 6 81.5 5 84.5 5.5 84 6ZM80 5.5 80.5 6 77 5.5 74.5 4.5 79 5 80 5.5ZM285 5.5 279.5 6 281.5 5 283 4.5 285.5 5.5 285 5.5ZM198.5 4.5 201.5 5 199 5.5 197.5 6.5 197 7 196 7 194 6.5 194.5 6.5 193 6 191 5 190.5 4.5 193 4 193.5 4.5 197 4 198.5 4.5ZM205.5 3.5 207.5 4 206 4.5 203 4.5 200 4.5 197.5 3.5 203 3.5 205.5 3.5ZM231 3.5 227.5 4 227 3.5 225 3.5 230 3 231 3.5ZM280 5 278 5 273.5 4.5 272.5 4 271 3.5 274 3 276 2.5 278 3.5 280 4 280 5ZM93 4.5 94 4.5 91 5.5 87 5.5 86 5 87 4.5 85 4.5 83.5 4 85.5 3 87.5 2.5 89 3.5 92 3.5 93 4.5ZM111.5 1 116.5 1 118 1.5 112.5 2.5 114.5 2.5 110.5 3.5 109 4 106 4.5 103 4.5 104.5 5.5 102 6 100.5 7 102 7 99.5 8 97 7.5 94 7.5 90.5 7.5 90.5 7 92 7 91.5 6 95 6.5 93.5 6 92 5.5 94.5 5 95 4.5 93 3.5 96.5 4 98 3.5 92.5 3.5 90.5 3 88.5 2 93 1.5 94.5 1.5 97 1.5 97.5 1 100.5 1 104.5 1 107 1 111.5 1ZM153 0.5 159 1.5 157.5 1.5 148 2 152 2 155 2 157 2 158 2.5 157 3 159.5 2.5 164 2 167 2.5 168 2.5 162.5 4 160.5 5 160.5 6.5 161.5 7 158.5 7.5 160 8 160.5 9 159.5 9 160.5 9.5 158.5 10 159 10.5 156.5 10.5 157.5 12 155.5 11.5 158 12.5 158 13.5 156.5 13.5 154.5 12.5 155 13 153.5 14 157.5 14 152.5 15.5 148 16 146 17.5 143.5 18 140 18.5 139.5 19 139 20.5 137 21.5 137.5 22 136.5 24 135 24 133.5 23 131.5 23 128.5 20.5 127.5 19 126.5 18 126 17 127 15.5 128.5 15.5 129 14 126.5 14.5 125.5 14.5 125.5 13 128.5 13.5 126 12.5 124 12.5 125.5 11.5 121.5 8.5 118.5 8 111.5 8 108.5 7 113 6.5 109 6.5 106.5 6 107 5.5 114.5 4.5 114.5 4 112 4 113 3.5 118 2.5 117.5 2 123 2 126 2 127 2 129.5 1.5 135.5 2.5 133 2 133 1.5 136.5 1 140 1 141.5 0.5 145 0.5 153 0.5Z';
+  function mapHtml(e) {
+    const g = e.geo;
+    const grid = [-60, -30, 0, 30, 60].map(la => `<line class="grid" x1="0" x2="360" y1="${84 - la}" y2="${84 - la}"/>`).join('')
+      + [-120, -60, 0, 60, 120].map(lo => `<line class="grid" y1="0" y2="142" x1="${lo + 180}" x2="${lo + 180}"/>`).join('');
+    let mark = '';
+    if (g && isFinite(g.lat) && isFinite(g.lon)) {
+      const x = +(g.lon + 180).toFixed(1), y = +(84 - Math.max(-58, Math.min(84, g.lat))).toFixed(1);
+      mark = `<line class="cross" x1="0" x2="360" y1="${y}" y2="${y}"/><line class="cross" y1="0" y2="142" x1="${x}" x2="${x}"/>`
+        + (reduced() ? '' : `<circle class="ring" cx="${x}" cy="${y}" r="7"/>`) + `<circle class="pin" cx="${x}" cy="${y}" r="7"/>`;
+    }
+    const cap = g ? esc(g.place || e.where || '') : 'онлайн';
+    return `<figure class="geo" aria-label="${g ? 'Место: ' + cap : 'Событие проходит онлайн'}"><svg viewBox="0 0 360 142" role="img" aria-hidden="true">${grid}<path class="land" d="${LAND}"/>${mark}</svg><figcaption class="${g ? '' : 'off'}">${cap}</figcaption></figure>`;
+  }
+  const WIKI = [[["АТЭС"], "https://ru.wikipedia.org/wiki/Азиатско-Тихоокеанское_экономическое_сотрудничество"], [["G20", "«Большой двадцатки»", "«Большая двадцатка»", "Большой двадцатки", "Большая двадцатка"], "https://ru.wikipedia.org/wiki/Большая_двадцатка"], [["БРИКС плюс", "БРИКС+", "БРИКС"], "https://ru.wikipedia.org/wiki/БРИКС"], [["СНГ"], "https://ru.wikipedia.org/wiki/Содружество_Независимых_Государств"], [["ЕАЭС"], "https://ru.wikipedia.org/wiki/Евразийский_экономический_союз"], [["ШОС"], "https://ru.wikipedia.org/wiki/Шанхайская_организация_сотрудничества"], [["ОПЕК плюс", "ОПЕК+", "ОПЕК"], "https://ru.wikipedia.org/wiki/Организация_стран_—_экспортёров_нефти"], [["Международного валютного фонда", "Международный валютный фонд", "МВФ"], "https://ru.wikipedia.org/wiki/Международный_валютный_фонд"], [["Всемирного банка", "Всемирный банк"], "https://ru.wikipedia.org/wiki/Всемирный_банк"], [["Совета Безопасности ООН", "Совет Безопасности ООН"], "https://ru.wikipedia.org/wiki/Совет_Безопасности_ООН"], [["климатическая конференция ООН", "Климатическая конференция ООН", "климатической конференции ООН", "COP31"], "https://ru.wikipedia.org/wiki/Рамочная_конвенция_ООН_об_изменении_климата"], [["ООН"], "https://ru.wikipedia.org/wiki/Организация_Объединённых_Наций"], [["Совета ЕС", "Совет ЕС"], "https://ru.wikipedia.org/wiki/Совет_Европейского_союза"], [["Европейского совета", "Европейский совет", "Евросовета", "Евросовет"], "https://ru.wikipedia.org/wiki/Европейский_совет"], [["Европейского союза", "Европейский союз", "Евросоюза", "Евросоюзе", "Евросоюз", "ЕС"], "https://ru.wikipedia.org/wiki/Европейский_союз"], [["Европейского парламента", "Европарламента", "Европарламенте", "Европарламент"], "https://ru.wikipedia.org/wiki/Европейский_парламент"], [["Европейской комиссии", "Европейская комиссия", "Еврокомиссии", "Еврокомиссия"], "https://ru.wikipedia.org/wiki/Европейская_комиссия"], [["Европейского центрального банка", "Европейский центральный банк", "Европейского центробанка", "Европейский центробанк", "ЕЦБ"], "https://ru.wikipedia.org/wiki/Европейский_центральный_банк"], [["Федеральной резервной системы", "Федеральная резервная система", "ФРС"], "https://ru.wikipedia.org/wiki/Федеральная_резервная_система"], [["Банком России", "Банку России", "Банка России", "Банк России", "ЦБ"], "https://ru.wikipedia.org/wiki/Банк_России"], [["Банка Англии", "Банк Англии"], "https://ru.wikipedia.org/wiki/Банк_Англии"], [["Банка Японии", "Банк Японии"], "https://ru.wikipedia.org/wiki/Банк_Японии"], [["Росстату", "Росстата", "Росстат"], "https://ru.wikipedia.org/wiki/Федеральная_служба_государственной_статистики"], [["Минфином", "Минфина", "Минфин"], "https://ru.wikipedia.org/wiki/Министерство_финансов_Российской_Федерации"], [["Государственной думы", "Государственная дума", "Госдумы", "Госдуму", "Госдуме", "Госдума"], "https://ru.wikipedia.org/wiki/Государственная_дума"], [["Конгресса США", "Конгресс США"], "https://ru.wikipedia.org/wiki/Конгресс_США"], [["Палаты представителей", "Палата представителей"], "https://ru.wikipedia.org/wiki/Палата_представителей_США"], [["Сената США", "Сенат США"], "https://ru.wikipedia.org/wiki/Сенат_США"], [["НАТО"], "https://ru.wikipedia.org/wiki/НАТО"], [["«Валдая»", "«Валдай»", "Валдая", "Валдай"], "https://ru.wikipedia.org/wiki/Валдай_(дискуссионный_клуб)"], [["Российская энергетическая неделя", "Российской энергетической недели", "Российскую энергетическую неделю"], "https://ru.wikipedia.org/wiki/Российская_энергетическая_неделя"], [["Сбербанка", "Сбербанк", "Сбером", "Сбера", "Сбер"], "https://ru.wikipedia.org/wiki/Сбербанк_России"], [["ВТБ"], "https://ru.wikipedia.org/wiki/Банк_ВТБ"], [["JPMorgan Chase", "JPMorgan"], "https://ru.wikipedia.org/wiki/JPMorgan_Chase"], [["Nvidia"], "https://ru.wikipedia.org/wiki/Nvidia"], [["TSMC"], "https://ru.wikipedia.org/wiki/TSMC"], [["Tesla"], "https://ru.wikipedia.org/wiki/Tesla"], [["Apple"], "https://ru.wikipedia.org/wiki/Apple"], [["Microsoft"], "https://ru.wikipedia.org/wiki/Microsoft"], [["Яндекса", "Яндекс"], "https://ru.wikipedia.org/wiki/Яндекс"], [["«Сколково»", "Сколково"], "https://ru.wikipedia.org/wiki/Сколково_(инновационный_центр)"], [["Кнессета", "Кнессет"], "https://ru.wikipedia.org/wiki/Кнессет"], [["Сейма", "Сейм"], "https://ru.wikipedia.org/wiki/Сейм_Латвии"], [["«Единой России»", "«Единую Россию»", "«Единая Россия»"], "https://ru.wikipedia.org/wiki/Единая_Россия"], [["«Турецкого потока»", "«Турецкому потоку»", "«Турецкий поток»"], "https://ru.wikipedia.org/wiki/Турецкий_поток"], [["Республики Сербской", "Республике Сербской", "Республика Сербская"], "https://ru.wikipedia.org/wiki/Республика_Сербская"], [["ОФЗ"], "https://ru.wikipedia.org/wiki/Облигации_федерального_займа"], [["ключевой ставки", "ключевой ставке", "ключевую ставку", "ключевая ставка", "Ключевая ставка"], "https://ru.wikipedia.org/wiki/Ключевая_ставка_в_России"], [["цифрового рубля", "цифровом рубле", "цифровой рубль"], "https://ru.wikipedia.org/wiki/Цифровой_рубль"], [["GigaChat"], "https://ru.wikipedia.org/wiki/ГигаЧат"], [["Бюро статистики труда", "BLS"], "https://ru.wikipedia.org/wiki/Федеральное_бюро_статистики_труда_США"], [["Росатома", "Росатом"], "https://ru.wikipedia.org/wiki/Росатом"], [["Ростеха", "Ростех"], "https://ru.wikipedia.org/wiki/Ростех"], [["«Итоги года с Владимиром Путиным»", "прямой линии", "прямая линия"], "https://ru.wikipedia.org/wiki/Прямая_линия_с_Владимиром_Путиным"], [["Web Summit"], "https://ru.wikipedia.org/wiki/Web_Summit"], [["Владимира Путина", "Владимир Путин", "Путиным", "Путину", "Путина", "Путин"], "https://ru.wikipedia.org/wiki/Путин,_Владимир_Владимирович"], [["Сергеем Лавровым", "Сергей Лавров", "Лавровым", "Лаврову", "Лаврова", "Лавров"], "https://ru.wikipedia.org/wiki/Лавров,_Сергей_Викторович"], [["Эльвира Набиуллина", "Набиуллиной", "Набиуллину", "Набиуллина"], "https://ru.wikipedia.org/wiki/Набиуллина,_Эльвира_Сахипзадовна"], [["Антон Силуанов", "Силуановым", "Силуанову", "Силуанова", "Силуанов"], "https://ru.wikipedia.org/wiki/Силуанов,_Антон_Германович"], [["Михаил Мишустин", "Мишустиным", "Мишустину", "Мишустина", "Мишустин"], "https://ru.wikipedia.org/wiki/Мишустин,_Михаил_Владимирович"], [["Вячеслава Володина", "Вячеслав Володин", "Володиным", "Володина", "Володин"], "https://ru.wikipedia.org/wiki/Володин,_Вячеслав_Викторович"], [["Сергей Собянин", "Собяниным", "Собянина", "Собянин"], "https://ru.wikipedia.org/wiki/Собянин,_Сергей_Семёнович"], [["Германа Грефа", "Герман Греф", "Грефом", "Грефу", "Грефа", "Греф"], "https://ru.wikipedia.org/wiki/Греф,_Герман_Оскарович"], [["Кристин Лагард", "Лагард"], "https://ru.wikipedia.org/wiki/Лагард,_Кристин"], [["Каи Каллас", "Кая Каллас", "Каллас"], "https://ru.wikipedia.org/wiki/Каллас,_Кая"], [["Дональд Трамп", "Трампом", "Трампу", "Трампа", "Трамп"], "https://ru.wikipedia.org/wiki/Трамп,_Дональд"], [["Даниэль Ортега", "Ортеги", "Ортега"], "https://ru.wikipedia.org/wiki/Ортега,_Даниэль"], [["Адама Бэрроу", "Бэрроу"], "https://ru.wikipedia.org/wiki/Бэрроу,_Адама"], [["Дженсена Хуанга", "Дженсен Хуанг", "Хуанга", "Хуанг"], "https://ru.wikipedia.org/wiki/Хуанг,_Дженсен"], [["Фёдор Лукьянов", "Лукьянова", "Лукьянов"], "https://ru.wikipedia.org/wiki/Лукьянов,_Фёдор_Александрович"], [["Тимофей Бордачёв", "Бордачёва", "Бордачёв"], "https://ru.wikipedia.org/wiki/Бордачев,_Тимофей_Вячеславович"], [["Андрей Быстрицкий", "Быстрицкого", "Быстрицкий"], "https://ru.wikipedia.org/wiki/Быстрицкий,_Андрей_Георгиевич"], [["Дмитрий Песков", "Пескова", "Песков"], "https://ru.wikipedia.org/wiki/Песков,_Дмитрий_Сергеевич"], [["Максим Орешкин", "Орешкина", "Орешкин"], "https://ru.wikipedia.org/wiki/Орешкин,_Максим_Станиславович"], [["Василий Небензя", "Небензя"], "https://ru.wikipedia.org/wiki/Небензя,_Василий_Алексеевич"]];
+  let wikiRe = null, wikiMap = null;
+  function buildWiki(extra) {
+    wikiMap = new Map();
+    [...WIKI, ...(extra || [])].forEach(([terms, url]) => (terms || []).forEach(t => { if (t && !wikiMap.has(t)) wikiMap.set(t, url); }));
+    const alts = [...wikiMap.keys()].sort((a, b) => b.length - a.length).map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+    try { wikiRe = new RegExp('(?<![\\p{L}\\p{N}])(' + alts.join('|') + ')(?![\\p{L}\\p{N}])', 'gu'); } catch (err) { wikiRe = null; }
+  }
+  buildWiki();
+  let wikiUsed = new Set();
+  /* текст → HTML со ссылками на Википедию; ссылка — только на первое упоминание в карточке */
+  function wl(text) {
+    const src = String(text ?? '');
+    if (!wikiRe) return esc(src);
+    let out = '', last = 0;
+    for (const m of src.matchAll(wikiRe)) {
+      const url = wikiMap.get(m[1]);
+      out += esc(src.slice(last, m.index));
+      if (url && !wikiUsed.has(url)) { wikiUsed.add(url); out += `<a class="wl" href="${esc(url)}" target="_blank" rel="noopener" title="Википедия">${esc(m[1])}</a>`; }
+      else out += esc(m[1]);
+      last = m.index + m[1].length;
+    }
+    return out + esc(src.slice(last));
+  }
+  /* ключевые заявления: помеченные key, иначе дословные цитаты последнего дня */
+  function keyStatements(e, n) {
+    const list = (e.statements || []).filter(x => x && x.text);
+    let k = list.filter(x => x.key);
+    if (!k.length) { const last = list.map(x => x.date || '').sort().pop(); k = list.filter(x => (x.date || '') === last && x.kind === 'quote'); }
+    if (!k.length) k = list.slice(-n);
+    return k.slice(0, n);
+  }
+  const sayText = x => x.kind === 'quote' ? `«${x.text}»` : x.text;
+  function statementsHtml(e, ph) {
+    const list = (e.statements || []).filter(x => x && x.text);
+    if (!list.length) {
+      if (ph !== 'live') return '';
+      return `<section class="blk says">${lab('Заявления')}<p class="says-empty">Пока событие идёт, заявления проверяются каждый час.${liveNote(e)}</p></section>`;
+    }
+    const s0 = times(e).s, days = {};
+    list.forEach(x => (days[x.date || ''] = days[x.date || ''] || []).push(x));
+    const keys = Object.keys(days).sort().reverse();
+    const multi = s0 && e.end && dayKey(s0) !== dayKey(times(e).end);
+    const body = keys.map(k => {
+      const d = k ? new Date(k + 'T12:00:00+03:00') : null;
+      const n = d && s0 && multi ? Math.round((dayStart(d) - dayStart(s0)) / D) + 1 : 0;
+      const head = d ? `${fDay.format(d)}${n > 0 ? ` · день ${n}` : ''}` : 'Без даты';
+      return `<div class="says-day"><div class="says-h">${esc(head)}<span>${days[k].length} ${plural(days[k].length, 'заявление', 'заявления', 'заявлений')}</span></div>${days[k].map(x => `<figure class="say">
+        <figcaption><b>${wl(x.who || '')}</b>${x.role ? `<span>${wl(x.role)}</span>` : ''}</figcaption>
+        ${x.kind === 'quote' ? `<blockquote>«${wl(x.text)}»</blockquote>` : `<p>${wl(x.text)}</p>`}
+        ${x.source ? `<a class="say-src" href="${esc(x.source.url)}" target="_blank" rel="noopener">${esc(x.source.name)}</a>` : ''}</figure>`).join('')}</div>`;
+    }).join('');
+    const note = ph === 'live' ? `<p class="says-live">Идёт: проверяется каждый час.${liveNote(e)}</p>` : '';
+    return `<section class="blk says">${lab('Заявления')}${note}${body}</section>`;
+  }
+  function liveNote(e) {
+    const t = e.liveCheckedAt ? new Date(e.liveCheckedAt) : null;
+    return t && !isNaN(t) ? ` Последняя проверка — ${dayKey(t) === dayKey(new Date()) ? '' : fShort.format(t) + ', '}${fTime.format(t)}.` : '';
+  }
+  function navHtml(idx) {
+    const up = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 10l5-5 5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const dn = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M3 6l5 5 5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+    const x = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+    return `<span class="dtools">${idx === null ? '' : `<button class="icon" type="button" id="drPrev" aria-label="Предыдущее событие" title="Предыдущее (↑)"${idx <= 0 ? ' disabled' : ''}>${up}</button><button class="icon" type="button" id="drNext" aria-label="Следующее событие" title="Следующее (↓)"${idx < 0 || idx >= state.order.length - 1 ? ' disabled' : ''}>${dn}</button>`}<button class="icon" type="button" id="drClose" aria-label="Закрыть">${x}</button></span>`;
+  }
+  function fitTitle() {
+    const h = document.getElementById('drTitle'); if (!h) return;
+    let size = 22; h.style.fontSize = size + 'px';
+    while (h.scrollWidth > h.clientWidth + 1 && size > 14) { size -= 0.5; h.style.fontSize = size + 'px'; }
+  }
+
+  /* ------------------------------------------------------------ шапка */
+  function renderTabs(now) {
+    const el = $('#tabs');
+    el.innerHTML = HORIZONS.map(h => {
+      const n = state.loaded ? state.events.filter(e => inHorizon(e, now, h)).length : '';
+      return `<button type="button" role="tab" data-hz="${h.id}" aria-selected="${state.horizon === h.id}">${h.label}<sup>${n}</sup></button>`;
+    }).join('') + '<span class="ink" id="ink"></span>';
+    moveInk(false);
+  }
+  function moveInk(anim = true) {
+    const act = $('#tabs [aria-selected="true"]'), ink = $('#ink');
+    if (!act || !ink) return;
+    if (!anim) ink.style.transition = 'none';
+    ink.style.left = act.offsetLeft + 'px'; ink.style.width = act.offsetWidth + 'px';
+    if (!anim) requestAnimationFrame(() => ink.style.transition = '');
+  }
+
+  function renderTopics(pool) {
+    $('#topics').innerHTML = CATS.map(c => {
+      const n = pool.filter(e => (e.cats || []).includes(c.id)).length;
+      return `<button type="button" class="tgl" data-cat="${c.id}" title="${c.full}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="c">${n}</span></button>`;
+    }).join('')
+      + (state.cats.size ? `<button type="button" class="tgl clear" data-cat="__clear">сбросить</button>` : '');
+  }
+
+  /* ------------------------------------------------------------- лента */
+  function timeCell(e) {
+    const { s, w } = times(e);
+    if (!s) return `<div class="tm"><span class="h none">${esc(e.dateWording || ('до ' + fShort.format(w)))}</span>${stTag(e.dateStatus)}</div>`;
+    const ap = e.dateStatus === 'preliminary';
+    const h = e.allDay ? (ap ? '≈ весь день' : 'весь день') : (ap ? '≈' : '') + fTime.format(s);
+    return `<div class="tm"><span class="h${ap ? ' approx' : ''}${e.allDay ? ' allday' : ''}" style="${e.allDay ? 'font-size:12px' : ''}">${h}</span>${stTag(e.dateStatus)}</div>`;
+  }
+  function rowHtml(e, now, i) {
+    const ph = phase(e, now);
+    const flags = [rowChangeFlag(e), ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
+    const subs = esc(e.where || e.kind || '') + (ph !== 'closed' && e.consensus && e.consensus.short ? ` · <span class="csh">${esc(e.consensus.short)}</span>` : '');
+    const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
+    const k1 = ph === 'closed' && e.outcome ? keyStatements(e, 1)[0] : null;
+    const gistQ = k1 ? `<div class="gist q">${esc(trim(sayText(k1), 150))} — ${esc(k1.who || '')}</div>` : '';
+    const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
+    const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms;"` : '';
+    return `<button type="button" class="${cls}" data-open="${esc(e.id)}" title="${esc(TY[typeOf(e)].label)}" aria-current="${state.openId === e.id && !state.help}" style="--tc:var(--t-${typeOf(e)});${delay ? delay.slice(8, -1) : ''}">
+      ${timeCell(e)}
+      <div style="min-width:0"><div class="t">${esc(e.title)}${flags ? `<span class="flags">${flags}</span>` : ''}</div><div class="sub">${subs}</div>${gist}${gistQ}</div>
+      <span class="go" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+    </button>`;
+  }
+  const trim = (s, n) => (s || '').length > n ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
+
+  function render() {
+    const now = new Date();
+    const hz = HORIZONS.find(h => h.id === state.horizon) || HORIZONS[0];
+    renderTabs(now); renderRun(now);
+    if (!state.loaded) return;
+    const inHz = state.events.filter(e => inHorizon(e, now, hz));
+    const shown = inHz.filter(passTopic);
+    renderTopics(inHz);
+    const feed = $('#feed');
+    if (!shown.length) {
+      feed.innerHTML = `<div class="empty"><b>${inHz.length ? 'Под выбранные темы ничего не подходит' : 'В этом горизонте событий нет'}</b>${inHz.length ? 'Снимите часть фильтров по темам.' : 'Переключите горизонт или откройте историю.'}</div>`;
+      state.order = []; showEmptyDetail(); return;
+    }
+    shown.sort((a, b) => hz.id === 'hist' ? when(b) - when(a) : (when(a) - when(b)) || a.title.localeCompare(b.title));
+    const dated = shown.filter(e => times(e).s), undated = shown.filter(e => !times(e).s);
+    const groups = [];
+    for (const e of dated) {
+      const s = times(e).s, k = hz.id !== 'hist' && s < now ? 'now' : dayKey(s);
+      let g = groups.find(x => x.k === k); if (!g) groups.push(g = { k, d: s, items: [] });
+      g.items.push(e);
+    }
+    state.order = [...groups.flatMap(g => g.items), ...undated].map(e => e.id);
+    if (!state.help && !state.order.includes(state.openId)) state.openId = state.order[0];
+    let i = 0, html = '';
+    for (const g of groups) {
+      const head = g.k === 'now' ? `<div class="dh now"><div class="d">Сейчас</div><div class="caps mw">уже идут</div></div>`
+        : `<div class="dh"><div class="d">${fNum.format(g.d)}</div><div class="caps mw">${esc(fMon.format(g.d).slice(0, 3))} · ${esc(fWd.format(g.d))}</div><div class="rel">${esc(relDays(g.d, now))}</div></div>`;
+      html += `<section class="day">${head}<div class="rows">${g.items.map(e => rowHtml(e, now, i++)).join('')}</div></section>`;
+    }
+    if (undated.length) html += `<section class="day"><div class="dh nodate"><div class="d">Без даты</div><div class="caps mw">окно известно</div></div><div class="rows">${undated.map(e => rowHtml(e, now, i++)).join('')}</div></section>`;
+    feed.innerHTML = html;
+    state.animate = false;
+    if (!state.help) showEvent(state.openId, { quiet: true });
+  }
+  function markCurrent() {
+    document.querySelectorAll('#feed .row').forEach(r => r.setAttribute('aria-current', String(!state.help && r.dataset.open === state.openId)));
+  }
+  function renderRun(now) {
+    const m = state.meta, dot = m && m.lastRunAt ? ((now - new Date(m.lastRunAt)) / H > 14 ? 'stale' : '') : 'off';
+    const el = $('#autorun');
+    el.innerHTML = `<i class="dot ${dot}"></i>${m && m.lastRunAt ? '<span class="lbl">итоги </span>' + (dayKey(new Date(m.lastRunAt)) === dayKey(now) ? '' : fShort.format(new Date(m.lastRunAt)) + ', ') + fTime.format(new Date(m.lastRunAt)) : 'автоитоги: ждём прогона'}`;
+    el.title = 'Последнее обновление итогов' + (m && m.lastRunAt ? ': ' + fDay.format(new Date(m.lastRunAt)) + ', ' + fTime.format(new Date(m.lastRunAt)) : '') + '. Автопрогоны в 06:47, 15:47 и 22:47 мск' + ((m && m.log && m.log[0]) ? '\n' + m.log[0].text : '');
+  }
+
+  /* --------------------------------------------------- карточка справа */
+  const detail = $('#detail'), scrim = $('#scrim');
+  const narrow = () => matchMedia('(max-width: 1100px)').matches;
+  let shownKey = null, closeT = null, lastFocus = null;
+  function paint(html, foot, crumb, key, quiet) {
+    const body = $('#drBody');
+    const same = key === shownKey;
+    body.innerHTML = html; $('#drFoot').innerHTML = foot || ''; $('#drFoot').hidden = !foot;
+    if (!same) { body.scrollTop = 0; body.classList.remove('swap'); void body.offsetWidth; body.classList.add('swap'); }
+    shownKey = key;
+  }
+  function showEmptyDetail() { shownKey = null; $('#drBody').innerHTML = '<div class="empty"><b>Карточка события</b>Выберите событие в списке слева.</div>'; $('#drFoot').hidden = true; }
+  function sheetOpen() {
+    if (!narrow()) return;
+    clearTimeout(closeT);
+    if (!detail.classList.contains('open')) {
+      lastFocus = document.activeElement;
+      scrim.hidden = false; detail.classList.remove('closing'); document.body.classList.add('locked');
+      requestAnimationFrame(() => requestAnimationFrame(() => { detail.classList.add('open'); scrim.classList.add('open'); }));
+      setTimeout(() => $('#drClose').focus({ preventScroll: true }), 60); setTimeout(fitTitle, 460);
+    }
+  }
+  function sheetClose() {
+    if (!detail.classList.contains('open')) return;
+    detail.classList.add('closing'); detail.classList.remove('open'); scrim.classList.remove('open');
+    document.body.classList.remove('locked');
+    closeT = setTimeout(() => { scrim.hidden = true; }, reduced() ? 0 : 300);
+    if (lastFocus && lastFocus.focus) lastFocus.focus({ preventScroll: true });
+  }
+  function items(arr) {
+    if (!arr || !arr.length) return '<p class="small" style="margin:0">Пока нет данных.</p>';
+    return '<ul class="dash">' + arr.map(a => `<li>${wl(a.text)}</li>`).join('') + '</ul>';
+  }
+  const links = arr => (arr || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join('');
+  const lab = t => `<h3 class="lab caps">${t}</h3>`;
+
+  function showEvent(id, opt = {}) {
+    const e = state.events.find(x => x.id === id); if (!e) { showEmptyDetail(); return; }
+    state.openId = id; state.help = false; state.pane = ''; const bb = $('#briefBtn'); if (bb) bb.setAttribute('aria-pressed', 'false'); const cb = $('#chgBtn'); if (cb) cb.setAttribute('aria-pressed', 'false');
+    if (!opt.quiet) { try { history.replaceState(null, '', '#' + id); } catch (err) {} }
+    const now = new Date(), ph = phase(e, now), { s, end } = times(e);
+    const air = airLine(e), imp = e.impact || {}, cp = e.checkpoint || {}, o = e.outcome;
+    const multi = s && end && !e.allDay && dayKey(s) !== dayKey(end) ? ` — ${fShort.format(end)}` : '';
+    const whenBig = s ? `<span class="big">${esc(fDay.format(s))}${e.allDay ? '' : ', ' + fTime.format(s) + ' мск'}${multi}</span>` : `<span class="big none">${esc(e.dateWording || '')}</span>`;
+    const flag = ph === 'live' ? '<span class="flag live">идёт</span>' : ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '';
+    requestAnimationFrame(fitTitle);
+    wikiUsed = new Set();
+    let outcome = '';
+    if (o && o.decided) {
+      outcome = `<section class="blk res">${lab(ph === 'live' ? 'Итог на текущий момент' : 'Итог')}<div class="outcome">
+        <div><b class="caps">Ожидали</b>${wl(o.expected || '—')}</div><div class="arr">→</div>
+        <div class="dec"><b class="caps">Решили</b>${wl(o.decided)}</div><div class="arr">→</div>
+        <div><b class="caps">Осталось открытым</b>${(o.open || []).length ? '<ul>' + o.open.map(x => `<li>${wl(x)}</li>`).join('') + '</ul>' : '—'}</div></div>
+        ${(() => { const ks = keyStatements(e, 4); return ks.length ? `<div class="keysays"><b class="caps">Ключевые заявления</b><ul>${ks.map(x => `<li>${wl(sayText(x))} <span>— ${wl(x.who || '')}</span></li>`).join('')}</ul></div>` : ''; })()}
+        <div class="small">${o.filledAt ? 'Записано ' + esc(String(o.filledAt).slice(0, 16).replace('T', ' ')) + (o.filledBy === 'claude' ? ' · собрано Claude по источникам' : '') + '. ' : ''}${(o.sources || []).length ? 'Источники: ' + (o.sources || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(', ') : ''}</div></section>`;
+    } else if (ph === 'awaiting') {
+      outcome = `<section>${lab('Итог')}<div class="pending">Событие завершилось. Итог в формате «ожидали → решили → осталось открытым» запишет ближайший автопрогон — в 06:47, 15:47 или 22:47 мск.</div></section>`;
+    }
+    const html = `
+      <section class="hero"><div class="main">
+        <h2 id="drTitle" title="${esc(e.title)}">${esc(e.title)}</h2>
+        <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}${navHtml(state.order.indexOf(id))}</div></div>
+        ${mapHtml(e)}</section>
+      ${outcome}
+      ${consensusHtml(e)}
+      <section class="blk">${lab('Что на обсуждении')}<dl class="disc">${e.participants && e.participants !== '—' ? `<dt>Участники</dt><dd>${wl(e.participants)}</dd>` : ''}<dt>Повестка</dt><dd>${items(e.agenda)}</dd></dl></section>
+      <section class="blk">${lab('Какие решения возможны')}${items(e.scenarios)}</section>
+      <section class="blk">${lab('Что изменится')}<div class="three">
+        <div><b class="caps">Россия</b>${wl(imp.russia || '—')}</div><div><b class="caps">Бизнес</b>${wl(imp.business || '—')}</div><div><b class="caps">Рынки</b>${wl(imp.markets || '—')}</div></div></section>
+      <section class="blk cpb">${lab('Контрольная точка')}<div class="cp"><span>${wl(cp.what || '—')}</span><span class="w">${esc(cp.when || '')}</span></div></section>
+      <section class="onair"><div class="onair-h">${lab('Для эфира')}<span class="onair-b"><button type="button" class="ghost" data-copylink="${esc(e.id)}" title="Скопировать ссылку на карточку">Ссылка</button><button type="button" class="pillbtn" data-copy="${esc(e.id)}">Копировать текст</button></span></div><p>${wl(airText(e))}</p></section>
+      ${statementsHtml(e, ph)}
+      ${(e.changes || []).length ? `<section class="ref">${lab('История изменений')}<div class="clog">${[...e.changes].filter(c => c && c.at).sort((a, b) => new Date(b.at) - new Date(a.at)).map(c => changeItem(e, c, false)).join('')}</div></section>` : ''}
+      <section class="ref">${lab('Дата и основание')}<dl class="kv">
+        ${e.timeNote ? `<dt>Время</dt><dd>${esc(e.timeNote)}</dd>` : ''}
+        ${e.dateNote ? `<dt>Оговорка</dt><dd>${esc(e.dateNote)}</dd>` : ''}
+        ${e.ideaWording ? `<dt>IDEA</dt><dd>«${esc(e.ideaWording)}»${e.ideaCheck ? '<br><span style="color:var(--ink-2)">' + esc(e.ideaCheck) + '</span>' : ''}</dd>` : ''}
+        <dt>Основание</dt><dd>${e.dateSource ? `<a href="${esc(e.dateSource.url)}" target="_blank" rel="noopener">${esc(e.dateSource.name)}</a>` : '—'}</dd>
+        <dt>Сверено</dt><dd class="mono" style="font-size:12.5px">${esc(e.checkedAt || '—')}</dd></dl></section>
+      <section class="ref">${lab('Источники')}<div class="srcs">${links(e.sources)}</div></section>
+`;
+    const foot = '';
+    const crumb = '';
+    detail.style.setProperty('--tc', `var(--t-${typeOf(e)})`);
+    paint(html, foot, crumb, 'e:' + id + ':' + (e.outcome ? 1 : 0), opt.quiet);
+    markCurrent();
+    if (!opt.quiet) sheetOpen();
+  }
+  /* ------------------------------------------------------ консенсус */
+  const VERDICT = {
+    match: { l: 'совпало с ожиданиями', c: 'var(--st-confirmed)' }, above: { l: 'выше ожиданий', c: 'var(--st-cancelled)' }, below: { l: 'ниже ожиданий', c: 'var(--accent)' },
+    hawk: { l: 'жёстче ожиданий', c: 'var(--st-cancelled)' }, dove: { l: 'мягче ожиданий', c: 'var(--accent)' },
+  };
+  function consensusHtml(e) {
+    const c = e.consensus; if (!c || !(c.items || []).length) return '';
+    const hasAct = c.items.some(x => x.actual), v = c.verdict && VERDICT[c.verdict.tone];
+    const rows = c.items.map(x => `<tr><td>${wl(x.metric || '')}</td><td class="num">${esc(x.prev || '—')}</td>
+      <td class="num"><span class="cv">${esc(x.cons || '—')}</span>${x.range ? `<span class="rg">${esc(x.range)}</span>` : ''}</td>
+      ${hasAct ? `<td class="num">${x.actual ? `<span class="act${x.hit === false ? ' off' : ''}">${esc(x.actual)}</span>` : '—'}</td>` : ''}</tr>`).join('');
+    const meta = [c.market ? `<dt>Рынок</dt><dd>${wl(c.market)}</dd>` : '', c.views ? `<dt>Аналитики</dt><dd>${wl(c.views)}</dd>` : '', c.note ? `<dt>Важно</dt><dd>${wl(c.note)}</dd>` : ''].join('');
+    const src = (c.sources || []).map(x => `<a href="${esc(x.url)}" target="_blank" rel="noopener">${esc(x.name)}</a>`).join(', ');
+    return `<section class="blk cons">${lab(hasAct ? 'Консенсус и факт' : 'Консенсус')}
+      ${v ? `<div><span class="verdict" style="--vc:${v.c}">${v.l}</span>${c.verdict.text ? `<span>${wl(c.verdict.text)}</span>` : ''}</div>` : ''}
+      <table class="ctab"><thead><tr><th>Показатель</th><th>Было</th><th>Ожидание</th>${hasAct ? '<th>Факт</th>' : ''}</tr></thead><tbody>${rows}</tbody></table>
+      ${meta ? `<dl class="cmeta">${meta}</dl>` : ''}
+      <div class="small">${c.asOf ? 'Ожидания на ' + esc(fDay.format(parseDay(c.asOf))) + '. ' : ''}${src ? 'Источники: ' + src : ''}</div></section>`;
+  }
+  /* защита от кривых данных: лишние пробелы в датах, неразбираемые даты, не-массивы */
+  const fixIso = v => typeof v === 'string' ? v.trim().replace(/\s+(?=[+-]\d{2}:?\d{2}$|Z$)/, '') : v;
+  const okDate = v => typeof v === 'string' && !isNaN(new Date(v));
+  const arr = v => Array.isArray(v) ? v : [];
+  function cleanEvent(e) {
+    ['start', 'end', 'liveCheckedAt'].forEach(k => { if (e[k] != null) { e[k] = fixIso(e[k]); if (!okDate(e[k])) e[k] = null; } });
+    ['agenda', 'scenarios', 'sources', 'statements'].forEach(k => { e[k] = arr(e[k]); });
+    e.changes = arr(e.changes).filter(c => c && typeof c === 'object').map(c => ({ ...c, at: fixIso(c.at) })).filter(c => okDate(c.at));
+    if (e.outcome && e.outcome.filledAt) { e.outcome.filledAt = fixIso(e.outcome.filledAt); }
+    return e;
+  }
+  /* ------------------------------------------------------ изменения */
+  const KIND = {
+    new: { l: 'новое событие', c: 'var(--accent)' }, date: { l: 'перенос даты', c: 'var(--st-cancelled)' }, time: { l: 'время', c: 'var(--st-preliminary)' },
+    status: { l: 'статус даты', c: 'var(--st-preliminary)' }, cancel: { l: 'отмена', c: 'var(--st-cancelled)' }, agenda: { l: 'повестка', c: 'var(--ink-2)' },
+    outcome: { l: 'итог', c: 'var(--st-confirmed)' }, other: { l: 'уточнение', c: 'var(--ink-2)' },
+  };
+  const BIG = new Set(['date', 'time', 'status', 'cancel']);
+  /* снимок дат для отметки «с прошлого визита»: хранится только в этом браузере */
+  const snapKey = e => [e.start || '', e.end || '', e.window || '', e.dateStatus || ''].join('|');
+  let localDiffs = store.get('diffs', {});
+  function diffSinceVisit() {
+    const prev = store.get('snap', null), now = Date.now(), snap = {};
+    state.events.forEach(e => {
+      snap[e.id] = snapKey(e);
+      if (prev && prev[e.id] !== undefined && prev[e.id] !== snap[e.id]) localDiffs[e.id] = { at: new Date().toISOString(), from: prev[e.id], to: snap[e.id] };
+    });
+    Object.keys(localDiffs).forEach(id => { if (now - new Date(localDiffs[id].at) > 48 * H) delete localDiffs[id]; });
+    store.set('snap', snap); store.set('diffs', localDiffs);
+  }
+  function describeSnap(v) {
+    const [st, , w, ds] = String(v || '').split('|');
+    const d = st ? new Date(st) : (w ? parseDay(w) : null);
+    return (d ? (st ? fDay.format(d) + (st.includes('T00:00:00') ? '' : ', ' + fTime.format(d)) : 'до ' + fDay.format(d)) : '—') + (ds && ST[ds] ? ' · ' + ST[ds].label.toLowerCase() : '');
+  }
+  function allChanges(days) {
+    const lim = Date.now() - days * D, out = [];
+    state.events.forEach(e => (e.changes || []).forEach(c => { if (c && c.at && new Date(c.at) >= lim) out.push({ e, c }); }));
+    Object.entries(localDiffs).forEach(([id, d]) => { const e = state.events.find(x => x.id === id); if (e && !(e.changes || []).some(c => BIG.has(c.kind) && Math.abs(new Date(c.at) - new Date(d.at)) < 36 * H)) out.push({ e, c: { at: d.at, kind: 'other', from: describeSnap(d.from), to: describeSnap(d.to), note: 'Замечено с вашего прошлого визита', local: true } }); });
+    return out.sort((a, b) => new Date(b.c.at) - new Date(a.c.at));
+  }
+  function rowChangeFlag(e) {
+    const lim = Date.now() - 48 * H, recent = (e.changes || []).filter(c => c && c.at && new Date(c.at) >= lim);
+    if (recent.some(c => BIG.has(c.kind)) || localDiffs[e.id]) {
+      const c = recent.find(c => BIG.has(c.kind));
+      return `<span class="flag chg" title="${esc(c ? (KIND[c.kind] || KIND.other).l + (c.from || c.to ? ': ' + (c.from || '') + ' → ' + (c.to || '') : '') : 'Дата или статус изменились с вашего прошлого визита')}">изменено</span>`;
+    }
+    if (recent.some(c => c.kind === 'new')) return '<span class="flag new">новое</span>';
+    return '';
+  }
+  function changeItem(e, c, withTitle) {
+    const k = KIND[c.kind] || KIND.other, t = new Date(c.at);
+    const diff = (c.from || c.to) ? `<div class="cd">${c.from ? `<s>${esc(c.from)}</s> → ` : ''}<b>${esc(c.to || '')}</b></div>` : '';
+    const note = (c.note || c.source) ? `<div class="cn">${c.note ? wl(c.note) : ''}${c.source && c.source.url ? ` <a href="${esc(c.source.url)}" target="_blank" rel="noopener">${esc(c.source.name || 'источник')}</a>` : ''}</div>` : '';
+    return `<div class="citem" style="--tc:var(--t-${typeOf(e)})"><span class="ct">${withTitle ? fTime.format(t) : fShort.format(t)}</span>
+      <div class="ck"><span class="kchip" style="--kc:${k.c}">${k.l}</span>${withTitle ? `<button type="button" data-open="${esc(e.id)}">${esc(e.title)}</button>` : ''}</div>${diff}${note}</div>`;
+  }
+  function renderChgCount() {
+    const n = allChanges(1).length, b = $('#chgCount');
+    if (!b) return; b.hidden = !n; b.textContent = n;
+  }
+  function openChanges() {
+    state.help = true; state.pane = 'changes'; markCurrent();
+    $('#briefBtn').setAttribute('aria-pressed', 'false'); $('#chgBtn').setAttribute('aria-pressed', 'true');
+    detail.style.setProperty('--tc', 'var(--st-preliminary)');
+    try { history.replaceState(null, '', '#changes'); } catch (err) {}
+    wikiUsed = new Set();
+    const list = allChanges(14), groups = [];
+    list.forEach(x => { const k = dayKey(new Date(x.c.at)); let g = groups.find(y => y.k === k); if (!g) groups.push(g = { k, items: [] }); g.items.push(x); });
+    const body = groups.map(g => { const d = new Date(g.k + 'T12:00:00+03:00'); return `<div class="cday">${esc(fDay.format(d))} · ${esc(relDays(d, new Date()))}</div><div class="clog">${g.items.map(x => changeItem(x.e, x.c, true)).join('')}</div>`; }).join('');
+    const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Лента изменений</h2>
+        <div class="when"><span class="big">за 14 дней</span>${navHtml(null)}</div>
+        <div class="brief-meta"><span>Переносы, смена статуса и времени, отмены, новые события, итоги. Изменения дат — главная защита от устаревшей даты в эфире.</span></div></div></section>
+      <section class="blk">${body || '<p class="small" style="margin:0">Изменений за две недели нет.</p>'}</section>`;
+    paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, '', 'changes:' + list.length, false);
+    sheetOpen();
+  }
+
+  /* ------------------------------------------------------ бриф к эфиру */
+  const todayKey = () => dayKey(new Date());
+  function autoBrief(now) {
+    const H24 = now.getTime() + 24 * H, tomorrowEnd = dayStart(new Date(now.getTime() + 2 * D)).getTime() - 1;
+    const imp = e => ({ monetary: 0, state: 1, summits: 2, elections: 2, data: 3, energy: 3, tech: 4, corp: 4 }[typeOf(e)] ?? 5);
+    const upcoming = state.events.filter(e => { const t = times(e); if (!t.s || e.dateStatus === 'cancelled') return false; const ph = phase(e, now); return ph === 'live' || (ph === 'upcoming' && t.s.getTime() <= H24); })
+      .sort((a, b) => (phase(b, now) === 'live') - (phase(a, now) === 'live') || imp(a) - imp(b) || when(a) - when(b)).slice(0, 5);
+    const outcomes = state.events.filter(e => e.outcome && e.outcome.decided && !e.outcome.backfilled && (now - new Date(e.outcome.filledAt || 0)) < 36 * H)
+      .sort((a, b) => imp(a) - imp(b)).slice(0, 4);
+    const sayDays = new Set([todayKey(), dayKey(new Date(now.getTime() - D))]);
+    const says = [];
+    state.events.forEach(e => (e.statements || []).forEach(x => { if (sayDays.has(x.date)) says.push({ e, x }); }));
+    says.sort((a, b) => (b.x.date || '').localeCompare(a.x.date || '') || (b.x.kind === 'quote') - (a.x.kind === 'quote'));
+    const upIds = new Set(upcoming.map(e => e.id));
+    const tomorrow = state.events.filter(e => { const t = times(e); return t.s && !upIds.has(e.id) && e.dateStatus !== 'cancelled' && t.s.getTime() > H24 && t.s.getTime() <= tomorrowEnd; })
+      .sort((a, b) => imp(a) - imp(b) || when(a) - when(b)).slice(0, 4);
+    const tm = e => { const t = times(e); if (!t.s) return e.dateWording || ''; if (phase(e, now) === 'live') return 'идёт'; return (dayKey(t.s) === todayKey() ? 'сегодня' : fDay.format(t.s)) + (e.allDay ? '' : ', ' + fTime.format(t.s)); };
+    return {
+      date: todayKey(), auto: true,
+      sections: [
+        { title: 'Главное на сегодня', items: upcoming.map(e => ({ eventId: e.id, time: tm(e), title: e.title, text: airText(e) })) },
+        { title: 'Итоги за сутки', items: outcomes.map(e => ({ eventId: e.id, title: e.title, text: e.outcome.decided })) },
+        { title: 'Заявления дня', items: says.slice(0, 5).map(({ e, x }) => ({ eventId: e.id, title: e.title, quote: x.kind === 'quote', text: x.text, who: [x.who, x.role].filter(Boolean).join(', ') })) },
+        { title: 'Что ждать завтра', items: tomorrow.map(e => ({ eventId: e.id, time: tm(e), title: e.title, text: airText(e) })) },
+      ].filter(sec => sec.items.length),
+    };
+  }
+  function currentBrief(now) {
+    const b = state.briefs[todayKey()];
+    return b && Array.isArray(b.sections) && b.sections.length ? b : autoBrief(now);
+  }
+  function briefText(b) {
+    const out = [];
+    const d = new Date(b.date + 'T12:00:00+03:00');
+    out.push(`БРИФ К ЭФИРУ — ${fWdLong.format(d)}, ${fDay.format(d)}`);
+    if (b.lead) out.push('', b.lead);
+    b.sections.forEach(sec => {
+      out.push('', sec.title.toUpperCase());
+      sec.items.forEach((it, i) => {
+        out.push(`${i + 1}. ${it.title}${it.time ? ' — ' + it.time : ''}`);
+        out.push(it.quote ? `«${it.text}»${it.who ? ' — ' + it.who : ''}` : it.text + (it.who ? ' — ' + it.who : ''));
+      });
+    });
+    return out.join('\n');
+  }
+  function openBrief() {
+    state.help = true; state.pane = 'brief'; markCurrent(); $('#chgBtn').setAttribute('aria-pressed', 'false');
+    detail.style.setProperty('--tc', 'var(--accent)');
+    try { history.replaceState(null, '', '#brief'); } catch (err) {}
+    $('#briefBtn').setAttribute('aria-pressed', 'true');
+    const now = new Date(), b = currentBrief(now), d = new Date(b.date + 'T12:00:00+03:00');
+    wikiUsed = new Set();
+    const gen = b.auto ? '<span class="src">собран автоматически из карточек</span><span>выверенный бриф Claude появится в 16:43</span>'
+      : `<span class="src">собран Claude</span><span>${b.generatedAt ? esc(fTime.format(new Date(b.generatedAt))) + ' мск' : ''}</span>`;
+    const secs = b.sections.map(sec => `<section class="blk${sec.title === 'Главное на сегодня' ? ' cpb' : ''}">${lab(esc(sec.title))}${sec.items.map((it, i) => {
+      const ev = state.events.find(x => x.id === it.eventId);
+      const tc = ev ? `--tc:var(--t-${typeOf(ev)})` : '';
+      return `<div class="bitem" style="${tc}"><span class="num">${i + 1}</span><div class="bt">${ev ? `<button type="button" data-open="${esc(ev.id)}">${esc(it.title)}</button>` : `<b>${esc(it.title)}</b>`}${it.time ? `<span class="tm2">${esc(it.time)}</span>` : ''}</div>
+        <p>${it.quote ? '«' + wl(it.text) + '»' : wl(it.text)}</p>${it.who ? `<span class="who">${wl(it.who)}</span>` : ''}</div>`;
+    }).join('')}</section>`).join('');
+    const empty = b.sections.length ? '' : '<div class="pending">На ближайшие сутки в карте нет событий. Загляните в горизонт «2 недели».</div>';
+    const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Бриф к эфиру</h2>
+        <div class="when"><span class="big">${esc(fWdLong.format(d))}, ${esc(fDay.format(d))}</span>${navHtml(null)}</div>
+        <div class="brief-meta">${gen}</div></div></section>
+      ${b.lead ? `<p class="brief-lead">${wl(b.lead)}</p>` : ''}${secs}${empty}`;
+    const foot = `<button type="button" class="pillbtn" id="copyBrief">Копировать весь бриф</button><button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`;
+    paint(html, foot, '', 'brief:' + b.date + ':' + (b.auto ? 'a' : b.generatedAt), false);
+    sheetOpen();
+  }
+  function openHelp() {
+    state.help = true; state.pane = 'help'; $('#briefBtn').setAttribute('aria-pressed', 'false'); $('#chgBtn').setAttribute('aria-pressed', 'false'); markCurrent(); detail.style.setProperty('--tc', 'var(--accent)');
+    const html = `<section class="hero" style="grid-template-columns:minmax(0,1fr)"><div class="main"><h2 id="drTitle">Как читать карту</h2><div class="when">${navHtml(null)}</div></div></section>
+      <section>${lab('Статус даты')}<div class="legend">
+        <div>${stTag('confirmed', true)}<p>Назначена официальным документом: указом, календарём организатора, решением избиркома.</p><span class="ex">в эфире: «23 октября в 13:30»</span></div>
+        <div>${stTag('preliminary', true)}<p>Дата известна, но не закреплена: практика прошлых лет, агрегаторы, оговорки организатора. Время помечено знаком ≈.</p><span class="ex">в эфире: «ориентировочно…»</span></div>
+        <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
+        <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
+      <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
+      <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Консенсус</dt><dd>У решений ЦБ и публикаций статистики: прошлое значение, ожидание аналитиков и рынка, после события — факт и вердикт «совпало», «выше» или «ниже ожиданий». Короткий ориентир виден прямо в строке ленты.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Изменения</dt><dd>Метка «изменено» на строке — за двое суток у события сдвинулась дата, время или статус либо это замечено с вашего прошлого визита; «новое» — событие только что добавлено. Кнопка «Изменения» в шапке открывает ленту за 14 дней, в карточке — «История изменений».</dd><dt>Бриф к эфиру</dt><dd>Кнопка в шапке: главное на сегодня, итоги за сутки, заявления дня и что ждать завтра — одним текстом, который копируется целиком. В 16:43 мск Claude собирает выверенный бриф; до этого бриф собирается автоматически из карточек.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
+      <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
+      <section>${lab('Управление')}<dl class="kv"><dt>Клавиши</dt><dd>↑ ↓ — предыдущее и следующее событие в списке</dd><dt>Ссылка</dt><dd>У каждой карточки своя ссылка — её можно переслать</dd></dl></section>`;
+    paint(html, `<button type="button" class="pillbtn" id="backBtn">Вернуться к событию</button>`, 'Справка', 'help', false);
+    sheetOpen();
+  }
+
+  /* ------------------------------------------------------ взаимодействие */
+  const toastEl = $('#toast');
+  function toast(t) { toastEl.textContent = t; toastEl.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => toastEl.classList.remove('on'), 1800); }
+  async function copy(text) { try { await navigator.clipboard.writeText(text); toast('Скопировано'); } catch (e) { toast('Не удалось скопировать — выделите текст вручную'); } }
+
+  document.addEventListener('click', ev => {
+    const t = ev.target.closest('[data-open],[data-hz],[data-cat],[data-st],[data-pin],[data-copy],[data-copylink],button');
+    if (!t) return;
+    const d = t.dataset;
+    if (d.open) { showEvent(d.open); return; }
+    if (d.hz) { if (state.horizon !== d.hz) { state.horizon = d.hz; store.set('horizon', d.hz); state.animate = true; render(); requestAnimationFrame(() => moveInk(true)); } return; }
+    if (d.cat) { d.cat === '__clear' ? state.cats.clear() : (state.cats.has(d.cat) ? state.cats.delete(d.cat) : state.cats.add(d.cat)); store.set('cats', [...state.cats]); state.animate = true; render(); return; }
+    if (d.copy) { const e = state.events.find(x => x.id === d.copy); if (e) copy(airText(e)); return; }
+    if (d.copylink) { copy(location.href.split('#')[0] + '#' + d.copylink); return; }
+    if (t.id === 'drClose') { sheetClose(); return; }
+    if (t.id === 'backBtn') { state.help = false; showEvent(state.openId || state.order[0]); return; }
+    if (t.id === 'drPrev' || t.id === 'drNext') { step(t.id === 'drNext' ? 1 : -1); return; }
+    if (t.id === 'helpBtn') { openHelp(); return; }
+    if (t.id === 'briefBtn') { if (state.pane === 'brief') { state.help = false; state.pane = ''; showEvent(state.openId || state.order[0]); } else openBrief(); return; }
+    if (t.id === 'chgBtn') { if (state.pane === 'changes') { state.help = false; state.pane = ''; showEvent(state.openId || state.order[0]); } else openChanges(); return; }
+    if (t.id === 'copyBrief') { copy(briefText(currentBrief(new Date()))); return; }
+    if (t.id === 'themeBtn') {
+      const r = document.documentElement, cur = r.getAttribute('data-theme');
+      const dark = cur ? cur === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+      r.setAttribute('data-theme', dark ? 'light' : 'dark'); store.set('theme', r.getAttribute('data-theme'));
+    }
+  });
+  scrim.addEventListener('click', sheetClose);
+  function step(dir) {
+    if (!state.order.length) return;
+    const i = Math.max(0, Math.min(state.order.length - 1, state.order.indexOf(state.openId) + dir));
+    showEvent(state.order[i], { keepSheet: true });
+    const row = document.querySelector(`#feed .row[data-open="${CSS.escape(state.order[i])}"]`);
+    if (row && !narrow()) row.scrollIntoView({ block: 'nearest', behavior: reduced() ? 'auto' : 'smooth' });
+  }
+  document.addEventListener('keydown', ev => {
+    const typing = /INPUT|TEXTAREA/.test(document.activeElement && document.activeElement.tagName);
+    if (typing) return;
+    if (ev.key === 'ArrowDown' || ev.key === 'ArrowUp') { ev.preventDefault(); step(ev.key === 'ArrowDown' ? 1 : -1); }
+    else if (ev.key === 'Escape') sheetClose();
+  });
+  let qt; $('#q').addEventListener('input', ev => { clearTimeout(qt); qt = setTimeout(() => { state.q = ev.target.value.trim().toLowerCase(); state.animate = true; render(); }, 160); });
+  addEventListener('resize', () => { moveInk(false); fitTitle(); setTopH(); if (!narrow()) { sheetClose(); } });
+  function setTopH() { document.documentElement.style.setProperty('--toph', $('.top').offsetHeight + 'px'); }
+  setTopH();
+
+  /* зеркало без claude.ai: читает выгрузку базы data/snapshot.json и перечитывает её каждые 5 минут */
+  function staticDb(url) {
+    let data = null; const subs = [];
+    const load = async () => {
+      try { const r = await fetch(url + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw { code: r.status }; data = await r.json(); subs.forEach(f => f()); }
+      catch (e) { if (!data) subs.forEach(f => f(e || { code: 'fetch' })); }
+    };
+    const sub = f => { subs.push(f); if (data) f(); };
+    load(); setInterval(load, 5 * 60e3);
+    return {
+      collection: name => ({ onSnapshot: (ok, err) => sub(e => { if (e) { err && err(e); return; } ok({ docs: Object.entries(data[name] || {}).map(([id, v]) => ({ id, data: () => v })) }); }) }),
+      doc: path => { const [c, id] = path.split('/'); return { onSnapshot: (ok, err) => sub(e => { if (e) { err && err(e); return; } const v = (data[c] || {})[id]; ok({ exists: !!v, data: () => v }); }) }; },
+    };
+  }
+  /* ---------------------------------------------------------- старт */
+  function tick() { const n = new Date(); const c = $('#clock'); c.textContent = `${fTime.format(n)} мск`; c.title = `${fWd.format(n)}, ${fShort.format(n).replace('.', '')}`; }
+  tick(); setInterval(tick, 20e3);
+  setInterval(() => { if (state.loaded) render(); }, 5 * 60e3);
+  const th = store.get('theme', null); if (th) document.documentElement.setAttribute('data-theme', th);
+  render();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { moveInk(false); setTopH(); });
+
+  (async () => {
+    let db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    if (!db && /^https?:$/.test(location.protocol)) db = staticDb('data/snapshot.json');
+    if (!db) { $('#feed').innerHTML = '<div class="empty"><b>База событий недоступна в этом просмотре</b>Карточки и итоги хранятся в базе терминала. Откройте страницу по ссылке claude.ai, войдя в аккаунт.</div>'; return; }
+    db.collection('events').onSnapshot(snap => {
+      const first = !state.loaded;
+      state.events = snap.docs.map(d => cleanEvent({ id: d.id, ...d.data() })).filter(e => e.title);
+      state.loaded = true; if (first) state.animate = true;
+      if (!state.events.length) { $('#feed').innerHTML = '<div class="empty"><b>Карта пока пуста</b>События появятся после первого прогона наполнения.</div>'; return; }
+      const h = location.hash.slice(1);
+      if (first && h && state.events.some(e => e.id === h)) {
+        const e = state.events.find(x => x.id === h), now = new Date();
+        const hz = HORIZONS.find(z => inHorizon(e, now, z));
+        if (hz && hz.id !== state.horizon) state.horizon = hz.id;
+        state.cats.clear(); state.openId = h;
+      }
+      if (first) diffSinceVisit();
+      render(); renderChgCount();
+      if (first && h === 'brief') openBrief();
+      if (first && h === 'changes') openChanges();
+      if (!first && state.pane === 'changes') openChanges();
+    }, err => { $('#feed').innerHTML = `<div class="empty"><b>Связь с базой прервалась</b>Обновите страницу. Код: ${esc(err && err.code)}</div>`; });
+    db.doc('meta/links').onSnapshot(d => { const ex = d.exists ? (d.data().entries || []).map(x => [x.terms, x.url]).filter(x => Array.isArray(x[0]) && typeof x[1] === 'string' && /^https:\/\/[a-z]{2,3}\.wikipedia\.org\/wiki\//.test(x[1])) : []; buildWiki(ex); if (state.openId && !state.help) showEvent(state.openId, { quiet: true }); }, () => {});
+    db.collection('briefs').onSnapshot(snap => { state.briefs = {}; snap.docs.forEach(d => { state.briefs[d.id] = { date: d.id, ...d.data() }; }); if (state.pane === 'brief') openBrief(); }, () => {});
+    db.doc('meta/status').onSnapshot(d => { state.meta = d.exists ? d.data() : null; renderRun(new Date()); }, () => {});
+  })();
+})();
+</script>
+
+</body>
+</html>

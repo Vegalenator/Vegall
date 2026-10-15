@@ -1063,6 +1063,20 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function setTopH() { document.documentElement.style.setProperty('--toph', $('.top').offsetHeight + 'px'); }
   setTopH();
 
+  /* зеркало без claude.ai: читает выгрузку базы data/snapshot.json и перечитывает её каждые 5 минут */
+  function staticDb(url) {
+    let data = null; const subs = [];
+    const load = async () => {
+      try { const r = await fetch(url + '?t=' + Date.now(), { cache: 'no-store' }); if (!r.ok) throw { code: r.status }; data = await r.json(); subs.forEach(f => f()); }
+      catch (e) { if (!data) subs.forEach(f => f(e || { code: 'fetch' })); }
+    };
+    const sub = f => { subs.push(f); if (data) f(); };
+    load(); setInterval(load, 5 * 60e3);
+    return {
+      collection: name => ({ onSnapshot: (ok, err) => sub(e => { if (e) { err && err(e); return; } ok({ docs: Object.entries(data[name] || {}).map(([id, v]) => ({ id, data: () => v })) }); }) }),
+      doc: path => { const [c, id] = path.split('/'); return { onSnapshot: (ok, err) => sub(e => { if (e) { err && err(e); return; } const v = (data[c] || {})[id]; ok({ exists: !!v, data: () => v }); }) }; },
+    };
+  }
   /* ---------------------------------------------------------- старт */
   function tick() { const n = new Date(); const c = $('#clock'); c.textContent = `${fTime.format(n)} мск`; c.title = `${fWd.format(n)}, ${fShort.format(n).replace('.', '')}`; }
   tick(); setInterval(tick, 20e3);
@@ -1072,7 +1086,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { moveInk(false); setTopH(); });
 
   (async () => {
-    const db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    let db = window.claude && window.claude.use ? await window.claude.use('db') : null;
+    if (!db && /^https?:$/.test(location.protocol)) db = staticDb('data/snapshot.json');
     if (!db) { $('#feed').innerHTML = '<div class="empty"><b>База событий недоступна в этом просмотре</b>Карточки и итоги хранятся в базе терминала. Откройте страницу по ссылке claude.ai, войдя в аккаунт.</div>'; return; }
     db.collection('events').onSnapshot(snap => {
       const first = !state.loaded;
