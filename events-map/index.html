@@ -151,6 +151,21 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 color-mix(in srgb,var(--live) 40%,transparent)}50%{box-shadow:0 0 0 5px transparent}}
 .flag.await{color:var(--accent);background:var(--accent-2)}
 .flag.risk{white-space:normal;color:var(--st-cancelled);background:color-mix(in srgb,var(--st-cancelled) 10%,transparent)}
+.imp{display:inline-flex;align-items:center;gap:7px;margin-right:8px;vertical-align:-1px;font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.imp .sc{display:inline-flex;align-items:flex-end;gap:4px}
+.imp .bars{display:inline-flex;align-items:flex-end;gap:2px;height:11px}
+.imp .bars i{width:4px;border-radius:1px;background:color-mix(in srgb,var(--ink) 18%,transparent)}
+.imp .bars i:nth-child(1){height:5px} .imp .bars i:nth-child(2){height:8px} .imp .bars i:nth-child(3){height:11px}
+.imp .bars i.on{background:var(--ink-2)}
+.imp .ru .bars i.on{background:var(--accent)}
+.imp .sc.top{color:var(--ink-2);font-weight:600}
+.imp .ru.top{color:var(--accent)}
+.row.key .t{font-weight:600}
+.tgl.key[aria-pressed="true"]{color:var(--accent)}
+.whyimp{display:grid;gap:8px}
+.whyimp .lv{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:13px}
+.whyimp .lv b{font-weight:600}
+.whyimp p{margin:0;font-size:14px;line-height:1.5}
 .go{color:var(--muted);opacity:0;transform:translateX(-4px);transition:opacity .25s,transform .25s var(--ease);padding-top:2px}
 
 .empty{padding:56px 24px;text-align:center;color:var(--ink-2)}
@@ -472,7 +487,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   const state = {
     events: [], meta: null, loaded: false,
     horizon: store.get('horizon', 'h72'),
-    cats: new Set(store.get('cats', [])),
+    cats: new Set(store.get('cats', [])), keyOnly: !!store.get('keyOnly', false),
     q: '', openId: null, order: [], animate: true, help: false, pane: '', briefs: {},
   };
   const $ = s => document.querySelector(s);
@@ -528,6 +543,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     return w.getTime() <= lim + (hz.id === 'h72' ? 0 : 20 * D);
   }
   function passTopic(e) {
+    if (state.keyOnly && !isKey(e)) return false;
     if (state.cats.size && !(e.cats || []).some(c => state.cats.has(c))) return false;
     if (state.q) {
       const hay = [e.title, e.where, e.kind, e.participants, (e.agenda || []).map(a => a.text).join(' ')].join(' ').toLowerCase();
@@ -671,11 +687,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   }
 
   function renderTopics(pool) {
-    $('#topics').innerHTML = CATS.map(c => {
+    $('#topics').innerHTML = `<button type="button" class="tgl key" data-cat="__key" title="Только события с высшей оценкой — по масштабу или для России" aria-pressed="${state.keyOnly}">Главное<span class="c">${pool.filter(isKey).length}</span></button>` + CATS.map(c => {
       const n = pool.filter(e => (e.cats || []).includes(c.id)).length;
       return `<button type="button" class="tgl" data-cat="${c.id}" title="${c.full}" aria-pressed="${state.cats.has(c.id)}">${c.label}<span class="c">${n}</span></button>`;
     }).join('')
-      + (state.cats.size ? `<button type="button" class="tgl clear" data-cat="__clear">сбросить</button>` : '');
+      + (state.cats.size || state.keyOnly ? `<button type="button" class="tgl clear" data-cat="__clear">сбросить</button>` : '');
   }
 
   /* ------------------------------------------------------------- лента */
@@ -689,17 +705,25 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   function rowHtml(e, now, i) {
     const ph = phase(e, now);
     const flags = [rowChangeFlag(e), ph === 'live' ? '<span class="flag live">идёт</span>' : '', ph === 'awaiting' ? '<span class="flag await">ждёт итога</span>' : '', e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''].join('');
-    const subs = esc(e.where || e.kind || '') + (ph !== 'closed' && e.consensus && e.consensus.short ? ` · <span class="csh">${esc(e.consensus.short)}</span>` : '');
+    const subs = impMark(e) + esc(e.where || e.kind || '') + (ph !== 'closed' && e.consensus && e.consensus.short ? ` · <span class="csh">${esc(e.consensus.short)}</span>` : '');
     const gist = ph === 'closed' && e.outcome ? `<div class="gist"><span style="color:var(--st-confirmed);font-weight:500">Решили:</span> ${esc(trim(e.outcome.decided, 170))}</div>` : '';
     const k1 = ph === 'closed' && e.outcome ? keyStatements(e, 1)[0] : null;
     const gistQ = k1 ? `<div class="gist q">${esc(trim(sayText(k1), 150))} — ${esc(k1.who || '')}</div>` : '';
-    const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', state.animate ? 'enter' : ''].join(' ');
+    const cls = ['row', e.dateStatus === 'cancelled' ? 'cancelled' : '', isKey(e) ? 'key' : '', state.animate ? 'enter' : ''].join(' ');
     const delay = state.animate ? ` style="animation-delay:${Math.min(i, 14) * 22}ms;"` : '';
     return `<button type="button" class="${cls}" data-open="${esc(e.id)}" title="${esc(TY[typeOf(e)].label)}" aria-current="${state.openId === e.id && !state.help}" style="--tc:var(--t-${typeOf(e)});${delay ? delay.slice(8, -1) : ''}">
       ${timeCell(e)}
       <div style="min-width:0"><div class="t">${esc(e.title)}${flags ? `<span class="flags">${flags}</span>` : ''}</div><div class="sub">${subs}</div>${gist}${gistQ}</div>
       <span class="go" aria-hidden="true"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
     </button>`;
+  }
+  const IMPW = ['', 'отраслевое', 'значимое', 'ключевое'], IMPR = ['', 'низкая', 'средняя', 'высокая'];
+  const impOf = e => { const m = e.importance; if (!m) return null; const w = +m.world || 0, r = +m.ru || 0; return (w || r) ? { w, r, why: m.why || '' } : null; };
+  const isKey = e => { const m = impOf(e); return !!m && (m.w >= 3 || m.r >= 3); };
+  const bars = n => `<span class="bars">${[1, 2, 3].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+  function impMark(e) {
+    const m = impOf(e); if (!m) return '';
+    return `<span class="imp" title="Масштаб: ${IMPW[m.w] || '—'} · для России: ${IMPR[m.r] || '—'}"><span class="sc${m.w >= 3 ? ' top' : ''}">мир${bars(m.w)}</span><span class="sc ru${m.r >= 3 ? ' top' : ''}">РФ${bars(m.r)}</span></span>`;
   }
   const trim = (s, n) => (s || '').length > n ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
 
@@ -810,6 +834,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <h2 id="drTitle" title="${esc(e.title)}">${esc(e.title)}</h2>
         <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}${navHtml(state.order.indexOf(id))}</div></div>
         ${mapHtml(e)}</section>
+      ${(() => { const m = impOf(e); return m ? `<section class="blk">${lab('Почему важно')}<div class="whyimp"><div class="lv"><span class="imp" style="margin:0"><span class="sc${m.w >= 3 ? ' top' : ''}">мир${bars(m.w)}</span></span><span>Масштаб: <b>${IMPW[m.w] || '—'}</b></span><span class="imp" style="margin:0"><span class="sc ru${m.r >= 3 ? ' top' : ''}">РФ${bars(m.r)}</span></span><span>Для России: <b>${IMPR[m.r] || '—'}</b></span></div>${m.why ? `<p>${wl(m.why)}</p>` : ''}</div></section>` : ''; })()}
       ${outcome}
       ${consensusHtml(e)}
       <section class="blk">${lab('Что на обсуждении')}<dl class="disc">${e.participants && e.participants !== '—' ? `<dt>Участники</dt><dd>${wl(e.participants)}</dd>` : ''}<dt>Повестка</dt><dd>${items(e.agenda)}</dd></dl></section>
@@ -1009,6 +1034,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('preliminary', true)}<p>Дата известна, но не закреплена: практика прошлых лет, агрегаторы, оговорки организатора. Время помечено знаком ≈.</p><span class="ex">в эфире: «ориентировочно…»</span></div>
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
+      <section>${lab('Важность — две шкалы')}<div class="legend">
+        <div><p><span class="imp" style="margin:0"><span class="sc top">мир${bars(3)}</span></span> <b>Масштаб</b>: три деления — ключевое для мира (G20, ФРС, ОПЕК+, выборы в США), два — значимое для региона или отрасли, одно — отраслевое или локальное.</p></div>
+        <div><p><span class="imp" style="margin:0"><span class="sc ru top">РФ${bars(3)}</span></span> <b>Для России</b>: три деления — прямо касается денег, политики или экономики страны (ставка ЦБ, бюджет, санкции ЕС), два — косвенно, через нефть, курс или партнёров, одно — влияние слабое.</p></div>
+        <div><p>Если хотя бы одна шкала на максимуме, название события в ленте выделено жирным. Фильтр «Главное» оставляет только такие события. В карточке блок «Почему важно» объясняет, для кого и почему событие имеет значение.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
       <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Консенсус</dt><dd>У решений ЦБ и публикаций статистики: прошлое значение, ожидание аналитиков и рынка, после события — факт и вердикт «совпало», «выше» или «ниже ожиданий». Короткий ориентир виден прямо в строке ленты.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Изменения</dt><dd>Метка «изменено» на строке — за двое суток у события сдвинулась дата, время или статус либо это замечено с вашего прошлого визита; «новое» — событие только что добавлено. Кнопка «Изменения» в шапке открывает ленту за 14 дней, в карточке — «История изменений».</dd><dt>Бриф к эфиру</dt><dd>Кнопка в шапке: главное на сегодня, итоги за сутки, заявления дня и что ждать завтра — одним текстом, который копируется целиком. В 16:43 мск Claude собирает выверенный бриф; до этого бриф собирается автоматически из карточек.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
       <section>${lab('Итоги')}<p style="margin:0;font-size:13.5px">Когда событие закончилось, оно уходит в «Историю» с отметкой «ждёт итога». Дважды в день, в 06:47 и 15:47 мск, Claude собирает итог по официальным документам и СМИ и записывает его в формате «ожидали → решили → что осталось открытым». Так календарь помнит, что от события ждали и чем оно закончилось.</p></section>
@@ -1028,7 +1057,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
     const d = t.dataset;
     if (d.open) { showEvent(d.open); return; }
     if (d.hz) { if (state.horizon !== d.hz) { state.horizon = d.hz; store.set('horizon', d.hz); state.animate = true; render(); requestAnimationFrame(() => moveInk(true)); } return; }
-    if (d.cat) { d.cat === '__clear' ? state.cats.clear() : (state.cats.has(d.cat) ? state.cats.delete(d.cat) : state.cats.add(d.cat)); store.set('cats', [...state.cats]); state.animate = true; render(); return; }
+    if (d.cat === '__key') { state.keyOnly = !state.keyOnly; store.set('keyOnly', state.keyOnly); state.animate = true; render(); return; }
+    if (d.cat) { d.cat === '__clear' ? (state.cats.clear(), state.keyOnly = false, store.set('keyOnly', false)) : (state.cats.has(d.cat) ? state.cats.delete(d.cat) : state.cats.add(d.cat)); store.set('cats', [...state.cats]); state.animate = true; render(); return; }
     if (d.copy) { const e = state.events.find(x => x.id === d.copy); if (e) copy(airText(e)); return; }
     if (d.copylink) { copy(location.href.split('#')[0] + '#' + d.copylink); return; }
     if (t.id === 'drClose') { sheetClose(); return; }
