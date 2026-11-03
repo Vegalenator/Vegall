@@ -159,6 +159,10 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
 .imp .bars i.on{background:var(--ink-2)}
 .imp .ru .bars i.on{background:var(--accent)}
 .imp .sc.top{color:var(--ink-2);font-weight:600}
+.imp svg{display:block;flex:none}
+.imp .ic-flag{border-radius:1.5px;margin-bottom:.5px}
+.imp .sc:not(.top) .ic-flag{opacity:.75}
+.imp .sc:not(.top) .ic-globe{opacity:.8}
 .imp .ru.top{color:var(--accent)}
 .row.key .t{font-weight:600}
 .tgl.key[aria-pressed="true"]{color:var(--accent)}
@@ -721,9 +725,11 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
   const impOf = e => { const m = e.importance; if (!m) return null; const w = +m.world || 0, r = +m.ru || 0; return (w || r) ? { w, r, why: m.why || '' } : null; };
   const isKey = e => { const m = impOf(e); return !!m && (m.w >= 3 || m.r >= 3); };
   const bars = n => `<span class="bars">${[1, 2, 3].map(i => `<i class="${i <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+  const GLOBE = '<svg class="ic-globe" viewBox="0 0 16 16" width="12" height="12" aria-label="Мир" role="img"><circle cx="8" cy="8" r="6.6" fill="none" stroke="currentColor" stroke-width="1.3"/><ellipse cx="8" cy="8" rx="2.9" ry="6.6" fill="none" stroke="currentColor" stroke-width="1.1"/><path d="M1.6 8h12.8M2.6 4.6h10.8M2.6 11.4h10.8" fill="none" stroke="currentColor" stroke-width="1"/></svg>';
+  const FLAG = '<svg class="ic-flag" viewBox="0 0 15 10" width="15" height="10" aria-label="Россия" role="img"><rect width="15" height="3.34" fill="#fff"/><rect y="3.33" width="15" height="3.34" fill="#1c57b8"/><rect y="6.66" width="15" height="3.34" fill="#d52b1e"/><rect x=".25" y=".25" width="14.5" height="9.5" rx="1" fill="none" stroke="rgba(0,0,0,.28)" stroke-width=".5"/></svg>';
   function impMark(e) {
     const m = impOf(e); if (!m) return '';
-    return `<span class="imp" title="Масштаб: ${IMPW[m.w] || '—'} · для России: ${IMPR[m.r] || '—'}"><span class="sc${m.w >= 3 ? ' top' : ''}">мир${bars(m.w)}</span><span class="sc ru${m.r >= 3 ? ' top' : ''}">РФ${bars(m.r)}</span></span>`;
+    return `<span class="imp" title="Масштаб: ${IMPW[m.w] || '—'} · для России: ${IMPR[m.r] || '—'}"><span class="sc${m.w >= 3 ? ' top' : ''}">${GLOBE}${bars(m.w)}</span><span class="sc ru${m.r >= 3 ? ' top' : ''}">${FLAG}${bars(m.r)}</span></span>`;
   }
   const trim = (s, n) => (s || '').length > n ? s.slice(0, n - 1).trimEnd() + '…' : (s || '');
 
@@ -834,7 +840,7 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <h2 id="drTitle" title="${esc(e.title)}">${esc(e.title)}</h2>
         <div class="when">${whenBig}${stTag(e.dateStatus, true)}${flag}${e.risk ? `<span class="flag risk">${esc(e.risk)}</span>` : ''}${navHtml(state.order.indexOf(id))}</div></div>
         ${mapHtml(e)}</section>
-      ${(() => { const m = impOf(e); return m ? `<section class="blk">${lab('Почему важно')}<div class="whyimp"><div class="lv"><span class="imp" style="margin:0"><span class="sc${m.w >= 3 ? ' top' : ''}">мир${bars(m.w)}</span></span><span>Масштаб: <b>${IMPW[m.w] || '—'}</b></span><span class="imp" style="margin:0"><span class="sc ru${m.r >= 3 ? ' top' : ''}">РФ${bars(m.r)}</span></span><span>Для России: <b>${IMPR[m.r] || '—'}</b></span></div>${m.why ? `<p>${wl(m.why)}</p>` : ''}</div></section>` : ''; })()}
+      ${(() => { const m = impOf(e); return m ? `<section class="blk">${lab('Почему важно')}<div class="whyimp"><div class="lv"><span class="imp" style="margin:0"><span class="sc${m.w >= 3 ? ' top' : ''}">${GLOBE}${bars(m.w)}</span></span><span>Масштаб: <b>${IMPW[m.w] || '—'}</b></span><span class="imp" style="margin:0"><span class="sc ru${m.r >= 3 ? ' top' : ''}">${FLAG}${bars(m.r)}</span></span><span>Для России: <b>${IMPR[m.r] || '—'}</b></span></div>${m.why ? `<p>${wl(m.why)}</p>` : ''}</div></section>` : ''; })()}
       ${outcome}
       ${consensusHtml(e)}
       <section class="blk">${lab('Что на обсуждении')}<dl class="disc">${e.participants && e.participants !== '—' ? `<dt>Участники</dt><dd>${wl(e.participants)}</dd>` : ''}<dt>Повестка</dt><dd>${items(e.agenda)}</dd></dl></section>
@@ -1035,8 +1041,8 @@ button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:poin
         <div>${stTag('expected', true)}<p>Событие ожидается в окне — «к декабрю», «в октябре», — конкретный день не назначен.</p><span class="ex">в эфире: «ожидается до…, дата не назначена»</span></div>
         <div>${stTag('cancelled', true)}<p>Отменено или перенесено за пределы горизонта.</p></div></div></section>
       <section>${lab('Важность — две шкалы')}<div class="legend">
-        <div><p><span class="imp" style="margin:0"><span class="sc top">мир${bars(3)}</span></span> <b>Масштаб</b>: три деления — ключевое для мира (G20, ФРС, ОПЕК+, выборы в США), два — значимое для региона или отрасли, одно — отраслевое или локальное.</p></div>
-        <div><p><span class="imp" style="margin:0"><span class="sc ru top">РФ${bars(3)}</span></span> <b>Для России</b>: три деления — прямо касается денег, политики или экономики страны (ставка ЦБ, бюджет, санкции ЕС), два — косвенно, через нефть, курс или партнёров, одно — влияние слабое.</p></div>
+        <div><p><span class="imp" style="margin:0"><span class="sc top">${GLOBE}${bars(3)}</span></span> <b>Масштаб</b>: три деления — ключевое для мира (G20, ФРС, ОПЕК+, выборы в США), два — значимое для региона или отрасли, одно — отраслевое или локальное.</p></div>
+        <div><p><span class="imp" style="margin:0"><span class="sc ru top">${FLAG}${bars(3)}</span></span> <b>Для России</b>: три деления — прямо касается денег, политики или экономики страны (ставка ЦБ, бюджет, санкции ЕС), два — косвенно, через нефть, курс или партнёров, одно — влияние слабое.</p></div>
         <div><p>Если хотя бы одна шкала на максимуме, название события в ленте выделено жирным. Фильтр «Главное» оставляет только такие события. В карточке блок «Почему важно» объясняет, для кого и почему событие имеет значение.</p></div></div></section>
       <section>${lab('Тип события — цвет')}<div class="tlegend">${TYPES.map(t => `<div><span class="ty" style="--tc:var(--t-${t.id})"><i></i>${t.label}</span><span class="d">${t.d}</span></div>`).join('')}</div></section>
       <section>${lab('Блоки карточки')}<dl class="kv"><dt>Что на обсуждении</dt><dd>Участники и пункты повестки — только то, что подтверждено организатором.</dd><dt>Консенсус</dt><dd>У решений ЦБ и публикаций статистики: прошлое значение, ожидание аналитиков и рынка, после события — факт и вердикт «совпало», «выше» или «ниже ожиданий». Короткий ориентир виден прямо в строке ленты.</dd><dt>Возможные решения</dt><dd>Сценарии редакции: чего можно ждать по итогам. Это оценка, а не факт.</dd><dt>Изменения</dt><dd>Метка «изменено» на строке — за двое суток у события сдвинулась дата, время или статус либо это замечено с вашего прошлого визита; «новое» — событие только что добавлено. Кнопка «Изменения» в шапке открывает ленту за 14 дней, в карточке — «История изменений».</dd><dt>Бриф к эфиру</dt><dd>Кнопка в шапке: главное на сегодня, итоги за сутки, заявления дня и что ждать завтра — одним текстом, который копируется целиком. В 16:43 мск Claude собирает выверенный бриф; до этого бриф собирается автоматически из карточек.</dd><dt>Ссылки</dt><dd>Названия организаций, форумов, компаний и имена персон ведут на статьи Википедии — только первое упоминание в карточке.</dd><dt>Заявления</dt><dd>Главные высказывания по итогам каждого дня события. В кавычках — дословная цитата по источнику, без кавычек — пересказ.</dd><dt>Контрольная точка</dt><dd>Следующий момент, когда по событию появится определённость: итоговый документ, результаты голосования, следующее заседание. Туда стоит вернуться после эфира.</dd><dt>Для эфира</dt><dd>Короткая справка радийным языком: что происходит, когда и чего ждать. Дата в ней сформулирована по статусу — с оговоркой, если она не подтверждена.</dd></dl></section>
