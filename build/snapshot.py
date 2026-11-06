@@ -91,7 +91,7 @@ def make(rev: str | None, label: str) -> dict:
         "{label}": json.dumps(label, ensure_ascii=False),
     }.items():
         script = script.replace(key, value)
-    res = subprocess.run(["node", "-e", script], cwd=ROOT, capture_output=True, text=True)
+    res = subprocess.run(["node", "-"], input=script, cwd=ROOT, capture_output=True, text=True)
     if res.returncode:
         sys.exit("node: " + res.stderr.strip())
     return json.loads(res.stdout)

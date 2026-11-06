@@ -2,7 +2,7 @@
    Пишется скриптом build/connect.py. Руками не правится.
    source_value — что сказал источник, terminal_value — что стоит в данных. */
 window.VG_FEEDS = {
- "updated": "2026-09-20",
+ "updated": "2026-11-01",
  "connectors": [
   {
    "id": "nvda-quarter",
@@ -10,7 +10,7 @@ window.VG_FEEDS = {
    "title": "Nvidia — квартальный пресс-релиз",
    "cadence": 95,
    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027",
-   "lastRun": "2026-09-20",
+   "lastRun": "2026-11-01",
    "fields": [
     {
      "key": "revenue",
@@ -52,7 +52,7 @@ window.VG_FEEDS = {
    "state": "ok",
    "period": "Second Quarter Fiscal 2027",
    "published": "August 26, 2026",
-   "citesRefreshed": 3,
+   "citesRefreshed": 0,
    "divergent": 0
   },
   {
@@ -60,39 +60,11 @@ window.VG_FEEDS = {
    "source": "S19",
    "title": "ASML — квартальный пресс-релиз",
    "cadence": 95,
-   "url": "https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results",
-   "lastRun": "2026-09-20",
-   "fields": [
-    {
-     "key": "revenueEur",
-     "definition": "Total net sales за квартал, МИЛЛИАРДЫ ЕВРО. Прямое сравнение с долларовыми строками терминала некорректно",
-     "unit": "€ млрд",
-     "target": "companies.asml.revenueEur",
-     "source_value": 9.3,
-     "terminal_value": 9.3,
-     "match": true,
-     "quote": "Q2 total net sales of €9.3 billion",
-     "loc": "Пресс-релиз, сводка квартала",
-     "cite": "asml-q2"
-    },
-    {
-     "key": "grossMargin",
-     "definition": "Валовая маржа за квартал, проценты. Не путать с прогнозным диапазоном на год",
-     "unit": "%",
-     "target": "companies.asml.grossMargin",
-     "source_value": 54.0,
-     "terminal_value": 54.0,
-     "match": true,
-     "quote": "gross margin of 54.0%",
-     "loc": "Пресс-релиз, сводка квартала",
-     "cite": "asml-margin"
-    }
-   ],
-   "state": "ok",
-   "period": "",
-   "published": "",
-   "citesRefreshed": 0,
-   "divergent": 0
+   "url": "https://www.asml.com/en/news/press-releases/2026/q3-2026-financial-results",
+   "lastRun": "2026-11-01",
+   "fields": [],
+   "state": "failed",
+   "error": "документ не содержит «total net sales» — это не страница квартального релиза"
   }
  ],
  "declared": [
@@ -102,34 +74,39 @@ window.VG_FEEDS = {
    "why": "iea.org отвечает 403 на запрос из среды сборки"
   },
   {
+   "source": "S5",
+   "title": "OECD — производительность ИИ в G7",
+   "why": "oecd.org отвечает 403 на запрос из среды сборки"
+  },
+  {
    "source": "S17",
    "title": "CoreWeave — форма 10-Q",
-   "why": "sec.gov отвечает 403; нужен доступ с объявленным User-Agent по правилам SEC"
+   "why": "Открывается на sec.gov с идентифицируемым User-Agent; в этом выпуске сверена вручную, подключение не написано"
   },
   {
    "source": "S15",
    "title": "Amazon — квартальный релиз",
-   "why": "ir.aboutamazon.com отвечает 403"
+   "why": "ir.aboutamazon.com отвечает 403; тот же релиз открывается на sec.gov (форма 8-K), сверен вручную, подключение не написано; уровень капвложений и операционный поток за 12 месяцев сверены по структурированным данным SEC (data.sec.gov, XBRL формы 10-Q)"
   },
   {
    "source": "S13",
    "title": "Broadcom — квартальный релиз",
-   "why": "investors.broadcom.com отвечает 403"
+   "why": "investors.broadcom.com отвечает 403; релиз на sec.gov (форма 8-K), сверен вручную, подключение не написано"
   },
   {
    "source": "S14",
    "title": "Oracle — годовой релиз",
-   "why": "investor.oracle.com отвечает 403"
+   "why": "investor.oracle.com отвечает 403; релиз на sec.gov (форма 8-K), сверен вручную, подключение не написано"
   },
   {
    "source": "S18",
    "title": "TSMC — квартальные результаты",
-   "why": "investor.tsmc.com отвечает 403"
+   "why": "investor.tsmc.com отвечает 403; релиз на sec.gov (форма 6-K), сверен вручную, подключение не написано"
   },
   {
    "source": "S16",
    "title": "Meta — квартальный релиз",
-   "why": "investor.atmeta.com отвечает 403"
+   "why": "investor.atmeta.com отвечает 403; релиз на sec.gov (форма 8-K), сверен вручную, подключение не написано"
   },
   {
    "source": "—",

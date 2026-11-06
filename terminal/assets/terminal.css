@@ -582,3 +582,95 @@ tr.rownote td b { color: var(--ink); }
 /* в карточке контура жирный — строчный: правило подсказки делает его блочным */
 .loopcard b { display: inline; font-size: inherit; margin: 0; }
 .loopcard .lc-title { display: block; font-size: 15px; }
+
+/* ============================================================ РЫНОК
+   Дивергентная шкала: синий — рост, красный — падение, серый — около нуля.
+   Синий/красный, а не зелёный/красный: различимы при дальтонизме
+   и не спорят со статусными цветами панели. Знак % всегда подписан. */
+:root {
+  --hu1: #cde2fb; --hu2: #9ec5f4; --hu3: #5598e7; --hu4: #256abf; --hu5: #184f95;
+  --hd1: #fbdcdc; --hd2: #f4a9a8; --hd3: #ec7473; --hd4: #d64545; --hd5: #a82c2c;
+  --hz: #eceae6;
+  --pos: #1f63b8; --negt: #c03535;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --hu1: #1d2f47; --hu2: #20426e; --hu3: #2a5d9c; --hu4: #3a7fd0; --hu5: #6aa6ec;
+    --hd1: #3f2224; --hd2: #63292a; --hd3: #8f3333; --hd4: #c04444; --hd5: #e87070;
+    --hz: #383835; --pos: #6aa6ec; --negt: #f08a8a;
+  }
+}
+:root[data-theme="dark"] {
+  --hu1: #1d2f47; --hu2: #20426e; --hu3: #2a5d9c; --hu4: #3a7fd0; --hu5: #6aa6ec;
+  --hd1: #3f2224; --hd2: #63292a; --hd3: #8f3333; --hd4: #c04444; --hd5: #e87070;
+  --hz: #383835; --pos: #6aa6ec; --negt: #f08a8a;
+}
+.ht-z  { background: var(--hz);  color: var(--ink); }
+.ht-u1 { background: var(--hu1); color: #0e1319; } .ht-u2 { background: var(--hu2); color: #0e1319; }
+.ht-u3 { background: var(--hu3); color: #fff; }    .ht-u4 { background: var(--hu4); color: #fff; } .ht-u5 { background: var(--hu5); color: #fff; }
+.ht-d1 { background: var(--hd1); color: #0e1319; } .ht-d2 { background: var(--hd2); color: #0e1319; }
+.ht-d3 { background: var(--hd3); color: #fff; }    .ht-d4 { background: var(--hd4); color: #fff; } .ht-d5 { background: var(--hd5); color: #fff; }
+:root[data-theme="dark"] .ht-u1, :root[data-theme="dark"] .ht-u2, :root[data-theme="dark"] .ht-d1, :root[data-theme="dark"] .ht-d2 { color: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .ht-u1, :root:where(:not([data-theme="light"])) .ht-u2,
+  :root:where(:not([data-theme="light"])) .ht-d1, :root:where(:not([data-theme="light"])) .ht-d2 { color: #fff; }
+}
+.heatwrap { position: relative; width: 100%; min-height: 300px; }
+.hg { position: absolute; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); }
+.hg-head { display: flex; justify-content: space-between; gap: 8px; padding: 2px 6px; font-size: 11.5px;
+  color: var(--ink-2); white-space: nowrap; overflow: hidden; height: 20px; line-height: 16px; }
+.hg-head b { font-family: var(--ff-mono); font-weight: 600; color: var(--ink); }
+.htw { position: absolute; padding: 1px; }
+.ht { width: 100%; height: 100%; border-radius: 2px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; overflow: hidden; cursor: default; padding: 2px; line-height: 1.2; }
+.ht:hover, .ht:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.ht b { font-size: 13px; font-weight: 700; letter-spacing: 0.02em; }
+.ht span { font-family: var(--ff-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ht em { font-style: normal; font-size: 10.5px; opacity: 0.85; margin-top: 2px; max-width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heat-ru-wrap { display: grid; gap: 6px; }
+.heat-ru-head { font-size: 11.5px; color: var(--muted); }
+.heat-ru { display: flex; gap: 6px; flex-wrap: wrap; }
+.htw-flat { width: 150px; height: 64px; }
+.benchrow { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 12.5px; color: var(--ink-2); }
+.bench-k { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; }
+.bench { display: inline-flex; gap: 6px; align-items: center; }
+.bench i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.bench b { font-family: var(--ff-mono); font-weight: 600; color: var(--ink); }
+.heatlegend { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; font-size: 11.5px; color: var(--muted); }
+.heatlegend i { width: 22px; height: 12px; display: inline-block; border-radius: 1px; }
+.heatlegend > span:first-child { margin-right: 4px; }
+.heatlegend > span:nth-of-type(2) { margin-left: 4px; margin-right: 12px; }
+.heatlegend .hl-scale { margin-left: 8px; }
+.tipspark { width: 100%; height: 36px; display: block; margin: 6px 0 0; }
+.tipspark polyline { fill: none; stroke: var(--s1); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.tipt { border-collapse: collapse; margin: 6px 0; font-size: 12px; }
+.tipt td { padding: 1px 6px 1px 0; }
+.tipt td:nth-child(even) { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; padding-right: 12px; color: var(--ink); }
+.tipt td:nth-child(odd) { color: var(--muted); }
+.pct { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+.pct.pos { color: var(--pos); } .pct.neg { color: var(--negt); }
+.mktvs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.mktvs .kv { border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; background: var(--surface-2); }
+.mktvs .kv .k { font-size: 11.5px; color: var(--muted); }
+.mktvs .kv .v { font-family: var(--ff-mono); font-size: 22px; font-weight: 600; }
+
+.heattip { max-width: 320px; width: 300px; }
+.heattip .k { display: block; }
+.heattip .k b { display: inline; font-size: inherit; margin: 0; color: var(--ink); }
+.heattip .tipt td { white-space: nowrap; }
+.hg-head span { overflow: hidden; text-overflow: ellipsis; }
+:root[data-theme="dark"] .ht-u4, :root[data-theme="dark"] .ht-u5, :root[data-theme="dark"] .ht-d4, :root[data-theme="dark"] .ht-d5 { color: #0b0d10; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .ht-u4, :root:where(:not([data-theme="light"])) .ht-u5,
+  :root:where(:not([data-theme="light"])) .ht-d4, :root:where(:not([data-theme="light"])) .ht-d5 { color: #0b0d10; }
+}
+@media (max-width: 480px) {
+  .topbar { gap: 8px; }
+  .brand { min-width: 0; }
+  .brand b { overflow: hidden; text-overflow: ellipsis; }
+  .asof { font-size: 10px; padding: 4px 6px; min-width: 0; overflow: hidden; }
+  .iconbtn { padding: 5px 8px; }
+}
+.mktvs .kv { display: block; grid-template-columns: none; }
+.mktvs .kv .k, .mktvs .kv .v { display: block; text-align: left; }

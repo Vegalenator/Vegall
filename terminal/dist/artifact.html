@@ -589,6 +589,98 @@ tr.rownote td b { color: var(--ink); }
 .loopcard b { display: inline; font-size: inherit; margin: 0; }
 .loopcard .lc-title { display: block; font-size: 15px; }
 
+/* ============================================================ РЫНОК
+   Дивергентная шкала: синий — рост, красный — падение, серый — около нуля.
+   Синий/красный, а не зелёный/красный: различимы при дальтонизме
+   и не спорят со статусными цветами панели. Знак % всегда подписан. */
+:root {
+  --hu1: #cde2fb; --hu2: #9ec5f4; --hu3: #5598e7; --hu4: #256abf; --hu5: #184f95;
+  --hd1: #fbdcdc; --hd2: #f4a9a8; --hd3: #ec7473; --hd4: #d64545; --hd5: #a82c2c;
+  --hz: #eceae6;
+  --pos: #1f63b8; --negt: #c03535;
+}
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) {
+    --hu1: #1d2f47; --hu2: #20426e; --hu3: #2a5d9c; --hu4: #3a7fd0; --hu5: #6aa6ec;
+    --hd1: #3f2224; --hd2: #63292a; --hd3: #8f3333; --hd4: #c04444; --hd5: #e87070;
+    --hz: #383835; --pos: #6aa6ec; --negt: #f08a8a;
+  }
+}
+:root[data-theme="dark"] {
+  --hu1: #1d2f47; --hu2: #20426e; --hu3: #2a5d9c; --hu4: #3a7fd0; --hu5: #6aa6ec;
+  --hd1: #3f2224; --hd2: #63292a; --hd3: #8f3333; --hd4: #c04444; --hd5: #e87070;
+  --hz: #383835; --pos: #6aa6ec; --negt: #f08a8a;
+}
+.ht-z  { background: var(--hz);  color: var(--ink); }
+.ht-u1 { background: var(--hu1); color: #0e1319; } .ht-u2 { background: var(--hu2); color: #0e1319; }
+.ht-u3 { background: var(--hu3); color: #fff; }    .ht-u4 { background: var(--hu4); color: #fff; } .ht-u5 { background: var(--hu5); color: #fff; }
+.ht-d1 { background: var(--hd1); color: #0e1319; } .ht-d2 { background: var(--hd2); color: #0e1319; }
+.ht-d3 { background: var(--hd3); color: #fff; }    .ht-d4 { background: var(--hd4); color: #fff; } .ht-d5 { background: var(--hd5); color: #fff; }
+:root[data-theme="dark"] .ht-u1, :root[data-theme="dark"] .ht-u2, :root[data-theme="dark"] .ht-d1, :root[data-theme="dark"] .ht-d2 { color: #fff; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .ht-u1, :root:where(:not([data-theme="light"])) .ht-u2,
+  :root:where(:not([data-theme="light"])) .ht-d1, :root:where(:not([data-theme="light"])) .ht-d2 { color: #fff; }
+}
+.heatwrap { position: relative; width: 100%; min-height: 300px; }
+.hg { position: absolute; border: 1px solid var(--rule); border-radius: 3px; background: var(--surface-2); }
+.hg-head { display: flex; justify-content: space-between; gap: 8px; padding: 2px 6px; font-size: 11.5px;
+  color: var(--ink-2); white-space: nowrap; overflow: hidden; height: 20px; line-height: 16px; }
+.hg-head b { font-family: var(--ff-mono); font-weight: 600; color: var(--ink); }
+.htw { position: absolute; padding: 1px; }
+.ht { width: 100%; height: 100%; border-radius: 2px; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; text-align: center; overflow: hidden; cursor: default; padding: 2px; line-height: 1.2; }
+.ht:hover, .ht:focus-visible { outline: 2px solid var(--ink); outline-offset: -2px; }
+.ht b { font-size: 13px; font-weight: 700; letter-spacing: 0.02em; }
+.ht span { font-family: var(--ff-mono); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ht em { font-style: normal; font-size: 10.5px; opacity: 0.85; margin-top: 2px; max-width: 100%;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.heat-ru-wrap { display: grid; gap: 6px; }
+.heat-ru-head { font-size: 11.5px; color: var(--muted); }
+.heat-ru { display: flex; gap: 6px; flex-wrap: wrap; }
+.htw-flat { width: 150px; height: 64px; }
+.benchrow { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 12.5px; color: var(--ink-2); }
+.bench-k { color: var(--muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.06em; }
+.bench { display: inline-flex; gap: 6px; align-items: center; }
+.bench i { width: 10px; height: 10px; border-radius: 2px; display: inline-block; }
+.bench b { font-family: var(--ff-mono); font-weight: 600; color: var(--ink); }
+.heatlegend { display: flex; flex-wrap: wrap; align-items: center; gap: 3px; font-size: 11.5px; color: var(--muted); }
+.heatlegend i { width: 22px; height: 12px; display: inline-block; border-radius: 1px; }
+.heatlegend > span:first-child { margin-right: 4px; }
+.heatlegend > span:nth-of-type(2) { margin-left: 4px; margin-right: 12px; }
+.heatlegend .hl-scale { margin-left: 8px; }
+.tipspark { width: 100%; height: 36px; display: block; margin: 6px 0 0; }
+.tipspark polyline { fill: none; stroke: var(--s1); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+.tipt { border-collapse: collapse; margin: 6px 0; font-size: 12px; }
+.tipt td { padding: 1px 6px 1px 0; }
+.tipt td:nth-child(even) { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; padding-right: 12px; color: var(--ink); }
+.tipt td:nth-child(odd) { color: var(--muted); }
+.pct { font-family: var(--ff-mono); font-variant-numeric: tabular-nums; font-weight: 600; }
+.pct.pos { color: var(--pos); } .pct.neg { color: var(--negt); }
+.mktvs { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.mktvs .kv { border: 1px solid var(--rule); border-radius: 4px; padding: 10px 12px; background: var(--surface-2); }
+.mktvs .kv .k { font-size: 11.5px; color: var(--muted); }
+.mktvs .kv .v { font-family: var(--ff-mono); font-size: 22px; font-weight: 600; }
+
+.heattip { max-width: 320px; width: 300px; }
+.heattip .k { display: block; }
+.heattip .k b { display: inline; font-size: inherit; margin: 0; color: var(--ink); }
+.heattip .tipt td { white-space: nowrap; }
+.hg-head span { overflow: hidden; text-overflow: ellipsis; }
+:root[data-theme="dark"] .ht-u4, :root[data-theme="dark"] .ht-u5, :root[data-theme="dark"] .ht-d4, :root[data-theme="dark"] .ht-d5 { color: #0b0d10; }
+@media (prefers-color-scheme: dark) {
+  :root:where(:not([data-theme="light"])) .ht-u4, :root:where(:not([data-theme="light"])) .ht-u5,
+  :root:where(:not([data-theme="light"])) .ht-d4, :root:where(:not([data-theme="light"])) .ht-d5 { color: #0b0d10; }
+}
+@media (max-width: 480px) {
+  .topbar { gap: 8px; }
+  .brand { min-width: 0; }
+  .brand b { overflow: hidden; text-overflow: ellipsis; }
+  .asof { font-size: 10px; padding: 4px 6px; min-width: 0; overflow: hidden; }
+  .iconbtn { padding: 5px 8px; }
+}
+.mktvs .kv { display: block; grid-template-columns: none; }
+.mktvs .kv .k, .mktvs .kv .v { display: block; text-align: left; }
+
 </style>
 <header class="topbar">
   <div class="brand">
@@ -607,11 +699,11 @@ tr.rownote td b { color: var(--ink); }
 
 <script>
 /* Метаданные терминала и реестр первичных источников.
-   Каждая цифра в терминале ссылается на код источника S1-S30. */
+   Каждая цифра в терминале ссылается на код источника S1-S32. */
 window.VG_META = {
   title: 'Терминал ИИ-цикла',
   asOf: '2026-09-06',              // дата среза исследования
-  builtAt: '2026-09-30',           // дата сборки терминала
+  builtAt: '2026-11-06',           // дата сборки терминала
   basis: 'Глубокое исследование «ИИ как инвестиционный и финансовый цикл», 6 сентября 2026',
   // Типы утверждений — бейдж рядом с каждой цифрой
   kinds: {
@@ -624,11 +716,11 @@ window.VG_META = {
     unverified: { label: 'не сверено', hint: 'Величина из внешней проверки, не сверенная с первоисточником в этой сборке' }
   },
   mode: {
-    current: 'ручное обновление; два подключения работают в режиме предложения',
+    current: 'ручное обновление; одно подключение (Nvidia) работает в режиме предложения, второе (ASML) получает отказ 403',
     note: 'Данные записаны в файлах и обновляются вручную. Первые подключения к первоисточникам сделаны, но они не пишут в данные: подключение забирает документ, проверяет определения и кладёт предложение, а перенос величины остаётся решением человека. Истории значений тоже нет, поэтому терминал отвечает на вопрос «как сейчас», но пока не на вопрос «что изменилось с прошлого раза».',
     planned: [
       'Слой A — котировки, капитализация, кредитные спрэды. Не подключён: доступных машиночитаемых каналов из среды сборки нет.',
-      'Слой B — капвложения, потоки, выручка сегментов. Подключены Nvidia и ASML, остальные эмитенты отвечают отказом на запрос.',
+      'Слой B — капвложения, потоки, выручка сегментов. Работает подключение Nvidia; подключение ASML есть, но asml.com отвечает 403. Сайты остальных эмитентов тоже отвечают отказом, но их релизы открываются на sec.gov — следующий кандидат на подключение.',
       'Слой C — IEA, BIS, Census, Банк России, iKS, связи графа. Останется ручным: эти организации не отдают данные машиночитаемо.'
     ]
   },
@@ -643,27 +735,29 @@ window.VG_META = {
     S7:  { org: 'NBER', title: 'Generative AI at Work', date: '2023', url: 'https://www.nber.org/papers/w31161' },
     S8:  { org: 'Organization Science / HBS', title: 'Неровная граница возможностей ИИ', date: '2026-03-11', url: 'https://doi.org/10.1287/orsc.2025.21838' },
     S9:  { org: 'IMF', title: 'Global Financial Stability Report, апрель 2026', date: '2026-04', url: 'https://www.imf.org/-/media/files/publications/gfsr/2026/april/english/ch1.pdf' },
-    S10: { org: 'Microsoft', title: 'FY2026 Q4', date: '2026-07-29', url: 'https://www.microsoft.com/en-us/investor/events/fy-2026/earnings-fy-2026-q4' },
-    S11: { org: 'Alphabet', title: 'Q2 2026', date: '2026-07', url: 'https://s206.q4cdn.com/479360582/files/doc_financials/2026/q2/2026q2-alphabet-earnings-release.pdf' },
+    S10: { org: 'Microsoft', title: 'FY2027 Q1 (и FY2026 Q4)', date: '2026-10-28', url: 'https://www.microsoft.com/en-us/investor/events/fy-2027/earnings-fy-2027-q1' },
+    S11: { org: 'Alphabet', title: 'Q3 2026 (и Q2 2026)', date: '2026-10-28', url: 'https://s206.q4cdn.com/479360582/files/doc_financials/2026/q3/2026q3-alphabet-earnings-release.pdf' },
     S12: { org: 'Nvidia', title: 'Q2 FY2027', date: '2026-08-26', url: 'https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027' },
-    S13: { org: 'Broadcom', title: 'Q3 FY2026', date: '2026-09-02', url: 'https://investors.broadcom.com/news-releases/news-release-details/broadcom-inc-announces-third-quarter-fiscal-year-2026-financial' },
-    S14: { org: 'Oracle', title: 'FY2026', date: '2026-06', url: 'https://investor.oracle.com/investor-news/news-details/2026/Oracle-Announces-Record-Q4-and-FY-2026-Results-Driven-by-Cloud-Infrastructure--Cloud-Applications/default.aspx' },
-    S15: { org: 'Amazon', title: 'Q2 2026', date: '2026-07', url: 'https://ir.aboutamazon.com/news-release/news-release-details/2026/Amazon-com-Announces-Second-Quarter-Results/' },
-    S16: { org: 'Meta', title: 'Q2 2026', date: '2026-07', url: 'https://investor.atmeta.com/investor-news/press-release-details/2026/Meta-Reports-Second-Quarter-2026-Results/default.aspx' },
+    S13: { org: 'Broadcom', title: 'Q3 FY2026', date: '2026-09-02', url: 'https://www.sec.gov/Archives/edgar/data/1730168/000173016826000076/avgo-08022026x8kxex99.htm' },
+    S14: { org: 'Oracle', title: 'Q1 FY2027 (и FY2026)', date: '2026-09-10', url: 'https://www.sec.gov/Archives/edgar/data/1341439/000119312526387905/orcl-ex99_1.htm' },
+    S15: { org: 'Amazon', title: 'Q2 2026', date: '2026-07', url: 'https://www.sec.gov/Archives/edgar/data/1018724/000101872426000024/amzn-20260630xex991.htm' },
+    S16: { org: 'Meta', title: 'Q3 2026 (и Q2 2026)', date: '2026-10-21', url: 'https://www.sec.gov/Archives/edgar/data/1326801/000162828026066700/meta-09302026xexhibit991.htm' },
     S17: { org: 'CoreWeave', title: 'Форма 10-Q', date: '2026-08-11', url: 'https://www.sec.gov/Archives/edgar/data/1769628/000176962826000366/crwv-20260630.htm' },
-    S18: { org: 'TSMC', title: 'Q2 2026 и 20-F 2025', date: '2026-07', url: 'https://investor.tsmc.com/english/quarterly-results/2026/q2', generic: true },
-    S19: { org: 'ASML', title: 'Q2 2026', date: '2026-07-15', url: 'https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results' },
+    S18: { org: 'TSMC', title: 'Q3 2026, пресс-релиз (форма 6-K)', date: '2026-10-15', url: 'https://www.sec.gov/Archives/edgar/data/1046179/000104617926000726/a3q26e_withguidancexfinal.htm' },
+    S19: { org: 'ASML', title: 'Q3 2026, пресс-релиз (форма 6-K)', date: '2026-10-14', url: 'https://www.sec.gov/Archives/edgar/data/937966/000162828026065813/pressreleasefinancialresul.htm' },
     S20: { org: 'Alibaba', title: 'Результаты и размещение акций, август 2026', date: '2026-08', url: 'https://www.alibabagroup.com/en-US/document-2027233133950140416' },
     S21: { org: 'Банк России', title: 'Применение ИИ на финансовом рынке', date: '2025-11-20', url: 'https://www.cbr.ru/Content/Document/File/185193/Consultation_Paper_20112025.pdf' },
     S22: { org: 'Аналитический центр при Правительстве РФ', title: 'Вклад ИИ в ВВП к 2030 году', date: '2025-11-20', url: 'https://ac.gov.ru/news/page/vklad-ii-v-vvp-strany-k-2030-godu-dolzen-prevysit-11-trln-rublej-28260' },
     S23: { org: 'Сбер', title: 'Результаты по МСФО за 2025 год', date: '2026-02', url: 'https://www.sberbank.com/investor-relations/groupresults/ifrs_february26_reporting_for_the_4th_quarter' },
-    S24: { org: 'Яндекс', title: 'Результаты за II квартал 2026 года', date: '2026-07-29', url: 'https://ir.yandex.ru/press-releases?id=29-07-2026&year=2026', generic: true },
+    S24: { org: 'Яндекс', title: 'Результаты за III квартал 2026 года', date: '2026-10-29', url: 'https://ir.yandex.ru/press-releases?year=2026&id=29-10-2026-01' },
     S25: { org: 'BIS США (Bureau of Industry and Security)', title: 'EAR §746.8 — ограничения для России и Беларуси', date: '2026', url: 'https://www.bis.gov/regulations/ear/746', generic: true },
-    S26: { org: 'Европейская комиссия', title: 'InvestAI и гигафабрики ИИ', date: '2026', url: 'https://digital-strategy.ec.europa.eu/en/policies/build-leadership-ai', generic: true },
+    S26: { org: 'Европейская комиссия', title: 'InvestAI (11.02.2025) и гигафабрики ИИ', date: '2025-02-11', url: 'https://digital-strategy.ec.europa.eu/en/news/eu-launches-investai-initiative-mobilise-eu200-billion-investment-artificial-intelligence' },
     S27: { org: 'Constellation', title: 'Договор с Microsoft, Crane Clean Energy Center', date: '2024-09-20', url: 'https://www.constellationenergy.com/news/2024/Constellation-to-Launch-Crane-Clean-Energy-Center-Restoring-Jobs-and-Carbon-Free-Power-to-The-Grid.html' },
     S28: { org: 'SK hynix', title: 'Корпоративные результаты и HBM4', date: '2026', url: 'https://news.skhynix.com', generic: true },
     S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/', generic: true },
-    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/', generic: true }
+    S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/', generic: true },
+    S31: { org: 'Anthropic', title: 'Подача формы S-1 для IPO', date: '2026-10-26', url: 'https://www.anthropic.com/news/s1-sec' },
+    S32: { org: 'Anthropic (SEC EDGAR)', title: 'Форма S-1/A, поправка № 1', date: '2026-11-02', url: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0002130357&type=S-1' }
   },
   limits: [
     'Все прогнозы — энергопотребление, производительность, вклад в ВВП — отделены от наблюдаемых фактов.',
@@ -826,62 +920,62 @@ window.VG_RISK_TYPES = {
    поэтому период выводится рядом с каждой строкой. */
 window.VG_COMPANIES = [
   {
-    id: 'msft', cite: ['msft-capex', 'msft-copilot', 'msft-azure100', 'msft-leases'], name: 'Microsoft', role: 'Облако и программы', country: 'США',
-    periodType: 'quarter', period: 'IV кв. 2026 ф.г.', src: 'S10', kind: 'fact',
-    capex: 41.0, ocf: 55.4, fcf: 19.6,
-    capexNote: 'Включая финансовую аренду; около 2/3 — процессоры и серверы',
-    proof: 'Azure свыше $100 млрд в год; более 30 млн платных мест Copilot; более 100 тыс. клиентов Foundry',
+    id: 'msft', cite: ['msft-capex', 'msft-copilot', 'msft-azure100', 'msft-leases', 'msft-q1-oi', 'msft-azure-q1'], name: 'Microsoft', role: 'Облако и программы', country: 'США',
+    periodType: 'quarter', period: 'I кв. 2027 ф.г.', src: 'S10', kind: 'fact',
+    capex: 45.2, ocf: 58.0, fcf: 18.6,
+    capexNote: 'Включая финансовую аренду $7,4 млрд, признанную по полной основной сумме; около 3/4 — короткоживущие активы (процессоры и графические ускорители). Денежные выплаты по имуществу и оборудованию — $39,4 млрд. Руководство ориентирует на капвложения свыше $50 млрд во II кв. и около $170 млрд за календарный год — заявление руководства, не факт',
+    proof: 'Azure +48%; портфель обязательств облака $677 млрд (+73%); число платных мест Copilot в этом квартале не обновлялось (последнее раскрытое — более 30 млн)',
     risk: 'Две трети капвложений — короткоживущие активы; зависимость от внешних моделей и спроса',
     breaks: 'Облачный рост замедляется, а капвложения и амортизация остаются высокими',
     limit: 'Финансовый год; капвложения включают аренду'
   },
   {
-    id: 'googl', cite: ['googl-capex', 'googl-ocf', 'googl-cloud', 'googl-cloud-oi'], name: 'Alphabet', role: 'Облако и модели', country: 'США',
-    periodType: 'quarter', period: 'II кв. 2026', src: 'S11', kind: 'fact',
-    capex: 44.9, ocf: 39.1, fcf: -5.9,
-    proof: 'Google Cloud $24,8 млрд выручки, операционная прибыль $8,8 млрд',
-    risk: 'Квартальный свободный поток отрицателен; переоценка долей в чужом капитале влияет на прибыль',
+    id: 'googl', cite: ['googl-capex', 'googl-ocf', 'googl-cloud', 'googl-cloud-oi', 'googl-equity-q3'], name: 'Alphabet', role: 'Облако и модели', country: 'США',
+    periodType: 'quarter', period: 'III кв. 2026', src: 'S11', kind: 'fact',
+    capex: 51.4, ocf: 42.3, fcf: -9.1,
+    capexNote: 'Свободный поток отрицателен второй квартал подряд (II кв. −$5,9 млрд), но за скользящие 12 месяцев остаётся положительным: +$19,7 млрд. Капвложения за 12 месяцев — $159,8 млрд',
+    proof: 'Google Cloud $30,7 млрд выручки (+103%), операционная прибыль $11,1 млрд',
+    risk: 'Квартальный свободный поток отрицателен; переоценка долей в чужом капитале меняет прибыль в обе стороны: +$98,0 млрд прочего дохода во II кв., −$8,2 млрд в III кв.',
     breaks: 'Рост облака замедляется при сохранении капвложений',
     limit: 'Квартальный свободный поток искажён сроками платежей; ИИ не отделён от облака'
   },
   {
-    id: 'amzn', cite: ['amzn-q2'], name: 'Amazon', role: 'Облако', country: 'США',
-    periodType: 'ttm', period: '12 мес. к II кв. 2026', src: 'S15', kind: 'fact',
-    capexDelta: 66.1, ocf: 161.4, fcf: -7.6,
-    capexNote: 'В исследовании приведён ПРИРОСТ покупок имущества и оборудования за год, а не уровень капвложений за период. Поэтому Amazon исключён из сравнения уровней и из расчёта самофинансирования',
-    crossCheck: { label: 'Уровень капвложений за 12 месяцев по внешней проверке', value: 'около $169 млрд', ratio: 'около 105% операционного потока',
-                  note: 'Величина не сверена с первоисточником в этой сборке: сайт отношений с инвесторами Amazon недоступен из среды сборки. До сверки в расчёты не берётся' },
-    proof: 'AWS $42,2 млрд за квартал, операционная прибыль $16,6 млрд',
-    gap: 'Уровень капвложений за период в исследовании не приведён',
-    risk: 'Свободный поток отрицателен на горизонте года при сильном операционном потоке',
+    id: 'amzn', cite: ['amzn-q2', 'amzn-capex', 'amzn-capex-ttm', 'amzn-ocf-ttm', 'amzn-nonop-q3', 'amzn-anthropic'], name: 'Amazon', role: 'Облако', country: 'США',
+    periodType: 'ttm', period: '12 мес. к III кв. 2026', src: 'S15', kind: 'fact',
+    capex: 215.2, ocf: 168.3, fcf: -46.9,
+    capexNote: 'Валовые покупки имущества и оборудования по отчёту о движении денежных средств из формы 10-Q (данные SEC); на квартал свежее предыдущей строки. Свободный поток — расчёт терминала по этим двум величинам; собственный показатель Amazon считается нетто, с поступлениями от продажи имущества и стимулами, и может отличаться. Квартал III 2026: капвложения $77,3 млрд при операционном потоке $42,4 млрд. Кварталом ранее (12 мес. к II кв. 2026) было $173,0 млрд против $161,4 млрд. По определению компании (нетто, с поступлениями от продажи имущества и стимулами) к II кв. капвложения $169,0 млрд, свободный поток −$7,6 млрд; прирост $66,1 млрд из исследования относится к нетто-показателю',
+    proof: 'AWS $42,2 млрд за II кв., операционная прибыль AWS $16,6 млрд (сегментные данные III кв. не обновлены: релиз недоступен); операционная прибыль группы в III кв. $28,1 млрд, неоперационная строка −$1,2 млрд (во II кв. +$53,4 млрд, «primarily from our investments in Anthropic»)',
+    risk: 'Капвложения за 12 месяцев на 28% выше операционного потока и ускоряются: в III квартале они в 1,8 раза выше потока',
     breaks: 'Снижение маржи AWS при продолжении стройки',
     limit: 'Вложения включают сеть исполнения заказов и иные активы, не только ИИ'
   },
   {
-    id: 'meta', cite: ['meta-q2'], name: 'Meta', role: 'Модели и реклама', country: 'США',
-    periodType: 'quarter', period: 'II кв. 2026', src: 'S16', kind: 'fact',
-    capex: 31.1, ocf: 31.9, fcf: 0.8,
-    guide: 'Прогноз капвложений 2026: $130-145 млрд',
-    proof: 'Реклама: показы +14%, цена +12%; ИИ встроен в продукт, отдельной выручки нет',
+    id: 'meta', cite: ['meta-q3', 'meta-q2'], name: 'Meta', role: 'Модели и реклама', country: 'США',
+    periodType: 'quarter', period: 'III кв. 2026', src: 'S16', kind: 'fact',
+    capex: 34.9, ocf: 32.8, fcf: -2.1,
+    capexNote: 'Включая основную часть финансовой аренды, как в определении компании. Во II кв.: капвложения 31,1, операционный поток 31,9, свободный поток +0,8',
+    guide: 'Прогноз капвложений 2026: $135-145 млрд (сужен с $130-145 млрд)',
+    proof: 'Реклама: показы +10%, цена +14%; ИИ встроен в продукт, отдельной выручки нет. Операционная прибыль $13,0 млрд включает разовые $9,9 млрд по соглашению с генпрокурорами штатов',
     risk: 'Нет отдельной ИИ-выручки — отдача не отделяется от рекламного аукциона',
     breaks: 'Рост расходов при стабильной цене рекламы',
     limit: 'Эффект ИИ смешан с рекламным аукционом и продуктом'
   },
   {
-    id: 'orcl', cite: ['orcl-fy26'], name: 'Oracle', role: 'Облако', country: 'США',
-    periodType: 'year', period: '2026 ф.г.', src: 'S14', kind: 'fact',
-    capex: 55.6, ocf: 32.0, fcf: -23.7, rpo: 638,
-    proof: 'IaaS $18,1 млрд, +77%; портфель обязательств $638 млрд',
+    id: 'orcl', cite: ['orcl-q1fy27', 'orcl-fy26'], name: 'Oracle', role: 'Облако', country: 'США',
+    periodType: 'ttm', period: '12 мес. к I кв. 2027 ф.г.', src: 'S14', kind: 'calc',
+    capex: 75.7, ocf: 46.9, fcf: -28.7, rpo: 664,
+    capexNote: 'Расчёт терминала: 2026 ф.г. минус I кв. 2026 ф.г. плюс I кв. 2027 ф.г. По раскрытию отдельно: I кв. 2027 ф.г. — капвложения $28,5 млрд при операционном потоке $23,1 млрд (свободный поток −$5,4 млрд); 2026 ф.г. целиком — $55,7 млрд, $32,0 млрд, −$23,7 млрд. В I кв. компания продала акций на $20 млрд через программу ATM',
+    proof: 'IaaS в I кв. 2027 ф.г. $7,4 млрд, +121% (за 2026 ф.г. $18,1 млрд, +77%); портфель обязательств $664 млрд, за квартал добавлено более $30 млрд договоров',
     risk: 'Капвложения намного выше операционного потока; портфель сильно концентрирован',
     breaks: 'Клиент из портфеля обязательств сокращает или переносит заказ',
-    limit: 'Годовой период; портфель обязательств сильно концентрирован'
+    limit: '12 месяцев; портфель обязательств сильно концентрирован'
   },
   {
     id: 'crwv', cite: ['crwv-10q'], name: 'CoreWeave', role: 'Специализированное облако', country: 'США',
     periodType: 'half', period: 'I полугодие / II кв. 2026', src: 'S17', kind: 'fact',
-    capex: 14.1, ocf: 3.6, ocfKind: 'estimate', fcf: -10.5, fcfKind: 'estimate',
+    capex: 14.1, ocf: 3.7, fcf: -10.5, fcfKind: 'calc',
     revenue: 2.6, rpo: 103.7, top3: 72,
-    capexNote: 'Денежные капвложения за полугодие; операционный поток выведен из соотношения «почти в четыре раза» и помечен как оценка',
+    capexNote: 'Денежные капвложения за полугодие ($14,117 млрд) и операционный поток ($3,663 млрд) — по форме 10-Q; свободный поток рассчитан терминалом как разность',
     proof: 'Выручка $2,6 млрд за квартал; портфель обязательств $103,7 млрд',
     risk: '72% квартальной выручки от трёх клиентов; все установленные процессоры — Nvidia; постоянная потребность в рефинансировании',
     breaks: 'Перенос ввода, отказ клиента, подорожание рефинансирования',
@@ -906,19 +1000,20 @@ window.VG_COMPANIES = [
     limit: 'Фаблесс-модель: капитал несут фабрики и клиенты'
   },
   {
-    id: 'tsmc', cite: ['tsmc-q2'], name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
-    period: 'II кв. 2026', src: 'S18', kind: 'fact',
-    revenue: 40.2, grossMargin: 67.7, capexPlan: '52-56 (план 2026)',
-    proof: '$40,2 млрд выручки, валовая маржа 67,7%; ИИ-ускорители дали высокую долю выручки 2025',
+    id: 'tsmc', cite: ['tsmc-q3', 'tsmc-capex'], name: 'TSMC', role: 'Фабрика и упаковка', country: 'Тайвань',
+    period: 'III кв. 2026', src: 'S18', kind: 'fact',
+    revenue: 46.7, grossMargin: 66.4, capexPlan: '52-56 (план 2026, не сверен)',
+    guide: 'Прогноз IV кв.: выручка $52,3-54,3 млрд, валовая маржа 65-67%',
+    proof: '$46,7 млрд выручки (+41% за год), валовая маржа 66,4%; ИИ-ускорители дали высокую долю выручки 2025',
     risk: 'Геополитика Тайваня, выход годных зарубежных фабрик, упаковка',
     breaks: 'Снижение загрузки передовых узлов и перенос капвложений',
     limit: 'Субсидии по регионам меняют экономику отдельных фабрик'
   },
   {
-    id: 'asml', cite: ['asml-q2', 'asml-margin', 'asml-guide'], name: 'ASML', role: 'Литография', country: 'Нидерланды',
-    period: 'II кв. 2026', src: 'S19', kind: 'fact',
-    revenueEur: 9.3, grossMargin: 54, guide: 'Прогноз 2026 повышен до €43-45 млрд',
-    proof: '€9,3 млрд выручки при марже 54%',
+    id: 'asml', cite: ['asml-q3', 'asml-margin', 'asml-guide'], name: 'ASML', role: 'Литография', country: 'Нидерланды',
+    period: 'III кв. 2026', src: 'S19', kind: 'fact',
+    revenueEur: 11.7, grossMargin: 57.5, guide: 'Прогноз 2026: €44-45 млрд (был €43-45 млрд); IV кв.: €14,2-15,2 млрд',
+    proof: '€11,7 млрд выручки при марже 57,5% (во II кв. €9,3 млрд и 54,0%)',
     risk: 'Экспортные ограничения и зависимость от планов нескольких фабрик',
     breaks: 'Заказы фабрик падают после расширения мощности',
     limit: 'Показатели в евро; прямое сравнение с долларовыми строками некорректно'
@@ -942,10 +1037,10 @@ window.VG_COMPANIES = [
     limit: 'Государственная промышленная политика меняет стоимость капитала'
   },
   {
-    id: 'yndx', cite: ['yndx-b2b'], name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
-    period: 'II кв. 2026', src: 'S24', kind: 'fact', currency: 'RUB',
-    rubRevenue: 15.3, rubEbitda: 3.7, tokens: 398,
-    proof: 'B2B Tech 15,3 млрд руб. выручки, EBITDA 3,7 млрд руб.; 398 млрд коммерческих токенов, потребление удвоилось к предыдущему кварталу',
+    id: 'yndx', cite: ['yndx-b2b', 'yndx-tokens'], name: 'Яндекс', role: 'Поиск и облако', country: 'Россия',
+    period: 'III кв. 2026', src: 'S24', kind: 'fact', currency: 'RUB',
+    rubRevenue: 16.4, rubEbitda: 5.2, tokens: 946,
+    proof: 'B2B Tech 16,4 млрд руб. выручки, EBITDA 5,2 млрд руб.; 946 млрд коммерческих токенов через API, в 2,4 раза больше предыдущего квартала; крупные клиенты Yandex Cloud дают более 53% выручки направления',
     risk: 'ИИ смешан с рекламой и облаком; импортная вычислительная база',
     breaks: 'Рост токенов не превращается во внешнюю выручку и маржу',
     limit: 'Капвложения 10-12% выручки; отдельной ИИ-строки нет'
@@ -1023,7 +1118,7 @@ window.VG_NODES = [
   { id: 'yndx', name: 'Яндекс', layer: 'cloud', country: 'Россия', note: 'B2B Tech 15,3 млрд руб. за квартал' },
   { id: 'sber', name: 'Сбер', layer: 'cloud', country: 'Россия', note: 'Заявленный эффект ИИ свыше 450 млрд руб.' },
   { id: 'openai', name: 'OpenAI', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты' },
-  { id: 'anthropic', name: 'Anthropic', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты' },
+  { id: 'anthropic', name: 'Anthropic', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты. 26.10.2026 подал форму S-1 на IPO (Nasdaq, тикер ANT), 02.11 — поправку S-1/A; финансовые данные проспекта ещё не сверены' },
   { id: 'constellation', name: 'Constellation', layer: 'energy', country: 'США', note: 'Перезапуск Crane Clean Energy Center, 835 МВт' },
   { id: 'grid', name: 'Сеть', full: 'Сеть и генерация', layer: 'energy', country: 'Мир', note: 'Очередь на подключение — реальный ограничитель ввода' },
   { id: 'bonds', name: 'Облигации', full: 'Облигационный рынок', layer: 'capital', country: 'Мир', note: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025' },
@@ -1031,7 +1126,7 @@ window.VG_NODES = [
   { id: 'vc', name: 'Венчур', full: 'Венчурный капитал', layer: 'capital', country: 'Мир', note: 'Финансирует разработчиков моделей и приложений' },
   { id: 'equity', name: 'Рынок акций', layer: 'capital', country: 'Мир', note: 'Размещения акций финансируют вычисления' },
   { id: 'states', name: 'Государства', full: 'Государства: субсидии и промполитика', layer: 'capital', country: 'США, ЕС, КНР, Япония, Корея', note: 'Снижают стоимость капитала, создают риск дублирования' },
-  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'До семи гигафабрик ИИ и более €30 млрд инвестиций — подтверждено. Сумма €200 млрд инициативы InvestAI по указанной ссылке не найдена, нужна отдельная ссылка' },
+  { id: 'eu', name: 'ЕС InvestAI', full: 'Европейская комиссия: InvestAI', layer: 'capital', country: 'ЕС', note: 'До семи гигафабрик ИИ и более €30 млрд инвестиций — подтверждено. Сумма €200 млрд — заявленная цель мобилизации (пресс-релиз Еврокомиссии от 11.02.2025), а не профинансированная сумма' },
   { id: 'sovereign', name: 'Суверенные фонды', layer: 'capital', country: 'Ближний Восток', note: 'Дешёвая энергия и капитал' },
   { id: 'crwv3', name: 'Клиенты CoreWeave', full: 'Три крупнейших клиента CoreWeave', layer: 'demand', country: 'США', note: '72% квартальной выручки; в отчётности не раскрыты поимённо' },
   { id: 'enterprises', name: 'Конечные клиенты', layer: 'demand', country: 'Мир', note: 'Единственный источник внешнего денежного потока всей цепочки' }
@@ -1138,7 +1233,7 @@ window.VG_LOOP_RISKS = {
     'crwv + nvda': {
       title: 'Nvidia ↔ CoreWeave',
       kind: 'Поставщик финансирует своего покупателя',
-      mechanism: 'Nvidia вложила $2 млрд в капитал CoreWeave, а CoreWeave закупает только ускорители Nvidia. Часть денег, пришедших в CoreWeave как инвестиция, возвращается в Nvidia как выручка. Исследование называет это примером одновременно стратегической поддержки и круговой связи.',
+      mechanism: 'Nvidia вложила $2 млрд в капитал CoreWeave, а все ускорители в инфраструктуре CoreWeave сегодня — Nvidia. Часть денег, пришедших в CoreWeave как инвестиция, возвращается в Nvidia как выручка. Исследование называет это примером одновременно стратегической поддержки и круговой связи.',
       headline: 'Продажи Nvidia в CoreWeave частично оплачены деньгами самой Nvidia',
       risks: [
         { h: 'Спрос, оплаченный самим продавцом', t: 'Выручка Nvidia от CoreWeave реальна по бухгалтерии, но частично профинансирована её же вложением. Такие продажи не доказывают внешнего спроса на вычисления.' },
@@ -1147,8 +1242,9 @@ window.VG_LOOP_RISKS = {
         { h: 'Залог стареет быстрее долга', t: 'Долг специализированных облаков обеспечен ускорителями и договорами. Ускорители морально стареют быстрее, чем гасится кредит: при коррекции залоговый дисконт усиливает шок.' }
       ],
       watch: 'Рост запасов и дебиторской задолженности Nvidia при снижении загрузки облаков; расширение кредитных спрэдов специализированных облаков.',
+      evidence: 'Форма 10-Q CoreWeave за II кв. 2026: «all of the GPUs used in our infrastructure today are NVIDIA GPUs»; в январе 2026 года размещено около 23 млн акций Nvidia по $87,20 с валовыми поступлениями $2,0 млрд; три крупнейших клиента дали 36%, 26% и 10% выручки квартала; операционный поток за полугодие $3,7 млрд при денежных капвложениях $14,1 млрд. Сколько из этих $2,0 млрд вернулось в Nvidia как оплата ускорителей, форма не раскрывает.',
       cite: ['crwv-10q'],
-      basis: 'Обе связи описаны в исследовании (стр. 6, 10, 14, 19). Первоисточник — форма 10-Q CoreWeave — из среды сборки недоступен, цифры контура взяты из исследования.'
+      basis: 'Обе связи описаны в исследовании (стр. 6, 10, 14, 19). Цифры контура сверены по форме 10-Q CoreWeave, полученной через sec.gov.'
     },
 
     'msft + openai': {
@@ -1156,7 +1252,7 @@ window.VG_LOOP_RISKS = {
       kind: 'Облако финансирует своего клиента',
       mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик по многолетнему договору покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
       headline: 'Microsoft сам выделяет влияние вложений в OpenAI на свою прибыль',
-      evidence: 'Отчёт Microsoft за IV кв. 2026 ф.г.: «When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic». Компания отдельно корректирует прочие доходы на эффект вложений в OpenAI, а прибыль от переоценки вложения в Anthropic называет прямо.',
+      evidence: 'Отчёт Microsoft за IV кв. 2026 ф.г.: «When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic». Компания отдельно корректирует прочие доходы на эффект вложений в OpenAI, а прибыль от переоценки вложения в Anthropic называет прямо. В отчёте за I кв. 2027 ф.г. (28.10.2026) картина спокойнее: итоговая строка прочих доходов +$38 млн, с поправкой на OpenAI −$234 млн, то есть эффект вложений в OpenAI около +$0,27 млрд до налога (расчёт терминала) на фоне операционной прибыли $45,9 млрд; влияние OpenAI на чистую прибыль +$207 млн из $36,6 млрд. Прибыль от переоценки вложения в Anthropic в материалах этого квартала не названа.',
       risks: [
         { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, выглядит как спрос, но не приносит денег извне цепочки. Поэтому исследование требует отдельно смотреть на внешнюю облачную выручку и внешнее потребление токенов.' },
         { h: 'Прибыль от переоценки вместо операций', t: 'Рост оценки разработчика попадает в прочие доходы инвестора. Сам факт, что Microsoft выделяет эффект вложений в OpenAI отдельной поправкой, показывает: в отчётности он заметен.' },
@@ -1164,41 +1260,42 @@ window.VG_LOOP_RISKS = {
         { h: 'Договор без внешней монетизации', t: 'Многолетний договор подтверждает намерение платить, но не общеэкономический спрос. Если разработчик не найдёт платящих клиентов, обязательство перед облаком придётся финансировать новым капиталом — в том числе от самого облака.' }
       ],
       watch: 'Рост облачной выручки при стагнации внешнего потребления токенов; доля прочих доходов и переоценки в прибыли инвестора.',
-      cite: ['msft-equity-gain'],
-      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Microsoft и OpenAI — корпоративное раскрытие вне исследования. Влияние вложений на прочие доходы сверено по отчёту Microsoft.'
+      cite: ['msft-equity-gain', 'msft-q1-oi', 'imf-gfsr'],
+      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Microsoft и OpenAI — корпоративное раскрытие вне исследования. Влияние вложений на прочие доходы сверено по отчётам Microsoft за IV кв. 2026 ф.г. и I кв. 2027 ф.г.; сигнал «переоценка вместо операционной прибыли» в последнем квартале у Microsoft не наблюдается. Рамку контура подтверждает МВФ (GFSR, апрель 2026): он относит Microsoft и Nvidia к «кругу» круговых связей и называет OpenAI среди нелистингованных участников.'
     },
 
     'anthropic + googl': {
       title: 'Alphabet ↔ Anthropic',
       kind: 'Облако финансирует своего клиента',
       mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
-      headline: 'У Alphabet переоценка долей во II кв. 2026 более чем вдвое превысила операционную прибыль',
-      evidence: 'Отчёт Alphabet за II кв. 2026: прочий доход $98,0 млрд, «primarily the result of net unrealized gains on our equity securities», при операционной прибыли $40,8 млрд. Вложения в непубличные компании на балансе за год выросли с $68,7 до $131,5 млрд. Какие именно доли переоценены, релиз не раскрывает — долю Anthropic в этой сумме по отчёту установить нельзя.',
+      headline: 'У Alphabet прочий доход от переоценки во II кв. 2026 более чем вдвое превысил операционную прибыль; в III кв. он стал убытком, но за девять месяцев превышает её',
+      evidence: 'II кв. 2026: прочий доход $98,0 млрд, «primarily the result of net unrealized gains on our equity securities», при операционной прибыли $40,8 млрд. III кв. 2026 (отчёт от 28.10): прочий доход (расход) −$8,2 млрд, из них убыток по долевым ценным бумагам −$8,7 млрд, при операционной прибыли $40,6 млрд. За девять месяцев прочий доход $127,5 млрд против операционной прибыли $121,0 млрд; неденежная прибыль по долговым и долевым ценным бумагам в отчёте о движении денежных средств — $126,8 млрд. Вложения в непубличные компании на балансе: $68,7 млрд на конец 2025 → $131,5 млрд на конец II кв. → $135,2 млрд на 30.09.2026. Строка «equity securities» включает публичные и непубличные бумаги, реализованные и нереализованные результаты. Какие именно доли дали результат, релиз не раскрывает — долю Anthropic по отчёту установить нельзя.',
       risks: [
         { h: 'Прибыль от переоценки больше операционной', t: 'Прочий доход Alphabet, в основном переоценка долей, более чем вдвое превысил операционную прибыль. Исследование называет именно это сигналом тревоги для круговых связей: переоценка долей заменяет операционную прибыль.' },
         { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, не приносит денег извне цепочки и не доказывает спроса конечного клиента.' },
         { h: 'Один разработчик — два контура', t: 'Anthropic связан контурами одновременно с Alphabet и Amazon. Если ожидаемая выручка одного разработчика закладывается в планы двух облаков и в оценку двух инвесторов, это и есть многократный учёт одного ожидания, о котором предупреждает исследование.' },
         { h: 'Разворот бьёт дважды', t: 'При замедлении монетизации переоценка идёт в обратную сторону: снижение оценки разработчика бьёт по прочим доходам инвестора одновременно с сокращением облачных заказов.' }
       ],
-      watch: 'Доля нереализованной переоценки в прибыли; рост непубличных вложений на балансе быстрее облачной выручки.',
-      cite: ['googl-equity-gain'],
-      basis: 'Механизм описан в исследовании (тезис 8; стр. 14 — со ссылкой на отчёт Alphabet). Связь Alphabet и Anthropic — корпоративное раскрытие вне исследования. Масштаб переоценки сверен по отчёту Alphabet.'
+      watch: 'Проспект IPO Anthropic (S-1 от 26.10.2026, S-1/A от 02.11): выручка, обязательства по вычислениям перед Google и доли инвесторов. Доля нереализованной переоценки в прибыли; рост непубличных вложений на балансе быстрее облачной выручки. В III кв. они выросли ещё на $3,8 млрд при покупках непубличных бумаг на $2,1 млрд; облачная выручка при этом растёт на 103%.',
+      cite: ['googl-equity-gain', 'googl-equity-q3', 'anth-s1', 'anth-fin'],
+      basis: 'Механизм описан в исследовании (тезис 8; стр. 14 — со ссылкой на отчёт Alphabet). Связь Alphabet и Anthropic — корпоративное раскрытие вне исследования. Масштаб переоценки сверен по отчётам Alphabet за II и III кв. 2026. Сигнал исследования сработал во II кв. и накопленно сохраняется за девять месяцев; в III кв. он не воспроизвёлся.'
     },
 
     'amzn + anthropic': {
       title: 'Amazon ↔ Anthropic',
       kind: 'Облако финансирует своего клиента',
       mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
-      headline: 'Тот же механизм, что у Alphabet, но проверить его по отчёту Amazon пока нельзя',
+      headline: 'У Amazon внеоперационный доход от вложений в Anthropic во II кв. 2026 почти вдвое превысил операционную прибыль; в III кв. неоперационная строка ушла в минус',
+      evidence: 'Отчёт Amazon за II кв. 2026: чистая прибыль включает «non-operating pre-tax other income of $53.4 billion, primarily from our investments in Anthropic». Операционная прибыль квартала — $27,5 млрд, прибыль до налогов — $80,9 млрд, то есть внеоперационный доход составил около двух третей. В сверке чистой прибыли с операционным потоком статья «Non-operating expense (income), net» вычтена на $53,4 млрд. Релиз не раскрывает, какая часть суммы — переоценка, и не называет размер доли Amazon в Anthropic. III кв. 2026 (форма 10-Q, данные SEC): неоперационный доход (расход) −$1,2 млрд при операционной прибыли $28,1 млрд; за девять месяцев $68,2 млрд против $79,4 млрд. Состав строки за III кв. структурированные факты не раскрывают, поэтому прямо приписать её вложению в Anthropic нельзя; разворот может быть и в обратную сторону, и без Anthropic.',
       risks: [
         { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, не приносит денег извне цепочки и не доказывает спроса конечного клиента.' },
         { h: 'Один разработчик — два контура', t: 'Anthropic связан контурами одновременно с Amazon и Alphabet. Если ожидаемая выручка одного разработчика закладывается в планы двух облаков и в оценку двух инвесторов, это многократный учёт одного ожидания.' },
         { h: 'Зависимость в обе стороны', t: 'Облако строит мощности под крупного клиента, разработчик зависит от облака и его капитала. При разрыве страдают обе стороны.' },
-        { h: 'Непроверяемость — тоже риск', t: 'Раскрытия Amazon из среды сборки недоступны: влияние вложения в разработчика на прибыль Amazon в терминале не сверено. Это открытый вопрос, а не отсутствие риска.' }
+        { h: 'Прибыль, которой нет в потоке', t: 'Чистая прибыль $62,6 млрд при операционной $27,5 млрд не означает денег: внеоперационный доход исключён из операционного потока. К II кв. за 12 месяцев операционный поток $161,4 млрд, капвложения (нетто) $169,0 млрд, свободный поток −$7,6 млрд; к III кв. валовые капвложения $215,2 млрд при потоке $168,3 млрд, в самом III кв. $77,3 млрд против $42,4 млрд.' }
       ],
-      watch: 'Доля переоценки долей в прибыли Amazon; рост AWS при стагнации внешнего потребления.',
-      cite: ['amzn-q2'],
-      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Amazon и Anthropic — корпоративное раскрытие вне исследования. Отчёт Amazon не сверен: источник недоступен.'
+      watch: 'Проспект IPO Anthropic (S-1 от 26.10.2026, S-1/A от 02.11): обязательства по вычислениям перед AWS, доля Amazon, цена размещения — она задаст переоценку доли. Доля внеоперационного дохода от вложений в Anthropic в прибыли до налогов (во II кв. 2026 — около 66%); рост AWS при стагнации внешнего потребления; состав неоперационной строки в пресс-релизе Amazon за III квартал.',
+      cite: ['amzn-q2', 'amzn-anthropic', 'amzn-nonop-q3', 'amzn-capex-ttm', 'anth-s1', 'anth-fin'],
+      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Amazon и Anthropic — корпоративное раскрытие вне исследования. Размер внеоперационного дохода и названный в релизе источник сверены по отчёту Amazon от 30.07.2026 (форма 8-K). Размер неоперационной строки за III кв. сверен по форме 10-Q (данные SEC); состав строки за III кв. не сверен.'
     }
   }
 };
@@ -1223,27 +1320,27 @@ window.VG_GROUPS = [
 
 window.VG_INDICATORS = [
   // Капитал
-  { id: 'cap-capex-total', cite: ['bis-trillion', 'meta-q2'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Совокупные капвложения Microsoft, Alphabet, Amazon, Meta, Oracle', why: 'Темп инвестиционного цикла', stress: 'Снижение прогноза двумя и более компаниями', state: 'ok', obs: 'Прогнозов снижения нет; Meta ориентирует на $130-145 млрд в 2026', src: 'S16' },
-  { id: 'cap-selffund', cite: ['googl-capex', 'googl-ocf', 'msft-capex', 'orcl-fy26', 'meta-q2'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 174%, Alphabet 115%, Meta 97%, Microsoft 74%. Расчёт терминала по раскрытиям; Amazon исключён, в исследовании приведён прирост, а не уровень капвложений', kind: 'calc', srcs: ['S10', 'S11', 'S14', 'S15', 'S16'] },
-  { id: 'cap-fcf', cite: ['googl-capex', 'googl-ocf', 'amzn-q2', 'orcl-fy26'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet, Amazon и Oracle в раскрытых периодах. Периоды разной длины, поэтому величины между собой не сопоставимы', srcs: ['S11', 'S14', 'S15'] },
+  { id: 'cap-capex-total', cite: ['bis-trillion', 'meta-q3', 'googl-capex', 'msft-capex', 'amzn-capex-ttm', 'orcl-q1fy27'], checked: '2026-11-01', cadence: 95, g: 'capital', name: 'Совокупные капвложения Microsoft, Alphabet, Amazon, Meta, Oracle', why: 'Темп инвестиционного цикла', stress: 'Снижение прогноза двумя и более компаниями', state: 'ok', obs: 'Прогнозов снижения нет: Meta в III кв. сузила диапазон 2026 до $135-145 млрд (было $130-145 млрд), подняв нижнюю границу. Microsoft ориентирует на свыше $50 млрд во II кв. и около $170 млрд за календарный год (заявление руководства); часть поставок мощностей от третьих сторон в I кв. перенесена. Квартальные капвложения: Amazon $77,3 млрд (валовые, данные SEC), Alphabet $51,4 млрд, Microsoft $45,2 млрд с арендой, Meta $34,9 млрд, Oracle $28,5 млрд (I кв. 2027 ф.г.)', src: 'S16' },
+  { id: 'cap-selffund', cite: ['googl-capex', 'googl-ocf', 'msft-capex', 'orcl-q1fy27', 'meta-q3', 'amzn-capex', 'amzn-capex-ttm', 'amzn-ocf-ttm'], checked: '2026-11-01', cadence: 95, g: 'capital', name: 'Капвложения / операционный денежный поток', why: 'Самофинансирование', stress: '>100% два квартала без ускорения выручки', state: 'watch', obs: 'Oracle 161% за 12 месяцев (в I кв. 2027 ф.г. 123%, в IV кв. 2026 ф.г. 113%), Alphabet 121% в III кв. (115% во II), Amazon 128% за 12 месяцев к III кв. по валовым покупкам имущества (к II кв. 105% нетто; в самом III кв. 182%), Meta 106% в III кв. (во II кв. 97%), Microsoft 78% (капвложения с арендой). Выше 100% два квартала подряд у Oracle и Alphabet, но условие порога «без ускорения выручки» не выполнено: IaaS Oracle ускорился с +77% за год до +121%, Google Cloud с +82% до +103%. У Amazon ускорение выручки не проверялось. В I кв. Oracle продала акций на $20 млрд через программу ATM. Расчёт терминала по раскрытиям; периоды разной длины', kind: 'calc', srcs: ['S10', 'S11', 'S14', 'S15', 'S16'] },
+  { id: 'cap-fcf', cite: ['googl-capex', 'googl-ocf', 'amzn-q2', 'amzn-capex-ttm', 'amzn-ocf-ttm', 'orcl-q1fy27', 'meta-q3', 'msft-capex'], checked: '2026-11-01', cadence: 95, g: 'capital', name: 'Свободный денежный поток после капвложений', why: 'Финансовая устойчивость', stress: 'Устойчиво отрицательный у диверсифицированных лидеров', state: 'watch', obs: 'Отрицателен у Alphabet (III кв. −$9,1 млрд, второй квартал подряд; за 12 месяцев +$19,7 млрд), Amazon (к II кв. −$7,6 млрд по определению компании; к III кв. −$46,9 млрд по расчёту терминала на валовых капвложениях, в самом III кв. −$34,8 млрд) и Oracle (12 месяцев к I кв. 2027 ф.г. −$28,7 млрд, квартал −$5,4 млрд). У Meta в III кв. −$2,1 млрд (во II кв. +$0,8 млрд), пока один квартал. У Microsoft +$18,6 млрд. Периоды разной длины, поэтому величины между собой не сопоставимы. Порог «устойчиво отрицательный» не пройден: у Alphabet за 12 месяцев плюс, Microsoft положителен, но углубление у Amazon заметно', srcs: ['S11', 'S14', 'S15', 'S16'] },
   { id: 'cap-bonds', cite: ['bis-bonds'], checked: '2026-09-06', cadence: 180, g: 'capital', name: 'Валовой выпуск облигаций и средняя срочность', why: 'Переход от потока к долгу', stress: 'Рост выпуска вместе с расширением спрэда', state: 'watch', obs: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025', src: 'S2' },
   { id: 'cap-privcredit', cite: ['bis-privcredit'], checked: '2026-09-06', cadence: 180, g: 'capital', name: 'Объём частного кредита и проектного финансирования ЦОД', why: 'Скрытый канал риска', stress: 'Рост быстрее выручки и мощности в эксплуатации', state: 'nodata', obs: 'Единого публичного ряда нет; BIS фиксирует рост качественно', src: 'S2' },
-  { id: 'cap-leases', cite: ['msft-leases', 'orcl-fy26'], checked: '2026-09-06', cadence: 95, g: 'capital', name: 'Финансовая аренда и долгие гарантии закупки', why: 'Теневой долг', stress: 'Обязательства растут быстрее введённой мощности', state: 'watch', obs: 'Капвложения Microsoft включают аренду; RPO Oracle $638 млрд', src: 'S14' },
+  { id: 'cap-leases', cite: ['msft-leases', 'orcl-q1fy27', 'meta-obligations'], checked: '2026-11-01', cadence: 95, g: 'capital', name: 'Финансовая аренда и долгие гарантии закупки', why: 'Теневой долг', stress: 'Обязательства растут быстрее введённой мощности', state: 'watch', obs: 'Капвложения Microsoft включают финансовую аренду: $7,4 млрд из $45,2 млрд в I кв. 2027 ф.г. (подтверждено). RPO Oracle $664 млрд на 31.08.2026 ($638 млрд на 31.05), за квартал добавлено более $30 млрд договоров. У Meta безусловные обязательства по закупкам, не отражённые на балансе, выросли с $103,8 до $355,7 млрд за три квартала 2026 (данные XBRL, состав не раскрыт); сопоставить с введённой мощностью нечем, поэтому статус остаётся «движется к порогу»', src: 'S14' },
   // Полупроводники
-  { id: 'semi-nvda-dc', cite: ['nvda-dc'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Выручка центров обработки данных Nvidia', why: 'Конечный спрос на ускорители', stress: 'Замедление при росте запасов', state: 'ok', obs: '$89,0 млрд во II кв. 2027 ф.г.', src: 'S12' },
-  { id: 'semi-nvda-margin', cite: ['nvda-margin'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Валовая маржа Nvidia', why: 'Дефицитная рента', stress: 'Резкое снижение без удешевления для клиента', state: 'ok', obs: '75%', src: 'S12' },
-  { id: 'semi-avgo-ai', cite: ['avgo-q3'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Выручка ИИ-полупроводников Broadcom', why: 'Спрос на сети и заказные процессоры', stress: 'Замедление у нескольких заказчиков', state: 'ok', obs: '$16,7 млрд, +221% год к году', src: 'S13' },
+  { id: 'semi-nvda-dc', cite: ['nvda-dc'], checked: '2026-10-25', cadence: 95, g: 'semi', name: 'Выручка центров обработки данных Nvidia', why: 'Конечный спрос на ускорители', stress: 'Замедление при росте запасов', state: 'ok', obs: '$89,0 млрд во II кв. 2027 ф.г.', src: 'S12' },
+  { id: 'semi-nvda-margin', cite: ['nvda-margin'], checked: '2026-10-25', cadence: 95, g: 'semi', name: 'Валовая маржа Nvidia', why: 'Дефицитная рента', stress: 'Резкое снижение без удешевления для клиента', state: 'ok', obs: '75%', src: 'S12' },
+  { id: 'semi-avgo-ai', cite: ['avgo-q3'], checked: '2026-10-18', cadence: 95, g: 'semi', name: 'Выручка ИИ-полупроводников Broadcom', why: 'Спрос на сети и заказные процессоры', stress: 'Замедление у нескольких заказчиков', state: 'ok', obs: '$16,7 млрд, +221% год к году', src: 'S13' },
   { id: 'semi-hbm', cite: ['skhynix-hbm4'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Цена и объём HBM, запасы производителей', why: 'Узкое место памяти', stress: 'Рост запасов и падение цены одновременно', state: 'watch', obs: 'HBM4 в поставках, спрос 2026 во многом законтрактован; публичного ряда цен нет', src: 'S28' },
-  { id: 'semi-asml', cite: ['asml-guide'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Заказы и продажи EUV ASML', why: 'Планы фабрик', stress: 'Снижение заказов два квартала', state: 'ok', obs: 'Прогноз 2026 повышен до €43-45 млрд', src: 'S19' },
-  { id: 'semi-tsmc-util', cite: ['tsmc-q2'], checked: '2026-09-06', cadence: 95, g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'nodata', obs: 'Прямого показателя загрузки в раскрытиях нет. Валовая маржа 67,7% — косвенный признак, она не измеряет загрузку', src: 'S18' },
+  { id: 'semi-asml', cite: ['asml-guide'], checked: '2026-10-18', cadence: 95, g: 'semi', name: 'Заказы и продажи EUV ASML', why: 'Планы фабрик', stress: 'Снижение заказов два квартала', state: 'ok', obs: 'Продажи III кв. €11,7 млрд (II кв. €9,3 млрд); прогноз 2026 повышен до €44-45 млрд. Объём заказов в релизе III кв. не приведён; руководство говорит о росте портфеля заказов (заявление), цифрами это не подтверждено', src: 'S19' },
+  { id: 'semi-tsmc-util', cite: ['tsmc-q3'], checked: '2026-10-18', cadence: 95, g: 'semi', name: 'Загрузка передовых узлов и упаковки TSMC', why: 'Фактическая потребность', stress: 'Свободная мощность и перенос капвложений', state: 'nodata', obs: 'Прямого показателя загрузки в раскрытиях нет. Валовая маржа 66,4% (во II кв. 67,7%) — косвенный признак, она не измеряет загрузку', src: 'S18' },
   // Облако
-  { id: 'cloud-growth', cite: ['msft-azure100', 'orcl-fy26'], checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год; OCI IaaS +77%. Сопоставимого показателя роста по всем пяти облакам в раскрытиях нет', srcs: ['S10', 'S14'] },
-  { id: 'cloud-margin', cite: ['googl-cloud-oi', 'amzn-q2'], checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'AWS 39%, Google Cloud 36% операционной маржи сегмента. Расчёт терминала: операционная прибыль сегмента к его выручке', kind: 'calc', srcs: ['S11', 'S15'] },
+  { id: 'cloud-growth', cite: ['msft-azure100', 'msft-azure-q1', 'googl-cloud', 'orcl-q1fy27'], checked: '2026-11-01', cadence: 95, g: 'cloud', name: 'Рост Azure, AWS, Google Cloud, OCI, Alibaba Cloud', why: 'Внешняя монетизация', stress: 'Замедление ниже роста амортизации', state: 'ok', obs: 'Azure свыше $100 млрд в год (заявление руководства за 2026 ф.г.); в I кв. 2027 ф.г. Azure +48%, портфель обязательств облака Microsoft $677 млрд (+73%). Google Cloud +103% в III кв. 2026. Oracle IaaS +121% в I кв. 2027 ф.г. (+77% за 2026 ф.г.). Сопоставимого показателя роста по всем пяти облакам в раскрытиях нет', srcs: ['S10', 'S14'] },
+  { id: 'cloud-margin', cite: ['googl-cloud-oi', 'amzn-q2'], checked: '2026-11-01', cadence: 95, g: 'cloud', name: 'Операционная маржа облачных сегментов', why: 'Доходность мощности', stress: 'Снижение при росте загрузки', state: 'ok', obs: 'Google Cloud 36% операционной маржи сегмента в III кв. ($11,1 млрд к $30,7 млрд); AWS 39% относится ко II кв. и не обновлялась: отчёт Amazon за III кв. из среды сборки недоступен. Расчёт терминала: операционная прибыль сегмента к его выручке', kind: 'calc', srcs: ['S11', 'S15'] },
   { id: 'cloud-price', checked: '2026-09-06', cadence: 180, g: 'cloud', name: 'Цена вычисления или токена и пропускная способность', why: 'Эффективность и конкуренция', stress: 'Цена падает быстрее себестоимости', state: 'nodata', obs: 'Сопоставимого публичного ряда нет', src: 'S4' },
-  { id: 'cloud-util', cite: ['crwv-10q'], checked: '2026-09-06', cadence: 95, g: 'cloud', name: 'Фактическая загрузка GPU и МВт', why: 'Ключ к окупаемости', stress: 'Снижение при росте введённой мощности', state: 'nodata', obs: 'Не раскрывается ни одним крупным оператором. Главный пробел всей панели', src: 'S17' },
+  { id: 'cloud-util', cite: ['crwv-10q'], checked: '2026-10-18', cadence: 95, g: 'cloud', name: 'Фактическая загрузка GPU и МВт', why: 'Ключ к окупаемости', stress: 'Снижение при росте введённой мощности', state: 'nodata', obs: 'Не раскрывается ни одним крупным оператором. Главный пробел всей панели', src: 'S17' },
   // Программы и внедрение
-  { id: 'soft-seats', cite: ['msft-copilot'], checked: '2026-09-06', cadence: 95, g: 'soft', name: 'Платные места Copilot и аналогов', why: 'Ширина рынка', stress: 'Места растут, активность и продление падают', state: 'ok', obs: 'Более 30 млн платных мест', src: 'S10' },
-  { id: 'soft-tokens', cite: ['yndx-b2b', 'baba-ai'], checked: '2026-09-06', cadence: 95, g: 'soft', name: 'Потребление токенов внешними клиентами', why: 'Глубина использования', stress: 'Внутреннее потребление доминирует', state: 'watch', obs: '398 млрд коммерческих токенов у Яндекса; внешнее и внутреннее потребление разделяется редко', src: 'S24' },
+  { id: 'soft-seats', cite: ['msft-copilot'], checked: '2026-11-01', cadence: 95, g: 'soft', name: 'Платные места Copilot и аналогов', why: 'Ширина рынка', stress: 'Места растут, активность и продление падают', state: 'ok', obs: 'Последнее раскрытое число — более 30 млн платных мест (отчёт за IV кв. 2026 ф.г.). За I кв. 2027 ф.г. Microsoft обновление числа не раскрыла; сообщила лишь, что премиальные места E7 «reached millions of paid seats»', src: 'S10' },
+  { id: 'soft-tokens', cite: ['yndx-b2b', 'yndx-tokens', 'baba-ai'], checked: '2026-11-01', cadence: 95, g: 'soft', name: 'Потребление токенов внешними клиентами', why: 'Глубина использования', stress: 'Внутреннее потребление доминирует', state: 'watch', obs: '946 млрд коммерческих токенов через API у Яндекса в III кв. 2026 — в 2,4 раза больше, чем кварталом ранее. «Коммерческие» — внешние клиенты, но крупные клиенты Yandex Cloud дают более 53% выручки направления; внешнее и внутреннее потребление разделяется редко', src: 'S24' },
   { id: 'soft-adoption', cite: ['census-adoption'], checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Доля компаний, использующих ИИ', why: 'Диффузия', stress: 'Рост доли останавливается', state: 'watch', obs: '18% компаний США, 32% с учётом веса занятости', src: 'S6' },
   { id: 'soft-depth', cite: ['census-depth'], checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Число функций и задач на компанию', why: 'Глубина внедрения', stress: 'Большинство остаётся на 1-3 функциях', state: 'stress', obs: '57% пользователей — не более трёх функций; 66% применяют ИИ только как дополнение к людям', src: 'S6' },
   { id: 'soft-firm', cite: ['oecd-g7'], checked: '2026-09-06', cadence: 365, g: 'soft', name: 'Выпуск на работника и время цикла в подверженных отраслях', why: 'Переход эффекта к фирме', stress: 'Время экономится, выпуск не растёт', state: 'nodata', obs: 'Сопоставимых публичных рядов почти нет', src: 'S5' },
@@ -1254,7 +1351,7 @@ window.VG_INDICATORS = [
   { id: 'energy-pue', cite: ['iea-energy'], checked: '2026-09-06', cadence: 365, g: 'energy', name: 'PUE, WUE и стоимость электроэнергии', why: 'Эксплуатационная экономика', stress: 'Ухудшение эффективности или социальные ограничения', state: 'nodata', obs: 'Раскрывается выборочно и несопоставимо', src: 'S4' },
   // Россия
   { id: 'ru-adoption', cite: ['cbr-permanent', 'cbr-test', 'cbr-plan3y', 'cbr-noplan', 'cbr-sample'], checked: '2026-09-06', cadence: 365, g: 'russia', name: 'Постоянное внедрение, пилоты, планы', why: 'Переход к масштабу', stress: 'Пилоты не становятся постоянным использованием', state: 'watch', obs: '21% применяют постоянно, 15% тестируют, 29% планируют, 35% не планируют', src: 'S21' },
-  { id: 'ru-racks', cite: ['iks-racks'], checked: '2026-09-06', cadence: 365, g: 'russia', name: 'Цена стойки, введённые стойки, ИТ-мощность', why: 'Доступность инфраструктуры', stress: 'Цена растёт, ввод переносится, плотность не увеличивается', state: 'stress', obs: 'В 2024 введено 10,9 тыс. стойко-мест вместо ожидаемых 12 тыс.; значительная часть запусков 2025 перенесена на 2026-2027', src: 'S30' },
+  { id: 'ru-racks', cite: ['iks-racks'], checked: '2026-10-25', cadence: 365, g: 'russia', name: 'Цена стойки, введённые стойки, ИТ-мощность', why: 'Доступность инфраструктуры', stress: 'Цена растёт, ввод переносится, плотность не увеличивается', state: 'stress', obs: 'В 2024 введено 10,9 тыс. стойко-мест вместо ожидаемых 12 тыс.; значительная часть запусков 2025 перенесена на 2026-2027', src: 'S30' },
   { id: 'ru-revenue', cite: ['sber-effect'], checked: '2026-09-06', cadence: 180, g: 'russia', name: 'Внешняя выручка ИИ и облака, эффект с раскрытой методикой', why: 'Реальная монетизация', stress: 'Рост внутренних трансфертов без внешнего дохода', state: 'watch', obs: 'Эффект Сбера свыше 450 млрд руб. заявлен без раскрытой независимой методики', src: 'S23' }
 ];
 
@@ -1454,6 +1551,17 @@ window.VG_ENERGY = {
 
    checked — дата сверки. quote — дословная цитата из первоисточника. */
 window.VG_CITES = {
+  /* ---------------- Anthropic: проспект IPO ---------------- */
+  'anth-s1': { src: 'S31', status: 'verified', checked: '2026-11-06',
+    loc: 'Объявление компании от 26.10.2026',
+    quote: 'Today, Anthropic, PBC filed a registration statement on Form S-1 with the U.S. Securities and Exchange Commission relating to its proposed initial public offering of its Class A common stock. Anthropic intends to list its Class A common stock on the Nasdaq Global Select Market under the symbol “ANT.”',
+    note: 'Количество акций и диапазон цены в объявлении не определены.' },
+  'anth-s1a': { src: 'S32', status: 'partial', checked: '2026-11-06',
+    loc: 'EDGAR, полнотекстовый индекс: Anthropic, PBC (CIK 0002130357), S-1/A от 02.11.2026, номер 0001628280-26-068676',
+    quote: '',
+    note: 'Факт подачи поправки подтверждён по индексу EDGAR (основной документ и приложения 3.1, 4.4, 23.1, 23.2). Сам текст проспекта не прочитан: архив sec.gov требует от автоматических клиентов объявленный контакт в заголовке запроса, а документ больше лимита веб-чтения.' },
+  'anth-fin': { src: 'S32', status: 'pending', checked: '2026-11-06', loc: '', quote: '',
+    note: 'Выручка, убыток, обязательства по вычислениям перед Amazon и Google, доли инвесторов и концентрация клиентов — в проспекте, который пока не прочитан. Это главный открытый пробел по контурам Amazon ↔ Anthropic и Alphabet ↔ Anthropic.' },
   /* ---------------- сверено дословно ---------------- */
   'bis-trillion': { src: 'S1', status: 'verified', checked: '2026-09-20',
     loc: 'Annual Economic Report 2026, глава об ИИ-инвестициях',
@@ -1467,39 +1575,46 @@ window.VG_CITES = {
   'bis-gdp': { src: 'S3', status: 'verified', checked: '2026-09-20',
     loc: 'Bulletin 120, Graph 1.B',
     quote: 'Manufacturing facilities and data centres have contributed on average 0.4 percentage points (pp) to GDP growth over the subsequent three years.' },
-  'nvda-rev': { src: 'S12', status: 'verified', checked: '2026-09-20',
+  'nvda-rev': { src: 'S12', status: 'verified', checked: '2026-11-01',
     loc: 'Пресс-релиз от 26.08.2026, подзаголовок',
     quote: 'Revenue of $96.2 billion, up 106% from a year ago' },
-  'nvda-dc': { src: 'S12', status: 'verified', checked: '2026-09-20',
+  'nvda-dc': { src: 'S12', status: 'verified', checked: '2026-11-01',
     loc: 'Пресс-релиз от 26.08.2026, подзаголовок',
     quote: 'Data Center revenue of $89.0 billion, up 117% from a year ago' },
-  'nvda-margin': { src: 'S12', status: 'verified', checked: '2026-09-20',
+  'nvda-margin': { src: 'S12', status: 'verified', checked: '2026-11-01',
     loc: 'Пресс-релиз от 26.08.2026, раздел результатов квартала',
     quote: 'gross margins were both 75.0%' },
-  'asml-q2': { src: 'S19', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз от 15.07.2026, сводная таблица и заявление CEO',
-    quote: 'Q2 total net sales of €9.3 billion' },
-  'asml-margin': { src: 'S19', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз, сводка квартала',
-    quote: 'gross margin of 54.0%' },
-  'asml-guide': { src: 'S19', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз от 15.07.2026, заголовок',
-    quote: 'ASML now expects 2026 total net sales to be between €43 billion and €45 billion, with a gross margin between 54% and 56%.' },
-  'googl-cloud': { src: 'S11', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз за II кв. 2026, раздел результатов',
-    quote: 'Google Cloud saw a meaningful acceleration in growth as revenues increased 82% to $24.8 billion.' },
-  'googl-cloud-oi': { src: 'S11', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз за II кв. 2026, таблица операционной прибыли сегментов',
-    quote: 'Operating income (loss): Google Cloud 2,826 (2025) → 8,814 (2026).' },
-  'googl-capex': { src: 'S11', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз за II кв. 2026, отчёт о движении денежных средств',
-    quote: 'Purchases of property and equipment (22,446) → (44,924).' },
-  'googl-ocf': { src: 'S11', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз за II кв. 2026, отчёт о движении денежных средств',
-    quote: 'Net cash provided by operating activities 27,747 → 39,069.' },
-  'msft-capex': { src: 'S10', status: 'verified', checked: '2026-09-20',
-    loc: 'Материалы к отчёту за IV кв. 2026 ф.г., комментарий финансового директора',
-    quote: 'Capital expenditures were $41 billion including the impact from higher component pricing as noted in our guide.' },
+  'googl-cloud': { src: 'S11', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз от 28.10.2026 за III кв. 2026, сводка результатов',
+    quote: 'Google Cloud delivered record growth as revenues increased 103% to $30.7 billion' },
+  'googl-cloud-oi': { src: 'S11', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз за III кв. 2026, таблица Segment Operating Results',
+    quote: 'Operating income (loss): Google Cloud 3,594 (III кв. 2025) → 11,121 (III кв. 2026). Total revenues Google Cloud 15,157 → 30,709.' },
+  'googl-capex': { src: 'S11', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз за III кв. 2026, отчёт о движении денежных средств',
+    quote: 'Purchases of property and equipment (23,953) → (51,355) за квартал; (63,596) → (131,953) за девять месяцев.' },
+  'googl-ocf': { src: 'S11', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз за III кв. 2026, отчёт о движении денежных средств и сверка свободного потока',
+    quote: 'Net cash provided by operating activities 48,414 → 42,290 за квартал. Free cash flow: (9,065) за квартал, 19,747 за скользящие 12 месяцев (TTM).' },
+  'msft-capex': { src: 'S10', status: 'verified', checked: '2026-11-01',
+    loc: 'Стенограмма звонка за I кв. 2027 ф.г. (28.10.2026), комментарий финансового директора',
+    quote: 'Capital expenditures were $45.2 billion, as some third-party capacity deliveries we expected in Q1 were delayed. Cash flow from operations was $58 billion, up 29% driven by strong cloud billings and collections. And free cash flow was $18.6 billion reflecting higher capital expenditures.',
+    note: 'Прежнее значение $41 млрд относится к IV кв. 2026 ф.г. (материалы к отчёту от 29.07.2026).' },
+  'msft-q1-oi': { src: 'S10', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз за I кв. 2027 ф.г. (28.10.2026): таблица сверки с поправкой на OpenAI и отчёт о прибыли; стенограмма звонка, комментарий финансового директора',
+    quote: 'Net income $36,629 (GAAP), impact from OpenAI $(207), as adjusted $36,422 (millions). Other income (expense), net, три месяца по 30 сентября: 2026 = 38, 2025 = (3,660) (млн долларов). «When adjusted for the impact from our investments in OpenAI, other income and expense was negative $234 million, slightly lower than expected.»',
+    note: 'Разница между итоговой строкой (+$38 млн) и строкой с поправкой (−$234 млн) — расчёт терминала: около $0,27 млрд эффекта вложений в OpenAI до налога. В отчёте за этот квартал упоминания прибыли от переоценки вложения в Anthropic, как в отчёте за IV кв. 2026 ф.г., не найдено.' },
+  'msft-azure-q1': { src: 'S10', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз за I кв. 2027 ф.г., Business Highlights',
+    quote: 'Commercial remaining performance obligation increased 73% to $677 billion · Microsoft Cloud revenue was $63.9 billion and increased 30% · Azure revenue increased 48%' },
+  'asml-margin': { src: 'S19', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 14.10.2026, таблица результатов квартала',
+    quote: 'Gross margin (%) 54.0 57.5',
+    note: 'Столбцы Q2 2026 и Q3 2026.' },
+  'asml-guide': { src: 'S19', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 14.10.2026, подзаголовок',
+    quote: 'Full-year 2026 total net sales expected to be between €44 billion and €45 billion, with a gross margin around 56%',
+    note: 'Прогноз руководства. Прежний, из релиза II квартала: €43-45 млрд при марже 54-56%. Прогноз IV кв.: «total net sales between €14.2 billion and €15.2 billion».' },
   'msft-copilot': { src: 'S10', status: 'verified', checked: '2026-09-20',
     loc: 'Материалы к отчёту за IV кв. 2026 ф.г., выступление CEO',
     quote: 'We now have over 30 million paid Microsoft 365 Copilot seats, with net seat adds more than doubling quarter-over-quarter.' },
@@ -1512,9 +1627,13 @@ window.VG_CITES = {
   'baba-ai': { src: 'S20', status: 'verified', checked: '2026-09-20',
     loc: 'Отчёт за квартал, раздел ИИ-продуктов',
     quote: 'AI-related product revenue of US$1.8 billion extended triple-digit year-over-year growth for the twelfth consecutive quarter.' },
-  'yndx-b2b': { src: 'S24', status: 'verified', checked: '2026-09-20',
-    loc: 'Пресс-релиз за II кв. 2026, таблица сегментов',
-    quote: 'Б2Б Тех: Выручка 15,3 (против 11,9, +29%); Скорр. показатель EBITDA 3,7 (против 2,6, +43%).' },
+  'yndx-b2b': { src: 'S24', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз от 29.10.2026 за III кв. 2026 (ir.yandex.ru/press-releases?year=2026&id=29-10-2026-01), таблица сегментов',
+    quote: 'Б2Б Тех: Выручка 16,4 (против 12,4, +32%); Скорр. показатель EBITDA 5,2 (против 2,2, +141%); рентабельность 31,7%. Млрд руб.',
+    note: 'Таблица читается из плоского текста страницы: подпись сегмента стоит после строки выручки. Значения согласуются между собой: 5,2 / 16,4 = 31,7%, как указано в строке рентабельности.' },
+  'yndx-tokens': { src: 'S24', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз от 29.10.2026 за III кв. 2026, раздел о Б2Б Тех',
+    quote: 'Потребление коммерческих токенов через API на платформе Yandex AI Studio по итогам третьего квартала 2026 года составило 946 млрд токенов — в 2,4 раза больше, чем кварталом ранее, и в 4 раза больше, чем за весь 2025 год. ARR от использования Yandex AI Studio в облаке превысила 2,4 млрд рублей. Крупные клиенты Yandex Cloud формируют более 53% совокупной выручки направления.' },
   'cbr-test': { src: 'S21', status: 'verified', checked: '2026-09-20',
     loc: 'Доклад Банка России, раздел 2.1, рис. 6',
     quote: '15% респондентов тестирует пилотные проекты, связанные с ИИ.' },
@@ -1534,17 +1653,34 @@ window.VG_CITES = {
     loc: 'NBER Working Paper 31161, аннотация',
     quote: 'Access to the tool increases productivity, as measured by issues resolved per hour, by 14% on average, including a 34% improvement for novice and low-skilled workers but with minimal impact on experienced and highly skilled workers.' },
   'eu-giga': { src: 'S26', status: 'verified', checked: '2026-09-20',
-    loc: 'Страница политики ЕС, новость от 30.07.2026',
+    loc: 'Страница политики ЕС (digital-strategy.ec.europa.eu/en/policies/build-leadership-ai), новость от 30.07.2026',
     quote: 'EU launches AI Gigafactories call to boost Europe’s computing capacity and unlock more than €30 billion in investment. The EU has launched a call for tenders to establish up to seven AI Gigafactories across Europe.' },
 
+  'googl-equity-q3': { src: 'S11', status: 'verified', checked: '2026-11-01',
+    loc: 'Пресс-релиз от 28.10.2026 за III кв. 2026: консолидированный отчёт о прибыли, таблица Other Income (Expense), Net и сноска (1), отчёт о движении денежных средств',
+    quote: 'Other income (expense), net: 12,759 (III кв. 2025) → (8,221) (III кв. 2026); за девять месяцев 26,604 → 127,478. Gain (loss) on equity securities, net: 10,734 → (8,664). «Includes all gains and losses, unrealized and realized, on equity securities.» Income from operations за девять месяцев 2026: 121,042. Non-marketable securities: 131,461 на конец II кв. → 135,230 на 30.09.2026. Loss (gain) on debt and equity securities, net, девять месяцев 2026: (126,755).',
+    note: 'Релиз не раскрывает, какие именно доли дали результат. Строка «equity securities» включает публичные и непубличные ценные бумаги, реализованные и нереализованные результаты. Долю Anthropic по отчёту установить нельзя.' },
   'googl-equity-gain': { src: 'S11', status: 'verified', checked: '2026-09-30',
-    loc: 'Пресс-релиз за II кв. 2026: сводка результатов и таблица консолидированных показателей; сверено по копии документа, полученной 20.09.2026',
+    loc: 'Пресс-релиз за II кв. 2026 (s206.q4cdn.com/479360582/files/doc_financials/2026/q2/2026q2-alphabet-earnings-release.pdf): сводка результатов и таблица консолидированных показателей; сверено по копии документа, полученной 20.09.2026',
     quote: 'Other income reflected a net gain of $98.0 billion, primarily the result of net unrealized gains on our equity securities. Operating income $40,770; Other income (expense), net $97,983. Non-marketable securities 68,687 → 131,461.' },
   'msft-equity-gain': { src: 'S10', status: 'verified', checked: '2026-09-30',
     loc: 'Материалы к отчёту за IV кв. 2026 ф.г., комментарий финансового директора; сверено по копии документа, полученной 20.09.2026',
     quote: 'When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic noted earlier.' },
 
   /* ---------------- подтверждено частично ---------------- */
+  'meta-q3': { src: 'S16', status: 'verified', checked: '2026-10-25',
+    loc: 'Пресс-релиз от 21.10.2026 (форма 8-K, Exhibit 99.1), Third Quarter 2026 Operational and Other Financial Highlights',
+    quote: 'Capital expenditures, including principal payments on finance leases, were $34.91 billion.',
+    note: 'Получен через sec.gov (investor.atmeta.com закрыт). Там же дословно: «Cash flow from operating activities was $32.79 billion, and free cash flow was negative $2.12 billion»; «We anticipate 2026 capital expenditures, including principal payments on finance leases, to be in the range of $135-145 billion, narrowed from our prior outlook of $130-145 billion»; выручка $64,60 млрд (+26%), показы +10%, цена объявления +14%. Операционная прибыль $12,99 млрд включает разовые $9,89 млрд по соглашению с 52 генпрокурорами штатов (без неё $22,88 млрд). Величины III кв. совпали с расчётом по XBRL формы 10-Q (девять месяцев минус полугодие).' },
+  'orcl-q1fy27': { src: 'S14', status: 'verified', checked: '2026-10-25',
+    loc: 'Пресс-релиз от 10.09.2026 (форма 8-K, Exhibit 99.1), раздел Remaining Performance Obligations',
+    quote: 'Oracle booked more than $30 billion of additional AI cloud contracts in Q1 increasing its RPO to $664 billion.',
+    note: 'Получен через sec.gov. Там же дословно: «Free cash flow was negative $5 billion for Q1»; «Q1 Cloud Infra (IaaS) Revenue up 121% in USD & up 120% in constant currency to $7.4 billion»; «Oracle successfully completed the sale of $20 billion of common stock (before commissions) through an At-the-Market (ATM) equity program». В таблице свободного потока: операционный поток 23 103, капвложения 28 499, свободный поток −5 396 млн; те же строки за IV кв. 2026 ф.г. — 14 620, 16 493 и −1 873 млн. 12 месяцев к I кв. 2027 ф.г. терминал считает сам: 55 663 − 8 502 + 28 499 = 75 660 (капвложения), 31 977 − 8 140 + 23 103 = 46 940 (операционный поток).' },
+  'meta-obligations': { src: 'S16', status: 'partial', checked: '2026-10-25',
+    loc: 'Форма 10-Q за III кв. 2026 (accn 0001628280-26-066773, подана 22.10.2026), данные XBRL через data.sec.gov; текст формы не открывался',
+    quote: 'UnrecordedUnconditionalPurchaseObligationBalanceSheetAmount: 103 770 000 000 (31.12.2025), 182 880 000 000 (31.03.2026), 278 990 000 000 (30.06.2026), 355 730 000 000 USD (30.09.2026). ContractualObligation: 131 046 000 000 → 454 520 000 000 USD.',
+    note: 'Названия элементов XBRL; что именно входит в обязательства по закупкам (серверы, облачные договоры, аренда мощности), в этих данных не раскрыто. Разбивку нужно читать в примечании к 10-Q.' },
+
   'cbr-permanent': { src: 'S21', status: 'partial', checked: '2026-09-20',
     loc: 'Доклад Банка России, раздел 2.1, рис. 6',
     quote: 'На постоянной основе ИИ применяет каждая пятая организация.',
@@ -1561,48 +1697,91 @@ window.VG_CITES = {
     loc: 'CES WP 26-25, аннотация',
     quote: '18% of firms used AI in a business function, rising to 32% on an employment-weighted basis.',
     note: 'Доли внедрения подтверждены. Величины «57% — не более трёх функций» и «66% — только как дополнение к людям» в открытой аннотации отсутствуют: они в полном тексте работы, машинно не сверялись.' },
-  'msft-leases': { src: 'S10', status: 'partial', checked: '2026-09-20',
-    loc: 'Материалы к отчёту за IV кв. 2026 ф.г.',
-    quote: 'Capital expenditures were $41 billion including the impact from higher component pricing.',
-    note: 'Сумма подтверждена. Утверждение «включая финансовую аренду» в найденной формулировке не выражено прямо и требует сверки с формой 10-K.' },
+  'msft-leases': { src: 'S10', status: 'verified', checked: '2026-11-01',
+    loc: 'Стенограмма звонка за I кв. 2027 ф.г. (28.10.2026), комментарий финансового директора',
+    quote: 'This quarter, finance leases were $7.4 billion. As a reminder, we recognize the full principal value of finance leases in capex at the time of lease commencement. And cash paid for P, P, and E was $39.4 billion.',
+    note: 'Закрыто: капвложения Microsoft включают финансовую аренду, признанную по полной основной сумме при начале аренды. Из $45,2 млрд на аренду пришлось $7,4 млрд, денежные выплаты по имуществу и оборудованию — $39,4 млрд.' },
+  'asml-q3': { src: 'S19', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 14.10.2026 (форма 6-K, Exhibit 99.1), первая тезисная строка',
+    quote: 'Q3 total net sales of €11.7 billion, gross margin of 57.5%, net income of €5.0 billion',
+    note: 'Получен через sec.gov: сайт asml.com отвечает 403. В таблице релиза Total net sales 11,662 млн евро против 9,326 млн во II квартале. Показатели в евро.' },
+  'tsmc-q3': { src: 'S18', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 15.10.2026 (форма 6-K, Exhibit 99.1), второй и третий абзацы',
+    quote: 'In US dollars, third quarter revenue was $46.72 billion, which increased 41.2% year-over-year and increased 16.2% from the previous quarter. Gross margin for the quarter was 66.4%, operating margin was 58.7%, and net profit margin was 51.1%.',
+    note: 'Получен через sec.gov: investor.tsmc.com отвечает 403. Прогноз руководства на IV кв.: «Revenue is expected to be between US$52.3 billion and US$54.3 billion»; валовая маржа 65-67%. Выручка II кв. $40,2 млрд в терминале выведена из прироста 16,2% (46,72 / 1,162), отдельно по релизу II квартала не сверялась.' },
+  'amzn-q2': { src: 'S15', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 30.07.2026 (форма 8-K, Exhibit 99.1), основные результаты',
+    quote: 'Free cash flow decreased to an outflow of $7.6 billion for the trailing twelve months, driven primarily by a year-over-year increase of $66.1 billion in purchases of property and equipment, net of proceeds from sales and incentives.',
+    note: 'Получен через sec.gov: ir.aboutamazon.com отвечает 403. Там же дословно: «Operating cash flow increased 33% to $161.4 billion for the trailing twelve months»; «AWS segment sales increased 37% year-over-year to $42.2 billion»; «AWS segment operating income was $16.6 billion».' },
+  'amzn-capex': { src: 'S15', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 30.07.2026, таблица «Supplemental Financial Information and Business Metrics», блок Cash Flows and Shares',
+    quote: 'Purchases of property and equipment, net of proceeds from sales and incentives -- TTM $ 87,978 $ 102,953 $ 115,903 $ 128,320 $ 147,299 $ 169,007',
+    note: 'Столбцы Q1 2025 - Q2 2026, значения в млн долларов: за 12 месяцев к II кв. 2026 — $169 007 млн, год назад — $102 953 млн; разница $66,05 млрд совпадает с приростом $66,1 млрд в тексте релиза. Без вычета поступлений от продаж и стимулов (отчёт о движении денег, 12 месяцев): $173 028 млн против $107 656 млн. Операционный поток $161 403 млн: капвложения составляют около 105% потока.' },
+  'amzn-capex-ttm': { src: 'S15', status: 'verified', checked: '2026-11-01',
+    loc: 'Форма 10-Q за III кв. 2026 (подана 30.10.2026, accession 0001018724-26-000040), структурированные данные XBRL SEC: us-gaap:PaymentsToAcquireProductiveAssets; 10-Q за II кв. (подана 31.07.2026, 0001018724-26-000026)',
+    quote: 'PaymentsToAcquireProductiveAssets (покупки имущества и оборудования, валовые): 12 мес. по 30.06.2026 = 173 028 000 000 USD; 12 мес. по 30.09.2026 = 215 192 000 000 USD; III кв. 2026 (3 мес.) = 77 259 000 000 USD; 12 мес. по 30.06.2025 = 107 656 000 000 USD.',
+    note: 'Свежее к 30.10.2026: валовые покупки имущества и оборудования по отчёту о движении денежных средств, не за вычетом поступлений от продажи имущества и стимулов. По пресс-релизу за II кв. (см. amzn-capex) нетто-величина за 12 месяцев к II кв. — $169,0 млрд при валовой $173,0 млрд, что согласуется с данными SEC. Нетто-величину за III кв. данные SEC не дают: поступления в структурированных фактах недоступны. Прирост $66,1 млрд из исследования — нетто-показатель; валовой прирост по тем же фактам 173,0 − 107,7 = $65,4 млрд. Источник — данные SEC (форма 10-Q), а не страница пресс-релиза S15.' },
+  'amzn-ocf-ttm': { src: 'S15', status: 'verified', checked: '2026-11-01',
+    loc: 'Форма 10-Q (XBRL SEC): us-gaap:NetCashProvidedByUsedInOperatingActivities; accession 0001018724-26-000026 и 0001018724-26-000040',
+    quote: 'NetCashProvidedByUsedInOperatingActivities: 12 мес. по 30.06.2026 = 161 403 000 000 USD (в терминале прежде стояло 161,4 — совпало); 12 мес. по 30.09.2026 = 168 300 000 000 USD; III кв. 2026 = 42 422 000 000 USD.' },
+  'amzn-nonop-q3': { src: 'S15', status: 'verified', checked: '2026-11-01',
+    loc: 'Форма 10-Q (XBRL SEC): us-gaap:NonoperatingIncomeExpense и OperatingIncomeLoss; accession 0001018724-26-000026 и 0001018724-26-000040',
+    quote: 'NonoperatingIncomeExpense: II кв. 2026 = +53 396 000 000 USD; III кв. 2026 = −1 207 000 000 USD. OperatingIncomeLoss: II кв. 2026 = 27 461 000 000 USD; III кв. 2026 = 28 076 000 000 USD.',
+    note: 'Структурированные факты не раскрывают состав неоперационной строки; названный источник за II кв. — вложения в Anthropic — подтверждён пресс-релизом (см. amzn-anthropic). За III кв. состав не сверен: пресс-релиз и примечания 10-Q из среды сборки не открылись, поэтому прямо приписывать −$1,2 млрд вложению в Anthropic нельзя.' },
+  'amzn-anthropic': { src: 'S15', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 30.07.2026, основные результаты и консолидированный отчёт о прибылях',
+    quote: 'Second quarter 2026 net income includes non-operating pre-tax other income of $53.4 billion, primarily from our investments in Anthropic.',
+    note: 'Для сравнения в том же релизе: операционная прибыль $27,461 млн, прибыль до налогов $80,857 млн, чистая прибыль $62,647 млн (во II кв. 2025 — $18,164 млн). В отчёте о движении денег строка «Non-operating expense (income), net» вычтена на (53 381) млн — сумма не является денежным потоком. Релиз не раскрывает, какая часть суммы приходится на переоценку, и не называет размер доли в Anthropic.' },
+  'meta-q2': { src: 'S16', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 29.07.2026 (форма 8-K, Exhibit 99.1), Q2 financial highlights',
+    quote: 'Capital expenditures, including principal payments on finance leases, were $31.08 billion.',
+    note: 'Получен через sec.gov: investor.atmeta.com отвечает 403. Там же дословно: «Cash flow from operating activities was $31.86 billion, and free cash flow was $784 million»; «We anticipate 2026 capital expenditures, including principal payments on finance leases, to be in the range of $130-145 billion, narrowed from our prior outlook of $125-145 billion»; показы +14%, цена объявления +12%.' },
+  'orcl-fy26': { src: 'S14', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 10.06.2026 (форма 8-K, Exhibit 99.1), заголовочные пункты',
+    quote: 'FY 2026 Cloud Infra (IaaS) Revenue $18.1 billion, up 77% USD, and up 75% constant currency',
+    note: 'Получен через sec.gov: investor.oracle.com отвечает 403. Там же дословно: «Remaining Performance Obligations, or RPO, ended the quarter at $638 billion»; «record fiscal year operating cash flow of $32.0 billion»; «Free cash flow was negative $23.7 billion for fiscal year 2026»; капвложения 55 663 млн по таблице. Отчёт за I кв. 2027 ф.г. внесён 25.10.2026, см. orcl-q1fy27.' },
+  'avgo-q3': { src: 'S13', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 02.09.2026 (форма 8-K, Exhibit 99.1), заявление CEO',
+    quote: 'Q3 AI semiconductor revenue of $16.7 billion grew 221% year-over-year, and 54% quarter-over-quarter',
+    note: 'Получен через sec.gov: investors.broadcom.com отвечает 403. Там же дословно: «Cash from operations of $14.2 billion for the third quarter, less capital expenditures of $0.5 billion, resulted in $13.7 billion of free cash flow». Прогноз руководства: AI-выручка IV кв. $21,7 млрд.' },
+  'crwv-10q': { src: 'S17', status: 'verified', checked: '2026-10-18',
+    loc: 'Форма 10-Q за II кв. 2026 (подана 12.08.2026), примечание о Remaining Performance Obligations',
+    quote: 'As of June 30, 2026, the Company had $103.7 billion of unsatisfied RPO',
+    note: 'Получен через sec.gov. Там же: денежные капвложения за полугодие $14 117 млн («Purchase of property and equipment, including capitalized internal-use software»); операционный поток за полугодие $3 663 млн — факт, а не оценка (раньше стоял выведенный $3,6 млрд); доли трёх крупнейших клиентов в выручке квартала «approximately 36%, 26%, and 10%»; «all of the GPUs used in our infrastructure today are NVIDIA GPUs»; выручка квартала $2 575 млн.' },
 
-  /* ---------------- расхождение ---------------- */
-  'eu-investai-200': { src: 'S26', status: 'mismatch', checked: '2026-09-20',
-    loc: 'Страница политики ЕС',
-    quote: '',
-    note: 'На указанной странице сумма €200 млрд инициативы InvestAI не найдена. Страница описывает конкурс гигафабрик ИИ и более €30 млрд инвестиций. Для суммы €200 млрд нужна отдельная ссылка на документ InvestAI.' },
+  /* ---------------- закрыто после расхождения ---------------- */
+  'eu-investai-200': { src: 'S26', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз Еврокомиссии IP/25/467 от 11.02.2025, первый абзац',
+    quote: 'has launched InvestAI, an initiative to mobilise €200 billion for investment in AI, including a new European fund of €20 billion for AI gigafactories.',
+    note: 'Это заявленная цель мобилизации (mobilise), а не профинансированная сумма. Документ: https://ec.europa.eu/commission/presscorner/detail/en/ip_25_467 (текст получен через API presscorner) и копия на digital-strategy.ec.europa.eu/en/news/eu-launches-investai-initiative-mobilise-eu200-billion-investment-artificial-intelligence. Прежняя ссылка S26 (страница политики) сумму €200 млрд не содержит.' },
 
   /* ---------------- источник недоступен из среды сборки ---------------- */
-  'iea-energy': { src: 'S4', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'iea.org отвечает 403. Сверить 485 → 950 ТВт·ч, диапазон 13-55 ГВт и оценку батарей 20-25 ГВт из среды сборки не удалось.' },
-  'crwv-10q': { src: 'S17', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'sec.gov отвечает 403. Не сверены: RPO $103,7 млрд, 72% выручки от трёх клиентов, капвложения $14,1 млрд за полугодие.' },
-  'avgo-q3': { src: 'S13', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'investors.broadcom.com отвечает 403. Не сверены: $16,7 млрд выручки ИИ-полупроводников, +221%, свободный поток $13,7 млрд.' },
-  'orcl-fy26': { src: 'S14', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'investor.oracle.com отвечает 403. Не сверены: IaaS $18,1 млрд, +77%, RPO $638 млрд, капвложения $55,6 млрд.' },
-  'tsmc-q2': { src: 'S18', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'investor.tsmc.com отвечает 403. Не сверены: выручка $40,2 млрд, валовая маржа 67,7%, план капвложений $52-56 млрд.' },
-  'amzn-q2': { src: 'S15', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'ir.aboutamazon.com отвечает 403. Не сверены: AWS $42,2 млрд, операционная прибыль $16,6 млрд, операционный поток $161,4 млрд и главное — уровень капвложений за 12 месяцев.' },
-  'meta-q2': { src: 'S16', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'investor.atmeta.com отвечает 403. Не сверены: капвложения $31,1 млрд и прогноз $130-145 млрд на 2026 год.' },
-  'oecd-g7': { src: 'S5', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'oecd.org отвечает 403. Не сверен сценарный диапазон 0,4-1,3 процентного пункта.' },
-  'imf-gfsr': { src: 'S9', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'imf.org отвечает 403. Не сверены выводы о концентрации рынка и круговом финансировании.' },
-  'ac-gov': { src: 'S22', status: 'unreachable', checked: '2026-09-20', loc: '', quote: '',
-    note: 'ac.gov.ru не отвечает из среды сборки. Не сверен ориентир 2-2,5 ГВт мощности ЦОД для ИИ к 2030 году.' },
+  'iea-energy': { src: 'S4', status: 'unreachable', checked: '2026-10-25', loc: '', quote: '',
+    note: 'Повторно 25.10.2026: 403 и со сменой заголовка запроса. iea.org отвечает 403. Сверить 485 → 950 ТВт·ч, диапазон 13-55 ГВт и оценку батарей 20-25 ГВт из среды сборки не удалось.' },
+  'oecd-g7': { src: 'S5', status: 'unreachable', checked: '2026-10-25', loc: '', quote: '',
+    note: 'Повторно 25.10.2026: 403 и со сменой заголовка запроса. oecd.org отвечает 403. Не сверен сценарный диапазон 0,4-1,3 процентного пункта.' },
+  'imf-gfsr': { src: 'S9', status: 'verified', checked: '2026-10-18',
+    loc: 'GFSR, апрель 2026, глава 1, раздел «Concentration and Interconnectedness», с. 23-24',
+    quote: 'Since 2025, circular financing arrangements within the AI stack have become increasingly prevalent. Under these arrangements, AI developers, chipmakers, and large technology firms simultaneously act as customers, investors, and financiers.',
+    note: 'Документ открылся (PDF главы 1). Там же: «greater reliance on circular finance may amplify systemic risk by inflating valuations and masking true underlying demand»; в «круг» МВФ относит Amazon, AMD, Alphabet, Intel, Microsoft, Nvidia и Oracle, а оценку вклада взаимной связанности даёт как $40 млрд из роста рыночной капитализации около $2 трлн за сентябрь-декабрь 2025 года (оценка сотрудников МВФ, не факт). Оценка МВФ — по рыночным ценам, она не доказывает возврат одних и тех же денег.' },
+  'ac-gov': { src: 'S22', status: 'unreachable', checked: '2026-10-25', loc: '', quote: '',
+    note: 'Повторно 25.10.2026: соединение обрывается. ac.gov.ru не отвечает из среды сборки. Не сверен ориентир 2-2,5 ГВт мощности ЦОД для ИИ к 2030 году.' },
 
   /* ---------------- сверка не проводилась ---------------- */
-  'skhynix-hbm4': { src: 'S28', status: 'pending', checked: '', loc: '', quote: '',
-    note: 'Ссылка ведёт на общую страницу новостей SK hynix. Нужен конкретный релиз о поставках HBM4 и законтрактованном спросе 2026 года.' },
-  'iks-racks': { src: 'S30', status: 'pending', checked: '', loc: '', quote: '',
-    note: 'Ссылка ведёт на общую страницу iKS-Consulting. Нужен конкретный отчёт по рынку коммерческих ЦОД с цифрой 10,9 тыс. стойко-мест.' },
-  'sber-effect': { src: 'S23', status: 'pending', checked: '', loc: '', quote: '',
-    note: 'Заявленный эффект свыше 450 млрд руб. требует сверки с раскрытием по МСФО и, отдельно, с методикой расчёта эффекта, которая публично не раскрыта.' },
-  'msft-azure100': { src: 'S10', status: 'pending', checked: '', loc: '', quote: '',
-    note: 'Годовая выручка Azure свыше $100 млрд в найденных материалах к отчёту не встретилась. Нужна сверка со стенограммой звонка или формой 10-K.' }
+  'tsmc-capex': { src: 'S18', status: 'pending', checked: '2026-10-18', loc: '', quote: '',
+    note: 'План капвложений 2026 $52-56 млрд в релизе III кв. и презентации к нему не найден (в презентации — только квартальные капвложения в новых тайваньских долларах, NT$443,21 млрд). Нужна стенограмма звонка с аналитиками; цифра в терминале не сверена.' },
+  'skhynix-hbm4': { src: 'S28', status: 'pending', checked: '2026-10-25', loc: '', quote: '',
+    note: 'Повторно 25.10.2026: главная новостей открылась, последняя запись от 23.10.2026 о Solidigm, релиза о HBM4 нет. Попытка 18.10.2026: главная страница новостей открывается, конкретный релиз о поставках HBM4 не найден. Ссылка ведёт на общую страницу новостей SK hynix. Нужен конкретный релиз о поставках HBM4 и законтрактованном спросе 2026 года.' },
+  'iks-racks': { src: 'S30', status: 'verified', checked: '2026-10-18',
+    loc: 'survey.iksconsulting.ru, раздел «Рынок коммерческих ЦОД в России 2025»',
+    quote: '2024 год закончился несколько менее активно, чем мы прогнозировали в середине 2024 года, было введено 10,9 тыс. новых стойко-мест, вместо 12 тыс. запланированных ранее. В 2025 году большинство запусков строящихся и проектируемых ЦОДов отнесено на более длительный срок – на 2026-2027 годы.',
+    note: 'Подтверждена цифра по странице обзора iKS; сам полный отчёт не открывался. Цифра — оценка консалтинговой компании, не данные операторов.' },
+  'sber-effect': { src: 'S23', status: 'pending', checked: '2026-10-25', loc: '', quote: '',
+    note: 'Повторно 25.10.2026: та же ошибка сертификата, проверку TLS не отключали. Попытка 18.10.2026: sberbank.com не открылся — ошибка проверки сертификата (самоподписанная цепочка); проверку TLS не отключали, сверка не проведена. Заявленный эффект свыше 450 млрд руб. требует сверки с раскрытием по МСФО и, отдельно, с методикой расчёта эффекта, которая публично не раскрыта.' },
+  'msft-azure100': { src: 'S10', status: 'verified', checked: '2026-10-18',
+    loc: 'Пресс-релиз от 29.07.2026 (форма 8-K, Exhibit 99.1), цитата CEO',
+    quote: 'This year, Azure revenue surpassed $100 billion for the first time, and Microsoft 365 Copilot reached over 30 million paid seats',
+    note: 'Это заявление руководства (Наделла), а не строка отчётности: годовая форма 10-K сумму Azure не раскрывает, там только рост «Azure and other cloud services revenue grew 41%». Точную выручку Azure проверить по отчётности нельзя. Microsoft Cloud за ф.г. 2026 — $214,4 млрд (10-K), это иной, более широкий показатель.' },
 };
 
 </script>
@@ -1729,8 +1908,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": 15,
-   "observed": "2026-07-15",
+   "day": 14,
+   "observed": "2026-10-14",
    "step": 3
   },
   {
@@ -1743,8 +1922,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 15,
+   "observed": "2026-10-15",
    "step": 3
   },
   {
@@ -1757,8 +1936,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 28,
+   "observed": "2026-10-28",
    "step": 3
   },
   {
@@ -1771,8 +1950,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 30,
+   "observed": "2026-10-30",
    "step": 3
   },
   {
@@ -1785,8 +1964,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 21,
+   "observed": "2026-10-21",
    "step": 3
   },
   {
@@ -1799,8 +1978,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": 29,
-   "observed": "2026-07-29",
+   "day": 28,
+   "observed": "2026-10-28",
    "step": 3
   },
   {
@@ -1814,7 +1993,7 @@ window.VG_CALENDAR = {
     10
    ],
    "day": 29,
-   "observed": "2026-07-29",
+   "observed": "2026-10-29",
    "step": 3
   },
   {
@@ -1883,8 +2062,8 @@ window.VG_CALENDAR = {
     9,
     12
    ],
-   "day": null,
-   "observed": "2026-06",
+   "day": 10,
+   "observed": "2026-09-10",
    "step": 3
   },
   {
@@ -1955,7 +2134,7 @@ window.VG_CALENDAR = {
    Пишется скриптом build/connect.py. Руками не правится.
    source_value — что сказал источник, terminal_value — что стоит в данных. */
 window.VG_FEEDS = {
- "updated": "2026-09-20",
+ "updated": "2026-11-01",
  "connectors": [
   {
    "id": "nvda-quarter",
@@ -1963,7 +2142,7 @@ window.VG_FEEDS = {
    "title": "Nvidia — квартальный пресс-релиз",
    "cadence": 95,
    "url": "https://nvidianews.nvidia.com/news/nvidia-announces-financial-results-for-second-quarter-fiscal-2027",
-   "lastRun": "2026-09-20",
+   "lastRun": "2026-11-01",
    "fields": [
     {
      "key": "revenue",
@@ -2005,7 +2184,7 @@ window.VG_FEEDS = {
    "state": "ok",
    "period": "Second Quarter Fiscal 2027",
    "published": "August 26, 2026",
-   "citesRefreshed": 3,
+   "citesRefreshed": 0,
    "divergent": 0
   },
   {
@@ -2013,39 +2192,11 @@ window.VG_FEEDS = {
    "source": "S19",
    "title": "ASML — квартальный пресс-релиз",
    "cadence": 95,
-   "url": "https://www.asml.com/en/news/press-releases/2026/q2-2026-financial-results",
-   "lastRun": "2026-09-20",
-   "fields": [
-    {
-     "key": "revenueEur",
-     "definition": "Total net sales за квартал, МИЛЛИАРДЫ ЕВРО. Прямое сравнение с долларовыми строками терминала некорректно",
-     "unit": "€ млрд",
-     "target": "companies.asml.revenueEur",
-     "source_value": 9.3,
-     "terminal_value": 9.3,
-     "match": true,
-     "quote": "Q2 total net sales of €9.3 billion",
-     "loc": "Пресс-релиз, сводка квартала",
-     "cite": "asml-q2"
-    },
-    {
-     "key": "grossMargin",
-     "definition": "Валовая маржа за квартал, проценты. Не путать с прогнозным диапазоном на год",
-     "unit": "%",
-     "target": "companies.asml.grossMargin",
-     "source_value": 54.0,
-     "terminal_value": 54.0,
-     "match": true,
-     "quote": "gross margin of 54.0%",
-     "loc": "Пресс-релиз, сводка квартала",
-     "cite": "asml-margin"
-    }
-   ],
-   "state": "ok",
-   "period": "",
-   "published": "",
-   "citesRefreshed": 0,
-   "divergent": 0
+   "url": "https://www.asml.com/en/news/press-releases/2026/q3-2026-financial-results",
+   "lastRun": "2026-11-01",
+   "fields": [],
+   "state": "failed",
+   "error": "документ не содержит «total net sales» — это не страница квартального релиза"
   }
  ],
  "declared": [
@@ -2055,34 +2206,39 @@ window.VG_FEEDS = {
    "why": "iea.org отвечает 403 на запрос из среды сборки"
   },
   {
+   "source": "S5",
+   "title": "OECD — производительность ИИ в G7",
+   "why": "oecd.org отвечает 403 на запрос из среды сборки"
+  },
+  {
    "source": "S17",
    "title": "CoreWeave — форма 10-Q",
-   "why": "sec.gov отвечает 403; нужен доступ с объявленным User-Agent по правилам SEC"
+   "why": "Открывается на sec.gov с идентифицируемым User-Agent; в этом выпуске сверена вручную, подключение не написано"
   },
   {
    "source": "S15",
    "title": "Amazon — квартальный релиз",
-   "why": "ir.aboutamazon.com отвечает 403"
+   "why": "ir.aboutamazon.com отвечает 403; тот же релиз открывается на sec.gov (форма 8-K), сверен вручную, подключение не написано; уровень капвложений и операционный поток за 12 месяцев сверены по структурированным данным SEC (data.sec.gov, XBRL формы 10-Q)"
   },
   {
    "source": "S13",
    "title": "Broadcom — квартальный релиз",
-   "why": "investors.broadcom.com отвечает 403"
+   "why": "investors.broadcom.com отвечает 403; релиз на sec.gov (форма 8-K), сверен вручную, подключение не написано"
   },
   {
    "source": "S14",
    "title": "Oracle — годовой релиз",
-   "why": "investor.oracle.com отвечает 403"
+   "why": "investor.oracle.com отвечает 403; релиз на sec.gov (форма 8-K), сверен вручную, подключение не написано"
   },
   {
    "source": "S18",
    "title": "TSMC — квартальные результаты",
-   "why": "investor.tsmc.com отвечает 403"
+   "why": "investor.tsmc.com отвечает 403; релиз на sec.gov (форма 6-K), сверен вручную, подключение не написано"
   },
   {
    "source": "S16",
    "title": "Meta — квартальный релиз",
-   "why": "investor.atmeta.com отвечает 403"
+   "why": "investor.atmeta.com отвечает 403; релиз на sec.gov (форма 8-K), сверен вручную, подключение не написано"
   },
   {
    "source": "—",
@@ -3520,8 +3676,1001 @@ window.VG_HISTORY = [
    "total": 49
   },
   "seq": 6
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-10-18",
+  "label": "Закрыты Amazon, InvestAI и iKS; ASML и TSMC за III кв.; CoreWeave, Meta, Broadcom, Oracle сверены по SEC",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-10-18"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-10-18"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 41,
+    "ocf": 55.4,
+    "fcf": 19.6
+   },
+   "googl": {
+    "capex": 44.9,
+    "ocf": 39.1,
+    "fcf": -5.9
+   },
+   "amzn": {
+    "capex": 169,
+    "capexDelta": 66.1,
+    "ocf": 161.4,
+    "fcf": -7.6
+   },
+   "meta": {
+    "capex": 31.1,
+    "ocf": 31.9,
+    "fcf": 0.8
+   },
+   "orcl": {
+    "capex": 55.6,
+    "ocf": 32,
+    "fcf": -23.7,
+    "rpo": 638
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.7,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 46.7
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 48,
+   "cycles": [
+    "amzn + anthropic",
+    "anthropic + googl",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 41,
+   "partial": 5,
+   "mismatch": 0,
+   "unreachable": 3,
+   "pending": 3,
+   "total": 52
+  },
+  "seq": 7
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-10-25",
+  "label": "III кв. Meta (капвложения $34,9 млрд, свободный поток −$2,1 млрд, прогноз сужен до $135-145 млрд), Oracle I кв. 2027 ф.г. (RPO $664 млрд, продажа акций на $20 млрд); сверка по XBRL: обязательства Meta",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-10-25"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-10-25"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-10-25"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-09-06"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-10-25"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 41,
+    "ocf": 55.4,
+    "fcf": 19.6
+   },
+   "googl": {
+    "capex": 44.9,
+    "ocf": 39.1,
+    "fcf": -5.9
+   },
+   "amzn": {
+    "capex": 169,
+    "capexDelta": 66.1,
+    "ocf": 161.4,
+    "fcf": -7.6
+   },
+   "meta": {
+    "capex": 34.9,
+    "ocf": 32.8,
+    "fcf": -2.1
+   },
+   "orcl": {
+    "capex": 75.7,
+    "ocf": 46.9,
+    "fcf": -28.7,
+    "rpo": 664
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.7,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 46.7
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 48,
+   "cycles": [
+    "amzn + anthropic",
+    "anthropic + googl",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 43,
+   "partial": 6,
+   "mismatch": 0,
+   "unreachable": 3,
+   "pending": 3,
+   "total": 55
+  },
+  "seq": 8
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-11-01",
+  "label": "III кв. 2026: Alphabet, Microsoft, Яндекс (28-29.10), Amazon по 10-Q (капвложения 12 мес. $215 млрд, III кв. $77 млрд); контуры: Alphabet прочий доход -$8,2 млрд, Amazon неоперационная строка -$1,2 млрд",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-10-25"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 45.2,
+    "ocf": 58,
+    "fcf": 18.6
+   },
+   "googl": {
+    "capex": 51.4,
+    "ocf": 42.3,
+    "fcf": -9.1
+   },
+   "amzn": {
+    "capex": 215.2,
+    "ocf": 168.3,
+    "fcf": -46.9
+   },
+   "meta": {
+    "capex": 34.9,
+    "ocf": 32.8,
+    "fcf": -2.1
+   },
+   "orcl": {
+    "capex": 75.7,
+    "ocf": 46.9,
+    "fcf": -28.7,
+    "rpo": 664
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.7,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 46.7
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 48,
+   "cycles": [
+    "amzn + anthropic",
+    "anthropic + googl",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 51,
+   "partial": 5,
+   "mismatch": 0,
+   "unreachable": 3,
+   "pending": 3,
+   "total": 62
+  },
+  "seq": 9
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-11-06",
+  "label": "Котировки: тепловая карта рынка; Anthropic подал S-1; данные воскресной сборки 01.11",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-10-25"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 45.2,
+    "ocf": 58,
+    "fcf": 18.6
+   },
+   "googl": {
+    "capex": 51.4,
+    "ocf": 42.3,
+    "fcf": -9.1
+   },
+   "amzn": {
+    "capex": 215.2,
+    "ocf": 168.3,
+    "fcf": -46.9
+   },
+   "meta": {
+    "capex": 34.9,
+    "ocf": 32.8,
+    "fcf": -2.1
+   },
+   "orcl": {
+    "capex": 75.7,
+    "ocf": 46.9,
+    "fcf": -28.7,
+    "rpo": 664
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.7,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 46.7
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 48,
+   "cycles": [
+    "amzn + anthropic",
+    "anthropic + googl",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 52,
+   "partial": 6,
+   "mismatch": 0,
+   "unreachable": 3,
+   "pending": 4,
+   "total": 65
+  },
+  "seq": 10
  }
 ];
+
+</script>
+<script>
+/* Рыночный слой: снимок котировок на дату сборки.
+   Пишется командой python3 build/connect.py --market. Руками не правится.
+   Страница терминала в сеть не ходит: это не живая лента. */
+window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06", "refDate": "2026-09-06", "source": "API Nasdaq (акции США, ADR, фонды) и ISS Московской биржи", "items": [{"date": "2026-11-05", "close": 181.6, "d1": -9.26, "d5": -15.01, "m1": -23.53, "cut": -21.17, "refClose": 230.36, "fromHigh": -24.09, "high": 239.24, "spark": [217.55, 217.5, 224.09, 225.3, 225.16, 225.01, 219.74, 217.56, 216.85, 214.72, 208.48, 213.05, 209.66, 227.98, 217.55, 220.78, 217.44, 224.41, 228.45, 230.36, 225.73, 223.67, 218.36, 218.29, 210.96, 212.17, 213.9, 219.34, 222.27, 227.38, 228.87, 225.51, 224.58, 225.07, 228.86, 227.21, 228.38, 230.86, 233.95, 238.9, 239.24, 237.47, 230.48, 229.28, 226.32, 228.52, 221.3, 217.23, 214.13, 217.09, 216.47, 221.97, 212.21, 210.96, 216.0, 217.94, 215.38, 213.66, 204.64, 202.06, 206.69, 200.13, 181.6], "mcap": 4498024000000.0, "sym": "NVDA", "name": "Nvidia", "layer": "silicon", "node": "nvda", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 291.53, "d1": -10.43, "d5": -15.5, "m1": -22.57, "cut": -18.54, "refClose": 357.895, "fromHigh": -39.46, "high": 481.57, "spark": [422.4, 416.08, 416.05, 417.82, 392.99, 392.43, 380.0, 362.48, 364.03, 368.45, 358.76, 356.74, 355.59, 371.54, 368.79, 370.34, 369.68, 367.24, 357.16, 357.89, 368.56, 364.38, 360.83, 361.99, 344.72, 339.27, 339.51, 347.3, 357.61, 362.66, 364.54, 354.99, 350.36, 352.81, 349.57, 355.1, 351.19, 343.64, 355.14, 362.51, 375.81, 376.51, 360.14, 361.54, 354.73, 357.31, 346.25, 344.33, 328.75, 334.59, 334.37, 337.8, 323.24, 321.68, 329.17, 342.33, 351.81, 345.0, 326.08, 322.23, 332.13, 325.48, 291.53], "mcap": 1401967355052.0, "sym": "AVGO", "name": "Broadcom", "layer": "silicon", "node": "avgo", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 404.4, "d1": -17.26, "d5": -28.6, "m1": -37.39, "cut": -15.32, "refClose": 477.57, "fromHigh": -37.73, "high": 649.42, "spark": [469.56, 474.32, 482.93, 483.01, 514.39, 506.0, 484.39, 466.42, 469.45, 473.25, 456.75, 479.18, 480.93, 476.67, 465.58, 470.72, 459.61, 457.06, 456.16, 477.57, 505.74, 521.1, 503.6, 516.13, 493.41, 504.2, 512.5, 545.09, 559.82, 615.52, 623.77, 614.61, 629.26, 630.63, 607.87, 607.57, 611.76, 615.73, 633.91, 631.75, 649.42, 645.86, 620.68, 608.1, 594.24, 605.53, 570.82, 562.23, 528.75, 538.05, 534.74, 552.72, 507.93, 516.79, 531.28, 560.26, 578.44, 566.42, 504.8, 466.84, 483.9, 488.78, 404.4], "mcap": 736464779189.0, "sym": "AMD", "name": "AMD", "layer": "silicon", "node": null, "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 353.1, "d1": -10.78, "d5": -18.23, "m1": -25.22, "cut": -17.68, "refClose": 428.91, "fromHigh": -27.32, "high": 485.8, "spark": [418.47, 422.06, 429.15, 430.49, 426.35, 430.97, 413.41, 412.09, 416.0, 418.95, 410.12, 417.41, 417.69, 427.3, 417.52, 415.32, 414.0, 415.5, 417.01, 428.91, 439.0, 435.36, 428.03, 433.24, 418.01, 413.75, 417.72, 430.26, 434.67, 445.14, 452.0, 446.57, 451.15, 450.61, 452.88, 456.94, 456.19, 459.2, 472.78, 485.8, 482.3, 472.2, 457.99, 453.31, 444.35, 445.12, 430.0, 422.25, 412.61, 420.22, 425.08, 431.89, 412.35, 418.51, 424.37, 436.87, 439.51, 431.81, 406.13, 398.63, 404.8, 395.75, 353.1], "mcap": 1946080370079.0, "sym": "TSM", "name": "TSMC (ADR)", "layer": "silicon", "node": "tsmc", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 1356.65, "d1": -9.33, "d5": -19.04, "m1": -24.84, "cut": -20.89, "refClose": 1714.88, "fromHigh": -31.81, "high": 1989.44, "spark": [1733.48, 1799.38, 1810.07, 1847.9, 1844.08, 1883.12, 1802.98, 1751.73, 1750.31, 1763.76, 1740.13, 1744.16, 1745.64, 1735.01, 1696.16, 1696.01, 1665.14, 1682.3, 1646.19, 1714.88, 1764.85, 1729.52, 1687.43, 1698.3, 1575.15, 1591.48, 1602.22, 1629.67, 1679.92, 1711.32, 1747.9, 1744.61, 1722.5, 1743.94, 1771.41, 1834.39, 1811.67, 1808.49, 1867.31, 1859.86, 1834.1, 1804.96, 1769.79, 1780.34, 1750.24, 1717.76, 1650.0, 1657.44, 1641.52, 1647.12, 1630.84, 1676.69, 1560.54, 1571.8, 1590.9, 1635.57, 1662.85, 1675.7, 1565.9, 1526.14, 1552.14, 1496.3, 1356.65], "mcap": 549123818209.0, "sym": "ASML", "name": "ASML (ADR)", "layer": "silicon", "node": "asml", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 656.39, "d1": -17.46, "d5": -29.74, "m1": -39.67, "cut": -35.43, "refClose": 1016.59, "fromHigh": -45.91, "high": 1213.56, "spark": [861.0, 868.52, 911.29, 949.83, 971.66, 1011.75, 940.76, 937.11, 974.33, 966.78, 910.43, 932.97, 938.4, 935.39, 932.86, 958.73, 933.44, 956.08, 958.16, 1016.59, 1000.26, 1027.77, 977.41, 975.26, 924.03, 927.6, 926.55, 977.5, 1015.8, 1043.96, 1096.16, 1071.88, 1080.53, 1082.28, 1053.98, 1065.08, 1065.11, 1097.39, 1074.89, 1063.96, 1045.56, 1088.0, 1035.84, 1029.0, 989.04, 953.19, 914.13, 931.24, 878.84, 904.9, 896.07, 913.67, 856.49, 877.55, 903.7, 928.76, 983.23, 934.27, 884.74, 833.59, 855.1, 795.23, 656.39], "mcap": 780682016280.0, "sym": "MU", "name": "Micron", "layer": "silicon", "node": null, "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 166.72, "d1": -13.08, "d5": -27.12, "m1": -43.36, "cut": -33.86, "refClose": 252.09, "fromHigh": -62.06, "high": 439.46, "spark": [267.85, 268.93, 271.87, 278.65, 279.44, 271.43, 253.32, 249.34, 250.72, 243.32, 238.78, 241.56, 251.06, 255.21, 239.05, 241.91, 234.82, 234.86, 242.59, 252.09, 261.53, 264.23, 254.18, 264.79, 239.01, 241.83, 243.98, 264.9, 275.61, 322.9, 333.2, 332.56, 306.34, 310.32, 283.33, 293.67, 289.66, 292.34, 307.49, 302.9, 302.56, 294.37, 275.29, 266.28, 255.24, 255.39, 238.01, 244.79, 227.8, 228.05, 221.06, 226.59, 210.1, 210.33, 223.35, 226.6, 235.9, 228.77, 205.97, 196.79, 202.49, 191.8, 166.72], "mcap": 185805328104.0, "sym": "ARM", "name": "Arm", "layer": "silicon", "node": null, "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 27.08, "d1": -8.51, "d5": -21.35, "m1": -39.74, "cut": -31.6, "refClose": 39.59, "fromHigh": -48.61, "high": 52.69, "spark": [31.46, 31.6, 37.61, 39.16, 39.84, 38.28, 37.41, 36.58, 36.5, 37.24, 35.17, 38.46, 37.39, 38.46, 37.08, 37.28, 36.71, 37.0, 37.87, 39.59, 40.26, 38.93, 37.38, 40.1, 36.74, 35.64, 36.85, 40.35, 39.09, 41.2, 41.54, 41.44, 41.51, 43.26, 41.78, 41.02, 41.07, 41.92, 43.69, 43.19, 43.46, 44.94, 42.77, 41.85, 39.98, 39.07, 35.78, 35.09, 31.63, 32.1, 32.47, 35.57, 33.72, 32.94, 32.69, 35.09, 35.81, 34.43, 32.95, 30.44, 31.39, 29.6, 27.08], "mcap": 18894324444.0, "sym": "SMCI", "name": "Supermicro", "layer": "silicon", "node": "smci", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 535.93, "d1": -3.58, "d5": 1.09, "m1": 1.16, "cut": 7.25, "refClose": 499.7, "fromHigh": -3.58, "high": 555.8, "spark": [506.06, 503.81, 492.43, 496.88, 495.4, 480.35, 481.63, 484.31, 481.15, 483.24, 487.31, 491.71, 496.37, 505.06, 513.53, 507.29, 501.02, 496.82, 510.12, 499.7, 493.95, 491.65, 492.44, 495.63, 505.41, 497.12, 490.3, 497.75, 493.78, 501.61, 498.0, 500.59, 497.93, 516.17, 509.22, 508.96, 512.9, 512.8, 517.53, 525.18, 529.3, 529.76, 522.61, 535.07, 541.15, 543.45, 533.69, 539.44, 529.05, 533.52, 531.87, 532.95, 521.08, 524.51, 532.6, 531.33, 531.01, 530.14, 521.91, 507.12, 520.99, 555.8, 535.93], "mcap": 3940413091237.0, "sym": "MSFT", "name": "Microsoft", "layer": "cloud", "node": "msft", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 282.57, "d1": -2.2, "d5": -0.44, "m1": -19.38, "cut": -16.51, "refClose": 338.46, "fromHigh": -29.82, "high": 402.62, "spark": [357.52, 343.8, 343.54, 346.36, 345.9, 344.0, 344.2, 344.72, 340.67, 344.82, 348.06, 346.96, 342.0, 340.65, 346.59, 339.35, 335.02, 337.12, 342.48, 338.46, 338.36, 330.65, 332.6, 338.5, 349.39, 344.98, 342.87, 347.33, 349.54, 354.97, 351.16, 337.83, 342.36, 343.92, 342.75, 340.92, 344.08, 338.24, 343.5, 346.47, 347.68, 350.5, 348.29, 351.66, 352.72, 353.78, 347.64, 349.22, 340.59, 344.18, 340.27, 334.76, 324.22, 320.21, 316.8, 320.58, 324.89, 283.82, 279.84, 278.99, 280.03, 288.93, 282.57], "mcap": 3501085320000.0, "sym": "GOOGL", "name": "Alphabet", "layer": "cloud", "node": "googl", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 260.21, "d1": -2.19, "d5": 6.74, "m1": 0.11, "cut": 0.66, "refClose": 258.51, "fromHigh": -8.38, "high": 284.02, "spark": [278.09, 272.27, 267.28, 265.13, 262.65, 261.31, 259.45, 265.84, 260.11, 258.63, 262.07, 261.06, 260.28, 256.26, 266.43, 259.77, 254.92, 254.98, 258.9, 258.51, 256.97, 252.4, 251.89, 256.78, 253.54, 248.42, 245.96, 251.19, 253.71, 258.45, 254.98, 249.27, 249.38, 249.67, 246.15, 246.67, 249.15, 248.23, 251.52, 251.4, 256.29, 259.92, 254.06, 262.43, 259.53, 258.58, 254.08, 254.76, 250.0, 262.45, 262.63, 262.37, 250.38, 248.0, 249.09, 253.1, 254.6, 243.79, 240.35, 245.63, 250.69, 266.03, 260.21], "mcap": 2803846762746.0, "sym": "AMZN", "name": "Amazon", "layer": "cloud", "node": "amzn", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 605.08, "d1": -3.96, "d5": -3.11, "m1": -16.11, "cut": -1.9, "refClose": 616.77, "fromHigh": -22.19, "high": 777.59, "spark": [594.92, 599.12, 578.85, 594.97, 589.85, 568.97, 543.67, 546.03, 545.83, 549.9, 559.02, 570.05, 576.14, 571.1, 578.02, 572.34, 578.54, 592.85, 610.68, 616.77, 613.48, 653.69, 644.38, 648.03, 665.6, 670.24, 673.31, 682.31, 665.75, 741.25, 736.6, 744.1, 777.59, 751.66, 715.62, 738.79, 725.18, 725.93, 728.08, 741.9, 738.88, 721.31, 720.89, 718.67, 742.96, 762.5, 737.54, 736.72, 709.33, 705.44, 694.25, 697.52, 648.85, 642.62, 630.56, 620.19, 612.49, 624.52, 614.99, 606.73, 621.03, 630.0, 605.08], "mcap": 1559690600518.0, "sym": "META", "name": "Meta", "layer": "cloud", "node": "meta", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 115.16, "d1": -6.93, "d5": -17.48, "m1": -19.78, "cut": -27.47, "refClose": 158.78, "fromHigh": -59.35, "high": 283.33, "spark": [151.05, 145.48, 153.28, 156.22, 150.52, 146.65, 142.79, 143.81, 142.07, 146.47, 142.45, 144.76, 148.87, 151.94, 150.85, 149.12, 141.32, 145.75, 154.04, 158.78, 162.52, 161.63, 152.94, 150.28, 144.79, 140.35, 143.16, 150.59, 147.61, 148.56, 149.2, 144.56, 139.54, 137.1, 132.6, 137.79, 137.3, 138.07, 142.3, 142.48, 144.77, 143.56, 135.69, 141.4, 137.39, 143.2, 130.55, 134.47, 128.23, 129.59, 131.14, 129.13, 125.54, 126.16, 126.06, 130.53, 144.54, 139.56, 130.67, 119.22, 126.19, 123.73, 115.16], "mcap": 350783613360.0, "sym": "ORCL", "name": "Oracle", "layer": "cloud", "node": "orcl", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 108.07, "d1": 2.64, "d5": 8.57, "m1": 1.0, "cut": -4.57, "refClose": 113.24, "fromHigh": -39.95, "high": 179.97, "spark": [132.32, 127.85, 125.22, 122.16, 123.81, 124.71, 128.15, 128.9, 130.53, 119.34, 118.47, 119.44, 119.83, 116.31, 118.9, 114.02, 112.85, 111.81, 111.81, 113.24, 112.66, 109.4, 108.56, 109.3, 109.23, 109.34, 107.27, 108.54, 113.24, 115.75, 116.31, 110.8, 110.63, 109.74, 108.76, 107.74, 107.54, 107.45, 105.85, 110.8, 109.26, 107.0, 105.7, 111.37, 110.78, 110.85, 111.17, 111.13, 109.11, 108.57, 108.61, 104.41, 101.82, 99.64, 100.25, 100.24, 100.96, 99.54, 98.04, 101.5, 100.36, 105.29, 108.07], "mcap": 265092644950.0, "sym": "BABA", "name": "Alibaba (ADR)", "layer": "cloud", "node": "baba", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 43.66, "d1": -9.83, "d5": -28.12, "m1": -50.64, "cut": -51.14, "refClose": 89.36, "fromHigh": -68.8, "high": 139.93, "spark": [88.19, 90.32, 107.73, 106.29, 105.26, 106.0, 93.17, 90.87, 89.76, 87.85, 86.25, 88.04, 88.01, 86.8, 84.23, 84.89, 81.85, 80.93, 84.56, 89.36, 99.83, 94.94, 89.12, 88.99, 82.98, 80.92, 83.35, 79.88, 81.36, 85.43, 86.76, 86.9, 90.13, 87.59, 85.07, 85.93, 87.12, 88.57, 89.62, 87.39, 91.72, 88.45, 81.58, 82.08, 80.26, 77.81, 65.78, 69.69, 61.39, 61.12, 62.13, 61.82, 55.6, 54.23, 55.19, 59.57, 63.93, 60.74, 54.87, 50.15, 53.74, 48.42, 43.66], "mcap": 25591298333.0, "sym": "CRWV", "name": "CoreWeave", "layer": "infra", "node": "crwv", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 997.35, "d1": -5.38, "d5": -3.79, "m1": -3.34, "cut": -3.73, "refClose": 1035.98, "fromHigh": -10.63, "high": 1115.94, "spark": [1043.38, 1032.4, 1069.17, 1073.78, 1102.1, 1097.61, 1085.09, 1077.08, 1082.61, 1065.39, 1055.2, 1073.44, 1079.61, 1076.45, 1044.41, 1046.72, 1027.59, 1019.24, 1040.83, 1035.98, 1041.21, 1043.06, 1023.81, 1037.72, 998.72, 1006.98, 1016.16, 1025.94, 1021.34, 1057.26, 1059.26, 1037.66, 1034.76, 1008.08, 1011.07, 1015.27, 1011.58, 1012.33, 1025.72, 1023.44, 1047.36, 1031.77, 1011.16, 1026.06, 1032.6, 1019.4, 995.9, 996.26, 985.98, 975.71, 987.44, 995.0, 952.62, 955.03, 967.65, 999.38, 1007.66, 1036.67, 1013.7, 993.69, 1014.4, 1054.09, 997.35], "mcap": 100246459522.0, "sym": "EQIX", "name": "Equinix", "layer": "infra", "node": "equinix", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 174.67, "d1": -5.52, "d5": -4.5, "m1": -3.21, "cut": -7.28, "refClose": 188.39, "fromHigh": -14.34, "high": 203.91, "spark": [191.3, 190.81, 197.06, 197.58, 200.15, 197.91, 195.25, 192.35, 194.3, 190.62, 188.55, 192.32, 193.43, 192.1, 185.47, 185.59, 183.27, 183.76, 187.79, 188.39, 189.5, 189.08, 185.37, 188.58, 179.14, 179.27, 181.07, 184.26, 182.12, 186.33, 185.65, 181.45, 181.0, 178.61, 177.18, 176.56, 175.53, 176.49, 178.55, 179.87, 184.65, 180.47, 176.07, 178.76, 180.16, 178.14, 172.09, 174.47, 175.97, 173.0, 175.31, 176.31, 170.94, 172.37, 174.53, 179.01, 179.77, 182.91, 180.7, 175.95, 180.25, 184.88, 174.67], "mcap": 65898681912.0, "sym": "DLR", "name": "Digital Realty", "layer": "infra", "node": null, "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 176.73, "d1": -14.02, "d5": -28.14, "m1": -28.3, "cut": -37.0, "refClose": 280.53, "fromHigh": -53.03, "high": 376.23, "spark": [270.1, 281.81, 288.36, 287.07, 293.84, 292.43, 272.54, 261.0, 264.63, 261.95, 254.97, 255.75, 263.81, 269.28, 257.08, 258.72, 255.97, 256.7, 268.83, 280.53, 290.83, 262.89, 248.13, 257.06, 237.39, 234.61, 239.41, 241.49, 249.39, 250.86, 253.46, 248.78, 245.3, 253.28, 244.04, 248.34, 241.31, 246.12, 252.18, 253.62, 253.14, 246.49, 243.73, 242.78, 239.36, 237.29, 222.83, 214.75, 206.42, 206.08, 203.56, 212.15, 195.59, 194.32, 199.78, 208.56, 242.94, 245.92, 232.5, 224.24, 235.97, 205.55, 176.73], "mcap": 70381343750.0, "sym": "VRT", "name": "Vertiv", "layer": "infra", "node": "vertiv", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-05", "close": 239.65, "d1": -2.47, "d5": -9.42, "m1": -20.01, "cut": -19.84, "refClose": 298.96, "fromHigh": -40.3, "high": 401.43, "spark": [270.43, 278.36, 278.68, 278.64, 282.5, 278.2, 266.83, 274.17, 272.92, 272.88, 273.43, 278.42, 279.52, 282.41, 276.75, 274.77, 280.31, 290.04, 285.05, 298.96, 299.05, 293.9, 285.97, 284.75, 264.57, 259.89, 259.53, 262.8, 254.71, 262.11, 263.46, 263.88, 261.62, 263.27, 260.43, 264.58, 254.02, 258.92, 257.49, 267.62, 300.4, 299.59, 285.07, 298.07, 293.89, 295.79, 279.54, 275.0, 271.37, 263.19, 258.84, 270.74, 255.21, 253.45, 252.48, 258.98, 258.08, 264.58, 262.38, 257.25, 263.4, 245.72, 239.65], "mcap": 88559129381.0, "sym": "CEG", "name": "Constellation", "layer": "infra", "node": "constellation", "cur": "USD", "venue": "Nasdaq API"}, {"date": "2026-11-06", "close": 3414, "d1": 0.23, "d5": -1.13, "m1": -7.57, "cut": -10.84, "refClose": 3829, "fromHigh": -29.96, "high": 4874.5, "spark": [4008, 3968, 3824, 3683, 3592, 3760, 3725.5, 3602, 3641.5, 3483, 3570, 3456, 3481.5, 3456, 3566.5, 3524.5, 3581, 3732.5, 3829, 3861.5, 3831.5, 3834, 3825, 3741.5, 3854.5, 3846.5, 3766, 3729.5, 3816, 3689.5, 3760.5, 3774.5, 3733, 3585.5, 3547, 3559.5, 3542.5, 3607.5, 3603, 3675, 3687, 3693.5, 3577, 3455, 3369.5, 3486, 3487, 3427, 3478, 3472, 3484, 3452.5, 3395.5, 3400, 3471.5, 3529.5, 3553.5, 3453, 3474, 3442, 3423.5, 3406, 3414], "mcapRub": 1355040767706, "sym": "YDEX", "name": "Яндекс", "layer": "ru", "node": null, "cur": "RUB", "venue": "Мосбиржа ISS"}, {"date": "2026-11-06", "close": 293.99, "d1": 0.53, "d5": -0.37, "m1": 3.87, "cut": 4.74, "refClose": 280.68, "fromHigh": -10.2, "high": 327.39, "spark": [286.2, 283.99, 277.51, 273.4, 271, 277.72, 276.32, 271.11, 273.33, 269.52, 271.7, 267.3, 270.11, 268.14, 275.85, 272.21, 274.28, 279.05, 280.68, 280.08, 279.2, 277.04, 285.04, 283.32, 287.5, 284.91, 279.94, 275.89, 276.74, 277.3, 280.75, 280.74, 279.33, 276.35, 272.45, 274.65, 273.92, 276.18, 275.45, 281.77, 282.22, 283.04, 280.44, 285.02, 285.29, 287.16, 285.52, 283.63, 287.29, 290.7, 293.45, 291.62, 291.2, 292.32, 296, 298.18, 297.98, 295.08, 296.25, 290.8, 292.17, 292.43, 293.99], "mcapRub": 6346346842520.0, "sym": "SBER", "name": "Сбер", "layer": "ru", "node": "sber", "cur": "RUB", "venue": "Мосбиржа ISS"}], "bench": [{"date": "2026-11-05", "close": 647.05, "d1": -6.49, "d5": -9.55, "m1": -14.61, "cut": -10.0, "refClose": 718.96, "fromHigh": -14.82, "high": 759.66, "spark": [720.87, 718.45, 723.7, 732.07, 731.07, 729.87, 717.51, 716.08, 710.93, 713.44, 706.32, 710.72, 711.37, 721.11, 716.43, 716.76, 707.64, 709.24, 717.67, 718.96, 718.36, 716.31, 708.69, 714.88, 709.18, 704.54, 704.72, 716.92, 721.45, 741.47, 747.46, 741.21, 741.1, 744.5, 736.53, 737.93, 739.77, 742.03, 749.58, 756.2, 759.66, 757.73, 747.58, 751.27, 746.04, 743.57, 728.95, 728.0, 709.8, 718.36, 717.63, 725.2, 704.47, 704.4, 712.2, 721.25, 725.61, 715.34, 690.49, 681.09, 685.28, 691.95, 647.05], "sym": "QQQ", "name": "Nasdaq-100 (QQQ)", "cur": "USD"}, {"date": "2026-11-05", "close": 131.9, "d1": -12.15, "d5": -22.99, "m1": -32.11, "cut": -23.88, "refClose": 173.2866, "fromHigh": -39.59, "high": 218.3366, "spark": [176.46, 178.07, 182.2, 183.58, 183.47, 186.37, 177.13, 173.22, 174.12, 173.35, 168.73, 171.35, 171.8, 175.14, 169.54, 170.35, 166.77, 167.15, 167.4, 173.29, 176.13, 177.33, 172.48, 175.69, 165.8, 166.28, 167.35, 173.03, 177.69, 186.45, 190.93, 188.57, 188.69, 190.89, 186.93, 189.15, 189.55, 192.11, 196.3, 196.5, 196.48, 194.27, 187.76, 186.47, 181.62, 181.3, 173.14, 171.57, 164.46, 167.31, 166.67, 170.12, 158.56, 159.4, 163.94, 170.35, 173.98, 171.29, 157.17, 151.22, 155.0, 150.14, 131.9], "sym": "SOXX", "name": "Полупроводники (SOXX)", "cur": "USD"}, {"date": "2026-11-05", "close": 733.0, "d1": -4.41, "d5": -4.73, "m1": -5.69, "cut": -4.83, "refClose": 770.19, "fromHigh": -5.92, "high": 779.09, "spark": [773.03, 770.56, 772.49, 777.88, 776.34, 772.67, 767.45, 769.06, 762.6, 765.72, 763.47, 765.91, 766.08, 771.1, 769.35, 767.05, 761.78, 765.16, 773.17, 770.19, 765.96, 762.4, 757.83, 764.29, 760.88, 757.39, 754.05, 762.6, 761.69, 773.5, 773.38, 767.81, 767.18, 771.35, 765.61, 764.2, 762.63, 763.99, 769.64, 774.83, 779.09, 777.22, 773.93, 778.57, 778.1, 778.01, 769.6, 771.79, 763.25, 766.48, 769.05, 773.09, 763.96, 759.97, 765.37, 769.66, 772.31, 769.36, 755.72, 752.1, 754.35, 766.81, 733.0], "sym": "SPY", "name": "S&P 500 (SPY)", "cur": "USD"}], "failed": [{"sym": "000660.KS", "name": "SK hynix", "why": "торгуется в Корее; в открытых источниках, доступных из среды сборки, ряда нет"}]};
 
 </script>
 <script>
@@ -4283,6 +5432,87 @@ window.VG_HISTORY = [
 </script>
 <script>
 /* =========================================================================
+   Тепловая карта рынка: квадраты компаний цикла.
+
+   Площадь квадрата — корень из капитализации: при линейном масштабе Nvidia
+   и Microsoft заняли бы почти всё поле, а CoreWeave и Supermicro, самые
+   уязвимые звенья по исследованию, стали бы невидимы. Об этом сказано в
+   легенде.
+
+   Цвет — расходящаяся шкала: синий рост, красный падение, нейтральный серый
+   около нуля. Красно-зелёная пара неразличима при самой частой форме
+   цветовой слепоты, поэтому здесь синий; знак и величина всегда подписаны
+   на квадрате, цвет только подкрепляет число.
+   ========================================================================= */
+(function (global) {
+  'use strict';
+
+  var PERIODS = {
+    d1:  { label: '1 день',            steps: [0.5, 1.5, 3, 6, 10] },
+    d5:  { label: '5 дней',            steps: [1, 3, 6, 10, 15] },
+    m1:  { label: 'Месяц',             steps: [2, 5, 10, 20, 35] },
+    cut: { label: 'С даты исследования', steps: [2, 5, 10, 20, 35] }
+  };
+
+  function step(p, period) {
+    if (p === null || p === undefined || isNaN(p)) return null;
+    var st = PERIODS[period].steps, k = 0;
+    for (var i = 0; i < st.length; i++) if (Math.abs(p) >= st[i]) k = i + 1;
+    return k === 0 ? 'z' : (p > 0 ? 'u' : 'd') + k;
+  }
+
+  /* Квадратная укладка (squarified treemap): ряд растёт, пока худшее
+     соотношение сторон в нём не начинает ухудшаться */
+  function squarify(items, x, y, w, h) {
+    var total = items.reduce(function (a, it) { return a + it.v; }, 0) || 1;
+    var rest = items.slice().sort(function (a, b) { return b.v - a.v; })
+      .map(function (it) { return { it: it, a: it.v / total * w * h }; });
+    var out = [], r = { x: x, y: y, w: w, h: h };
+    function worst(row, side) {
+      var s = 0, mx = 0, mn = Infinity;
+      row.forEach(function (o) { s += o.a; mx = Math.max(mx, o.a); mn = Math.min(mn, o.a); });
+      return Math.max(side * side * mx / (s * s), (s * s) / (side * side * mn));
+    }
+    while (rest.length) {
+      var side = Math.min(r.w, r.h), row = [rest[0]], i = 1;
+      while (i < rest.length && worst(row.concat([rest[i]]), side) <= worst(row, side)) { row.push(rest[i]); i++; }
+      var s = row.reduce(function (a, o) { return a + o.a; }, 0);
+      if (r.w >= r.h) {
+        var cw = s / r.h, yy = r.y;
+        row.forEach(function (o) { var hh = o.a / cw; out.push({ it: o.it, x: r.x, y: yy, w: cw, h: hh }); yy += hh; });
+        r = { x: r.x + cw, y: r.y, w: r.w - cw, h: r.h };
+      } else {
+        var rh = s / r.w, xx = r.x;
+        row.forEach(function (o) { var ww = o.a / rh; out.push({ it: o.it, x: xx, y: r.y, w: ww, h: rh }); xx += ww; });
+        r = { x: r.x, y: r.y + rh, w: r.w, h: r.h - rh };
+      }
+      rest = rest.slice(i);
+    }
+    return out;
+  }
+
+  function pctText(p) {
+    if (p === null || p === undefined || isNaN(p)) return '—';
+    return (p > 0 ? '+' : p < 0 ? '−' : '') + Math.abs(p).toLocaleString('ru-RU', { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + '%';
+  }
+
+  /* взвешенное по капитализации изменение группы */
+  function weighted(list, period) {
+    var num = 0, den = 0;
+    list.forEach(function (q) {
+      var p = q[period], w = q.mcap || 0;
+      if (p === null || p === undefined || !w) return;
+      num += p * w; den += w;
+    });
+    return den ? num / den : null;
+  }
+
+  global.VGHeat = { PERIODS: PERIODS, step: step, squarify: squarify, pctText: pctText, weighted: weighted };
+})(window);
+
+</script>
+<script>
+/* =========================================================================
    Терминал ИИ-цикла — сборка экранов.
    Данные берутся из data/*.js (глобальные объекты VG_*), поэтому файл
    открывается и по file://, и с сервера, и внутри артефакта.
@@ -4295,7 +5525,8 @@ window.VG_HISTORY = [
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
       LADDER = window.VG_LADDER, CITES = window.VG_CITES || {},
       FEEDS = window.VG_FEEDS || { connectors: [], declared: [] },
-      CAL = (window.VG_CALENDAR || { items: [] }).items;
+      CAL = (window.VG_CALENDAR || { items: [] }).items,
+      MKT = window.VG_MARKET || null, HEAT = window.VGHeat;
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -4647,7 +5878,32 @@ window.VG_HISTORY = [
               return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
             }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
           '</div>' +
-        '</div>' + soonBlock;
+        '</div>';
+
+      /* ---------- рынок против панели ---------- */
+      var mktBlock = '';
+      if (MKT && HEAT) {
+        var bk = usBasket(), b5 = HEAT.weighted(bk, 'd5'), bc = HEAT.weighted(bk, 'cut');
+        var q = bench('QQQ'), sx = bench('SOXX');
+        var worst3 = bk.slice().sort(function (a, b) { return a.cut - b.cut; }).slice(0, 3);
+        var hyp = ['MSFT', 'GOOGL', 'AMZN', 'META'].map(function (s) { return MKT.items.filter(function (x) { return x.sym === s; })[0]; }).filter(Boolean);
+        mktBlock = '<div class="panel"><h3>Рынок против панели</h3>' +
+          '<p class="sub">Котировки в индекс напряжения не входят: он считается по 28 показателям исследования, то есть по отчётности и физике. Рынок реагирует раньше — здесь видно, расходятся ли они</p>' +
+          '<div class="mktvs">' +
+            '<div class="kv"><div class="k">Корзина цикла, 5 дней</div><div class="v"><span class="pct ' + (b5 < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(b5) + '</span></div></div>' +
+            '<div class="kv"><div class="k">Корзина цикла с ' + esc(shortDate(MKT.refDate)) + '</div><div class="v"><span class="pct ' + (bc < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(bc) + '</span></div></div>' +
+            (sx ? '<div class="kv"><div class="k">Полупроводники (SOXX) с ' + esc(shortDate(MKT.refDate)) + '</div><div class="v"><span class="pct ' + (sx.cut < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(sx.cut) + '</span></div></div>' : '') +
+            (q ? '<div class="kv"><div class="k">Nasdaq-100 (QQQ) с ' + esc(shortDate(MKT.refDate)) + '</div><div class="v"><span class="pct ' + (q.cut < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(q.cut) + '</span></div></div>' : '') +
+            '<div class="kv"><div class="k">Индекс напряжения</div><div class="v">' + num(v, 0) + '</div></div>' +
+          '</div>' +
+          '<p style="margin:12px 0 0">Сильнее всего с даты исследования подешевели ' + worst3.map(function (x) {
+            return '<b>' + esc(x.name) + '</b> (' + HEAT.pctText(x.cut) + (VULN[x.sym] ? ', уязвимость: ' + esc(VULN[x.sym].level.toLowerCase()) : '') + ')';
+          }).join(', ') + '. Гипермасштабные платформы с собственным денежным потоком в среднем ' + HEAT.pctText(HEAT.weighted(hyp, 'cut')) + ' (' + hyp.map(function (x) {
+            return esc(x.name) + ' ' + HEAT.pctText(x.cut);
+          }).join(', ') + '). Это совпадает с картой уязвимости исследования: первыми страдают посредники на заёмном капитале и циклическое железо. Заметное исключение среди платформ — Alphabet.</p>' +
+          '<p class="note" style="margin-top:10px">Почему индекс стоит: ни один из 28 показателей в отчётности пока не пересёк порог исследования — капвложения, заказы и загрузка ещё не развернулись. Падение акций — это ранний сигнал канала «дорожает капитал → сокращаются заказы» (стр. 13), но не его подтверждение. Подтверждением станут отчётности за IV квартал и цена размещений.</p>' +
+          '<button class="linkbtn" type="button" data-goto="market">Тепловая карта котировок →</button></div>';
+      }
 
       /* ---------- 2. Чем подтверждено ---------- */
       var stressed = IND.filter(function (i) { return i.state === 'stress'; });
@@ -4765,13 +6021,249 @@ window.VG_HISTORY = [
         '<div class="note">Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран: изменение методики не должно выглядеть как изменение рынка. ' +
           esc(M.disclaimer) + '</div>' : '';
 
-      return block1 + block2 + block3 + block4 + log;
+      return block1 + mktBlock + soonBlock + block2 + block3 + block4 + log;
+    }
+  };
+
+
+  /* =====================================================================
+     РЫНОК — тепловая карта котировок компаний цикла
+     ===================================================================== */
+  var MKT_GROUPS = [
+    { id: 'silicon', name: 'Кремний и железо' },
+    { id: 'cloud', name: 'Облака и платформы' },
+    { id: 'infra', name: 'ЦОД, энергия, охлаждение' }
+  ];
+  /* уязвимость по исследованию (стр. 13) — только там, где таблица называет звено прямо */
+  var VULN = {
+    CRWV: { level: 'Очень высокая', group: 'Специализированные облака и новые ЦОД', rank: 0 },
+    SMCI: { level: 'Высокая', group: 'Поставщики серверов и сборщики', rank: 1 },
+    MU:   { level: 'Высокая циклическая', group: 'Память и упаковка', rank: 2 },
+    ASML: { level: 'Средняя', group: 'Уникальные поставщики литографии и передовых фабрик', rank: 3 },
+    TSM:  { level: 'Средняя', group: 'Уникальные поставщики литографии и передовых фабрик', rank: 3 },
+    MSFT: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    GOOGL:{ level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    AMZN: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    META: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    ORCL: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 }
+  };
+  var RU_MONTHS = ['янв.', 'февр.', 'марта', 'апр.', 'мая', 'июня', 'июля', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.'];
+  function shortDate(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-');
+    return (+p[2]) + ' ' + RU_MONTHS[+p[1] - 1];
+  }
+  function mktDates() {
+    if (!MKT) return { us: null, ru: null };
+    var us = MKT.items.filter(function (q) { return q.cur === 'USD'; }).map(function (q) { return q.date; }).sort().pop();
+    var ru = MKT.items.filter(function (q) { return q.cur === 'RUB'; }).map(function (q) { return q.date; }).sort().pop();
+    return { us: us, ru: ru };
+  }
+  function usBasket() {
+    return MKT ? MKT.items.filter(function (q) { return q.cur === 'USD' && q.mcap; }) : [];
+  }
+  function bench(sym) {
+    return MKT ? MKT.bench.filter(function (b) { return b.sym === sym; })[0] : null;
+  }
+  function capText(v) {
+    if (!v) return '—';
+    return v >= 1e12 ? '$' + num(v / 1e12, 2) + ' трлн' : '$' + num(v / 1e9, 0) + ' млрд';
+  }
+
+  VIEWS.market = {
+    nav: 'Рынок', hint: '01',
+    title: 'Рынок: котировки компаний цикла',
+    sub: 'Квадрат — компания, цвет — изменение цены за выбранный период, площадь — капитализация. Сгруппировано по звеньям цепочки, как в исследовании.',
+    render: function () {
+      if (!MKT) return '<div class="note">Рыночный снимок не собран: выполните <code>python3 build/connect.py --market</code>.</div>';
+      var dt = mktDates();
+      var periods = Object.keys(HEAT.PERIODS).map(function (k) {
+        return '<button class="chip" type="button" role="radio" aria-checked="' + (k === 'd5') + '" aria-pressed="' + (k === 'd5') + '" data-period="' + k + '">' +
+          esc(k === 'cut' ? 'С ' + shortDate(MKT.refDate) : HEAT.PERIODS[k].label) + '</button>';
+      }).join('');
+
+      return '' +
+        '<div class="note"><b>Это снимок, а не живая лента.</b> Котировки собраны при сборке терминала (' + esc(MKT.fetched) + '): последний торговый день в США — ' +
+          esc(shortDate(dt.us)) + ', на Мосбирже — ' + esc(shortDate(dt.ru)).replace(/\.$/, '') + '. Страница в сеть не ходит; котировки обновляются вместе с воскресной сборкой. Источник: ' + esc(MKT.source) + '.</div>' +
+        '<div class="panel" style="display:grid;gap:12px">' +
+          '<div class="controls" role="radiogroup" aria-label="Период изменения">' + periods +
+            '<span class="ctl-sep" aria-hidden="true"></span><span class="count" style="font-size:12px;color:var(--muted)" id="heatStat"></span></div>' +
+          '<div class="benchrow" id="benchRow"></div>' +
+          '<div class="heatwrap" id="heatHost"></div>' +
+          '<div class="heat-ru-wrap"><div class="heat-ru-head">Мосбиржа, рубли · масштаб не сопоставим с долларовыми бумагами</div><div class="heat-ru" id="heatRu"></div></div>' +
+          '<div class="legend heatlegend" id="heatLegend"></div>' +
+        '</div>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Что подешевело сильнее всего</h3><p class="sub" id="worstSub"></p><div id="worstList"></div></div>' +
+          '<div class="panel"><h3>Звенья цепочки</h3><p class="sub">Изменение, взвешенное по текущей капитализации</p><div id="groupMoves"></div></div>' +
+        '</div>' +
+        '<div class="panel"><h3>Совпадает ли падение с картой уязвимости из исследования</h3>' +
+          '<p class="sub">Исследование ранжирует звенья по уязвимости при коррекции (стр. 13). Ниже — движение бумаг с даты исследования, ' + esc(shortDate(MKT.refDate)) +
+            ', по уровням этой шкалы. Показаны только компании, которые таблица называет прямо или к чьей группе они однозначно относятся</p>' +
+          '<div id="vulnChart"></div>' +
+          '<div class="note" style="margin-top:12px">Это одно рыночное движение, а не проверка модели: совпадение направления не доказывает причину. Но если оно сохранится, это ровно та последовательность, которую исследование описывает как негативный канал — сначала дорожает капитал у облачных посредников и разработчиков, затем сокращаются заказы на серверы, память и сети.</div>' +
+        '</div>' +
+        '<h2 class="section">Все бумаги</h2>' +
+        '<div class="tablewrap compact"><table><thead><tr><th>Компания</th><th>Звено</th><th class="num">Цена</th><th class="num">1 день</th><th class="num">5 дней</th><th class="num">Месяц</th>' +
+          '<th class="num">С ' + esc(shortDate(MKT.refDate)) + '</th><th class="num">От максимума года</th><th class="num">Капитализация</th></tr></thead><tbody id="mktTable"></tbody></table></div>' +
+        (MKT.failed.length ? '<div class="note"><b>Нет данных:</b> ' + MKT.failed.map(function (f) { return esc(f.name) + ' — ' + esc(f.why); }).join('; ') + '.</div>' : '');
+    },
+    after: function (root) {
+      var period = 'd5';
+      try { period = localStorage.getItem('vg-heat-period') || 'd5'; } catch (e) {}
+      if (!HEAT.PERIODS[period]) period = 'd5';
+      var host = root.querySelector('#heatHost'), tip = document.createElement('div');
+      tip.className = 'tip heattip'; tip.hidden = true; host.appendChild(tip);
+
+      function tileHtml(q, w, h) {
+        var st = HEAT.step(q[period], period) || 'z';
+        var big = w > 84 && h > 54, mid = w > 46 && h > 30;
+        return '<div class="ht ht-' + st + '" tabindex="0" data-sym="' + q.sym + '" role="img" aria-label="' + esc(q.name + ': ' + HEAT.pctText(q[period])) + '">' +
+          (mid ? '<b>' + esc(q.sym) + '</b>' : '') +
+          (mid ? '<span>' + HEAT.pctText(q[period]) + '</span>' : '') +
+          (big ? '<em>' + esc(q.name) + '</em>' : '') + '</div>';
+      }
+      function tipHtml(q) {
+        var v = VULN[q.sym];
+        var spark = q.spark || [], mx = Math.max.apply(null, spark), mn = Math.min.apply(null, spark);
+        var pts = spark.map(function (c, i) {
+          return (i / Math.max(1, spark.length - 1) * 220).toFixed(1) + ',' + (34 - (c - mn) / ((mx - mn) || 1) * 30).toFixed(1);
+        }).join(' ');
+        return '<b>' + esc(q.name) + ' · ' + esc(q.sym) + '</b>' +
+          '<span class="k">' + esc(q.cur === 'RUB' ? 'Мосбиржа' : 'Nasdaq API') + ' · закрытие ' + esc(shortDate(q.date)) + ': ' +
+            (q.cur === 'RUB' ? num(q.close, 2) + ' ₽' : '$' + num(q.close, 2)) + '</span>' +
+          '<svg class="tipspark" viewBox="0 0 220 36" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + pts + '"/></svg>' +
+          '<span class="k">три месяца</span>' +
+          '<table class="tipt"><tr><td>1 день</td><td>' + HEAT.pctText(q.d1) + '</td><td>5 дней</td><td>' + HEAT.pctText(q.d5) + '</td></tr>' +
+          '<tr><td>Месяц</td><td>' + HEAT.pctText(q.m1) + '</td><td>С ' + esc(shortDate(MKT.refDate)) + '</td><td>' + HEAT.pctText(q.cut) + '</td></tr>' +
+          '<tr><td>От максимума</td><td>' + HEAT.pctText(q.fromHigh) + '</td><td>Капит.</td><td>' + (q.mcap ? capText(q.mcap) : '—') + '</td></tr></table>' +
+          (v ? '<span class="k">Уязвимость по исследованию: <b>' + esc(v.level) + '</b> · ' + esc(v.group) + '</span>' : '') +
+          (q.node ? '<span class="k">Есть на графе связей</span>' : '');
+      }
+      function bindTips(container) {
+        container.querySelectorAll('.ht').forEach(function (t) {
+          var q = MKT.items.concat(MKT.bench).filter(function (x) { return x.sym === t.dataset.sym; })[0];
+          function show() {
+            var r = host.getBoundingClientRect(), b = t.getBoundingClientRect();
+            tip.innerHTML = tipHtml(q); tip.hidden = false;
+            var x = b.left - r.left + b.width / 2 - 140, y = b.bottom - r.top + 6;
+            if (y + tip.offsetHeight > r.height + 160) y = b.top - r.top - tip.offsetHeight - 6;
+            tip.style.left = Math.max(4, Math.min(r.width - 290, x)) + 'px';
+            tip.style.top = y + 'px';
+          }
+          t.addEventListener('mouseenter', show); t.addEventListener('focus', show);
+          t.addEventListener('mouseleave', function () { tip.hidden = true; });
+          t.addEventListener('blur', function () { tip.hidden = true; });
+        });
+      }
+
+      function draw() {
+        var W = host.clientWidth, H = W < 640 ? 620 : 470;
+        host.style.height = H + 'px';
+        var items = usBasket();
+        var groups = MKT_GROUPS.map(function (g) {
+          var list = items.filter(function (q) { return q.layer === g.id; });
+          return { g: g, list: list, v: list.reduce(function (a, q) { return a + Math.sqrt(q.mcap); }, 0) };
+        }).filter(function (x) { return x.list.length; });
+        var rects = HEAT.squarify(groups.map(function (x) { return { v: x.v, x: x }; }), 0, 0, W, H);
+        var html = '';
+        rects.forEach(function (gr) {
+          var gx = gr.it.x, head = 20, pad = 2;
+          var inner = HEAT.squarify(gx.list.map(function (q) { return { v: Math.sqrt(q.mcap), q: q }; }),
+                                    gr.x + pad, gr.y + head, Math.max(0, gr.w - pad * 2), Math.max(0, gr.h - head - pad));
+          var wv = HEAT.weighted(gx.list, period);
+          html += '<div class="hg" style="left:' + gr.x + 'px;top:' + gr.y + 'px;width:' + gr.w + 'px;height:' + gr.h + 'px">' +
+            '<div class="hg-head" title="' + esc(gx.g.name) + '"><span>' + esc(gx.g.name) + '</span><b>' + HEAT.pctText(wv) + '</b></div></div>';
+          inner.forEach(function (t) {
+            html += '<div class="htw" style="left:' + t.x + 'px;top:' + t.y + 'px;width:' + t.w + 'px;height:' + t.h + 'px">' + tileHtml(t.it.q, t.w, t.h) + '</div>';
+          });
+        });
+        host.querySelectorAll('.hg,.htw').forEach(function (n) { n.remove(); });
+        host.insertAdjacentHTML('afterbegin', html);
+        bindTips(host);
+
+        root.querySelector('#heatRu').innerHTML = MKT.items.filter(function (q) { return q.cur === 'RUB'; }).map(function (q) {
+          return '<div class="htw-flat">' + tileHtml(q, 140, 70) + '</div>';
+        }).join('') || '<p class="note">Мосбиржа в этой сборке не ответила.</p>';
+        root.querySelector('#benchRow').innerHTML = '<span class="bench-k">Ориентиры</span>' + MKT.bench.map(function (b) {
+          var st = HEAT.step(b[period], period) || 'z';
+          return '<span class="bench"><i class="ht-' + st + '"></i>' + esc(b.name) + ' <b>' + HEAT.pctText(b[period]) + '</b></span>';
+        }).join('');
+        bindTips(root.querySelector('#heatRu'));
+
+        var st = HEAT.PERIODS[period].steps;
+        root.querySelector('#heatLegend').innerHTML =
+          '<span>Падение</span>' + [5, 4, 3, 2, 1].map(function (k) { return '<i class="ht-d' + k + '" title="≤ −' + st[k - 1] + '%"></i>'; }).join('') +
+          '<i class="ht-z" title="меньше ' + st[0] + '% в любую сторону"></i>' +
+          [1, 2, 3, 4, 5].map(function (k) { return '<i class="ht-u' + k + '" title="≥ +' + st[k - 1] + '%"></i>'; }).join('') + '<span>Рост</span>' +
+          '<span class="hl-scale">шаги: ' + st.map(function (x) { return x + '%'; }).join(' · ') + '</span>' +
+          '<span class="hl-scale">площадь ∝ √капитализации, чтобы малые звенья цикла оставались видимы</span>';
+
+        var basket = HEAT.weighted(items, period);
+        root.querySelector('#heatStat').textContent = 'корзина цикла ' + HEAT.pctText(basket) + ' · бумаг ' + MKT.items.length;
+
+        var worst = MKT.items.filter(function (q) { return q[period] !== null; })
+          .sort(function (a, b) { return a[period] - b[period]; }).slice(0, 7);
+        root.querySelector('#worstSub').textContent = HEAT.PERIODS[period].label + (period === 'cut' ? ' ' + shortDate(MKT.refDate) : '');
+        root.querySelector('#worstList').innerHTML = divBars(worst.map(function (q) {
+          var v = VULN[q.sym];
+          return { name: q.name, period: v ? 'уязвимость: ' + v.level.toLowerCase() : '', v: q[period], label: HEAT.pctText(q[period]) };
+        }), Math.min.apply(null, worst.map(function (q) { return q[period]; }).concat([-1])) * 1.25, 5);
+        root.querySelector('#groupMoves').innerHTML = divBars(MKT_GROUPS.map(function (g) {
+          var w = HEAT.weighted(items.filter(function (q) { return q.layer === g.id; }), period);
+          return { name: g.name, v: w || 0, label: HEAT.pctText(w) };
+        }).concat(MKT.bench.map(function (b) { return { name: b.name, period: 'ориентир', v: b[period] || 0, label: HEAT.pctText(b[period]) }; })),
+          -Math.max(5, Math.max.apply(null, MKT_GROUPS.map(function (g) { return Math.abs(HEAT.weighted(items.filter(function (q) { return q.layer === g.id; }), period) || 0); }))) * 1.3,
+          Math.max(5, Math.max.apply(null, MKT.bench.map(function (b) { return b[period] || 0; }))) * 1.3);
+      }
+
+      /* уязвимость против движения — всегда с даты исследования */
+      var vul = MKT.items.filter(function (q) { return VULN[q.sym]; })
+        .sort(function (a, b) { return VULN[a.sym].rank - VULN[b.sym].rank || a.cut - b.cut; });
+      var vmin = Math.min.apply(null, vul.map(function (q) { return q.cut; }).concat([-5]));
+      var vmax = Math.max.apply(null, vul.map(function (q) { return q.cut; }).concat([5]));
+      root.querySelector('#vulnChart').innerHTML = divBars(vul.map(function (q) {
+        return { name: q.name, period: VULN[q.sym].level, v: q.cut, label: HEAT.pctText(q.cut) };
+      }), vmin * 1.2, vmax * 1.4);
+
+      root.querySelector('#mktTable').innerHTML = MKT.items.concat(MKT.bench).map(function (q) {
+        var grp = (MKT_GROUPS.filter(function (g) { return g.id === q.layer; })[0] || {}).name || (q.cur === 'RUB' ? 'Россия' : 'Ориентир');
+        return '<tr><td><b>' + esc(q.name) + '</b><span class="sub">' + esc(q.sym) + '</span></td><td>' + esc(grp) + '</td>' +
+          '<td class="num">' + (q.cur === 'RUB' ? num(q.close, 2) + ' ₽' : '$' + num(q.close, 2)) + '</td>' +
+          ['d1', 'd5', 'm1', 'cut', 'fromHigh'].map(function (k) {
+            return '<td class="num"><span class="pct ' + (q[k] > 0 ? 'pos' : q[k] < 0 ? 'neg' : '') + '">' + HEAT.pctText(q[k]) + '</span></td>';
+          }).join('') +
+          '<td class="num">' + (q.mcap ? capText(q.mcap) : q.mcapRub ? num(q.mcapRub / 1e12, 2) + ' трлн ₽' : '—') + '</td></tr>';
+      }).join('');
+
+      root.querySelectorAll('[data-period]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          period = b.dataset.period;
+          try { localStorage.setItem('vg-heat-period', period); } catch (e) {}
+          root.querySelectorAll('[data-period]').forEach(function (x) {
+            var on = x.dataset.period === period;
+            x.setAttribute('aria-checked', String(on)); x.setAttribute('aria-pressed', String(on));
+          });
+          draw();
+        });
+      });
+      root.querySelectorAll('[data-period]').forEach(function (x) {
+        var on = x.dataset.period === period;
+        x.setAttribute('aria-checked', String(on)); x.setAttribute('aria-pressed', String(on));
+      });
+      draw();
+      var rt = null;
+      window.addEventListener('resize', function () {
+        if (root.hidden) return;
+        clearTimeout(rt); rt = setTimeout(draw, 150);
+      });
+      root.__redraw = draw;
     }
   };
 
   /* ---------------------------------------------------------- 2. Граф */
   VIEWS.network = {
-    nav: 'Граф связей', hint: '01',
+    nav: 'Граф связей', hint: '02',
     title: 'Граф связей: капитал, поставки, контракты',
     sub: 'Стрелка показывает направление денег. Слои расположены по течению: наверху — источники денег, внизу — фабрики и память. Любая стрелка, идущая вверх, — это деньги, вернувшиеся к тому, кто их дал. Это и есть круговая связь.',
     render: function () {
@@ -4987,7 +6479,7 @@ window.VG_HISTORY = [
 
   /* ---------------------------------------------------------- 3. Стек */
   VIEWS.stack = {
-    nav: 'Стек цикла', hint: '02',
+    nav: 'Стек цикла', hint: '03',
     title: 'Стек цикла: 13 звеньев',
     sub: 'Чем дальше звено от конечного результата, тем легче измерить поставку; чем ближе к результату, тем труднее отделить вклад ИИ от изменений процесса.',
     render: function () {
@@ -5030,7 +6522,7 @@ window.VG_HISTORY = [
 
   /* -------------------------------------------------------- 4. Капитал */
   VIEWS.capital = {
-    nav: 'Капитал и поток', hint: '03',
+    nav: 'Капитал и поток', hint: '04',
     title: 'Капитал против денежного потока',
     sub: 'Корректный вопрос — не «кто потратил больше», а какая доля прироста капитала уже обслуживается внешней выручкой и денежным потоком. Периоды компаний различаются и указаны в каждой строке.',
     render: function () {
@@ -5128,8 +6620,7 @@ window.VG_HISTORY = [
           '<div class="panel"><h3>Капвложения к операционному потоку</h3>' +
             '<p class="sub">Стресс-сигнал исследования: выше 100% два квартала подряд без ускорения выручки. Вертикальная линия — отметка 100%</p>' +
             ratioChart +
-            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') +
-              '. Amazon в расчёт не взят: в исследовании приведён прирост капвложений, а не уровень.</p>' +
+            '<p class="note" style="margin-top:12px">Операционный поток CoreWeave и уровень капвложений Amazon сверены с первоисточниками (форма 10-Q и пресс-релиз). У Amazon взяты валовые покупки имущества и оборудования за 12 месяцев к III кв. по форме 10-Q; по определению компании (нетто, за вычетом поступлений от продаж и стимулов) к II кв. было $169,0 млрд. Из-за длины периода Amazon стоит в блоке «Год и 12 месяцев».</p>' +
             '<p class="note" style="margin-top:8px"><b>Что этот коэффициент не измеряет.</b> Операционный поток компании создаётся всем её бизнесом, а не только ИИ. Поэтому отношение показывает способность компании финансировать стройку собственными силами — и не показывает окупаемость вложений именно в ИИ. Такого публичного показателя сегодня не существует ни у одной из компаний панели.</p></div>' +
         '</div>' +
         '<div class="panel"><h3>Свободный денежный поток после капвложений</h3>' +
@@ -5152,7 +6643,7 @@ window.VG_HISTORY = [
 
   /* -------------------------------------------------------- 5. Энергия */
   VIEWS.energy = {
-    nav: 'Энергия и физика', hint: '04',
+    nav: 'Энергия и физика', hint: '05',
     title: 'Энергетика и физическая экономика ЦОД',
     sub: EN.keyMetric,
     render: function () {
@@ -5186,7 +6677,7 @@ window.VG_HISTORY = [
 
   /* --------------------------------------------------------- 6. Панель */
   VIEWS.panel = {
-    nav: 'Панель 28 показателей', hint: '05',
+    nav: 'Панель 28 показателей', hint: '06',
     title: 'Панель из 28 показателей',
     sub: 'Что проверять каждый квартал. Колонка «Проверено» показывает, когда наблюдение последний раз сверялось с источником и сколько осталось до ожидаемого обновления. Серый статус означает не ноль, а отсутствие публичного ряда — это самостоятельный вывод: главные показатели окупаемости сегодня просто не раскрываются.',
     render: function () {
@@ -5239,7 +6730,7 @@ window.VG_HISTORY = [
 
   /* ------------------------------------------------------- 7. Сценарии */
   VIEWS.scenarios = {
-    nav: 'Сценарии', hint: '06',
+    nav: 'Сценарии', hint: '07',
     title: 'Сценарии на 12-36 месяцев',
     sub: 'Вероятности — аналитическая оценка авторов исследования, а не расчёт терминала. Ценность в другом: у каждого сценария есть набор ранних индикаторов, который можно проверять.',
     render: function () {
@@ -5282,7 +6773,7 @@ window.VG_HISTORY = [
 
   /* --------------------------------------------------------- 8. Россия */
   VIEWS.russia = {
-    nav: 'Россия', hint: '07',
+    nav: 'Россия', hint: '08',
     title: 'Россия: другое место на кривой',
     sub: RU.position.verdict,
     render: function () {
@@ -5329,7 +6820,7 @@ window.VG_HISTORY = [
 
   /* ----------------------------------------------------- 8. Для эфира */
   VIEWS.editorial = {
-    nav: 'Для эфира', hint: '08',
+    nav: 'Для эфира', hint: '09',
     title: 'Подводки, формулировки, вопросы',
     sub: 'Редакционная часть исследования целиком: три подводки разной длины, два сильных тезиса, формулировки, которых стоит избегать, и 65 вопросов собеседникам.',
     render: function () {
@@ -5407,7 +6898,7 @@ window.VG_HISTORY = [
 
   /* ------------------------------------------------------ 9. Источники */
   VIEWS.sources = {
-    nav: 'Источники и методика', hint: '09',
+    nav: 'Источники и методика', hint: '10',
     title: 'Источники и методика',
     sub: 'Каждая цифра терминала прослеживается до первичного источника. Ссылка открывается в новой вкладке.',
     render: function () {
@@ -5520,9 +7011,9 @@ window.VG_HISTORY = [
   };
 
   /* ============================================================ каркас */
-  var ORDER = ['brief', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'editorial', 'sources'];
+  var ORDER = ['brief', 'market', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'editorial', 'sources'];
   var GROUPS_NAV = [
-    { label: 'Обзор', items: ['brief', 'network'] },
+    { label: 'Обзор', items: ['brief', 'market', 'network'] },
     { label: 'Слои цикла', items: ['stack', 'capital', 'energy'] },
     { label: 'Проверка', items: ['panel', 'scenarios'] },
     { label: 'Контур', items: ['russia'] },
@@ -5547,6 +7038,8 @@ window.VG_HISTORY = [
       rendered[id] = true;
       if (v.after) v.after(host);
     }
+    var shown = document.getElementById('view-' + id);
+    if (shown && shown.__redraw) shown.__redraw();
     if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }

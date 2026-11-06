@@ -11,7 +11,8 @@
       RU = window.VG_RUSSIA, EN = window.VG_ENERGY, ED = window.VG_EDITORIAL,
       LADDER = window.VG_LADDER, CITES = window.VG_CITES || {},
       FEEDS = window.VG_FEEDS || { connectors: [], declared: [] },
-      CAL = (window.VG_CALENDAR || { items: [] }).items;
+      CAL = (window.VG_CALENDAR || { items: [] }).items,
+      MKT = window.VG_MARKET || null, HEAT = window.VGHeat;
 
   /* ------------------------------------------------------------ утилиты */
   function esc(s) {
@@ -363,7 +364,32 @@
               return '<div class="change"><div class="arr ' + r.cls + '">' + r.arr + '</div><div class="body">' + r.html + '</div></div>';
             }).join('') : '<p class="note">Между снимками ничего не изменилось.</p>') +
           '</div>' +
-        '</div>' + soonBlock;
+        '</div>';
+
+      /* ---------- рынок против панели ---------- */
+      var mktBlock = '';
+      if (MKT && HEAT) {
+        var bk = usBasket(), b5 = HEAT.weighted(bk, 'd5'), bc = HEAT.weighted(bk, 'cut');
+        var q = bench('QQQ'), sx = bench('SOXX');
+        var worst3 = bk.slice().sort(function (a, b) { return a.cut - b.cut; }).slice(0, 3);
+        var hyp = ['MSFT', 'GOOGL', 'AMZN', 'META'].map(function (s) { return MKT.items.filter(function (x) { return x.sym === s; })[0]; }).filter(Boolean);
+        mktBlock = '<div class="panel"><h3>Рынок против панели</h3>' +
+          '<p class="sub">Котировки в индекс напряжения не входят: он считается по 28 показателям исследования, то есть по отчётности и физике. Рынок реагирует раньше — здесь видно, расходятся ли они</p>' +
+          '<div class="mktvs">' +
+            '<div class="kv"><div class="k">Корзина цикла, 5 дней</div><div class="v"><span class="pct ' + (b5 < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(b5) + '</span></div></div>' +
+            '<div class="kv"><div class="k">Корзина цикла с ' + esc(shortDate(MKT.refDate)) + '</div><div class="v"><span class="pct ' + (bc < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(bc) + '</span></div></div>' +
+            (sx ? '<div class="kv"><div class="k">Полупроводники (SOXX) с ' + esc(shortDate(MKT.refDate)) + '</div><div class="v"><span class="pct ' + (sx.cut < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(sx.cut) + '</span></div></div>' : '') +
+            (q ? '<div class="kv"><div class="k">Nasdaq-100 (QQQ) с ' + esc(shortDate(MKT.refDate)) + '</div><div class="v"><span class="pct ' + (q.cut < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(q.cut) + '</span></div></div>' : '') +
+            '<div class="kv"><div class="k">Индекс напряжения</div><div class="v">' + num(v, 0) + '</div></div>' +
+          '</div>' +
+          '<p style="margin:12px 0 0">Сильнее всего с даты исследования подешевели ' + worst3.map(function (x) {
+            return '<b>' + esc(x.name) + '</b> (' + HEAT.pctText(x.cut) + (VULN[x.sym] ? ', уязвимость: ' + esc(VULN[x.sym].level.toLowerCase()) : '') + ')';
+          }).join(', ') + '. Гипермасштабные платформы с собственным денежным потоком в среднем ' + HEAT.pctText(HEAT.weighted(hyp, 'cut')) + ' (' + hyp.map(function (x) {
+            return esc(x.name) + ' ' + HEAT.pctText(x.cut);
+          }).join(', ') + '). Это совпадает с картой уязвимости исследования: первыми страдают посредники на заёмном капитале и циклическое железо. Заметное исключение среди платформ — Alphabet.</p>' +
+          '<p class="note" style="margin-top:10px">Почему индекс стоит: ни один из 28 показателей в отчётности пока не пересёк порог исследования — капвложения, заказы и загрузка ещё не развернулись. Падение акций — это ранний сигнал канала «дорожает капитал → сокращаются заказы» (стр. 13), но не его подтверждение. Подтверждением станут отчётности за IV квартал и цена размещений.</p>' +
+          '<button class="linkbtn" type="button" data-goto="market">Тепловая карта котировок →</button></div>';
+      }
 
       /* ---------- 2. Чем подтверждено ---------- */
       var stressed = IND.filter(function (i) { return i.state === 'stress'; });
@@ -481,13 +507,249 @@
         '<div class="note">Все снимки пересчитаны действующей методикой (версия ' + VGM.METHOD + '), а не сохранены такими, какими их когда-то показывал экран: изменение методики не должно выглядеть как изменение рынка. ' +
           esc(M.disclaimer) + '</div>' : '';
 
-      return block1 + block2 + block3 + block4 + log;
+      return block1 + mktBlock + soonBlock + block2 + block3 + block4 + log;
+    }
+  };
+
+
+  /* =====================================================================
+     РЫНОК — тепловая карта котировок компаний цикла
+     ===================================================================== */
+  var MKT_GROUPS = [
+    { id: 'silicon', name: 'Кремний и железо' },
+    { id: 'cloud', name: 'Облака и платформы' },
+    { id: 'infra', name: 'ЦОД, энергия, охлаждение' }
+  ];
+  /* уязвимость по исследованию (стр. 13) — только там, где таблица называет звено прямо */
+  var VULN = {
+    CRWV: { level: 'Очень высокая', group: 'Специализированные облака и новые ЦОД', rank: 0 },
+    SMCI: { level: 'Высокая', group: 'Поставщики серверов и сборщики', rank: 1 },
+    MU:   { level: 'Высокая циклическая', group: 'Память и упаковка', rank: 2 },
+    ASML: { level: 'Средняя', group: 'Уникальные поставщики литографии и передовых фабрик', rank: 3 },
+    TSM:  { level: 'Средняя', group: 'Уникальные поставщики литографии и передовых фабрик', rank: 3 },
+    MSFT: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    GOOGL:{ level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    AMZN: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    META: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 },
+    ORCL: { level: 'Средняя', group: 'Гипермасштабные платформы', rank: 4 }
+  };
+  var RU_MONTHS = ['янв.', 'февр.', 'марта', 'апр.', 'мая', 'июня', 'июля', 'авг.', 'сент.', 'окт.', 'нояб.', 'дек.'];
+  function shortDate(iso) {
+    if (!iso) return '—';
+    var p = iso.split('-');
+    return (+p[2]) + ' ' + RU_MONTHS[+p[1] - 1];
+  }
+  function mktDates() {
+    if (!MKT) return { us: null, ru: null };
+    var us = MKT.items.filter(function (q) { return q.cur === 'USD'; }).map(function (q) { return q.date; }).sort().pop();
+    var ru = MKT.items.filter(function (q) { return q.cur === 'RUB'; }).map(function (q) { return q.date; }).sort().pop();
+    return { us: us, ru: ru };
+  }
+  function usBasket() {
+    return MKT ? MKT.items.filter(function (q) { return q.cur === 'USD' && q.mcap; }) : [];
+  }
+  function bench(sym) {
+    return MKT ? MKT.bench.filter(function (b) { return b.sym === sym; })[0] : null;
+  }
+  function capText(v) {
+    if (!v) return '—';
+    return v >= 1e12 ? '$' + num(v / 1e12, 2) + ' трлн' : '$' + num(v / 1e9, 0) + ' млрд';
+  }
+
+  VIEWS.market = {
+    nav: 'Рынок', hint: '01',
+    title: 'Рынок: котировки компаний цикла',
+    sub: 'Квадрат — компания, цвет — изменение цены за выбранный период, площадь — капитализация. Сгруппировано по звеньям цепочки, как в исследовании.',
+    render: function () {
+      if (!MKT) return '<div class="note">Рыночный снимок не собран: выполните <code>python3 build/connect.py --market</code>.</div>';
+      var dt = mktDates();
+      var periods = Object.keys(HEAT.PERIODS).map(function (k) {
+        return '<button class="chip" type="button" role="radio" aria-checked="' + (k === 'd5') + '" aria-pressed="' + (k === 'd5') + '" data-period="' + k + '">' +
+          esc(k === 'cut' ? 'С ' + shortDate(MKT.refDate) : HEAT.PERIODS[k].label) + '</button>';
+      }).join('');
+
+      return '' +
+        '<div class="note"><b>Это снимок, а не живая лента.</b> Котировки собраны при сборке терминала (' + esc(MKT.fetched) + '): последний торговый день в США — ' +
+          esc(shortDate(dt.us)) + ', на Мосбирже — ' + esc(shortDate(dt.ru)).replace(/\.$/, '') + '. Страница в сеть не ходит; котировки обновляются вместе с воскресной сборкой. Источник: ' + esc(MKT.source) + '.</div>' +
+        '<div class="panel" style="display:grid;gap:12px">' +
+          '<div class="controls" role="radiogroup" aria-label="Период изменения">' + periods +
+            '<span class="ctl-sep" aria-hidden="true"></span><span class="count" style="font-size:12px;color:var(--muted)" id="heatStat"></span></div>' +
+          '<div class="benchrow" id="benchRow"></div>' +
+          '<div class="heatwrap" id="heatHost"></div>' +
+          '<div class="heat-ru-wrap"><div class="heat-ru-head">Мосбиржа, рубли · масштаб не сопоставим с долларовыми бумагами</div><div class="heat-ru" id="heatRu"></div></div>' +
+          '<div class="legend heatlegend" id="heatLegend"></div>' +
+        '</div>' +
+        '<div class="cols cols-2">' +
+          '<div class="panel"><h3>Что подешевело сильнее всего</h3><p class="sub" id="worstSub"></p><div id="worstList"></div></div>' +
+          '<div class="panel"><h3>Звенья цепочки</h3><p class="sub">Изменение, взвешенное по текущей капитализации</p><div id="groupMoves"></div></div>' +
+        '</div>' +
+        '<div class="panel"><h3>Совпадает ли падение с картой уязвимости из исследования</h3>' +
+          '<p class="sub">Исследование ранжирует звенья по уязвимости при коррекции (стр. 13). Ниже — движение бумаг с даты исследования, ' + esc(shortDate(MKT.refDate)) +
+            ', по уровням этой шкалы. Показаны только компании, которые таблица называет прямо или к чьей группе они однозначно относятся</p>' +
+          '<div id="vulnChart"></div>' +
+          '<div class="note" style="margin-top:12px">Это одно рыночное движение, а не проверка модели: совпадение направления не доказывает причину. Но если оно сохранится, это ровно та последовательность, которую исследование описывает как негативный канал — сначала дорожает капитал у облачных посредников и разработчиков, затем сокращаются заказы на серверы, память и сети.</div>' +
+        '</div>' +
+        '<h2 class="section">Все бумаги</h2>' +
+        '<div class="tablewrap compact"><table><thead><tr><th>Компания</th><th>Звено</th><th class="num">Цена</th><th class="num">1 день</th><th class="num">5 дней</th><th class="num">Месяц</th>' +
+          '<th class="num">С ' + esc(shortDate(MKT.refDate)) + '</th><th class="num">От максимума года</th><th class="num">Капитализация</th></tr></thead><tbody id="mktTable"></tbody></table></div>' +
+        (MKT.failed.length ? '<div class="note"><b>Нет данных:</b> ' + MKT.failed.map(function (f) { return esc(f.name) + ' — ' + esc(f.why); }).join('; ') + '.</div>' : '');
+    },
+    after: function (root) {
+      var period = 'd5';
+      try { period = localStorage.getItem('vg-heat-period') || 'd5'; } catch (e) {}
+      if (!HEAT.PERIODS[period]) period = 'd5';
+      var host = root.querySelector('#heatHost'), tip = document.createElement('div');
+      tip.className = 'tip heattip'; tip.hidden = true; host.appendChild(tip);
+
+      function tileHtml(q, w, h) {
+        var st = HEAT.step(q[period], period) || 'z';
+        var big = w > 84 && h > 54, mid = w > 46 && h > 30;
+        return '<div class="ht ht-' + st + '" tabindex="0" data-sym="' + q.sym + '" role="img" aria-label="' + esc(q.name + ': ' + HEAT.pctText(q[period])) + '">' +
+          (mid ? '<b>' + esc(q.sym) + '</b>' : '') +
+          (mid ? '<span>' + HEAT.pctText(q[period]) + '</span>' : '') +
+          (big ? '<em>' + esc(q.name) + '</em>' : '') + '</div>';
+      }
+      function tipHtml(q) {
+        var v = VULN[q.sym];
+        var spark = q.spark || [], mx = Math.max.apply(null, spark), mn = Math.min.apply(null, spark);
+        var pts = spark.map(function (c, i) {
+          return (i / Math.max(1, spark.length - 1) * 220).toFixed(1) + ',' + (34 - (c - mn) / ((mx - mn) || 1) * 30).toFixed(1);
+        }).join(' ');
+        return '<b>' + esc(q.name) + ' · ' + esc(q.sym) + '</b>' +
+          '<span class="k">' + esc(q.cur === 'RUB' ? 'Мосбиржа' : 'Nasdaq API') + ' · закрытие ' + esc(shortDate(q.date)) + ': ' +
+            (q.cur === 'RUB' ? num(q.close, 2) + ' ₽' : '$' + num(q.close, 2)) + '</span>' +
+          '<svg class="tipspark" viewBox="0 0 220 36" preserveAspectRatio="none" aria-hidden="true"><polyline points="' + pts + '"/></svg>' +
+          '<span class="k">три месяца</span>' +
+          '<table class="tipt"><tr><td>1 день</td><td>' + HEAT.pctText(q.d1) + '</td><td>5 дней</td><td>' + HEAT.pctText(q.d5) + '</td></tr>' +
+          '<tr><td>Месяц</td><td>' + HEAT.pctText(q.m1) + '</td><td>С ' + esc(shortDate(MKT.refDate)) + '</td><td>' + HEAT.pctText(q.cut) + '</td></tr>' +
+          '<tr><td>От максимума</td><td>' + HEAT.pctText(q.fromHigh) + '</td><td>Капит.</td><td>' + (q.mcap ? capText(q.mcap) : '—') + '</td></tr></table>' +
+          (v ? '<span class="k">Уязвимость по исследованию: <b>' + esc(v.level) + '</b> · ' + esc(v.group) + '</span>' : '') +
+          (q.node ? '<span class="k">Есть на графе связей</span>' : '');
+      }
+      function bindTips(container) {
+        container.querySelectorAll('.ht').forEach(function (t) {
+          var q = MKT.items.concat(MKT.bench).filter(function (x) { return x.sym === t.dataset.sym; })[0];
+          function show() {
+            var r = host.getBoundingClientRect(), b = t.getBoundingClientRect();
+            tip.innerHTML = tipHtml(q); tip.hidden = false;
+            var x = b.left - r.left + b.width / 2 - 140, y = b.bottom - r.top + 6;
+            if (y + tip.offsetHeight > r.height + 160) y = b.top - r.top - tip.offsetHeight - 6;
+            tip.style.left = Math.max(4, Math.min(r.width - 290, x)) + 'px';
+            tip.style.top = y + 'px';
+          }
+          t.addEventListener('mouseenter', show); t.addEventListener('focus', show);
+          t.addEventListener('mouseleave', function () { tip.hidden = true; });
+          t.addEventListener('blur', function () { tip.hidden = true; });
+        });
+      }
+
+      function draw() {
+        var W = host.clientWidth, H = W < 640 ? 620 : 470;
+        host.style.height = H + 'px';
+        var items = usBasket();
+        var groups = MKT_GROUPS.map(function (g) {
+          var list = items.filter(function (q) { return q.layer === g.id; });
+          return { g: g, list: list, v: list.reduce(function (a, q) { return a + Math.sqrt(q.mcap); }, 0) };
+        }).filter(function (x) { return x.list.length; });
+        var rects = HEAT.squarify(groups.map(function (x) { return { v: x.v, x: x }; }), 0, 0, W, H);
+        var html = '';
+        rects.forEach(function (gr) {
+          var gx = gr.it.x, head = 20, pad = 2;
+          var inner = HEAT.squarify(gx.list.map(function (q) { return { v: Math.sqrt(q.mcap), q: q }; }),
+                                    gr.x + pad, gr.y + head, Math.max(0, gr.w - pad * 2), Math.max(0, gr.h - head - pad));
+          var wv = HEAT.weighted(gx.list, period);
+          html += '<div class="hg" style="left:' + gr.x + 'px;top:' + gr.y + 'px;width:' + gr.w + 'px;height:' + gr.h + 'px">' +
+            '<div class="hg-head" title="' + esc(gx.g.name) + '"><span>' + esc(gx.g.name) + '</span><b>' + HEAT.pctText(wv) + '</b></div></div>';
+          inner.forEach(function (t) {
+            html += '<div class="htw" style="left:' + t.x + 'px;top:' + t.y + 'px;width:' + t.w + 'px;height:' + t.h + 'px">' + tileHtml(t.it.q, t.w, t.h) + '</div>';
+          });
+        });
+        host.querySelectorAll('.hg,.htw').forEach(function (n) { n.remove(); });
+        host.insertAdjacentHTML('afterbegin', html);
+        bindTips(host);
+
+        root.querySelector('#heatRu').innerHTML = MKT.items.filter(function (q) { return q.cur === 'RUB'; }).map(function (q) {
+          return '<div class="htw-flat">' + tileHtml(q, 140, 70) + '</div>';
+        }).join('') || '<p class="note">Мосбиржа в этой сборке не ответила.</p>';
+        root.querySelector('#benchRow').innerHTML = '<span class="bench-k">Ориентиры</span>' + MKT.bench.map(function (b) {
+          var st = HEAT.step(b[period], period) || 'z';
+          return '<span class="bench"><i class="ht-' + st + '"></i>' + esc(b.name) + ' <b>' + HEAT.pctText(b[period]) + '</b></span>';
+        }).join('');
+        bindTips(root.querySelector('#heatRu'));
+
+        var st = HEAT.PERIODS[period].steps;
+        root.querySelector('#heatLegend').innerHTML =
+          '<span>Падение</span>' + [5, 4, 3, 2, 1].map(function (k) { return '<i class="ht-d' + k + '" title="≤ −' + st[k - 1] + '%"></i>'; }).join('') +
+          '<i class="ht-z" title="меньше ' + st[0] + '% в любую сторону"></i>' +
+          [1, 2, 3, 4, 5].map(function (k) { return '<i class="ht-u' + k + '" title="≥ +' + st[k - 1] + '%"></i>'; }).join('') + '<span>Рост</span>' +
+          '<span class="hl-scale">шаги: ' + st.map(function (x) { return x + '%'; }).join(' · ') + '</span>' +
+          '<span class="hl-scale">площадь ∝ √капитализации, чтобы малые звенья цикла оставались видимы</span>';
+
+        var basket = HEAT.weighted(items, period);
+        root.querySelector('#heatStat').textContent = 'корзина цикла ' + HEAT.pctText(basket) + ' · бумаг ' + MKT.items.length;
+
+        var worst = MKT.items.filter(function (q) { return q[period] !== null; })
+          .sort(function (a, b) { return a[period] - b[period]; }).slice(0, 7);
+        root.querySelector('#worstSub').textContent = HEAT.PERIODS[period].label + (period === 'cut' ? ' ' + shortDate(MKT.refDate) : '');
+        root.querySelector('#worstList').innerHTML = divBars(worst.map(function (q) {
+          var v = VULN[q.sym];
+          return { name: q.name, period: v ? 'уязвимость: ' + v.level.toLowerCase() : '', v: q[period], label: HEAT.pctText(q[period]) };
+        }), Math.min.apply(null, worst.map(function (q) { return q[period]; }).concat([-1])) * 1.25, 5);
+        root.querySelector('#groupMoves').innerHTML = divBars(MKT_GROUPS.map(function (g) {
+          var w = HEAT.weighted(items.filter(function (q) { return q.layer === g.id; }), period);
+          return { name: g.name, v: w || 0, label: HEAT.pctText(w) };
+        }).concat(MKT.bench.map(function (b) { return { name: b.name, period: 'ориентир', v: b[period] || 0, label: HEAT.pctText(b[period]) }; })),
+          -Math.max(5, Math.max.apply(null, MKT_GROUPS.map(function (g) { return Math.abs(HEAT.weighted(items.filter(function (q) { return q.layer === g.id; }), period) || 0); }))) * 1.3,
+          Math.max(5, Math.max.apply(null, MKT.bench.map(function (b) { return b[period] || 0; }))) * 1.3);
+      }
+
+      /* уязвимость против движения — всегда с даты исследования */
+      var vul = MKT.items.filter(function (q) { return VULN[q.sym]; })
+        .sort(function (a, b) { return VULN[a.sym].rank - VULN[b.sym].rank || a.cut - b.cut; });
+      var vmin = Math.min.apply(null, vul.map(function (q) { return q.cut; }).concat([-5]));
+      var vmax = Math.max.apply(null, vul.map(function (q) { return q.cut; }).concat([5]));
+      root.querySelector('#vulnChart').innerHTML = divBars(vul.map(function (q) {
+        return { name: q.name, period: VULN[q.sym].level, v: q.cut, label: HEAT.pctText(q.cut) };
+      }), vmin * 1.2, vmax * 1.4);
+
+      root.querySelector('#mktTable').innerHTML = MKT.items.concat(MKT.bench).map(function (q) {
+        var grp = (MKT_GROUPS.filter(function (g) { return g.id === q.layer; })[0] || {}).name || (q.cur === 'RUB' ? 'Россия' : 'Ориентир');
+        return '<tr><td><b>' + esc(q.name) + '</b><span class="sub">' + esc(q.sym) + '</span></td><td>' + esc(grp) + '</td>' +
+          '<td class="num">' + (q.cur === 'RUB' ? num(q.close, 2) + ' ₽' : '$' + num(q.close, 2)) + '</td>' +
+          ['d1', 'd5', 'm1', 'cut', 'fromHigh'].map(function (k) {
+            return '<td class="num"><span class="pct ' + (q[k] > 0 ? 'pos' : q[k] < 0 ? 'neg' : '') + '">' + HEAT.pctText(q[k]) + '</span></td>';
+          }).join('') +
+          '<td class="num">' + (q.mcap ? capText(q.mcap) : q.mcapRub ? num(q.mcapRub / 1e12, 2) + ' трлн ₽' : '—') + '</td></tr>';
+      }).join('');
+
+      root.querySelectorAll('[data-period]').forEach(function (b) {
+        b.addEventListener('click', function () {
+          period = b.dataset.period;
+          try { localStorage.setItem('vg-heat-period', period); } catch (e) {}
+          root.querySelectorAll('[data-period]').forEach(function (x) {
+            var on = x.dataset.period === period;
+            x.setAttribute('aria-checked', String(on)); x.setAttribute('aria-pressed', String(on));
+          });
+          draw();
+        });
+      });
+      root.querySelectorAll('[data-period]').forEach(function (x) {
+        var on = x.dataset.period === period;
+        x.setAttribute('aria-checked', String(on)); x.setAttribute('aria-pressed', String(on));
+      });
+      draw();
+      var rt = null;
+      window.addEventListener('resize', function () {
+        if (root.hidden) return;
+        clearTimeout(rt); rt = setTimeout(draw, 150);
+      });
+      root.__redraw = draw;
     }
   };
 
   /* ---------------------------------------------------------- 2. Граф */
   VIEWS.network = {
-    nav: 'Граф связей', hint: '01',
+    nav: 'Граф связей', hint: '02',
     title: 'Граф связей: капитал, поставки, контракты',
     sub: 'Стрелка показывает направление денег. Слои расположены по течению: наверху — источники денег, внизу — фабрики и память. Любая стрелка, идущая вверх, — это деньги, вернувшиеся к тому, кто их дал. Это и есть круговая связь.',
     render: function () {
@@ -703,7 +965,7 @@
 
   /* ---------------------------------------------------------- 3. Стек */
   VIEWS.stack = {
-    nav: 'Стек цикла', hint: '02',
+    nav: 'Стек цикла', hint: '03',
     title: 'Стек цикла: 13 звеньев',
     sub: 'Чем дальше звено от конечного результата, тем легче измерить поставку; чем ближе к результату, тем труднее отделить вклад ИИ от изменений процесса.',
     render: function () {
@@ -746,7 +1008,7 @@
 
   /* -------------------------------------------------------- 4. Капитал */
   VIEWS.capital = {
-    nav: 'Капитал и поток', hint: '03',
+    nav: 'Капитал и поток', hint: '04',
     title: 'Капитал против денежного потока',
     sub: 'Корректный вопрос — не «кто потратил больше», а какая доля прироста капитала уже обслуживается внешней выручкой и денежным потоком. Периоды компаний различаются и указаны в каждой строке.',
     render: function () {
@@ -844,8 +1106,7 @@
           '<div class="panel"><h3>Капвложения к операционному потоку</h3>' +
             '<p class="sub">Стресс-сигнал исследования: выше 100% два квартала подряд без ускорения выручки. Вертикальная линия — отметка 100%</p>' +
             ratioChart +
-            '<p class="note" style="margin-top:12px">У CoreWeave операционный поток выведен из соотношения «капвложения почти вчетверо выше потока» и помечен как оценка ' + badge('estimate') +
-              '. Amazon в расчёт не взят: в исследовании приведён прирост капвложений, а не уровень.</p>' +
+            '<p class="note" style="margin-top:12px">Операционный поток CoreWeave и уровень капвложений Amazon сверены с первоисточниками (форма 10-Q и пресс-релиз). У Amazon взяты валовые покупки имущества и оборудования за 12 месяцев к III кв. по форме 10-Q; по определению компании (нетто, за вычетом поступлений от продаж и стимулов) к II кв. было $169,0 млрд. Из-за длины периода Amazon стоит в блоке «Год и 12 месяцев».</p>' +
             '<p class="note" style="margin-top:8px"><b>Что этот коэффициент не измеряет.</b> Операционный поток компании создаётся всем её бизнесом, а не только ИИ. Поэтому отношение показывает способность компании финансировать стройку собственными силами — и не показывает окупаемость вложений именно в ИИ. Такого публичного показателя сегодня не существует ни у одной из компаний панели.</p></div>' +
         '</div>' +
         '<div class="panel"><h3>Свободный денежный поток после капвложений</h3>' +
@@ -868,7 +1129,7 @@
 
   /* -------------------------------------------------------- 5. Энергия */
   VIEWS.energy = {
-    nav: 'Энергия и физика', hint: '04',
+    nav: 'Энергия и физика', hint: '05',
     title: 'Энергетика и физическая экономика ЦОД',
     sub: EN.keyMetric,
     render: function () {
@@ -902,7 +1163,7 @@
 
   /* --------------------------------------------------------- 6. Панель */
   VIEWS.panel = {
-    nav: 'Панель 28 показателей', hint: '05',
+    nav: 'Панель 28 показателей', hint: '06',
     title: 'Панель из 28 показателей',
     sub: 'Что проверять каждый квартал. Колонка «Проверено» показывает, когда наблюдение последний раз сверялось с источником и сколько осталось до ожидаемого обновления. Серый статус означает не ноль, а отсутствие публичного ряда — это самостоятельный вывод: главные показатели окупаемости сегодня просто не раскрываются.',
     render: function () {
@@ -955,7 +1216,7 @@
 
   /* ------------------------------------------------------- 7. Сценарии */
   VIEWS.scenarios = {
-    nav: 'Сценарии', hint: '06',
+    nav: 'Сценарии', hint: '07',
     title: 'Сценарии на 12-36 месяцев',
     sub: 'Вероятности — аналитическая оценка авторов исследования, а не расчёт терминала. Ценность в другом: у каждого сценария есть набор ранних индикаторов, который можно проверять.',
     render: function () {
@@ -998,7 +1259,7 @@
 
   /* --------------------------------------------------------- 8. Россия */
   VIEWS.russia = {
-    nav: 'Россия', hint: '07',
+    nav: 'Россия', hint: '08',
     title: 'Россия: другое место на кривой',
     sub: RU.position.verdict,
     render: function () {
@@ -1045,7 +1306,7 @@
 
   /* ----------------------------------------------------- 8. Для эфира */
   VIEWS.editorial = {
-    nav: 'Для эфира', hint: '08',
+    nav: 'Для эфира', hint: '09',
     title: 'Подводки, формулировки, вопросы',
     sub: 'Редакционная часть исследования целиком: три подводки разной длины, два сильных тезиса, формулировки, которых стоит избегать, и 65 вопросов собеседникам.',
     render: function () {
@@ -1123,7 +1384,7 @@
 
   /* ------------------------------------------------------ 9. Источники */
   VIEWS.sources = {
-    nav: 'Источники и методика', hint: '09',
+    nav: 'Источники и методика', hint: '10',
     title: 'Источники и методика',
     sub: 'Каждая цифра терминала прослеживается до первичного источника. Ссылка открывается в новой вкладке.',
     render: function () {
@@ -1236,9 +1497,9 @@
   };
 
   /* ============================================================ каркас */
-  var ORDER = ['brief', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'editorial', 'sources'];
+  var ORDER = ['brief', 'market', 'network', 'stack', 'capital', 'energy', 'panel', 'scenarios', 'russia', 'editorial', 'sources'];
   var GROUPS_NAV = [
-    { label: 'Обзор', items: ['brief', 'network'] },
+    { label: 'Обзор', items: ['brief', 'market', 'network'] },
     { label: 'Слои цикла', items: ['stack', 'capital', 'energy'] },
     { label: 'Проверка', items: ['panel', 'scenarios'] },
     { label: 'Контур', items: ['russia'] },
@@ -1263,6 +1524,8 @@
       rendered[id] = true;
       if (v.after) v.after(host);
     }
+    var shown = document.getElementById('view-' + id);
+    if (shown && shown.__redraw) shown.__redraw();
     if (location.hash !== '#' + id) history.replaceState(null, '', '#' + id);
     window.scrollTo({ top: 0, behavior: 'auto' });
   }

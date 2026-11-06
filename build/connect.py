@@ -6,6 +6,7 @@
     python3 build/connect.py --run-all
     python3 build/connect.py --apply nvda-quarter   перенести величины в данные
     python3 build/connect.py --selftest       проверить, что отказы срабатывают
+    python3 build/connect.py --market         снимок котировок (Nasdaq, Мосбиржа)
 
 Подключение само в данные не пишет. Оно кладёт предложение в build/proposals/
 и обновляет terminal/data/feeds.js, где видно: что говорит источник, что стоит
@@ -183,6 +184,22 @@ def main():
         print("\nОбъявлены, но не подключены:")
         for d in DECLARED:
             print(f"  {d['source']:4} {d['title']:44} {d['why']}")
+        return
+    if "--market" in args:
+        from connectors import market
+        print("Рыночный слой:")
+        items, bench, failed = market.collect()
+        last = max((q["date"] for q in items), default="")
+        payload = {"fetched": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M UTC"),
+                   "lastDate": last, "refDate": market.REF_DATE,
+                   "source": "API Nasdaq (акции США, ADR, фонды) и ISS Московской биржи",
+                   "items": items, "bench": bench, "failed": failed}
+        head = ("/* Рыночный слой: снимок котировок на дату сборки.\n"
+                "   Пишется командой python3 build/connect.py --market. Руками не правится.\n"
+                "   Страница терминала в сеть не ходит: это не живая лента. */\n"
+                "window.VG_MARKET = ")
+        (DATA / "market.js").write_text(head + json.dumps(payload, ensure_ascii=False) + ";\n", encoding="utf-8")
+        print(f"\nterminal/data/market.js: бумаг {len(items)}, ориентиров {len(bench)}, отказов {len(failed)}; последний торговый день {last}")
         return
     if "--selftest" in args:
         from connectors import selftest

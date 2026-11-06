@@ -14,8 +14,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": 15,
-   "observed": "2026-07-15",
+   "day": 14,
+   "observed": "2026-10-14",
    "step": 3
   },
   {
@@ -28,8 +28,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 15,
+   "observed": "2026-10-15",
    "step": 3
   },
   {
@@ -42,8 +42,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 28,
+   "observed": "2026-10-28",
    "step": 3
   },
   {
@@ -56,8 +56,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 30,
+   "observed": "2026-10-30",
    "step": 3
   },
   {
@@ -70,8 +70,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": null,
-   "observed": "2026-07",
+   "day": 21,
+   "observed": "2026-10-21",
    "step": 3
   },
   {
@@ -84,8 +84,8 @@ window.VG_CALENDAR = {
     7,
     10
    ],
-   "day": 29,
-   "observed": "2026-07-29",
+   "day": 28,
+   "observed": "2026-10-28",
    "step": 3
   },
   {
@@ -99,7 +99,7 @@ window.VG_CALENDAR = {
     10
    ],
    "day": 29,
-   "observed": "2026-07-29",
+   "observed": "2026-10-29",
    "step": 3
   },
   {
@@ -168,8 +168,8 @@ window.VG_CALENDAR = {
     9,
     12
    ],
-   "day": null,
-   "observed": "2026-06",
+   "day": 10,
+   "observed": "2026-09-10",
    "step": 3
   },
   {
