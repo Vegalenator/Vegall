@@ -308,6 +308,28 @@
       });
       o.halo.setAttribute('d', d + ' Z');
       o.cx = sx / k; o.cy = sy / k;
+    });
+    /* значки не должны лежать друг на друге: контуры сходятся на одних и тех же узлах,
+       а на телефоне граф сжат. Если два значка ближе MIN, раздвигаем их вдоль линии между центрами. */
+    var box = this.svg.getBoundingClientRect();
+    var scale = box.width > 0 ? Math.min(box.width / this.W, box.height / this.H) : 1;   /* экранных пикселей на единицу графа */
+    var MIN = 28 / scale, els = this.loopEls;
+    for (var it = 0; it < 40; it++) {
+      var moved = false;
+      for (var a = 0; a < els.length; a++) {
+        for (var b = a + 1; b < els.length; b++) {
+          var dx = els[b].cx - els[a].cx, dy = els[b].cy - els[a].cy, dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist >= MIN) continue;
+          if (dist < 0.01) { dx = 0; dy = 1; dist = 1; }
+          var push = (MIN - dist) / 2 + 0.5, ux = dx / dist, uy = dy / dist;
+          els[a].cx -= ux * push; els[a].cy -= uy * push;
+          els[b].cx += ux * push; els[b].cy += uy * push;
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+    els.forEach(function (o) {
       o.badge.setAttribute('transform', 'translate(' + o.cx.toFixed(1) + ',' + o.cy.toFixed(1) + ')');
     });
   };
@@ -315,6 +337,7 @@
   Graph.prototype.setLoopMode = function (on) {
     this.loopMode = !!on;
     this.svg.classList.toggle('loops-on', this.loopMode);
+    if (this.loopMode) this.positionLoops();   /* масштаб известен, только когда экран виден */
     this.gLoops.querySelectorAll('.gloop').forEach(function (g) {
       g.setAttribute('tabindex', on ? 0 : -1);
     });

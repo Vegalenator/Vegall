@@ -699,11 +699,11 @@ tr.rownote td b { color: var(--ink); }
 
 <script>
 /* Метаданные терминала и реестр первичных источников.
-   Каждая цифра в терминале ссылается на код источника S1-S32. */
+   Каждая цифра в терминале ссылается на код источника S1-S37. */
 window.VG_META = {
   title: 'Терминал ИИ-цикла',
   asOf: '2026-09-06',              // дата среза исследования
-  builtAt: '2026-11-06',           // дата сборки терминала
+  builtAt: '2026-11-07',           // дата сборки терминала
   basis: 'Глубокое исследование «ИИ как инвестиционный и финансовый цикл», 6 сентября 2026',
   // Типы утверждений — бейдж рядом с каждой цифрой
   kinds: {
@@ -757,7 +757,12 @@ window.VG_META = {
     S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/', generic: true },
     S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/', generic: true },
     S31: { org: 'Anthropic', title: 'Подача формы S-1 для IPO', date: '2026-10-26', url: 'https://www.anthropic.com/news/s1-sec' },
-    S32: { org: 'Anthropic (SEC EDGAR)', title: 'Форма S-1/A, поправка № 1', date: '2026-11-02', url: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0002130357&type=S-1' }
+    S32: { org: 'Anthropic (SEC EDGAR)', title: 'Форма S-1/A, поправка № 1', date: '2026-11-02', url: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0002130357&type=S-1' },
+    S33: { org: 'Microsoft', title: 'Следующая глава партнёрства Microsoft и OpenAI', date: '2025-10-28', url: 'https://blogs.microsoft.com/blog/2025/10/28/the-next-chapter-of-the-microsoft-openai-partnership/' },
+    S34: { org: 'Anthropic', title: 'Партнёрства с Microsoft и NVIDIA: Azure и вложения', date: '2025-11-18', url: 'https://www.anthropic.com/news/microsoft-nvidia-anthropic-announce-strategic-partnerships' },
+    S35: { org: 'Anthropic', title: 'Расширение использования Google Cloud TPU', date: '2025-10-23', url: 'https://www.anthropic.com/news/expanding-our-use-of-google-cloud-tpus-and-services' },
+    S36: { org: 'Anthropic', title: 'Расширение сотрудничества с AWS', date: '2024-11-22', url: 'https://www.anthropic.com/news/anthropic-amazon-trainium' },
+    S37: { org: 'Anthropic', title: 'Раунд Series H: $65 млрд при оценке $965 млрд', date: '2026-05-28', url: 'https://www.anthropic.com/news/series-h' }
   },
   limits: [
     'Все прогнозы — энергопотребление, производительность, вклад в ВВП — отделены от наблюдаемых фактов.',
@@ -1118,7 +1123,7 @@ window.VG_NODES = [
   { id: 'yndx', name: 'Яндекс', layer: 'cloud', country: 'Россия', note: 'B2B Tech 15,3 млрд руб. за квартал' },
   { id: 'sber', name: 'Сбер', layer: 'cloud', country: 'Россия', note: 'Заявленный эффект ИИ свыше 450 млрд руб.' },
   { id: 'openai', name: 'OpenAI', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты' },
-  { id: 'anthropic', name: 'Anthropic', layer: 'model', country: 'США', note: 'Разработчик моделей; капитал и облачные кредиты. 26.10.2026 подал форму S-1 на IPO (Nasdaq, тикер ANT), 02.11 — поправку S-1/A; финансовые данные проспекта ещё не сверены' },
+  { id: 'anthropic', name: 'Anthropic', layer: 'model', country: 'США', note: 'Разработчик моделей; связан с Amazon, Alphabet, Microsoft и Nvidia. Series H 28.05.2026: $65 млрд при оценке $965 млрд. 26.10.2026 подал форму S-1 на IPO (Nasdaq, тикер ANT), 02.11 — поправку S-1/A; цена размещения не объявлена, финансы проспекта ещё не сверены' },
   { id: 'constellation', name: 'Constellation', layer: 'energy', country: 'США', note: 'Перезапуск Crane Clean Energy Center, 835 МВт' },
   { id: 'grid', name: 'Сеть', full: 'Сеть и генерация', layer: 'energy', country: 'Мир', note: 'Очередь на подключение — реальный ограничитель ввода' },
   { id: 'bonds', name: 'Облигации', full: 'Облигационный рынок', layer: 'capital', country: 'Мир', note: 'Более $100 млрд валового выпуска гипермасштабных компаний в 2025' },
@@ -1157,8 +1162,10 @@ window.VG_EDGES = [
   { from: 'nvda', to: 'crwv', type: 'equity', amount: '$2 млрд', label: 'Стратегическая инвестиция, январь 2026', weight: 3, src: 'S17', cite: ['crwv-10q'], inReport: 'yes', circular: true },
   { from: 'vc', to: 'openai', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
   { from: 'vc', to: 'anthropic', type: 'equity', label: 'Венчурный и стратегический капитал', src: 'S3', inReport: 'yes' },
-  { from: 'msft', to: 'openai', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
-  { from: 'amzn', to: 'anthropic', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
+  { from: 'msft', to: 'openai', type: 'equity', amount: '≈27% (≈$135 млрд)', label: 'Доля и облачные кредиты', src: 'S33', cite: ['msft-openai-stake'], inReport: 'no', circular: true },
+  { from: 'amzn', to: 'anthropic', type: 'equity', amount: '$8 млрд к ноябрю 2024', label: 'Доля и облачные кредиты', src: 'S36', cite: ['anth-aws-invest', 'anth-seriesh-hyper'], inReport: 'no', circular: true },
+  { from: 'msft', to: 'anthropic', type: 'equity', amount: 'до $5 млрд', label: 'Вложение по партнёрству, ноябрь 2025', src: 'S34', cite: ['anth-invest-nm', 'msft-equity-gain'], inReport: 'no', circular: true },
+  { from: 'nvda', to: 'anthropic', type: 'equity', amount: 'до $10 млрд', label: 'Вложение по партнёрству, ноябрь 2025', src: 'S34', cite: ['anth-invest-nm'], inReport: 'no', circular: true },
   { from: 'googl', to: 'anthropic', type: 'equity', label: 'Доля и облачные кредиты', inReport: 'no', circular: true },
   { from: 'equity', to: 'baba', type: 'equity', amount: 'HK$80 млрд', label: 'Размещение акций, около 60% средств — на вычисления', src: 'S20', inReport: 'yes' },
   { from: 'states', to: 'tsmc', type: 'equity', label: 'Субсидии фабрикам по регионам', src: 'S18', inReport: 'yes' },
@@ -1177,9 +1184,10 @@ window.VG_EDGES = [
 
   // --- Долгосрочные договоры и гарантии закупки ---
   { from: 'msft', to: 'constellation', type: 'contract', amount: '835 МВт', label: 'Двадцатилетний договор купли электроэнергии', weight: 3, src: 'S27', cite: ['constellation-ppa'], inReport: 'yes' },
-  { from: 'openai', to: 'msft', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', weight: 2, inReport: 'mechanism', circular: true },
-  { from: 'anthropic', to: 'amzn', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
-  { from: 'anthropic', to: 'googl', type: 'contract', back: 'вычисления', label: 'Многолетний договор с облаком', inReport: 'no', circular: true },
+  { from: 'openai', to: 'msft', type: 'contract', back: 'вычисления', amount: '+$250 млрд Azure', label: 'Многолетний договор с облаком', weight: 2, src: 'S33', cite: ['openai-azure250'], inReport: 'mechanism', circular: true },
+  { from: 'anthropic', to: 'amzn', type: 'contract', back: 'вычисления', amount: 'до 5 ГВт новых мощностей', label: 'Многолетний договор с облаком', src: 'S37', cite: ['anth-seriesh-compute'], inReport: 'no', circular: true },
+  { from: 'anthropic', to: 'googl', type: 'contract', back: 'вычисления', amount: 'до 1 млн TPU', label: 'Многолетний договор с облаком', src: 'S35', cite: ['anth-google-tpu', 'anth-seriesh-compute'], inReport: 'no', circular: true },
+  { from: 'anthropic', to: 'msft', type: 'contract', back: 'вычисления', amount: '$30 млрд Azure', label: 'Обязательство закупить мощности Azure', weight: 2, src: 'S34', cite: ['anth-azure30', 'anth-nvda-compute'], inReport: 'no', circular: true },
   { from: 'crwv3', to: 'crwv', type: 'contract', amount: '72% выручки', label: 'Концентрация клиентов', weight: 3, src: 'S17', inReport: 'yes' },
   { from: 'enterprises', to: 'orcl', type: 'contract', amount: 'RPO $638 млрд', label: 'Портфель обязательств', weight: 2, src: 'S14', inReport: 'yes' },
 
@@ -1241,8 +1249,9 @@ window.VG_LOOP_RISKS = {
         { h: 'Жизнь на рефинансировании', t: 'Денежные капвложения CoreWeave за полугодие почти вчетверо выше операционного потока. Если капитал подорожает, закупки ускорителей сократятся раньше, чем изменится конечный спрос.' },
         { h: 'Залог стареет быстрее долга', t: 'Долг специализированных облаков обеспечен ускорителями и договорами. Ускорители морально стареют быстрее, чем гасится кредит: при коррекции залоговый дисконт усиливает шок.' }
       ],
-      watch: 'Рост запасов и дебиторской задолженности Nvidia при снижении загрузки облаков; расширение кредитных спрэдов специализированных облаков.',
+      watch: 'Рост запасов и дебиторской задолженности Nvidia при снижении загрузки облаков; расширение кредитных спрэдов специализированных облаков. Как изменение цены пакета CoreWeave (куплен по $87,20) отразится в отчётности Nvidia — в её ближайшем отчёте.',
       evidence: 'Форма 10-Q CoreWeave за II кв. 2026: «all of the GPUs used in our infrastructure today are NVIDIA GPUs»; в январе 2026 года размещено около 23 млн акций Nvidia по $87,20 с валовыми поступлениями $2,0 млрд; три крупнейших клиента дали 36%, 26% и 10% выручки квартала; операционный поток за полугодие $3,7 млрд при денежных капвложениях $14,1 млрд. Сколько из этих $2,0 млрд вернулось в Nvidia как оплата ускорителей, форма не раскрывает.',
+      stake: { sym: 'CRWV', price: 87.20, usd: 2.0 },
       cite: ['crwv-10q'],
       basis: 'Обе связи описаны в исследовании (стр. 6, 10, 14, 19). Цифры контура сверены по форме 10-Q CoreWeave, полученной через sec.gov.'
     },
@@ -1252,7 +1261,7 @@ window.VG_LOOP_RISKS = {
       kind: 'Облако финансирует своего клиента',
       mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик по многолетнему договору покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
       headline: 'Microsoft сам выделяет влияние вложений в OpenAI на свою прибыль',
-      evidence: 'Отчёт Microsoft за IV кв. 2026 ф.г.: «When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic». Компания отдельно корректирует прочие доходы на эффект вложений в OpenAI, а прибыль от переоценки вложения в Anthropic называет прямо. В отчёте за I кв. 2027 ф.г. (28.10.2026) картина спокойнее: итоговая строка прочих доходов +$38 млн, с поправкой на OpenAI −$234 млн, то есть эффект вложений в OpenAI около +$0,27 млрд до налога (расчёт терминала) на фоне операционной прибыли $45,9 млрд; влияние OpenAI на чистую прибыль +$207 млн из $36,6 млрд. Прибыль от переоценки вложения в Anthropic в материалах этого квартала не названа.',
+      evidence: 'Отчёт Microsoft за IV кв. 2026 ф.г.: «When adjusted for the impact of our investments in OpenAI, other income and expense was $2.8 billion driven by the gain on investment in Anthropic». Компания отдельно корректирует прочие доходы на эффект вложений в OpenAI, а прибыль от переоценки вложения в Anthropic называет прямо. В отчёте за I кв. 2027 ф.г. (28.10.2026) картина спокойнее: итоговая строка прочих доходов +$38 млн, с поправкой на OpenAI −$234 млн, то есть эффект вложений в OpenAI около +$0,27 млрд до налога (расчёт терминала) на фоне операционной прибыли $45,9 млрд; влияние OpenAI на чистую прибыль +$207 млн из $36,6 млрд. Прибыль от переоценки вложения в Anthropic в материалах этого квартала не названа. Условия партнёрства (Microsoft, 28.10.2025): после рекапитализации Microsoft владеет долей в OpenAI Group PBC стоимостью около $135 млрд (около 27% на разводнённой основе), а OpenAI законтрактовала дополнительные $250 млрд услуг Azure; право первоочередного отказа Microsoft как облачного провайдера OpenAI снято, то есть привязка ослаблена, но обязательство осталось.',
       risks: [
         { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, выглядит как спрос, но не приносит денег извне цепочки. Поэтому исследование требует отдельно смотреть на внешнюю облачную выручку и внешнее потребление токенов.' },
         { h: 'Прибыль от переоценки вместо операций', t: 'Рост оценки разработчика попадает в прочие доходы инвестора. Сам факт, что Microsoft выделяет эффект вложений в OpenAI отдельной поправкой, показывает: в отчётности он заметен.' },
@@ -1260,8 +1269,8 @@ window.VG_LOOP_RISKS = {
         { h: 'Договор без внешней монетизации', t: 'Многолетний договор подтверждает намерение платить, но не общеэкономический спрос. Если разработчик не найдёт платящих клиентов, обязательство перед облаком придётся финансировать новым капиталом — в том числе от самого облака.' }
       ],
       watch: 'Рост облачной выручки при стагнации внешнего потребления токенов; доля прочих доходов и переоценки в прибыли инвестора.',
-      cite: ['msft-equity-gain', 'msft-q1-oi', 'imf-gfsr'],
-      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Microsoft и OpenAI — корпоративное раскрытие вне исследования. Влияние вложений на прочие доходы сверено по отчётам Microsoft за IV кв. 2026 ф.г. и I кв. 2027 ф.г.; сигнал «переоценка вместо операционной прибыли» в последнем квартале у Microsoft не наблюдается. Рамку контура подтверждает МВФ (GFSR, апрель 2026): он относит Microsoft и Nvidia к «кругу» круговых связей и называет OpenAI среди нелистингованных участников.'
+      cite: ['msft-equity-gain', 'msft-q1-oi', 'imf-gfsr', 'msft-openai-stake', 'openai-azure250'],
+      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Microsoft и OpenAI — корпоративное раскрытие вне исследования. Влияние вложений на прочие доходы сверено по отчётам Microsoft за IV кв. 2026 ф.г. и I кв. 2027 ф.г.; сигнал «переоценка вместо операционной прибыли» в последнем квартале у Microsoft не наблюдается. Рамку контура подтверждает МВФ (GFSR, апрель 2026): он относит Microsoft и Nvidia к «кругу» круговых связей и называет OpenAI среди нелистингованных участников. Обе ноги контура — доля и договор — подтверждены объявлением Microsoft от 28.10.2025 (S33). OpenAI не торгуется, оценка доли — по условиям рекапитализации, а не по рыночной цене.'
     },
 
     'anthropic + googl': {
@@ -1269,16 +1278,16 @@ window.VG_LOOP_RISKS = {
       kind: 'Облако финансирует своего клиента',
       mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
       headline: 'У Alphabet прочий доход от переоценки во II кв. 2026 более чем вдвое превысил операционную прибыль; в III кв. он стал убытком, но за девять месяцев превышает её',
-      evidence: 'II кв. 2026: прочий доход $98,0 млрд, «primarily the result of net unrealized gains on our equity securities», при операционной прибыли $40,8 млрд. III кв. 2026 (отчёт от 28.10): прочий доход (расход) −$8,2 млрд, из них убыток по долевым ценным бумагам −$8,7 млрд, при операционной прибыли $40,6 млрд. За девять месяцев прочий доход $127,5 млрд против операционной прибыли $121,0 млрд; неденежная прибыль по долговым и долевым ценным бумагам в отчёте о движении денежных средств — $126,8 млрд. Вложения в непубличные компании на балансе: $68,7 млрд на конец 2025 → $131,5 млрд на конец II кв. → $135,2 млрд на 30.09.2026. Строка «equity securities» включает публичные и непубличные бумаги, реализованные и нереализованные результаты. Какие именно доли дали результат, релиз не раскрывает — долю Anthropic по отчёту установить нельзя.',
+      evidence: 'II кв. 2026: прочий доход $98,0 млрд, «primarily the result of net unrealized gains on our equity securities», при операционной прибыли $40,8 млрд. III кв. 2026 (отчёт от 28.10): прочий доход (расход) −$8,2 млрд, из них убыток по долевым ценным бумагам −$8,7 млрд, при операционной прибыли $40,6 млрд. За девять месяцев прочий доход $127,5 млрд против операционной прибыли $121,0 млрд; неденежная прибыль по долговым и долевым ценным бумагам в отчёте о движении денежных средств — $126,8 млрд. Вложения в непубличные компании на балансе: $68,7 млрд на конец 2025 → $131,5 млрд на конец II кв. → $135,2 млрд на 30.09.2026. Строка «equity securities» включает публичные и непубличные бумаги, реализованные и нереализованные результаты. Какие именно доли дали результат, релиз не раскрывает — долю Anthropic по отчёту установить нельзя. Контрактная нога подтверждена самой Anthropic: в октябре 2025 объявлено расширение на Google Cloud до миллиона TPU («десятки миллиардов долларов»), а при раунде Series H — соглашение с Google и Broadcom на пять гигаватт TPU. Раунд H (28.05.2026, $965 млрд) пришёлся на II квартал, когда у Alphabet выросла переоценка долей, но отчёт связь с Anthropic не раскрывает и размер доли не называет.',
       risks: [
         { h: 'Прибыль от переоценки больше операционной', t: 'Прочий доход Alphabet, в основном переоценка долей, более чем вдвое превысил операционную прибыль. Исследование называет именно это сигналом тревоги для круговых связей: переоценка долей заменяет операционную прибыль.' },
         { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, не приносит денег извне цепочки и не доказывает спроса конечного клиента.' },
-        { h: 'Один разработчик — два контура', t: 'Anthropic связан контурами одновременно с Alphabet и Amazon. Если ожидаемая выручка одного разработчика закладывается в планы двух облаков и в оценку двух инвесторов, это и есть многократный учёт одного ожидания, о котором предупреждает исследование.' },
+        { h: 'Один разработчик — несколько контуров', t: 'Anthropic связан контурами с Alphabet, Amazon и Microsoft, а через Microsoft — и с Nvidia: по сообщению Anthropic от 28.05.2026, Claude доступен во всех трёх крупнейших облаках. Если ожидаемая выручка одного разработчика закладывается в планы трёх облаков и в оценку нескольких инвесторов, это и есть многократный учёт одного ожидания, о котором предупреждает исследование.' },
         { h: 'Разворот бьёт дважды', t: 'При замедлении монетизации переоценка идёт в обратную сторону: снижение оценки разработчика бьёт по прочим доходам инвестора одновременно с сокращением облачных заказов.' }
       ],
       watch: 'Проспект IPO Anthropic (S-1 от 26.10.2026, S-1/A от 02.11): выручка, обязательства по вычислениям перед Google и доли инвесторов. Доля нереализованной переоценки в прибыли; рост непубличных вложений на балансе быстрее облачной выручки. В III кв. они выросли ещё на $3,8 млрд при покупках непубличных бумаг на $2,1 млрд; облачная выручка при этом растёт на 103%.',
-      cite: ['googl-equity-gain', 'googl-equity-q3', 'anth-s1', 'anth-fin'],
-      basis: 'Механизм описан в исследовании (тезис 8; стр. 14 — со ссылкой на отчёт Alphabet). Связь Alphabet и Anthropic — корпоративное раскрытие вне исследования. Масштаб переоценки сверен по отчётам Alphabet за II и III кв. 2026. Сигнал исследования сработал во II кв. и накопленно сохраняется за девять месяцев; в III кв. он не воспроизвёлся.'
+      cite: ['googl-equity-gain', 'googl-equity-q3', 'anth-google-tpu', 'anth-seriesh-compute', 'anth-seriesh', 'anth-s1', 'anth-fin'],
+      basis: 'Механизм описан в исследовании (тезис 8; стр. 14 — со ссылкой на отчёт Alphabet). Связь Alphabet и Anthropic — корпоративное раскрытие вне исследования. Масштаб переоценки сверен по отчётам Alphabet за II и III кв. 2026. Сигнал исследования сработал во II кв. и накопленно сохраняется за девять месяцев; в III кв. он не воспроизвёлся. Контрактная нога подтверждена сообщениями Anthropic (S35, S37). Прямого первоисточника по самой доле Alphabet и её размеру терминал не нашёл: эта связь остаётся на раскрытии вне исследования, поэтому контур не поднят выше «частично подтверждён».'
     },
 
     'amzn + anthropic': {
@@ -1286,16 +1295,81 @@ window.VG_LOOP_RISKS = {
       kind: 'Облако финансирует своего клиента',
       mechanism: 'Облако держит долю в разработчике модели и даёт ему ресурсы, а разработчик покупает вычисления в этом облаке. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
       headline: 'У Amazon внеоперационный доход от вложений в Anthropic во II кв. 2026 почти вдвое превысил операционную прибыль; в III кв. неоперационная строка ушла в минус',
-      evidence: 'Отчёт Amazon за II кв. 2026: чистая прибыль включает «non-operating pre-tax other income of $53.4 billion, primarily from our investments in Anthropic». Операционная прибыль квартала — $27,5 млрд, прибыль до налогов — $80,9 млрд, то есть внеоперационный доход составил около двух третей. В сверке чистой прибыли с операционным потоком статья «Non-operating expense (income), net» вычтена на $53,4 млрд. Релиз не раскрывает, какая часть суммы — переоценка, и не называет размер доли Amazon в Anthropic. III кв. 2026 (форма 10-Q, данные SEC): неоперационный доход (расход) −$1,2 млрд при операционной прибыли $28,1 млрд; за девять месяцев $68,2 млрд против $79,4 млрд. Состав строки за III кв. структурированные факты не раскрывают, поэтому прямо приписать её вложению в Anthropic нельзя; разворот может быть и в обратную сторону, и без Anthropic.',
+      evidence: 'Отчёт Amazon за II кв. 2026: чистая прибыль включает «non-operating pre-tax other income of $53.4 billion, primarily from our investments in Anthropic». Операционная прибыль квартала — $27,5 млрд, прибыль до налогов — $80,9 млрд, то есть внеоперационный доход составил около двух третей. В сверке чистой прибыли с операционным потоком статья «Non-operating expense (income), net» вычтена на $53,4 млрд. Релиз не раскрывает, какая часть суммы — переоценка, и не называет размер доли Amazon в Anthropic. III кв. 2026 (форма 10-Q, данные SEC): неоперационный доход (расход) −$1,2 млрд при операционной прибыли $28,1 млрд; за девять месяцев $68,2 млрд против $79,4 млрд. Состав строки за III кв. структурированные факты не раскрывают, поэтому прямо приписать её вложению в Anthropic нельзя; разворот может быть и в обратную сторону, и без Anthropic. Раунд Series H Anthropic (28.05.2026, $65 млрд при оценке $965 млрд) включает $15 млрд ранее обещанных вложений гиперскейлеров, из них $5 млрд — Amazon; AWS остаётся основным облаком и партнёром по обучению, а в те же недели подписано соглашение на новые мощности до пяти гигаватт. Раунд пришёлся на II квартал, в котором Amazon отразил $53,4 млрд внеоперационного дохода от вложений в Anthropic; цена раунда — ориентир для такой переоценки, но отчёт связь между ними прямо не раскрывает.',
       risks: [
         { h: 'Выручка без внешних денег', t: 'Облачная выручка, оплаченная ресурсами, которые облако само вложило, не приносит денег извне цепочки и не доказывает спроса конечного клиента.' },
-        { h: 'Один разработчик — два контура', t: 'Anthropic связан контурами одновременно с Amazon и Alphabet. Если ожидаемая выручка одного разработчика закладывается в планы двух облаков и в оценку двух инвесторов, это многократный учёт одного ожидания.' },
+        { h: 'Один разработчик — несколько контуров', t: 'Anthropic связан контурами с Alphabet, Amazon и Microsoft, а через Microsoft — и с Nvidia: по сообщению Anthropic от 28.05.2026, Claude доступен во всех трёх крупнейших облаках. Если ожидаемая выручка одного разработчика закладывается в планы трёх облаков и в оценку нескольких инвесторов, это и есть многократный учёт одного ожидания, о котором предупреждает исследование.' },
         { h: 'Зависимость в обе стороны', t: 'Облако строит мощности под крупного клиента, разработчик зависит от облака и его капитала. При разрыве страдают обе стороны.' },
         { h: 'Прибыль, которой нет в потоке', t: 'Чистая прибыль $62,6 млрд при операционной $27,5 млрд не означает денег: внеоперационный доход исключён из операционного потока. К II кв. за 12 месяцев операционный поток $161,4 млрд, капвложения (нетто) $169,0 млрд, свободный поток −$7,6 млрд; к III кв. валовые капвложения $215,2 млрд при потоке $168,3 млрд, в самом III кв. $77,3 млрд против $42,4 млрд.' }
       ],
       watch: 'Проспект IPO Anthropic (S-1 от 26.10.2026, S-1/A от 02.11): обязательства по вычислениям перед AWS, доля Amazon, цена размещения — она задаст переоценку доли. Доля внеоперационного дохода от вложений в Anthropic в прибыли до налогов (во II кв. 2026 — около 66%); рост AWS при стагнации внешнего потребления; состав неоперационной строки в пресс-релизе Amazon за III квартал.',
-      cite: ['amzn-q2', 'amzn-anthropic', 'amzn-nonop-q3', 'amzn-capex-ttm', 'anth-s1', 'anth-fin'],
-      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Amazon и Anthropic — корпоративное раскрытие вне исследования. Размер внеоперационного дохода и названный в релизе источник сверены по отчёту Amazon от 30.07.2026 (форма 8-K). Размер неоперационной строки за III кв. сверен по форме 10-Q (данные SEC); состав строки за III кв. не сверен.'
+      cite: ['amzn-q2', 'amzn-anthropic', 'amzn-nonop-q3', 'amzn-capex-ttm', 'anth-aws-invest', 'anth-seriesh', 'anth-seriesh-hyper', 'anth-seriesh-compute', 'anth-s1', 'anth-fin'],
+      basis: 'Механизм описан в исследовании (тезис 8), компании в нём не названы. Связь Amazon и Anthropic — корпоративное раскрытие вне исследования. Размер внеоперационного дохода и названный в релизе источник сверены по отчёту Amazon от 30.07.2026 (форма 8-K). Размер неоперационной строки за III кв. сверен по форме 10-Q (данные SEC); состав строки за III кв. не сверен. Обе ноги контура подтверждены сообщениями Anthropic: вложения Amazon ($8 млрд к ноябрю 2024 — S36; ещё $5 млрд зачтены в раунде H — S37; как эти суммы соотносятся, Anthropic не поясняет) и договор на мощности (до пяти гигаватт — S37).'
+    },
+
+    'anthropic + msft': {
+      title: 'Microsoft ↔ Anthropic',
+      kind: 'Облако финансирует своего клиента',
+      mechanism: 'Microsoft вкладывается в капитал Anthropic, а Anthropic по договору покупает вычисления в Azure; модели Anthropic при этом встроены в продукты Microsoft. Часть облачной выручки оплачивается ресурсами, которые облако само вложило.',
+      headline: 'Microsoft уже называет вложение в Anthropic источником прочих доходов; обязательство Anthropic перед Azure — $30 млрд',
+      evidence: 'Объявление Anthropic от 18.11.2025: Anthropic «committed to purchase $30 billion of Azure compute capacity» и до одного гигаватта дополнительных мощностей; Microsoft и Nvidia обязались вложить в Anthropic до $5 млрд и до $10 млрд соответственно. В отчёте Microsoft за IV кв. 2026 ф.г. прочие доходы объяснены, в том числе, «gain on investment in Anthropic»; размер вложения и доли отчёт не называет. Основным облаком Anthropic остаётся AWS (сообщение от 28.05.2026), поэтому обязательство перед Azure — не главный канал её вычислений.',
+      risks: [
+        { h: 'Обязательство, а не платёж', t: 'Вложение Microsoft ($5 млрд) и закупка Azure ($30 млрд) названы как обязательства «до». Сколько денег реально прошло по кругу, Anthropic не раскрывает.' },
+        { h: 'Прибыль от переоценки вместо операций', t: 'Microsoft уже относит часть прочих доходов на вложение в Anthropic. Рост оценки разработчика (раунд H — $965 млрд) увеличивает прочие доходы инвестора без платежа внешнего клиента; обратный ход оценки превратит их в убыток.' },
+        { h: 'Два контура у одного облака', t: 'Microsoft связан круговыми связями и с OpenAI, и с Anthropic. Если оба разработчика не выйдут на внешнюю монетизацию, под ударом одновременно доли в двух лабораториях и договоры на мощности.' },
+        { h: 'Договор без внешней монетизации', t: 'Обязательство подтверждает намерение платить, но не общеэкономический спрос. Если разработчик не найдёт платящих клиентов, обязательства перед тремя облаками придётся финансировать новым капиталом — в том числе от самих облаков.' }
+      ],
+      watch: 'Доля прочих доходов Microsoft от вложения в Anthropic; рост выручки Azure при стагнации внешнего потребления; цена размещения Anthropic (S-1 подан 26.10.2026): она задаст следующую переоценку доли.',
+      cite: ['msft-equity-gain', 'anth-invest-nm', 'anth-azure30', 'anth-seriesh-compute'],
+      basis: 'Вне исследования. Обе связи подтверждены объявлением Anthropic от 18.11.2025 (S34): вложение Microsoft до $5 млрд и закупка Azure на $30 млрд. Что Microsoft получает доход от вложения в Anthropic, подтверждает отчёт самой Microsoft. Фактически перечисленные суммы не раскрыты.'
+    },
+
+    'anthropic + msft + nvda': {
+      title: 'Nvidia → Anthropic → Microsoft → Nvidia',
+      kind: 'Поставщик процессоров финансирует покупателя облака',
+      mechanism: 'Nvidia обязалась вложить в Anthropic до $10 млрд; Anthropic закупает вычисления в Azure на $30 млрд, причём на системах Nvidia (Grace Blackwell и Vera Rubin, до одного гигаватта); Microsoft закупает ускорители у Nvidia. Это в чистом виде круг из тезиса 8 исследования: поставщик процессоров финансирует разработчика, разработчик платит облаку, облако платит поставщику.',
+      headline: 'Деньги Nvidia могут возвращаться к ней выручкой через два звена: сначала в разработчика, потом в облако',
+      evidence: 'Объявление Anthropic от 18.11.2025: Nvidia — до $10 млрд в Anthropic; Anthropic — $30 млрд на Azure и «up to one gigawatt of compute capacity with NVIDIA Grace Blackwell and Vera Rubin systems». Закупка ускорителей Microsoft у Nvidia описана в исследовании и в отчёте Nvidia. Сколько из вложения Nvidia действительно возвращается выручкой, не раскрывает ни одна из сторон.',
+      risks: [
+        { h: 'Спрос, оплаченный поставщиком', t: 'Часть закупок Microsoft под нагрузку Anthropic может быть профинансирована вложением самой Nvidia. Как и в контуре с CoreWeave, такая выручка не доказывает внешнего спроса.' },
+        { h: 'Длинная цепочка скрывает возврат', t: 'Между вложением и выручкой два звена, поэтому в отчётности Nvidia возврат не виден: он растворён в общих продажах ЦОД, а его доля неизвестна.' },
+        { h: 'Разворот через капитал и заказы', t: 'Падение оценок ухудшает доступ разработчика к капиталу; при сокращении его заказов облако сокращает закупки серверов и ускорителей. Исследование описывает именно такую последовательность (стр. 13).' }
+      ],
+      watch: 'Рост закупок ускорителей Microsoft при росте доли Anthropic в Azure; раскрытие Nvidia о фактически вложенных суммах; цена размещения Anthropic.',
+      cite: ['anth-invest-nm', 'anth-azure30', 'anth-nvda-compute'],
+      basis: 'Вне исследования: связи Nvidia → Anthropic и Anthropic → Azure подтверждены объявлением Anthropic (S34), закупка ускорителей Microsoft у Nvidia — S12. Фактический возврат денег по кругу не раскрыт; контур означает взаимную зависимость, а не доказанный возврат.'
+    },
+
+    'amzn + anthropic + nvda': {
+      title: 'Nvidia → Anthropic → Amazon → Nvidia',
+      kind: 'Контур найден по связям графа; возврат к Nvidia не подтверждён',
+      weak: true,
+      mechanism: 'Формально круг замкнут: Nvidia вкладывается в Anthropic, Anthropic платит AWS, AWS закупает ускорители Nvidia. Но с Amazon Anthropic сотрудничает над собственными ускорителями Trainium (сообщение от 22.11.2024), поэтому возврат денег к Nvidia по этой ветке менее прямой, чем через Azure.',
+      headline: 'Слабый контур: связи подтверждены, но деньги Anthropic в AWS идут и к чипам самой Amazon',
+      risks: [
+        { h: 'Косвенный возврат', t: 'Закупки AWS у Nvidia нельзя отнести на деньги Anthropic: Amazon покупает ускорители для всех клиентов, а для Anthropic развивает Trainium.' },
+        { h: 'Тот же разработчик, та же оценка', t: 'Оценка Anthropic в раунде и при размещении одновременно влияет на вложения Nvidia, Amazon, Alphabet и Microsoft.' },
+        { h: 'Не вывод, а вопрос', t: 'Контур показан, чтобы вопрос «сколько денег Nvidia возвращается через AWS» не оставался незамеченным; ответа в раскрытиях нет.' }
+      ],
+      watch: 'Раскрытие Amazon о доле Trainium и GPU в мощностях для Anthropic; раскрытие Nvidia о вложенных суммах.',
+      cite: ['anth-invest-nm', 'anth-aws-invest', 'anth-seriesh-compute'],
+      basis: 'Вне исследования. Связи Nvidia → Anthropic (S34) и Anthropic → Amazon (S37) подтверждены сообщениями Anthropic; закупка ускорителей Amazon у Nvidia описана в исследовании. Возврат по этой ветке не подтверждён.'
+    },
+
+    'anthropic + googl + nvda': {
+      title: 'Nvidia → Anthropic → Alphabet → Nvidia',
+      kind: 'Контур найден по связям графа; возврат к Nvidia не подтверждён',
+      weak: true,
+      mechanism: 'Формально круг замкнут: Nvidia вкладывается в Anthropic, Anthropic платит Google Cloud, Google закупает ускорители Nvidia. Но договор с Google — на TPU, собственные чипы Alphabet (до миллиона TPU, объявление от 23.10.2025), поэтому возврат денег к Nvidia по этой ветке косвенный.',
+      headline: 'Слабый контур: Anthropic покупает у Google в основном его собственные TPU, а не ускорители Nvidia',
+      risks: [
+        { h: 'Косвенный возврат', t: 'Закупки Google у Nvidia нельзя отнести на деньги Anthropic: договор Anthropic с Google — на TPU.' },
+        { h: 'Тот же разработчик, та же оценка', t: 'Оценка Anthropic при размещении одновременно влияет на вложения Nvidia, Amazon, Alphabet и Microsoft.' },
+        { h: 'Не вывод, а вопрос', t: 'Контур показан, чтобы вопрос о возврате денег Nvidia через Google не оставался незамеченным; ответа в раскрытиях нет.' }
+      ],
+      watch: 'Раскрытие Alphabet о доле TPU и GPU в мощностях для Anthropic; раскрытие Nvidia о вложенных суммах.',
+      cite: ['anth-invest-nm', 'anth-google-tpu', 'anth-seriesh-compute'],
+      basis: 'Вне исследования. Связь Nvidia → Anthropic подтверждена объявлением Anthropic (S34), договор с Google на TPU — S35 и S37; закупка ускорителей Google у Nvidia описана в исследовании. Прямого источника по доле Alphabet в Anthropic нет. Возврат по этой ветке не подтверждён.'
     }
   }
 };
@@ -1551,6 +1625,55 @@ window.VG_ENERGY = {
 
    checked — дата сверки. quote — дословная цитата из первоисточника. */
 window.VG_CITES = {
+  /* ---------------- Anthropic и OpenAI: ноги круговых контуров (проверено 07.11.2026) ---------------- */
+  'msft-openai-stake': { src: 'S33', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Microsoft от 28.10.2025, раздел о рекапитализации OpenAI',
+    quote: 'Following the recapitalization, Microsoft holds an investment in OpenAI Group PBC valued at approximately $135 billion, representing roughly 27 percent on an as-converted diluted basis, inclusive of all owners – employees, investors, and the OpenAI Foundation.',
+    note: 'Оценка доли — по условиям рекапитализации на дату объявления, не по рыночной цене сегодня. OpenAI не торгуется.' },
+  'openai-azure250': { src: 'S33', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Microsoft от 28.10.2025, условия соглашения',
+    quote: 'OpenAI has contracted to purchase an incremental $250B of Azure services, and Microsoft will no longer have a right of first refusal to be OpenAI’s compute provider.',
+    note: 'Это договорное обязательство на «дополнительные» услуги Azure; срок и график платежей в объявлении не названы.' },
+  'anth-azure30': { src: 'S34', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 18.11.2025, первый абзац',
+    quote: 'Anthropic has committed to purchase $30 billion of Azure compute capacity and to contract additional compute capacity up to one gigawatt.',
+    note: 'Обязательство, а не фактический платёж: сколько уже оплачено, Anthropic не раскрывает.' },
+  'anth-invest-nm': { src: 'S34', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 18.11.2025, раздел о вложениях',
+    quote: 'As part of the partnership, NVIDIA and Microsoft are committing to invest up to $10 billion and up to $5 billion respectively in Anthropic.',
+    note: 'Суммы «до» — потолок обязательства. Фактически вложенное в объявлении не названо.' },
+  'anth-nvda-compute': { src: 'S34', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 18.11.2025, раздел о партнёрстве с NVIDIA',
+    quote: 'Anthropic’s compute commitment will initially be up to one gigawatt of compute capacity with NVIDIA Grace Blackwell and Vera Rubin systems.',
+    note: 'Вычисления идут через Azure (в объявлении: Azure «powered by NVIDIA»), прямой договор Anthropic с Nvidia на поставку не описан.' },
+  'anth-google-tpu': { src: 'S35', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 23.10.2025, первый абзац',
+    quote: 'Today, we are announcing that we plan to expand our use of Google Cloud technologies, including up to one million TPUs, dramatically increasing our compute resources as we continue to push the boundaries of AI research and product development. The expansion is worth tens of billions of dollars and is expected to bring well over a gigawatt of capacity online in 2026.',
+    note: '«Десятки миллиардов долларов» — оценка стоимости в объявлении Anthropic, не раскрытая договорная величина. Размер и наличие доли Alphabet в Anthropic этот документ не называет.' },
+  'anth-aws-invest': { src: 'S36', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 22.11.2024, первый абзац',
+    quote: 'This expanded partnership includes a new $4 billion investment from Amazon and establishes AWS as our primary cloud and training partner. This will bring Amazon\'s total investment in Anthropic to $8 billion, while maintaining their position as a minority investor.',
+    note: 'Сумма — на ноябрь 2024. Как она соотносится с «$5 млрд ранее обещанных» в раунде H (S37), Anthropic не поясняет, поэтому суммы не складываются.' },
+  'anth-seriesh': { src: 'S37', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 28.05.2026, первый абзац',
+    quote: 'Anthropic has raised $65 billion in Series H funding led by Altimeter Capital, Dragoneer, Greenoaks, and Sequoia Capital, valuing the company at $965 billion post-money.',
+    note: 'Оценка раунда — ориентир рыночной цены для переоценки долей инвесторов, а не заключение независимого оценщика.' },
+  'anth-seriesh-hyper': { src: 'S37', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 28.05.2026, раздел об инвесторах',
+    quote: 'It also includes $15 billion of previously committed investments from hyperscalers, including $5 billion from Amazon.',
+    note: 'По имени названа только Amazon; остальные $10 млрд гиперскейлеров в сообщении не распределены. В исходной разметке перед точкой стоит ссылка, пробел перед точкой убран.' },
+  'anth-seriesh-compute': { src: 'S37', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 28.05.2026, раздел о мощностях',
+    quote: 'We signed agreements with Amazon for up to five gigawatts of new capacity, with Google and Broadcom for five gigawatts of next-generation TPU capacity, and with SpaceX for access to GPU capacity in Colossus 1 and Colossus 2. Claude is the first frontier model available on all three of the world\'s largest cloud platforms: Amazon Web Services, Google Cloud, and Microsoft Azure. AWS remains our primary cloud provider and training partner.',
+    note: 'Соглашение со SpaceX в граф не внесено: узла в модели нет, условия не раскрыты.' },
+  'anth-seriesh-memory': { src: 'S37', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 28.05.2026, раздел об инвесторах',
+    quote: 'Joining them are strategic infrastructure partners — Micron, Samsung, and SK hynix — whose technologies play a critical role in the world\'s supply of memory, storage, and logic chips.',
+    note: 'Суммы и условия вложений Micron, Samsung и SK hynix не раскрыты, поэтому как связи в граф они не внесены.' },
+  'anth-runrate': { src: 'S37', status: 'verified', checked: '2026-11-07',
+    loc: 'Объявление Anthropic от 28.05.2026, первый абзац',
+    quote: 'our run-rate revenue crossed $47 billion earlier this month.',
+    note: 'Run-rate — заявление компании о годовом темпе, а не признанная выручка по отчётности; методика расчёта не раскрыта. Проспект (S-1) терминал пока не прочитал.' },
   /* ---------------- Anthropic: проспект IPO ---------------- */
   'anth-s1': { src: 'S31', status: 'verified', checked: '2026-11-06',
     loc: 'Объявление компании от 26.10.2026',
@@ -4662,6 +4785,256 @@ window.VG_HISTORY = [
    "total": 65
   },
   "seq": 10
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-11-07",
+  "label": "Круговые контуры: 4 → 8 (Microsoft–Anthropic, Nvidia–Anthropic–Microsoft и др.), рыночный слой в карточках, первоисточники по Anthropic и OpenAI",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-10-25"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 45.2,
+    "ocf": 58,
+    "fcf": 18.6
+   },
+   "googl": {
+    "capex": 51.4,
+    "ocf": 42.3,
+    "fcf": -9.1
+   },
+   "amzn": {
+    "capex": 215.2,
+    "ocf": 168.3,
+    "fcf": -46.9
+   },
+   "meta": {
+    "capex": 34.9,
+    "ocf": 32.8,
+    "fcf": -2.1
+   },
+   "orcl": {
+    "capex": 75.7,
+    "ocf": 46.9,
+    "fcf": -28.7,
+    "rpo": 664
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.7,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 46.7
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 51,
+   "cycles": [
+    "amzn + anthropic",
+    "amzn + anthropic + nvda",
+    "anthropic + googl",
+    "anthropic + googl + nvda",
+    "anthropic + msft",
+    "anthropic + msft + nvda",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 64,
+   "partial": 6,
+   "mismatch": 0,
+   "unreachable": 3,
+   "pending": 4,
+   "total": 77
+  },
+  "seq": 11
  }
 ];
 
@@ -5209,6 +5582,28 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
       });
       o.halo.setAttribute('d', d + ' Z');
       o.cx = sx / k; o.cy = sy / k;
+    });
+    /* значки не должны лежать друг на друге: контуры сходятся на одних и тех же узлах,
+       а на телефоне граф сжат. Если два значка ближе MIN, раздвигаем их вдоль линии между центрами. */
+    var box = this.svg.getBoundingClientRect();
+    var scale = box.width > 0 ? Math.min(box.width / this.W, box.height / this.H) : 1;   /* экранных пикселей на единицу графа */
+    var MIN = 28 / scale, els = this.loopEls;
+    for (var it = 0; it < 40; it++) {
+      var moved = false;
+      for (var a = 0; a < els.length; a++) {
+        for (var b = a + 1; b < els.length; b++) {
+          var dx = els[b].cx - els[a].cx, dy = els[b].cy - els[a].cy, dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist >= MIN) continue;
+          if (dist < 0.01) { dx = 0; dy = 1; dist = 1; }
+          var push = (MIN - dist) / 2 + 0.5, ux = dx / dist, uy = dy / dist;
+          els[a].cx -= ux * push; els[a].cy -= uy * push;
+          els[b].cx += ux * push; els[b].cy += uy * push;
+          moved = true;
+        }
+      }
+      if (!moved) break;
+    }
+    els.forEach(function (o) {
       o.badge.setAttribute('transform', 'translate(' + o.cx.toFixed(1) + ',' + o.cy.toFixed(1) + ')');
     });
   };
@@ -5216,6 +5611,7 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
   Graph.prototype.setLoopMode = function (on) {
     this.loopMode = !!on;
     this.svg.classList.toggle('loops-on', this.loopMode);
+    if (this.loopMode) this.positionLoops();   /* масштаб известен, только когда экран виден */
     this.gLoops.querySelectorAll('.gloop').forEach(function (g) {
       g.setAttribute('tabindex', on ? 0 : -1);
     });
@@ -6318,6 +6714,47 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
       var LR = window.VG_LOOP_RISKS;
       function loopData(c) { return LR.loops[c.key] || null; }
 
+      /* рыночный слой контура: движение бумаг участников с даты исследования.
+         Данные берутся из снимка котировок, а не пишутся в разбор: иначе они бы устарели. */
+      function loopMarket(c) {
+        if (!MKT || !HEAT) return null;
+        var names = {}, ids = [];
+        c.edges.forEach(function (e) {
+          if (!names[e.from]) { names[e.from] = e.s.name; ids.push(e.from); }
+          if (!names[e.to]) { names[e.to] = e.t.name; ids.push(e.to); }
+        });
+        var date = '';
+        var rows = ids.map(function (id) {
+          var q = MKT.items.filter(function (x) { return x.node === id; })[0];
+          if (q && q.date > date) date = q.date;
+          return { name: names[id], v: q ? q.cut : null };
+        });
+        return { rows: rows, date: date };
+      }
+      function loopMarketText(m) {
+        return m.rows.map(function (r) {
+          return r.v === null ? esc(r.name) + ' — не торгуется'
+            : esc(r.name) + ' <span class="pct ' + (r.v < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(r.v) + '</span>';
+        }).join(' · ');
+      }
+      function loopMarketHtml(c, d) {
+        var m = loopMarket(c);
+        if (!m) return '';
+        var stake = '';
+        if (d && d.stake) {
+          var sq = MKT.items.filter(function (x) { return x.sym === d.stake.sym; })[0];
+          if (sq) {
+            var sh = d.stake.usd * 1000 / d.stake.price, val = sh * sq.close / 1000;
+            stake = '<p class="lc-watch">Пакет Nvidia: около ' + num(sh, 1) + ' млн акций CoreWeave куплено по $' + num(d.stake.price, 2) +
+              ' (всего $' + num(d.stake.usd, 1) + ' млрд). По закрытию ' + esc(shortDate(sq.date)) + ' ($' + num(sq.close, 2) + ') он стоил бы около $' +
+              num(val, 1) + ' млрд (' + HEAT.pctText((sq.close / d.stake.price - 1) * 100) + ') — если пакет не продан. Это биржевая цена, а не бухгалтерская переоценка: как её отразит Nvidia, покажет её отчёт.</p>';
+          }
+        }
+        return '<div class="lc-sec">Рынок с ' + esc(shortDate(MKT.refDate)) + '</div>' +
+          '<p class="lc-watch">' + loopMarketText(m) + '</p>' + stake +
+          '<p class="lc-basis">Закрытие ' + esc(shortDate(m.date)) + ': снимок, не живая лента. Котировки в индекс напряжения не входят.</p>';
+      }
+
       /* карточка риска кругового контура */
       function loopCard(c, pinned) {
         var d = loopData(c), gen = LR.generic;
@@ -6339,6 +6776,7 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
           '<div class="lc-sec">Как идут деньги</div><ul class="lc-flow">' + flow + '</ul>' +
           (d ? '<p class="lc-mech">' + esc(d.mechanism) + '</p>' : '<p class="lc-mech">Контур найден автоматически, разбор пока не написан — ниже общие риски кругового финансирования из исследования.</p>') +
           (d && d.evidence ? '<div class="lc-evidence"><div class="lc-sec">Что видно в отчётности</div>' + esc(d.evidence) + ' ' + citeref(d.cite) + '</div>' : '') +
+          loopMarketHtml(c, d) +
           '<div class="lc-sec">Чем опасно</div><ul class="lc-risks">' + risks + '</ul>' +
           '<div class="lc-sec">Сигнал тревоги по исследованию</div><p class="lc-signal">' + esc(gen.signal) + '</p>' +
           (d && d.watch ? '<div class="lc-sec">Что проверять</div><p class="lc-watch">' + esc(d.watch) + '</p>' : '') +
@@ -6356,6 +6794,7 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
         loopRank: function (c) {
           if (c.edges.every(function (e) { return e.inReport === 'yes'; })) return 0;
           var d = LR.loops[window.VGM.cycleKey(c.edges)];
+          if (d && d.weak) return 2;
           return d && d.evidence ? 1 : 2;
         }
       });
@@ -6377,8 +6816,8 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
       function nodeName(id) { return (g.index[id] || {}).name || id; }
       function refMark(e) {
         return e.inReport === 'yes' ? '<span class="st st-ok"><i></i>исследование ' + (e.src || '') + '</span>'
-          : e.inReport === 'mechanism' ? '<span class="st st-watch"><i></i>механизм описан, компании не названы</span>'
-          : '<span class="st st-nodata"><i></i>вне исследования</span>';
+          : e.inReport === 'mechanism' ? '<span class="st st-watch"><i></i>механизм описан, компании не названы</span>' + (e.src ? ' ' + srcref(e.src) : '')
+          : '<span class="st st-nodata"><i></i>вне исследования</span>' + (e.src ? ' ' + srcref(e.src) : '');
       }
       function refresh() {
         var edges = g.visibleEdges();
@@ -6403,6 +6842,7 @@ window.VG_MARKET = {"fetched": "2026-11-06 22:18 UTC", "lastDate": "2026-11-06",
               '<div class="path">' + path + '</div></div></div>' +
             (d && d.headline ? '<div class="why li-risk">' + esc(d.headline) + '</div>' : '') +
             '<div class="why">' + esc(why) + '</div>' +
+            (function () { var m = loopMarket(c); return m ? '<div class="why" style="font-size:12px">Рынок с ' + esc(shortDate(MKT.refDate)) + ': ' + loopMarketText(m) + '</div>' : ''; })() +
             '<div class="why" style="color:var(--muted);font-size:11.5px">Сумма указана у ' + amounts + ' из ' + c.edges.length + ' связей · ' + basis + '</div></div>';
         }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
 

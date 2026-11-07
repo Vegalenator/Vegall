@@ -1,9 +1,9 @@
 /* Метаданные терминала и реестр первичных источников.
-   Каждая цифра в терминале ссылается на код источника S1-S32. */
+   Каждая цифра в терминале ссылается на код источника S1-S37. */
 window.VG_META = {
   title: 'Терминал ИИ-цикла',
   asOf: '2026-09-06',              // дата среза исследования
-  builtAt: '2026-11-06',           // дата сборки терминала
+  builtAt: '2026-11-07',           // дата сборки терминала
   basis: 'Глубокое исследование «ИИ как инвестиционный и финансовый цикл», 6 сентября 2026',
   // Типы утверждений — бейдж рядом с каждой цифрой
   kinds: {
@@ -57,7 +57,12 @@ window.VG_META = {
     S29: { org: 'Совет ЕС', title: 'Ограничения экспорта передовых технологий в Россию', date: '2026', url: 'https://www.consilium.europa.eu/en/policies/sanctions-against-russia-explained/', generic: true },
     S30: { org: 'iKS-Consulting', title: 'Рынок коммерческих ЦОД России 2025', date: '2025', url: 'https://survey.iksconsulting.ru/', generic: true },
     S31: { org: 'Anthropic', title: 'Подача формы S-1 для IPO', date: '2026-10-26', url: 'https://www.anthropic.com/news/s1-sec' },
-    S32: { org: 'Anthropic (SEC EDGAR)', title: 'Форма S-1/A, поправка № 1', date: '2026-11-02', url: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0002130357&type=S-1' }
+    S32: { org: 'Anthropic (SEC EDGAR)', title: 'Форма S-1/A, поправка № 1', date: '2026-11-02', url: 'https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0002130357&type=S-1' },
+    S33: { org: 'Microsoft', title: 'Следующая глава партнёрства Microsoft и OpenAI', date: '2025-10-28', url: 'https://blogs.microsoft.com/blog/2025/10/28/the-next-chapter-of-the-microsoft-openai-partnership/' },
+    S34: { org: 'Anthropic', title: 'Партнёрства с Microsoft и NVIDIA: Azure и вложения', date: '2025-11-18', url: 'https://www.anthropic.com/news/microsoft-nvidia-anthropic-announce-strategic-partnerships' },
+    S35: { org: 'Anthropic', title: 'Расширение использования Google Cloud TPU', date: '2025-10-23', url: 'https://www.anthropic.com/news/expanding-our-use-of-google-cloud-tpus-and-services' },
+    S36: { org: 'Anthropic', title: 'Расширение сотрудничества с AWS', date: '2024-11-22', url: 'https://www.anthropic.com/news/anthropic-amazon-trainium' },
+    S37: { org: 'Anthropic', title: 'Раунд Series H: $65 млрд при оценке $965 млрд', date: '2026-05-28', url: 'https://www.anthropic.com/news/series-h' }
   },
   limits: [
     'Все прогнозы — энергопотребление, производительность, вклад в ВВП — отделены от наблюдаемых фактов.',

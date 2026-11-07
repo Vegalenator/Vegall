@@ -2410,5 +2410,255 @@ window.VG_HISTORY = [
    "total": 65
   },
   "seq": 10
+ },
+ {
+  "asOf": "2026-09-06",
+  "builtAt": "2026-11-07",
+  "label": "Круговые контуры: 4 → 8 (Microsoft–Anthropic, Nvidia–Anthropic–Microsoft и др.), рыночный слой в карточках, первоисточники по Anthropic и OpenAI",
+  "method": 2,
+  "index": {
+   "overall": 34.6,
+   "groups": {
+    "capital": {
+     "value": 40,
+     "seen": 5,
+     "all": 6
+    },
+    "semi": {
+     "value": 10,
+     "seen": 5,
+     "all": 6
+    },
+    "cloud": {
+     "value": 0,
+     "seen": 2,
+     "all": 4
+    },
+    "soft": {
+     "value": 50,
+     "seen": 5,
+     "all": 6
+    },
+    "energy": {
+     "value": 50,
+     "seen": 2,
+     "all": 3
+    },
+    "russia": {
+     "value": 66.7,
+     "seen": 3,
+     "all": 3
+    }
+   }
+  },
+  "indicators": {
+   "cap-capex-total": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cap-selffund": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-fcf": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "cap-bonds": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "cap-privcredit": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cap-leases": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "semi-nvda-dc": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-nvda-margin": {
+    "state": "ok",
+    "checked": "2026-10-25"
+   },
+   "semi-avgo-ai": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-hbm": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "semi-asml": {
+    "state": "ok",
+    "checked": "2026-10-18"
+   },
+   "semi-tsmc-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "cloud-growth": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-margin": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "cloud-price": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "cloud-util": {
+    "state": "nodata",
+    "checked": "2026-10-18"
+   },
+   "soft-seats": {
+    "state": "ok",
+    "checked": "2026-11-01"
+   },
+   "soft-tokens": {
+    "state": "watch",
+    "checked": "2026-11-01"
+   },
+   "soft-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "soft-depth": {
+    "state": "stress",
+    "checked": "2026-09-06"
+   },
+   "soft-firm": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "soft-labour": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-twh": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-leadtime": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "energy-pue": {
+    "state": "nodata",
+    "checked": "2026-09-06"
+   },
+   "ru-adoption": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   },
+   "ru-racks": {
+    "state": "stress",
+    "checked": "2026-10-25"
+   },
+   "ru-revenue": {
+    "state": "watch",
+    "checked": "2026-09-06"
+   }
+  },
+  "companies": {
+   "msft": {
+    "capex": 45.2,
+    "ocf": 58,
+    "fcf": 18.6
+   },
+   "googl": {
+    "capex": 51.4,
+    "ocf": 42.3,
+    "fcf": -9.1
+   },
+   "amzn": {
+    "capex": 215.2,
+    "ocf": 168.3,
+    "fcf": -46.9
+   },
+   "meta": {
+    "capex": 34.9,
+    "ocf": 32.8,
+    "fcf": -2.1
+   },
+   "orcl": {
+    "capex": 75.7,
+    "ocf": 46.9,
+    "fcf": -28.7,
+    "rpo": 664
+   },
+   "crwv": {
+    "capex": 14.1,
+    "ocf": 3.7,
+    "fcf": -10.5,
+    "rpo": 103.7,
+    "revenue": 2.6
+   },
+   "nvda": {
+    "revenue": 96.2
+   },
+   "avgo": {
+    "capex": 0.5,
+    "fcf": 13.7
+   },
+   "tsmc": {
+    "revenue": 46.7
+   },
+   "asml": {},
+   "skhynix": {},
+   "baba": {
+    "capex": 10
+   },
+   "yndx": {},
+   "sber": {}
+  },
+  "graph": {
+   "nodes": 30,
+   "edges": 51,
+   "cycles": [
+    "amzn + anthropic",
+    "amzn + anthropic + nvda",
+    "anthropic + googl",
+    "anthropic + googl + nvda",
+    "anthropic + msft",
+    "anthropic + msft + nvda",
+    "crwv + nvda",
+    "msft + openai"
+   ]
+  },
+  "scenarios": {
+   "base": {
+    "prob": 55,
+    "met": 0,
+    "known": 1,
+    "total": 4
+   },
+   "opt": {
+    "prob": 20,
+    "met": 0,
+    "known": 3,
+    "total": 3
+   },
+   "stress": {
+    "prob": 25,
+    "met": 0,
+    "known": 1,
+    "total": 5
+   }
+  },
+  "cites": {
+   "verified": 64,
+   "partial": 6,
+   "mismatch": 0,
+   "unreachable": 3,
+   "pending": 4,
+   "total": 77
+  },
+  "seq": 11
  }
 ];

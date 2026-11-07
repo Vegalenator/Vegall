@@ -804,6 +804,47 @@
       var LR = window.VG_LOOP_RISKS;
       function loopData(c) { return LR.loops[c.key] || null; }
 
+      /* рыночный слой контура: движение бумаг участников с даты исследования.
+         Данные берутся из снимка котировок, а не пишутся в разбор: иначе они бы устарели. */
+      function loopMarket(c) {
+        if (!MKT || !HEAT) return null;
+        var names = {}, ids = [];
+        c.edges.forEach(function (e) {
+          if (!names[e.from]) { names[e.from] = e.s.name; ids.push(e.from); }
+          if (!names[e.to]) { names[e.to] = e.t.name; ids.push(e.to); }
+        });
+        var date = '';
+        var rows = ids.map(function (id) {
+          var q = MKT.items.filter(function (x) { return x.node === id; })[0];
+          if (q && q.date > date) date = q.date;
+          return { name: names[id], v: q ? q.cut : null };
+        });
+        return { rows: rows, date: date };
+      }
+      function loopMarketText(m) {
+        return m.rows.map(function (r) {
+          return r.v === null ? esc(r.name) + ' — не торгуется'
+            : esc(r.name) + ' <span class="pct ' + (r.v < 0 ? 'neg' : 'pos') + '">' + HEAT.pctText(r.v) + '</span>';
+        }).join(' · ');
+      }
+      function loopMarketHtml(c, d) {
+        var m = loopMarket(c);
+        if (!m) return '';
+        var stake = '';
+        if (d && d.stake) {
+          var sq = MKT.items.filter(function (x) { return x.sym === d.stake.sym; })[0];
+          if (sq) {
+            var sh = d.stake.usd * 1000 / d.stake.price, val = sh * sq.close / 1000;
+            stake = '<p class="lc-watch">Пакет Nvidia: около ' + num(sh, 1) + ' млн акций CoreWeave куплено по $' + num(d.stake.price, 2) +
+              ' (всего $' + num(d.stake.usd, 1) + ' млрд). По закрытию ' + esc(shortDate(sq.date)) + ' ($' + num(sq.close, 2) + ') он стоил бы около $' +
+              num(val, 1) + ' млрд (' + HEAT.pctText((sq.close / d.stake.price - 1) * 100) + ') — если пакет не продан. Это биржевая цена, а не бухгалтерская переоценка: как её отразит Nvidia, покажет её отчёт.</p>';
+          }
+        }
+        return '<div class="lc-sec">Рынок с ' + esc(shortDate(MKT.refDate)) + '</div>' +
+          '<p class="lc-watch">' + loopMarketText(m) + '</p>' + stake +
+          '<p class="lc-basis">Закрытие ' + esc(shortDate(m.date)) + ': снимок, не живая лента. Котировки в индекс напряжения не входят.</p>';
+      }
+
       /* карточка риска кругового контура */
       function loopCard(c, pinned) {
         var d = loopData(c), gen = LR.generic;
@@ -825,6 +866,7 @@
           '<div class="lc-sec">Как идут деньги</div><ul class="lc-flow">' + flow + '</ul>' +
           (d ? '<p class="lc-mech">' + esc(d.mechanism) + '</p>' : '<p class="lc-mech">Контур найден автоматически, разбор пока не написан — ниже общие риски кругового финансирования из исследования.</p>') +
           (d && d.evidence ? '<div class="lc-evidence"><div class="lc-sec">Что видно в отчётности</div>' + esc(d.evidence) + ' ' + citeref(d.cite) + '</div>' : '') +
+          loopMarketHtml(c, d) +
           '<div class="lc-sec">Чем опасно</div><ul class="lc-risks">' + risks + '</ul>' +
           '<div class="lc-sec">Сигнал тревоги по исследованию</div><p class="lc-signal">' + esc(gen.signal) + '</p>' +
           (d && d.watch ? '<div class="lc-sec">Что проверять</div><p class="lc-watch">' + esc(d.watch) + '</p>' : '') +
@@ -842,6 +884,7 @@
         loopRank: function (c) {
           if (c.edges.every(function (e) { return e.inReport === 'yes'; })) return 0;
           var d = LR.loops[window.VGM.cycleKey(c.edges)];
+          if (d && d.weak) return 2;
           return d && d.evidence ? 1 : 2;
         }
       });
@@ -863,8 +906,8 @@
       function nodeName(id) { return (g.index[id] || {}).name || id; }
       function refMark(e) {
         return e.inReport === 'yes' ? '<span class="st st-ok"><i></i>исследование ' + (e.src || '') + '</span>'
-          : e.inReport === 'mechanism' ? '<span class="st st-watch"><i></i>механизм описан, компании не названы</span>'
-          : '<span class="st st-nodata"><i></i>вне исследования</span>';
+          : e.inReport === 'mechanism' ? '<span class="st st-watch"><i></i>механизм описан, компании не названы</span>' + (e.src ? ' ' + srcref(e.src) : '')
+          : '<span class="st st-nodata"><i></i>вне исследования</span>' + (e.src ? ' ' + srcref(e.src) : '');
       }
       function refresh() {
         var edges = g.visibleEdges();
@@ -889,6 +932,7 @@
               '<div class="path">' + path + '</div></div></div>' +
             (d && d.headline ? '<div class="why li-risk">' + esc(d.headline) + '</div>' : '') +
             '<div class="why">' + esc(why) + '</div>' +
+            (function () { var m = loopMarket(c); return m ? '<div class="why" style="font-size:12px">Рынок с ' + esc(shortDate(MKT.refDate)) + ': ' + loopMarketText(m) + '</div>' : ''; })() +
             '<div class="why" style="color:var(--muted);font-size:11.5px">Сумма указана у ' + amounts + ' из ' + c.edges.length + ' связей · ' + basis + '</div></div>';
         }).join('') : '<p class="note">При текущих фильтрах замкнутых контуров нет.</p>';
 
