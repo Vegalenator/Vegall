@@ -47,7 +47,7 @@
       e.s = self.index[e.from]; e.t = self.index[e.to];
     });
     this.nodes.forEach(function (n) { n.r = 6 + Math.min(9, Math.sqrt(n.deg) * 2.6); });
-    this.filters = { types: {}, onlyReport: false, focus: null };
+    this.filters = { types: {}, onlyReport: false, onlyConfirmed: false, focus: null };
     Object.keys(opts.edgeTypes).forEach(function (k) { self.filters.types[k] = true; });
     this.onSelect = opts.onSelect || function () {};
     this.loopInfo = opts.loopInfo || null;      // function(loop) -> html карточки
@@ -210,6 +210,10 @@
       c.key = global.VGM.cycleKey(c.edges);
       c.rank = self.loopRank(c);
       return c;
+    }).filter(function (c) {
+      /* «только подтверждённые»: убираем контуры без свидетельств (ранг 2) до нумерации,
+         чтобы номера на карте и в списке шли подряд */
+      return !self.filters.onlyConfirmed || c.rank < 2;
     }).sort(function (a, b) {
       return a.rank - b.rank || (a.key < b.key ? -1 : 1);
     });
@@ -504,6 +508,13 @@
   };
   Graph.prototype.setOnlyReport = function (on) {
     this.filters.onlyReport = on;
+    this.pinned = null; this.clearLoop();
+    this.render();
+    this.layout();
+    this.setLoopMode(this.loopMode);
+  };
+  Graph.prototype.setOnlyConfirmed = function (on) {
+    this.filters.onlyConfirmed = on;
     this.pinned = null; this.clearLoop();
     this.render();
     this.layout();

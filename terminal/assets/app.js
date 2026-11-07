@@ -766,6 +766,7 @@
           '<div class="controls">' +
             '<button class="chip loopchip" type="button" role="switch" aria-pressed="false" id="loopMode" title="Подсветить замкнутые финансовые круги: деньги, вернувшиеся к тому, кто их дал">' +
               '<i class="ring" aria-hidden="true"></i>Круговые контуры<b class="count" id="loopCount"></b></button>' +
+            '<button class="chip" type="button" role="switch" aria-pressed="false" id="onlyConfirmed" title="Скрыть контуры, найденные только по связям графа: у них нет свидетельства, что деньги возвращаются по цепочке">Только подтверждённые</button>' +
             '<span class="ctl-sep" aria-hidden="true"></span>' +
             chips +
             '<button class="chip" type="button" role="switch" aria-pressed="false" id="onlyReport">Только связи из исследования</button>' +
@@ -915,7 +916,7 @@
         var cy = g.loops;
         root.querySelector('#loopCount').textContent = cy.length ? ' ' + cy.length : '';
         root.querySelector('#loopBannerCount').textContent = cy.length
-          ? 'Найдено замкнутых кругов: ' + cy.length
+          ? 'Найдено замкнутых кругов: ' + cy.length + (g.filters.onlyConfirmed ? ' (скрыты контуры без свидетельств)' : '')
           : 'При текущих фильтрах замкнутых кругов нет';
         root.querySelector('#cycles').innerHTML = cy.length ? cy.map(function (c) {
           var d = loopData(c);
@@ -1003,6 +1004,19 @@
         afterFilter();
       });
       root.querySelector('#relax').addEventListener('click', function () { g.relax(); });
+
+      /* фильтр контуров: запоминается в браузере зрителя, как и сам режим */
+      var confBtn = root.querySelector('#onlyConfirmed');
+      function setConfirmed(on, remember) {
+        confBtn.setAttribute('aria-pressed', String(on));
+        g.setOnlyConfirmed(on);
+        afterFilter();
+        if (remember) { try { localStorage.setItem('vg-loops-confirmed', on ? '1' : '0'); } catch (e) {} }
+      }
+      confBtn.addEventListener('click', function () { setConfirmed(confBtn.getAttribute('aria-pressed') !== 'true', true); });
+      var savedConf = null;
+      try { savedConf = localStorage.getItem('vg-loops-confirmed'); } catch (e) {}
+      if (savedConf === '1') setConfirmed(true, false);
       refresh();
     }
   };
